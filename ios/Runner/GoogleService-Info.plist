@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>676050400746-1ia85uepq8a45sfiur2qn7ra8h7c2s9b.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.676050400746-1ia85uepq8a45sfiur2qn7ra8h7c2s9b</string>
+	<key>API_KEY</key>
+	<string>AIzaSyA8U5QhyPP-TJB4ml7IqCQCNxni8eEleJ8</string>
+	<key>GCM_SENDER_ID</key>
+	<string>676050400746</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.shakib.amol.amolTrackerApp</string>
+	<key>PROJECT_ID</key>
+	<string>amol-tracker</string>
+	<key>STORAGE_BUCKET</key>
+	<string>amol-tracker.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:676050400746:ios:2c314d9cbcd8f9b43d6e93</string>
+</dict>
+</plist>

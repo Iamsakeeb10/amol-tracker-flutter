@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "676050400746",
+    "project_id": "amol-tracker",
+    "storage_bucket": "amol-tracker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:676050400746:android:a9f9fdefc5a3c8203d6e93",
+        "android_client_info": {
+          "package_name": "com.shakib.amol.amol_tracker_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "676050400746-2ntfu7i13cqs43hao2jihu9q2tecc1bb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shakib.amol.amol_tracker_app",
+            "certificate_hash": "64cac6b3164272e94298abed9407d523914aa6ad"
+          }
+        },
+        {
+          "client_id": "676050400746-l9sec28aom2iitrotftl969e17u7rsm6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCx2hzeXkVyc5qVMK_Nz0u0njFtYiz1Yc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "676050400746-l9sec28aom2iitrotftl969e17u7rsm6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "676050400746-1ia85uepq8a45sfiur2qn7ra8h7c2s9b.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.shakib.amol.amolTrackerApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

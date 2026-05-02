@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
@@ -21,32 +22,32 @@ class DayCompleteScreen extends StatelessWidget {
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: Icon(Icons.close, size: 22.r),
           onPressed: () => context.canPop()
               ? context.pop()
               : context.go(AppRoutes.home),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(8, 0, 8, 28),
+        padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 28.h),
         children: [
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Center(child: _ScoreRing(score: earned)),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           Text(
             "Alhamdulillah",
             textAlign: TextAlign.center,
-            style: AppTextStyles.displayMedium,
+            style: AppTextStyles.displayMedium(context),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             "You completed today's amal.",
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium,
+            style: AppTextStyles.bodyMedium(context),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Center(child: Pill(text: '+$earned pts earned', icon: Icons.bolt)),
-          const SizedBox(height: 22),
+          SizedBox(height: 22.h),
           CardContainer(
             color: AppColors.goldCard,
             borderColor: AppColors.goldBorder,
@@ -55,39 +56,39 @@ class DayCompleteScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.format_quote,
                       color: AppColors.goldLight,
-                      size: 16,
+                      size: 16.r,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6.w),
                     Text(
                       'HADITH OF THE DAY',
-                      style: AppTextStyles.label.copyWith(color: AppColors.gold),
+                      style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(kHadiths[0], style: AppTextStyles.bodyLarge),
+                SizedBox(height: 8.h),
+                Text(kHadiths[0], style: AppTextStyles.bodyLarge(context)),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Text("Today's summary", style: AppTextStyles.headlineMedium),
-          const SizedBox(height: 8),
+          SizedBox(height: 16.h),
+          Text("Today's summary", style: AppTextStyles.headlineMedium(context)),
+          SizedBox(height: 8.h),
           ...kTodayAmalEntries.map((entry) {
             final field = kAmalFields.firstWhere(
               (f) => f.id == entry.fieldId,
               orElse: () => kAmalFields.first,
             );
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: EdgeInsets.only(bottom: 8.h),
               child: _SummaryRow(field: field, entry: entry),
             );
           }),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           SizedBox(
-            height: 50,
+            height: 50.h,
             child: ElevatedButton(
               onPressed: () => context.go(AppRoutes.home),
               style: ElevatedButton.styleFrom(
@@ -95,12 +96,12 @@ class DayCompleteScreen extends StatelessWidget {
                 foregroundColor: AppColors.emeraldDeep,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
               child: Text(
                 'Back to home',
-                style: AppTextStyles.button.copyWith(
+                style: AppTextStyles.button(context).copyWith(
                   color: AppColors.emeraldDeep,
                   fontWeight: FontWeight.w600,
                 ),
@@ -119,18 +120,19 @@ class _ScoreRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dim = 180.r;
     return SizedBox(
-      width: 180,
-      height: 180,
+      width: dim,
+      height: dim,
       child: Stack(
         alignment: Alignment.center,
         children: [
           SizedBox(
-            width: 180,
-            height: 180,
+            width: dim,
+            height: dim,
             child: CircularProgressIndicator(
               value: 1.0,
-              strokeWidth: 10,
+              strokeWidth: 10.r,
               valueColor: const AlwaysStoppedAnimation(AppColors.gold),
               backgroundColor: AppColors.cardBorder,
             ),
@@ -140,14 +142,14 @@ class _ScoreRing extends StatelessWidget {
             children: [
               Text(
                 '$score',
-                style: AppTextStyles.displayLarge.copyWith(
+                style: AppTextStyles.displayLarge(context).copyWith(
                   color: AppColors.goldLight,
-                  fontSize: 56,
+                  fontSize: 56.sp,
                 ),
               ),
               Text(
                 'of 100',
-                style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
               ),
             ],
           ),
@@ -182,20 +184,20 @@ class _SummaryRow extends StatelessWidget {
     }
 
     return CardContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       child: Row(
         children: [
-          Icon(iconData, color: iconColor, size: 20),
-          const SizedBox(width: 10),
+          Icon(iconData, color: iconColor, size: 20.r),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               field.label,
-              style: AppTextStyles.bodyLarge.copyWith(fontSize: 14),
+              style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 14.sp),
             ),
           ),
           Text(
             '${entry.earnedPoints} pts',
-            style: AppTextStyles.pill.copyWith(
+            style: AppTextStyles.pill(context).copyWith(
               color: entry.earnedPoints > 0
                   ? AppColors.gold
                   : AppColors.textMuted,

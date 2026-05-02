@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/colors.dart';
@@ -25,29 +26,29 @@ class _GroupSheetScreenState extends State<GroupSheetScreen> {
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: 22.r),
           onPressed: () => context.canPop() ? context.pop() : context.go('/friends'),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Group Sheet', style: AppTextStyles.headlineMedium),
+            Text('Group Sheet', style: AppTextStyles.headlineMedium(context)),
             Text(
               '${kGroup.name} · Shawwal',
-              style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+              style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
             ),
           ],
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 4, 0, 28),
+        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 28.h),
         children: [
           SizedBox(
-            height: 44,
+            height: 44.h,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: 12,
-              separatorBuilder: (_, _) => const SizedBox(width: 6),
+              separatorBuilder: (_, _) => SizedBox(width: 6.w),
               itemBuilder: (_, i) {
                 final day = 18 + i;
                 final isToday = day == 24;
@@ -55,7 +56,7 @@ class _GroupSheetScreenState extends State<GroupSheetScreen> {
                 return GestureDetector(
                   onTap: () => setState(() => _selectedDay = i),
                   child: Container(
-                    width: 50,
+                    width: 50.w,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: selected
@@ -63,7 +64,7 @@ class _GroupSheetScreenState extends State<GroupSheetScreen> {
                           : isToday
                               ? AppColors.goldCard
                               : AppColors.cardDark,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(10.r),
                       border: Border.all(
                         color: selected
                             ? AppColors.gold
@@ -77,8 +78,8 @@ class _GroupSheetScreenState extends State<GroupSheetScreen> {
                       children: [
                         Text(
                           '$day',
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontSize: 13,
+                          style: AppTextStyles.bodyLarge(context).copyWith(
+                            fontSize: 13.sp,
                             color: selected
                                 ? AppColors.emeraldDeep
                                 : AppColors.textPrimary,
@@ -88,8 +89,8 @@ class _GroupSheetScreenState extends State<GroupSheetScreen> {
                         if (isToday)
                           Text(
                             'Today',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              fontSize: 9,
+                            style: AppTextStyles.bodySmall(context).copyWith(
+                              fontSize: 9.sp,
                               color: selected
                                   ? AppColors.emeraldDeep
                                   : AppColors.gold,
@@ -102,36 +103,36 @@ class _GroupSheetScreenState extends State<GroupSheetScreen> {
               },
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           CardContainer.gold(
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.group,
                   color: AppColors.goldLight,
-                  size: 20,
+                  size: 20.r,
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
                     'All ${kGroup.memberCount} active today',
-                    style: AppTextStyles.bodyLarge.copyWith(fontSize: 13),
+                    style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 13.sp),
                   ),
                 ),
                 StreakBadge(days: kGroup.groupStreak, label: 'group streak'),
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           _ColumnHeaders(),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           ...kGroup.members.map((m) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.only(bottom: 8.h),
                 child: _MemberSheetCard(user: m),
               )),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           const _Legend(),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           CardContainer(
             child: Row(
               children: [
@@ -141,12 +142,12 @@ class _GroupSheetScreenState extends State<GroupSheetScreen> {
                     children: [
                       Text(
                         'Group avg',
-                        style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                        style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2.h),
                       Text(
                         '78',
-                        style: AppTextStyles.goldNumeric.copyWith(fontSize: 22),
+                        style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 22.sp),
                       ),
                     ],
                   ),
@@ -165,14 +166,14 @@ class _ColumnHeaders extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: Row(
         children: [
           SizedBox(
-            width: 110,
+            width: 110.w,
             child: Text(
               'MEMBER',
-              style: AppTextStyles.label.copyWith(color: AppColors.textMuted),
+              style: AppTextStyles.label(context).copyWith(color: AppColors.textMuted),
             ),
           ),
           Expanded(
@@ -183,8 +184,8 @@ class _ColumnHeaders extends StatelessWidget {
                       child: Center(
                         child: Text(
                           kAmalShortLabels[f.id] ?? '?',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            fontSize: 9,
+                          style: AppTextStyles.bodySmall(context).copyWith(
+                            fontSize: 9.sp,
                             color: AppColors.textMuted,
                           ),
                         ),
@@ -207,7 +208,7 @@ class _MemberSheetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardContainer(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.r),
       child: Column(
         children: [
           Row(
@@ -217,24 +218,24 @@ class _MemberSheetCard extends StatelessWidget {
                 color: user.avatarColor,
                 size: 30,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Text(
                   user.name,
-                  style: AppTextStyles.bodyLarge.copyWith(fontSize: 13),
+                  style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 13.sp),
                 ),
               ),
               StreakBadge(days: user.currentStreak, compact: true),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Text(
                 '${user.todayScore}/100',
-                style: AppTextStyles.goldNumeric.copyWith(fontSize: 14),
+                style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 14.sp),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           ScoreBar(value: user.todayScore / 100, height: 4),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Row(
             children: [
               for (int i = 0; i < kAmalFields.length; i++)
@@ -260,7 +261,7 @@ class _SheetCell extends StatelessWidget {
     final isNumeric = field.isNumeric;
 
     return Padding(
-      padding: const EdgeInsets.all(2),
+      padding: EdgeInsets.all(2.r),
       child: AspectRatio(
         aspectRatio: 1,
         child: Container(
@@ -271,21 +272,21 @@ class _SheetCell extends StatelessWidget {
                   ? AppColors.success.withValues(alpha: 0.3)
                   : AppColors.danger.withValues(alpha: 0.3),
             ),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(6.r),
           ),
           alignment: Alignment.center,
           child: isNumeric
               ? Text(
                   '${(user.id.hashCode + index) % 5 + 1}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: 10,
+                  style: AppTextStyles.bodySmall(context).copyWith(
+                    fontSize: 10.sp,
                     color: done ? AppColors.success : AppColors.danger,
                     fontWeight: FontWeight.w600,
                   ),
                 )
               : Icon(
                   done ? Icons.check : Icons.close,
-                  size: 12,
+                  size: 12.r,
                   color: done ? AppColors.success : AppColors.danger,
                 ),
         ),
@@ -299,10 +300,10 @@ class _Legend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: Wrap(
-        spacing: 14,
-        runSpacing: 6,
+        spacing: 14.w,
+        runSpacing: 6.h,
         children: [
           _LegendItem(
             icon: Icons.check,
@@ -339,29 +340,29 @@ class _LegendItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 16,
-          height: 16,
+          width: 16.r,
+          height: 16.r,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(4.r),
             border: Border.all(color: color.withValues(alpha: 0.4)),
           ),
           child: isNum
               ? Text(
                   'N',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: 9,
+                  style: AppTextStyles.bodySmall(context).copyWith(
+                    fontSize: 9.sp,
                     color: color,
                     fontWeight: FontWeight.w600,
                   ),
                 )
-              : Icon(icon, size: 10, color: color),
+              : Icon(icon, size: 10.r, color: color),
         ),
-        const SizedBox(width: 4),
+        SizedBox(width: 4.w),
         Text(
           isNum ? 'Numeric (Fard, Takbir)' : label,
-          style: AppTextStyles.bodySmall.copyWith(fontSize: 10),
+          style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
         ),
       ],
     );

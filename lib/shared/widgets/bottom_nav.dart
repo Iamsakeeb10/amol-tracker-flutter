@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/router/routes.dart';
@@ -73,14 +74,14 @@ class _BottomNavBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.emeraldDeep.withValues(alpha: 0.95),
-        border: const Border(
-          top: BorderSide(color: AppColors.cardBorder, width: 1),
+        border: Border(
+          top: BorderSide(color: AppColors.cardBorder, width: 1.r),
         ),
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 64,
+          height: 64.h,
           child: Row(
             children: List.generate(_items.length, (i) {
               final selected = currentIndex == i;
@@ -94,13 +95,13 @@ class _BottomNavBar extends StatelessWidget {
                       Icon(
                         selected ? item.activeIcon : item.icon,
                         color: selected ? AppColors.gold : AppColors.textMuted,
-                        size: 22,
+                        size: 22.r,
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         item.label,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          fontSize: 10,
+                        style: AppTextStyles.bodySmall(context).copyWith(
+                          fontSize: 10.sp,
                           color: selected
                               ? AppColors.gold
                               : AppColors.textMuted,

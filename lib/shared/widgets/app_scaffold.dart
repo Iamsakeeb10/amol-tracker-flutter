@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
 
@@ -55,9 +56,8 @@ class AppScaffold extends StatelessWidget {
           SafeArea(
             bottom: safeAreaBottom,
             child: Padding(
-              padding:
-                  padding ??
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              padding: padding ??
+                  EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
               child: body,
             ),
           ),
@@ -84,14 +84,14 @@ class _GeoPainter extends CustomPainter {
     final paint = Paint()
       ..color = AppColors.gold.withValues(alpha: 0.06)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 1.r;
 
-    canvas.drawCircle(Offset(size.width * 0.85, 80), 60, paint);
-    canvas.drawCircle(Offset(size.width * 0.85, 80), 40, paint);
-    canvas.drawCircle(Offset(-30, size.height * 0.5), 90, paint);
+    canvas.drawCircle(Offset(size.width * 0.85, 80.h), 60.r, paint);
+    canvas.drawCircle(Offset(size.width * 0.85, 80.h), 40.r, paint);
+    canvas.drawCircle(Offset(-30.w, size.height * 0.5), 90.r, paint);
     canvas.drawCircle(
-      Offset(size.width * 0.5, size.height - 60),
-      120,
+      Offset(size.width * 0.5, size.height - 60.h),
+      120.r,
       paint..color = AppColors.gold.withValues(alpha: 0.04),
     );
   }

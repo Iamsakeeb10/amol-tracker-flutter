@@ -31,7 +31,7 @@ class _AmolTrackerAppState extends State<AmolTrackerApp> {
     return MaterialApp.router(
       title: 'Amol Tracker',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.build(),
+      theme: AppTheme.build(context),
       routerConfig: _router,
     );
   }

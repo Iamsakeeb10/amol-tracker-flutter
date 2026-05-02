@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
@@ -19,12 +20,12 @@ class StreakBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: compact ? 8 : 10,
-        vertical: compact ? 4 : 6,
+        horizontal: compact ? 8.w : 10.w,
+        vertical: compact ? 4.h : 6.h,
       ),
       decoration: BoxDecoration(
         color: AppColors.warningLight,
-        borderRadius: BorderRadius.circular(99),
+        borderRadius: BorderRadius.circular(99.r),
         border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
       ),
       child: Row(
@@ -33,13 +34,13 @@ class StreakBadge extends StatelessWidget {
           Icon(
             Icons.local_fire_department,
             color: AppColors.warning,
-            size: compact ? 12 : 14,
+            size: compact ? 12.r : 14.r,
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Text(
             '$days${label != null ? ' $label' : 'd'}',
-            style: AppTextStyles.pill.copyWith(
-              fontSize: compact ? 10 : 11,
+            style: AppTextStyles.pill(context).copyWith(
+              fontSize: compact ? 10.sp : 11.sp,
               color: AppColors.goldPale,
               fontWeight: FontWeight.w600,
             ),
@@ -69,22 +70,22 @@ class Pill extends StatelessWidget {
     final bg = color ?? AppColors.goldCard;
     final fg = textColor ?? AppColors.gold;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(99),
+        borderRadius: BorderRadius.circular(99.r),
         border: Border.all(color: fg.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, color: fg, size: 12),
-            const SizedBox(width: 4),
+            Icon(icon, color: fg, size: 12.r),
+            SizedBox(width: 4.w),
           ],
           Text(
             text,
-            style: AppTextStyles.pill.copyWith(
+            style: AppTextStyles.pill(context).copyWith(
               color: fg,
               fontWeight: FontWeight.w500,
             ),

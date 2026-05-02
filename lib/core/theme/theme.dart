@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'colors.dart';
@@ -7,7 +8,7 @@ import 'text_styles.dart';
 class AppTheme {
   AppTheme._();
 
-  static ThemeData build() {
+  static ThemeData build(BuildContext context) {
     final base = ThemeData.dark(useMaterial3: true);
 
     return base.copyWith(
@@ -23,22 +24,22 @@ class AppTheme {
         onError: AppColors.textPrimary,
       ),
       textTheme: GoogleFonts.dmSansTextTheme(base.textTheme).copyWith(
-        displayLarge: AppTextStyles.displayLarge,
-        displayMedium: AppTextStyles.displayMedium,
-        headlineLarge: AppTextStyles.headlineLarge,
-        headlineMedium: AppTextStyles.headlineMedium,
-        bodyLarge: AppTextStyles.bodyLarge,
-        bodyMedium: AppTextStyles.bodyMedium,
-        bodySmall: AppTextStyles.bodySmall,
-        labelMedium: AppTextStyles.label,
-        labelLarge: AppTextStyles.button,
+        displayLarge: AppTextStyles.displayLarge(context),
+        displayMedium: AppTextStyles.displayMedium(context),
+        headlineLarge: AppTextStyles.headlineLarge(context),
+        headlineMedium: AppTextStyles.headlineMedium(context),
+        bodyLarge: AppTextStyles.bodyLarge(context),
+        bodyMedium: AppTextStyles.bodyMedium(context),
+        bodySmall: AppTextStyles.bodySmall(context),
+        labelMedium: AppTextStyles.label(context),
+        labelLarge: AppTextStyles.button(context),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
-        titleTextStyle: AppTextStyles.headlineMedium,
+        titleTextStyle: AppTextStyles.headlineMedium(context),
         systemOverlayStyle: null,
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -62,7 +63,7 @@ class AppTheme {
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return GoogleFonts.dmSans(
-            fontSize: 11,
+            fontSize: 11.sp,
             fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
             color: selected ? AppColors.gold : AppColors.textMuted,
             letterSpacing: 0.4,
@@ -84,12 +85,12 @@ class AppTheme {
         }),
         trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
       ),
-      dividerTheme: const DividerThemeData(
+      dividerTheme: DividerThemeData(
         color: AppColors.cardBorder,
-        thickness: 1,
+        thickness: 1.r,
         space: 0,
       ),
-      iconTheme: const IconThemeData(color: AppColors.textPrimary, size: 20),
+      iconTheme: IconThemeData(color: AppColors.textPrimary, size: 20.r),
     );
   }
 }

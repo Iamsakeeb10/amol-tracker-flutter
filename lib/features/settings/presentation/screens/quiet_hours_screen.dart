@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/colors.dart';
@@ -40,22 +41,22 @@ class _QuietHoursScreenState extends State<QuietHoursScreen> {
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: 22.r),
           onPressed: () => context.canPop() ? context.pop() : context.go('/settings'),
         ),
-        title: Text('Quiet hours', style: AppTextStyles.headlineMedium),
+        title: Text('Quiet hours', style: AppTextStyles.headlineMedium(context)),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+        padding: EdgeInsets.fromLTRB(0, 8.h, 0, 24.h),
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: EdgeInsets.symmetric(horizontal: 4.w),
             child: Text(
               'Notifications stay silent during these hours. Reminders still run.',
-              style: AppTextStyles.bodyMedium,
+              style: AppTextStyles.bodyMedium(context),
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           Row(
             children: [
               Expanded(
@@ -67,7 +68,7 @@ class _QuietHoursScreenState extends State<QuietHoursScreen> {
                   onDown: () => _bumpHour(_from, -1, true),
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: _TimeCard(
                   label: 'TO',
@@ -79,28 +80,28 @@ class _QuietHoursScreenState extends State<QuietHoursScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           CardContainer(
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.nightlight_round,
                   color: AppColors.gold,
-                  size: 20,
+                  size: 20.r,
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
                     'Silent from ${_format(_from)} to ${_format(_to)}',
-                    style: AppTextStyles.bodyLarge.copyWith(fontSize: 13),
+                    style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 13.sp),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           SizedBox(
-            height: 50,
+            height: 50.h,
             child: ElevatedButton(
               onPressed: () => context.canPop() ? context.pop() : context.go('/settings'),
               style: ElevatedButton.styleFrom(
@@ -108,12 +109,12 @@ class _QuietHoursScreenState extends State<QuietHoursScreen> {
                 foregroundColor: AppColors.emeraldDeep,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
               child: Text(
                 'Save',
-                style: AppTextStyles.button.copyWith(
+                style: AppTextStyles.button(context).copyWith(
                   color: AppColors.emeraldDeep,
                   fontWeight: FontWeight.w600,
                 ),
@@ -144,38 +145,38 @@ class _TimeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardContainer(
-      padding: const EdgeInsets.symmetric(vertical: 18),
+      padding: EdgeInsets.symmetric(vertical: 18.h),
       child: Column(
         children: [
           Text(
             label,
-            style: AppTextStyles.label.copyWith(color: AppColors.gold),
+            style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             formatted,
-            style: AppTextStyles.displayLarge.copyWith(
+            style: AppTextStyles.displayLarge(context).copyWith(
               color: AppColors.goldLight,
-              fontSize: 36,
+              fontSize: 36.sp,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
                 onPressed: onDown,
-                icon: const Icon(Icons.remove),
+                icon: Icon(Icons.remove, size: 20.r),
                 color: AppColors.gold,
                 style: IconButton.styleFrom(
                   side: const BorderSide(color: AppColors.cardBorder),
                   shape: const CircleBorder(),
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               IconButton(
                 onPressed: onUp,
-                icon: const Icon(Icons.add),
+                icon: Icon(Icons.add, size: 20.r),
                 color: AppColors.gold,
                 style: IconButton.styleFrom(
                   side: const BorderSide(color: AppColors.cardBorder),

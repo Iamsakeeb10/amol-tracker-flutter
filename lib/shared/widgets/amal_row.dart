@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
@@ -24,58 +25,59 @@ class AmalRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       color: done ? AppColors.goldCard : AppColors.cardDark,
       borderColor: done ? AppColors.goldBorder : AppColors.cardBorder,
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 36.r,
+            height: 36.r,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: done ? AppColors.gold : AppColors.cardBorder,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
               field.icon,
               color: done ? AppColors.emeraldDeep : AppColors.textSecondary,
-              size: 18,
+              size: 18.r,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   field.label,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontSize: 14,
+                  style: AppTextStyles.bodyLarge(context).copyWith(
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Row(
                   children: [
                     Text(
                       field.sublabel,
-                      style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                      style:
+                          AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Container(
-                      width: 3,
-                      height: 3,
+                      width: 3.r,
+                      height: 3.r,
                       decoration: const BoxDecoration(
                         color: AppColors.textMuted,
                         shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Text(
                       '+${field.points} pts',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontSize: 11,
+                      style: AppTextStyles.bodySmall(context).copyWith(
+                        fontSize: 11.sp,
                         color: AppColors.gold,
                         fontWeight: FontWeight.w500,
                       ),
@@ -85,7 +87,7 @@ class AmalRow extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           if (readOnly)
             Icon(
               done
@@ -98,6 +100,7 @@ class AmalRow extends StatelessWidget {
                   : (numericValue != null && numericValue! > 0
                         ? AppColors.warning
                         : AppColors.danger),
+              size: 22.r,
             )
           else
             Switch.adaptive(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
@@ -28,13 +29,13 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: 22.r),
           onPressed: () => context.canPop() ? context.pop() : context.go('/friends'),
         ),
         title: Row(
           children: [
-            Text('Group', style: AppTextStyles.headlineMedium),
-            const SizedBox(width: 8),
+            Text('Group', style: AppTextStyles.headlineMedium(context)),
+            SizedBox(width: 8.w),
             const Pill(
               text: 'admin',
               color: AppColors.goldCard,
@@ -44,28 +45,28 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
+        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
         children: [
           Text(
             kGroup.name,
-            style: AppTextStyles.displayMedium,
+            style: AppTextStyles.displayMedium(context),
           ),
-          const SizedBox(height: 4),
-          Text(kGroup.description, style: AppTextStyles.bodyMedium),
-          const SizedBox(height: 18),
+          SizedBox(height: 4.h),
+          Text(kGroup.description, style: AppTextStyles.bodyMedium(context)),
+          SizedBox(height: 18.h),
           const SectionHeader(title: 'INVITE CODE'),
           CardContainer.gold(
             child: Column(
               children: [
                 Text(
                   kGroup.inviteCode,
-                  style: AppTextStyles.displayLarge.copyWith(
+                  style: AppTextStyles.displayLarge(context).copyWith(
                     color: AppColors.goldLight,
-                    fontSize: 30,
+                    fontSize: 30.sp,
                     letterSpacing: 4,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -76,13 +77,13 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
                         ClipboardData(text: kGroup.inviteCode),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     _IconAction(
                       icon: Icons.share_rounded,
                       label: 'Share',
                       onTap: () {},
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     _IconAction(
                       icon: Icons.refresh_rounded,
                       label: 'Refresh',
@@ -93,16 +94,16 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           const SectionHeader(title: 'MEMBERS'),
           ...kGroup.members.map((m) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.only(bottom: 8.h),
                 child: _MemberRow(user: m),
               )),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           const SectionHeader(title: 'GROUP SETTINGS'),
           CardContainer(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
             child: Column(
               children: [
                 ToggleRow(
@@ -123,17 +124,17 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           OutlinedButton.icon(
             onPressed: () => _confirmDelete(context),
-            icon: const Icon(Icons.delete_outline),
+            icon: Icon(Icons.delete_outline, size: 20.r),
             label: const Text('Delete group'),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.danger,
               side: BorderSide(color: AppColors.danger.withValues(alpha: 0.5)),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: EdgeInsets.symmetric(vertical: 14.h),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
               ),
             ),
           ),
@@ -149,18 +150,18 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
         backgroundColor: AppColors.emeraldMid,
         title: Text(
           'Delete this group?',
-          style: AppTextStyles.headlineMedium,
+          style: AppTextStyles.headlineMedium(context),
         ),
         content: Text(
           'Members will lose access. This cannot be undone.',
-          style: AppTextStyles.bodyMedium,
+          style: AppTextStyles.bodyMedium(context),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: AppTextStyles.button.copyWith(
+              style: AppTextStyles.button(context).copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
@@ -169,7 +170,7 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Delete',
-              style: AppTextStyles.button.copyWith(color: AppColors.danger),
+              style: AppTextStyles.button(context).copyWith(color: AppColors.danger),
             ),
           ),
         ],
@@ -193,17 +194,17 @@ class _IconAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(10.r),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.gold, size: 20),
-            const SizedBox(height: 4),
+            Icon(icon, color: AppColors.gold, size: 20.r),
+            SizedBox(height: 4.h),
             Text(
               label,
-              style: AppTextStyles.bodySmall.copyWith(
-                fontSize: 11,
+              style: AppTextStyles.bodySmall(context).copyWith(
+                fontSize: 11.sp,
                 color: AppColors.gold,
               ),
             ),
@@ -222,11 +223,11 @@ class _MemberRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isYou = user.id == kFriends.first.id;
     return CardContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       child: Row(
         children: [
           AvatarChip(initial: user.initial, color: user.avatarColor),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,10 +236,10 @@ class _MemberRow extends StatelessWidget {
                   children: [
                     Text(
                       user.name,
-                      style: AppTextStyles.bodyLarge.copyWith(fontSize: 14),
+                      style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 14.sp),
                     ),
                     if (isYou) ...[
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6.w),
                       const Pill(
                         text: 'admin',
                         color: AppColors.goldCard,
@@ -247,10 +248,10 @@ class _MemberRow extends StatelessWidget {
                     ],
                   ],
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   '${user.currentStreak} day streak',
-                  style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                  style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                 ),
               ],
             ),
@@ -260,7 +261,7 @@ class _MemberRow extends StatelessWidget {
               onPressed: () {},
               child: Text(
                 'Remove',
-                style: AppTextStyles.button.copyWith(color: AppColors.danger),
+                style: AppTextStyles.button(context).copyWith(color: AppColors.danger),
               ),
             ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
 
@@ -13,25 +14,26 @@ class CardContainer extends StatelessWidget {
   final BoxBorder? border;
   final List<BoxShadow>? boxShadow;
 
-  const CardContainer({
+  CardContainer({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(AppSpacing.lg),
+    EdgeInsetsGeometry? padding,
     this.margin,
     this.color,
     this.borderColor,
-    this.radius = AppRadius.lg,
+    double? radius,
     this.onTap,
     this.border,
     this.boxShadow,
-  });
+  })  : padding = padding ?? EdgeInsets.all(AppSpacing.lg.r),
+        radius = radius ?? AppRadius.lg;
 
   factory CardContainer.gold({
     Key? key,
     required Widget child,
-    EdgeInsetsGeometry padding = const EdgeInsets.all(AppSpacing.lg),
+    EdgeInsetsGeometry? padding,
     EdgeInsetsGeometry? margin,
-    double radius = AppRadius.lg,
+    double? radius,
     VoidCallback? onTap,
   }) {
     return CardContainer(
@@ -53,7 +55,7 @@ class CardContainer extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: color ?? AppColors.cardDark,
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: BorderRadius.circular(radius.r),
         border:
             border ?? Border.all(color: borderColor ?? AppColors.cardBorder),
         boxShadow: boxShadow,
@@ -66,7 +68,7 @@ class CardContainer extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: BorderRadius.circular(radius.r),
         onTap: onTap,
         child: container,
       ),

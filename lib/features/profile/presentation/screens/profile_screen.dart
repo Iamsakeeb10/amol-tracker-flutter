@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/colors.dart';
@@ -19,13 +20,13 @@ class ProfileScreen extends StatelessWidget {
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: 22.r),
           onPressed: () => context.canPop() ? context.pop() : context.go('/more'),
         ),
-        title: Text('Profile', style: AppTextStyles.headlineMedium),
+        title: Text('Profile', style: AppTextStyles.headlineMedium(context)),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
+        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
         children: [
           Center(
             child: AvatarChip(
@@ -36,57 +37,74 @@ class ProfileScreen extends StatelessWidget {
               fontSize: 34,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             'Yousuf Khan',
             textAlign: TextAlign.center,
-            style: AppTextStyles.displayMedium,
+            style: AppTextStyles.displayMedium(context),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             'Member since Jan 2025',
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium,
+            style: AppTextStyles.bodyMedium(context),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Center(child: StreakBadge(days: kCurrentUser.currentStreak)),
-          const SizedBox(height: 18),
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 1.4,
-            children: [
-              StatCard(
-                label: 'Streak',
-                value: '${kCurrentUser.currentStreak}',
-                sublabel: 'days',
-              ),
-              StatCard(
-                label: 'Best',
-                value: '${kCurrentUser.bestStreak}',
-                sublabel: 'days',
-              ),
-              StatCard(label: 'Avg', value: '78', sublabel: '/100'),
-            ],
+          SizedBox(height: 18.h),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 340.w;
+              return GridView.count(
+                crossAxisCount: 3,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 8.h,
+                crossAxisSpacing: 8.w,
+                childAspectRatio: compact ? 1.02 : 1.28,
+                children: [
+                  StatCard(
+                    label: 'Streak',
+                    value: '${kCurrentUser.currentStreak}',
+                    sublabel: 'days',
+                    prominent: true,
+                  ),
+                  StatCard(
+                    label: 'Best',
+                    value: '${kCurrentUser.bestStreak}',
+                    sublabel: 'days',
+                    prominent: true,
+                  ),
+                  StatCard(
+                    label: 'Avg',
+                    value: '78',
+                    sublabel: '/100',
+                    prominent: true,
+                  ),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 18),
-          Text('This week', style: AppTextStyles.headlineMedium),
-          const SizedBox(height: 8),
+          SizedBox(height: 18.h),
+          Text('This week', style: AppTextStyles.headlineMedium(context)),
+          SizedBox(height: 8.h),
           const _WeekChart(),
-          const SizedBox(height: 18),
-          Text('Badges', style: AppTextStyles.headlineMedium),
-          const SizedBox(height: 8),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1.5,
-            children: kBadges.map((b) => BadgeTile(badge: b)).toList(),
+          SizedBox(height: 18.h),
+          Text('Badges', style: AppTextStyles.headlineMedium(context)),
+          SizedBox(height: 8.h),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 340.w;
+              return GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 10.h,
+                crossAxisSpacing: 10.w,
+                childAspectRatio: compact ? 1.05 : 1.5,
+                children: kBadges.map((b) => BadgeTile(badge: b)).toList(),
+              );
+            },
           ),
         ],
       ),
@@ -101,29 +119,29 @@ class _WeekChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return CardContainer(
       child: SizedBox(
-        height: 130,
+        height: 130.h,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: kWeeklyBars
               .map(
                 (b) => Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 4.w),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
                           '${(b.value * 100).round()}',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            fontSize: 9,
+                          style: AppTextStyles.bodySmall(context).copyWith(
+                            fontSize: 9.sp,
                             color: b.missed
                                 ? AppColors.danger
                                 : AppColors.gold,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
                         Container(
-                          height: 80 * b.value,
+                          height: 80.h * b.value,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
@@ -135,15 +153,15 @@ class _WeekChart extends StatelessWidget {
                                     ]
                                   : const [AppColors.gold, AppColors.goldLight],
                             ),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(4),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(4.r),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6.h),
                         Text(
                           b.label,
-                          style: AppTextStyles.bodySmall.copyWith(fontSize: 10),
+                          style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
                         ),
                       ],
                     ),

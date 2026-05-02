@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
@@ -20,64 +21,64 @@ class SignInScreen extends StatelessWidget {
               const Spacer(),
               Center(
                 child: Container(
-                  width: 96,
-                  height: 96,
+                  width: 96.r,
+                  height: 96.r,
                   decoration: BoxDecoration(
                     color: AppColors.goldCard,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.gold, width: 1.5),
+                    border: Border.all(color: AppColors.gold, width: 1.5.r),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     'ع',
-                    style: AppTextStyles.displayLarge.copyWith(
+                    style: AppTextStyles.displayLarge(context).copyWith(
                       color: AppColors.goldLight,
-                      fontSize: 38,
+                      fontSize: 38.sp,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               Text(
                 'Amol Tracker',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.displayMedium,
+                style: AppTextStyles.displayMedium(context),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
                 child: Text(
                   'Daily devotion, with brothers',
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyMedium,
+                  style: AppTextStyles.bodyMedium(context),
                 ),
               ),
-              const SizedBox(height: 26),
+              SizedBox(height: 26.h),
               Center(
                 child: Container(
-                  width: 64,
-                  height: 1,
+                  width: 64.w,
+                  height: 1.r,
                   color: AppColors.gold.withValues(alpha: 0.5),
                 ),
               ),
               const Spacer(),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
                 child: Column(
                   children: [
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
+                      height: 50.h,
                       child: ElevatedButton.icon(
                         onPressed: () => context.go(AppRoutes.onboarding),
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.g_mobiledata,
                           color: AppColors.emeraldDeep,
-                          size: 26,
+                          size: 26.r,
                         ),
                         label: Text(
                           'Continue with Google',
-                          style: AppTextStyles.button.copyWith(
+                          style: AppTextStyles.button(context).copyWith(
                             color: AppColors.emeraldDeep,
                             fontWeight: FontWeight.w600,
                           ),
@@ -86,26 +87,26 @@ class SignInScreen extends StatelessWidget {
                           backgroundColor: AppColors.cream,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     SizedBox(
                       width: double.infinity,
-                      height: 48,
+                      height: 48.h,
                       child: OutlinedButton(
                         onPressed: () => context.go(AppRoutes.onboarding),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: AppColors.cardBorder),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
                         ),
                         child: Text(
                           'Continue as guest',
-                          style: AppTextStyles.button.copyWith(
+                          style: AppTextStyles.button(context).copyWith(
                             color: AppColors.textSecondary,
                           ),
                         ),
@@ -114,26 +115,26 @@ class SignInScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
                 child: Text(
                   'By continuing you agree to our Terms & Privacy.',
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                  style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
             ],
           ),
           Positioned(
-            top: 8,
-            right: 4,
+            top: 8.h,
+            right: 4.w,
             child: TextButton(
               onPressed: () => context.go(AppRoutes.dev),
               child: Text(
                 'DEV',
-                style: AppTextStyles.label.copyWith(color: AppColors.gold),
+                style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
               ),
             ),
           ),

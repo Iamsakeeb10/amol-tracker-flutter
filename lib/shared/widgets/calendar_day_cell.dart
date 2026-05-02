@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
 import '../mock/mock_data.dart';
@@ -42,6 +43,8 @@ class CalendarDayCell extends StatelessWidget {
         break;
     }
 
+    final borderW = day.state == DayCompletion.today ? 1.5.r : 1.r;
+
     return GestureDetector(
       onTap: onTap,
       child: AspectRatio(
@@ -49,10 +52,10 @@ class CalendarDayCell extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: bg,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(10.r),
             border: Border.all(
               color: border,
-              width: day.state == DayCompletion.today ? 1.5 : 1,
+              width: borderW,
             ),
           ),
           alignment: Alignment.center,
@@ -60,7 +63,7 @@ class CalendarDayCell extends StatelessWidget {
             '${day.day}',
             style: TextStyle(
               color: textColor,
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: day.state == DayCompletion.full
                   ? FontWeight.w600
                   : FontWeight.w400,

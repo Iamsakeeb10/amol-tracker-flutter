@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/router/routes.dart';
@@ -37,29 +38,29 @@ class DevScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        title: Text('Dev Menu', style: AppTextStyles.headlineMedium),
+        title: Text('Dev Menu', style: AppTextStyles.headlineMedium(context)),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.symmetric(vertical: 8.h),
         children: [
           Text(
             'Tap a screen to jump to it (UI testing)',
-            style: AppTextStyles.bodyMedium,
+            style: AppTextStyles.bodyMedium(context),
           ),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md.h),
           GridView.count(
             crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
+            crossAxisSpacing: 10.w,
+            mainAxisSpacing: 10.h,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             childAspectRatio: 2.4,
             children: [
               for (final e in _entries)
                 CardContainer(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 10.h,
                   ),
                   color: AppColors.goldCard,
                   borderColor: AppColors.goldBorder,
@@ -76,15 +77,15 @@ class DevScreen extends StatelessWidget {
                     children: [
                       Text(
                         e.id,
-                        style: AppTextStyles.label.copyWith(
+                        style: AppTextStyles.label(context).copyWith(
                           color: AppColors.gold,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2.h),
                       Text(
                         e.label,
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontSize: 13,
+                        style: AppTextStyles.bodyLarge(context).copyWith(
+                          fontSize: 13.sp,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

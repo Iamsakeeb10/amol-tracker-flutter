@@ -1,9 +1,22 @@
 import 'package:amol_tracker_app/app.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  Future<void> pumpApp(WidgetTester tester) async {
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(375, 812),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (_, _) => const AmolTrackerApp(),
+      ),
+    );
+  }
+
   testWidgets('App boots and Sign In screen renders', (tester) async {
-    await tester.pumpWidget(const AmolTrackerApp());
+    await pumpApp(tester);
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
     expect(find.text('Amol Tracker'), findsOneWidget);
@@ -13,7 +26,7 @@ void main() {
 
   testWidgets('Tapping "Continue as guest" navigates to onboarding',
       (tester) async {
-    await tester.pumpWidget(const AmolTrackerApp());
+    await pumpApp(tester);
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
     await tester.tap(find.text('Continue as guest'));
@@ -25,7 +38,7 @@ void main() {
 
   testWidgets('Skipping onboarding lands on Home with bottom nav',
       (tester) async {
-    await tester.pumpWidget(const AmolTrackerApp());
+    await pumpApp(tester);
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
     await tester.tap(find.text('Continue as guest'));

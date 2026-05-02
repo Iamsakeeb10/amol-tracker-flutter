@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
@@ -29,17 +30,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: 22.r),
           onPressed: () => context.canPop() ? context.pop() : context.go('/more'),
         ),
-        title: Text('Settings', style: AppTextStyles.headlineMedium),
+        title: Text('Settings', style: AppTextStyles.headlineMedium(context)),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
+        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
         children: [
           const SectionHeader(title: 'NOTIFICATIONS'),
           CardContainer(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
             child: Column(
               children: [
                 ToggleRow(
@@ -75,10 +76,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           const SectionHeader(title: 'PRIVACY'),
           CardContainer(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
             child: Column(
               children: [
                 ToggleRow(
@@ -98,10 +99,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           const SectionHeader(title: 'APP'),
           CardContainer(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
             child: Column(
               children: [
                 NavRow(

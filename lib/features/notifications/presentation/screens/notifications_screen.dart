@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/colors.dart';
@@ -46,26 +47,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: 22.r),
           onPressed: () => context.canPop() ? context.pop() : context.go('/more'),
         ),
         title: Row(
           children: [
-            Text('Alerts', style: AppTextStyles.headlineMedium),
+            Text('Alerts', style: AppTextStyles.headlineMedium(context)),
             if (unread > 0) ...[
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 7,
-                  vertical: 2,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 7.w,
+                  vertical: 2.h,
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.gold,
-                  borderRadius: BorderRadius.circular(99),
+                  borderRadius: BorderRadius.circular(99.r),
                 ),
                 child: Text(
                   '$unread',
-                  style: AppTextStyles.pill.copyWith(
+                  style: AppTextStyles.pill(context).copyWith(
                     color: AppColors.emeraldDeep,
                     fontWeight: FontWeight.w600,
                   ),
@@ -79,15 +80,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             onPressed: _markAllRead,
             child: Text(
               'Mark all read',
-              style: AppTextStyles.button.copyWith(color: AppColors.gold),
+              style: AppTextStyles.button(context).copyWith(color: AppColors.gold),
             ),
           ),
         ],
       ),
       body: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
+        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
         itemCount: _items.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 8),
+        separatorBuilder: (_, _) => SizedBox(height: 8.h),
         itemBuilder: (_, i) => _NotificationRow(item: _items[i]),
       ),
     );
@@ -101,27 +102,27 @@ class _NotificationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardContainer(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       color: item.unread ? AppColors.goldCard : AppColors.cardDark,
       borderColor: item.unread ? AppColors.goldBorder : AppColors.cardBorder,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 36.r,
+            height: 36.r,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: AppColors.cardBorder,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
               item.icon,
               color: item.unread ? AppColors.gold : AppColors.textSecondary,
-              size: 18,
+              size: 18.r,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,16 +132,16 @@ class _NotificationRow extends StatelessWidget {
                     Expanded(
                       child: Text(
                         item.title,
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontSize: 13,
+                        style: AppTextStyles.bodyLarge(context).copyWith(
+                          fontSize: 13.sp,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
                     if (item.unread)
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 8.r,
+                        height: 8.r,
                         decoration: const BoxDecoration(
                           color: AppColors.gold,
                           shape: BoxShape.circle,
@@ -148,16 +149,16 @@ class _NotificationRow extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   item.body,
-                  style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                  style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   item.time,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: 10,
+                  style: AppTextStyles.bodySmall(context).copyWith(
+                    fontSize: 10.sp,
                     color: AppColors.textHint,
                   ),
                 ),

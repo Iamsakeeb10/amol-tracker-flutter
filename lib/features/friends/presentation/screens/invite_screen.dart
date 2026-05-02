@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
@@ -30,38 +31,38 @@ class _InviteScreenState extends State<InviteScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => context.canPop() ? context.pop() : context.go('/friends'),
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: 22.r),
         ),
-        title: Text('Invite & Join', style: AppTextStyles.headlineMedium),
+        title: Text('Invite & Join', style: AppTextStyles.headlineMedium(context)),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
+        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
         children: [
           Text(
             'YOUR INVITE CODE',
-            style: AppTextStyles.label.copyWith(color: AppColors.gold),
+            style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           CardContainer.gold(
-            padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 18),
+            padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: 18.w),
             child: Column(
               children: [
                 Text(
                   kGroup.inviteCode,
-                  style: AppTextStyles.displayLarge.copyWith(
+                  style: AppTextStyles.displayLarge(context).copyWith(
                     color: AppColors.goldLight,
-                    fontSize: 36,
+                    fontSize: 36.sp,
                     letterSpacing: 6,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   'Valid · 5 brothers can join',
-                  style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                  style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14.h),
                 SizedBox(
-                  height: 40,
+                  height: 40.h,
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Clipboard.setData(
@@ -74,14 +75,14 @@ class _InviteScreenState extends State<InviteScreen> {
                         ),
                       );
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.copy_rounded,
-                      size: 14,
+                      size: 14.r,
                       color: AppColors.emeraldDeep,
                     ),
                     label: Text(
                       'Copy code',
-                      style: AppTextStyles.button.copyWith(
+                      style: AppTextStyles.button(context).copyWith(
                         color: AppColors.emeraldDeep,
                         fontWeight: FontWeight.w600,
                       ),
@@ -89,9 +90,9 @@ class _InviteScreenState extends State<InviteScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.gold,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(99),
+                        borderRadius: BorderRadius.circular(99.r),
                       ),
                     ),
                   ),
@@ -99,7 +100,7 @@ class _InviteScreenState extends State<InviteScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           Row(
             children: [
               Expanded(
@@ -109,7 +110,7 @@ class _InviteScreenState extends State<InviteScreen> {
                   color: AppColors.success,
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: _ShareTile(
                   icon: Icons.link_rounded,
@@ -119,30 +120,30 @@ class _InviteScreenState extends State<InviteScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           Text(
             'JOIN A GROUP',
-            style: AppTextStyles.label.copyWith(color: AppColors.gold),
+            style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           CardContainer(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.search,
                   color: AppColors.textMuted,
-                  size: 18,
+                  size: 18.r,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 Expanded(
                   child: TextField(
                     controller: _joinController,
-                    style: AppTextStyles.bodyLarge.copyWith(fontSize: 14),
+                    style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 14.sp),
                     cursorColor: AppColors.gold,
                     decoration: InputDecoration(
                       hintText: 'Enter invite code',
-                      hintStyle: AppTextStyles.bodyMedium,
+                      hintStyle: AppTextStyles.bodyMedium(context),
                       border: InputBorder.none,
                       isDense: true,
                     ),
@@ -151,9 +152,9 @@ class _InviteScreenState extends State<InviteScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           SizedBox(
-            height: 48,
+            height: 48.h,
             child: ElevatedButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -168,12 +169,12 @@ class _InviteScreenState extends State<InviteScreen> {
                 foregroundColor: AppColors.emeraldDeep,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
               child: Text(
                 'Join group',
-                style: AppTextStyles.button.copyWith(
+                style: AppTextStyles.button(context).copyWith(
                   color: AppColors.emeraldDeep,
                   fontWeight: FontWeight.w600,
                 ),
@@ -204,16 +205,16 @@ class _ShareTile extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 40.r,
+            height: 40.r,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 20.r),
           ),
-          const SizedBox(height: 10),
-          Text(label, style: AppTextStyles.bodyMedium),
+          SizedBox(height: 10.h),
+          Text(label, style: AppTextStyles.bodyMedium(context)),
         ],
       ),
     );

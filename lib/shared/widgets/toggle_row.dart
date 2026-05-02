@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
@@ -22,33 +23,33 @@ class ToggleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         children: [
           Container(
-            width: 34,
-            height: 34,
+            width: 34.r,
+            height: 34.r,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: AppColors.cardBorder,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(icon, size: 16, color: AppColors.gold),
+            child: Icon(icon, size: 16.r, color: AppColors.gold),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.bodyLarge.copyWith(fontSize: 14),
+                  style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 14.sp),
                 ),
                 if (subtitle != null) ...[
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   Text(
                     subtitle!,
-                    style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                    style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                   ),
                 ],
               ],
@@ -87,27 +88,27 @@ class NavRow extends StatelessWidget {
     final color = destructiveColor ?? AppColors.gold;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.md),
+      borderRadius: BorderRadius.circular(AppRadius.md.r),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 4.w),
         child: Row(
           children: [
             Container(
-              width: 34,
-              height: 34,
+              width: 34.r,
+              height: 34.r,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: AppColors.cardBorder,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
               ),
-              child: Icon(icon, size: 16, color: color),
+              child: Icon(icon, size: 16.r, color: color),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Text(
                 title,
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontSize: 14,
+                style: AppTextStyles.bodyLarge(context).copyWith(
+                  fontSize: 14.sp,
                   color: destructiveColor ?? AppColors.textPrimary,
                 ),
               ),
@@ -115,16 +116,16 @@ class NavRow extends StatelessWidget {
             if (trailing != null) ...[
               Text(
                 trailing!,
-                style: AppTextStyles.bodyMedium.copyWith(
+                style: AppTextStyles.bodyMedium(context).copyWith(
                   color: AppColors.textMuted,
                 ),
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6.w),
             ],
-            const Icon(
+            Icon(
               Icons.chevron_right,
               color: AppColors.textMuted,
-              size: 18,
+              size: 18.r,
             ),
           ],
         ),

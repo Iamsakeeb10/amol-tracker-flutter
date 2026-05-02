@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
@@ -71,7 +72,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               onPressed: _skip,
               child: Text(
                 'Skip',
-                style: AppTextStyles.button.copyWith(
+                style: AppTextStyles.button(context).copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -91,24 +92,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               final active = i == _index;
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                height: 6,
-                width: active ? 22 : 6,
+                margin: EdgeInsets.symmetric(horizontal: 4.w),
+                height: 6.r,
+                width: active ? 22.w : 6.r,
                 decoration: BoxDecoration(
                   color: active
                       ? AppColors.gold
                       : AppColors.textMuted.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(99),
+                  borderRadius: BorderRadius.circular(99.r),
                 ),
               );
             }),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 24.h),
             child: SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 50.h,
               child: ElevatedButton(
                 onPressed: _next,
                 style: ElevatedButton.styleFrom(
@@ -116,12 +117,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   foregroundColor: AppColors.emeraldDeep,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(14.r),
                   ),
                 ),
                 child: Text(
                   _index == _slides.length - 1 ? 'Get started' : 'Next',
-                  style: AppTextStyles.button.copyWith(
+                  style: AppTextStyles.button(context).copyWith(
                     color: AppColors.emeraldDeep,
                     fontWeight: FontWeight.w600,
                   ),
@@ -157,36 +158,47 @@ class _SlideContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 140,
-            height: 140,
-            decoration: BoxDecoration(
-              color: AppColors.goldCard,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.goldBorder, width: 1),
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 140.r,
+                      height: 140.r,
+                      decoration: BoxDecoration(
+                        color: AppColors.goldCard,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.goldBorder, width: 1.r),
+                      ),
+                      child: Icon(slide.icon, color: AppColors.goldLight, size: 60.r),
+                    ),
+                    SizedBox(height: 28.h),
+                    Text(
+                      slide.title,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.displayMedium(context),
+                    ),
+                    SizedBox(height: 10.h),
+                    Text(
+                      slide.body,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodyMedium(context),
+                    ),
+                    SizedBox(height: 22.h),
+                    if (slide.kind == _SlideKind.streaks) const _StreakBadgesRow(),
+                    if (slide.kind == _SlideKind.invite) const _InvitePreview(),
+                  ],
+                ),
+              ),
             ),
-            child: Icon(slide.icon, color: AppColors.goldLight, size: 60),
-          ),
-          const SizedBox(height: 28),
-          Text(
-            slide.title,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.displayMedium,
-          ),
-          const SizedBox(height: 10),
-          Text(
-            slide.body,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium,
-          ),
-          const SizedBox(height: 22),
-          if (slide.kind == _SlideKind.streaks) const _StreakBadgesRow(),
-          if (slide.kind == _SlideKind.invite) const _InvitePreview(),
-        ],
+          );
+        },
       ),
     );
   }
@@ -199,17 +211,17 @@ class _StreakBadgesRow extends StatelessWidget {
     Widget pill(String label, String days) {
       return Expanded(
         child: CardContainer(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(vertical: 12.h),
           color: AppColors.goldCard,
           borderColor: AppColors.goldBorder,
           child: Column(
             children: [
               Text(
                 days,
-                style: AppTextStyles.goldNumeric.copyWith(fontSize: 22),
+                style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 22.sp),
               ),
-              const SizedBox(height: 2),
-              Text(label, style: AppTextStyles.bodySmall.copyWith(fontSize: 10)),
+              SizedBox(height: 2.h),
+              Text(label, style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp)),
             ],
           ),
         ),
@@ -217,13 +229,13 @@ class _StreakBadgesRow extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
       child: Row(
         children: [
           pill('Starter', '7'),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           pill('Habit', '30'),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           pill('Devoted', '100'),
         ],
       ),
@@ -236,19 +248,19 @@ class _InvitePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardContainer.gold(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+      padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 18.w),
       child: Column(
         children: [
           Text(
             'INVITE CODE',
-            style: AppTextStyles.label.copyWith(color: AppColors.gold),
+            style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             'BRO-447',
-            style: AppTextStyles.displayLarge.copyWith(
+            style: AppTextStyles.displayLarge(context).copyWith(
               color: AppColors.goldLight,
-              fontSize: 32,
+              fontSize: 32.sp,
               letterSpacing: 4,
             ),
           ),

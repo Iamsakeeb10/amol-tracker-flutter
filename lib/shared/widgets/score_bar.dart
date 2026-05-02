@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
 
@@ -20,11 +21,11 @@ class ScoreBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final r = borderRadius ?? BorderRadius.circular(99);
+    final r = borderRadius ?? BorderRadius.circular(99.r);
     return ClipRRect(
       borderRadius: r,
       child: SizedBox(
-        height: height,
+        height: height.h,
         child: Stack(
           children: [
             Container(color: trackColor ?? AppColors.cardBorder),

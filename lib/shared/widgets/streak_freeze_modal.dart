@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
@@ -30,33 +31,33 @@ class StreakFreezeModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.r),
       child: SafeArea(
         top: false,
         child: CardContainer(
           color: AppColors.emeraldMid,
           borderColor: AppColors.goldBorder,
           radius: 24,
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24.r),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
                 child: Container(
-                  width: 36,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
+                  width: 36.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 16.h),
                   decoration: BoxDecoration(
                     color: AppColors.cardBorder,
-                    borderRadius: BorderRadius.circular(99),
+                    borderRadius: BorderRadius.circular(99.r),
                   ),
                 ),
               ),
               Center(
                 child: Container(
-                  width: 64,
-                  height: 64,
+                  width: 64.r,
+                  height: 64.r,
                   decoration: BoxDecoration(
                     color: AppColors.warningLight,
                     shape: BoxShape.circle,
@@ -64,70 +65,70 @@ class StreakFreezeModal extends StatelessWidget {
                       color: AppColors.warning.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.ac_unit,
                     color: AppColors.warning,
-                    size: 28,
+                    size: 28.r,
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14.h),
               Center(
                 child: Text(
                   'Streak Freeze',
-                  style: AppTextStyles.headlineLarge,
+                  style: AppTextStyles.headlineLarge(context),
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 "You missed yesterday. Use a streak freeze to keep your 23-day streak alive — your habit, intact.",
                 textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium,
+                style: AppTextStyles.bodyMedium(context),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 14.w,
+                  vertical: 12.h,
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.goldCard,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                   border: Border.all(color: AppColors.goldBorder),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.shield_outlined,
                       color: AppColors.gold,
-                      size: 18,
+                      size: 18.r,
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
                         'Freezes left this week',
-                        style: AppTextStyles.bodyMedium.copyWith(
+                        style: AppTextStyles.bodyMedium(context).copyWith(
                           color: AppColors.textPrimary,
                         ),
                       ),
                     ),
                     Text(
                       '$freezesLeft / $totalFreezes',
-                      style: AppTextStyles.goldNumeric.copyWith(fontSize: 18),
+                      style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 18.sp),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               SizedBox(
-                height: 48,
+                height: 48.h,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.gold,
                     foregroundColor: AppColors.emeraldDeep,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                   ),
                   onPressed: () {
@@ -136,16 +137,16 @@ class StreakFreezeModal extends StatelessWidget {
                   },
                   child: Text(
                     'Use a freeze',
-                    style: AppTextStyles.button.copyWith(
+                    style: AppTextStyles.button(context).copyWith(
                       color: AppColors.emeraldDeep,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               SizedBox(
-                height: 44,
+                height: 44.h,
                 child: TextButton(
                   onPressed: () {
                     onResetStreak?.call();
@@ -153,7 +154,7 @@ class StreakFreezeModal extends StatelessWidget {
                   },
                   child: Text(
                     'Reset streak',
-                    style: AppTextStyles.button.copyWith(
+                    style: AppTextStyles.button(context).copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),

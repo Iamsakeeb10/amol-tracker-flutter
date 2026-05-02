@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/colors.dart';
@@ -21,28 +22,28 @@ class DayDetailScreen extends StatelessWidget {
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: 22.r),
           onPressed: () => context.canPop() ? context.pop() : context.go('/history'),
         ),
-        title: Text('14 Shawwal 1447', style: AppTextStyles.headlineMedium),
+        title: Text('14 Shawwal 1447', style: AppTextStyles.headlineMedium(context)),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: EdgeInsets.only(right: 16.w),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 8.w,
+                  vertical: 4.h,
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.cardDark,
-                  borderRadius: BorderRadius.circular(99),
+                  borderRadius: BorderRadius.circular(99.r),
                   border: Border.all(color: AppColors.cardBorder),
                 ),
                 child: Text(
                   'READ-ONLY',
-                  style: AppTextStyles.label.copyWith(
-                    fontSize: 10,
+                  style: AppTextStyles.label(context).copyWith(
+                    fontSize: 10.sp,
                     color: AppColors.textMuted,
                   ),
                 ),
@@ -52,13 +53,13 @@ class DayDetailScreen extends StatelessWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 4, 0, 24),
+        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
         children: [
           Text(
             'Tuesday',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gold),
+            style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.gold),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             children: [
               Expanded(
@@ -69,7 +70,7 @@ class DayDetailScreen extends StatelessWidget {
                   icon: Icons.workspace_premium_outlined,
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: StatCard(
                   label: 'Streak that day',
@@ -80,16 +81,16 @@ class DayDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text("Amal", style: AppTextStyles.headlineMedium),
-          const SizedBox(height: 8),
+          SizedBox(height: 16.h),
+          Text("Amal", style: AppTextStyles.headlineMedium(context)),
+          SizedBox(height: 8.h),
           ...kTodayAmalEntries.map((entry) {
             final field = kAmalFields.firstWhere(
               (f) => f.id == entry.fieldId,
               orElse: () => kAmalFields.first,
             );
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: EdgeInsets.only(bottom: 8.h),
               child: AmalRow(
                 field: field,
                 done: entry.done,
@@ -98,20 +99,20 @@ class DayDetailScreen extends StatelessWidget {
               ),
             );
           }),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           CardContainer(
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.lock_outline,
                   color: AppColors.textMuted,
-                  size: 16,
+                  size: 16.r,
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
                     'Past days are locked. Stay consistent today.',
-                    style: AppTextStyles.bodyMedium,
+                    style: AppTextStyles.bodyMedium(context),
                   ),
                 ),
               ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
@@ -60,80 +61,81 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 96.h),
         children: [
           _Header(),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           _StreakBanner(streak: kCurrentUser.currentStreak),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           _ProgressCard(
             done: _doneCount,
             total: _toggles.length,
             score: _totalScore,
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           Row(
             children: [
               Expanded(
-                child: Text("Today's Amal", style: AppTextStyles.headlineMedium),
+                child: Text("Today's Amal", style: AppTextStyles.headlineMedium(context)),
               ),
               TextButton(
                 onPressed: _markAllDone,
                 child: Text(
                   'Mark all',
-                  style: AppTextStyles.button.copyWith(color: AppColors.gold),
+                  style: AppTextStyles.button(context).copyWith(color: AppColors.gold),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           ...kAmalFields.map((f) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.only(bottom: 8.h),
                 child: AmalRow(
                   field: f,
                   done: _toggles[f.id] ?? false,
                   onChanged: (v) => setState(() => _toggles[f.id] = v),
                 ),
               )),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => context.push(AppRoutes.dayComplete),
-                  icon: const Icon(Icons.check_circle_outline, size: 16),
+                  icon: Icon(Icons.check_circle_outline, size: 16.r),
                   label: const Text('Day complete'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.gold,
                     side: const BorderSide(color: AppColors.goldBorder),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               IconButton(
                 onPressed: () => StreakFreezeModal.show(context),
-                icon: const Icon(Icons.ac_unit, color: AppColors.gold),
+                icon: Icon(Icons.ac_unit, color: AppColors.gold, size: 22.r),
                 tooltip: 'Streak freeze',
                 style: IconButton.styleFrom(
                   side: const BorderSide(color: AppColors.cardBorder),
-                  padding: const EdgeInsets.all(14),
+                  padding: EdgeInsets.all(14.r),
                 ),
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: 4.w),
               IconButton(
                 onPressed: () => context.push(AppRoutes.emptyState),
-                icon: const Icon(
+                icon: Icon(
                   Icons.hourglass_empty,
                   color: AppColors.textMuted,
+                  size: 22.r,
                 ),
                 tooltip: 'Empty state preview',
                 style: IconButton.styleFrom(
                   side: const BorderSide(color: AppColors.cardBorder),
-                  padding: const EdgeInsets.all(14),
+                  padding: EdgeInsets.all(14.r),
                 ),
               ),
             ],
@@ -155,14 +157,14 @@ class _Header extends StatelessWidget {
             children: [
               Text(
                 '24 Shawwal 1447',
-                style: AppTextStyles.label.copyWith(color: AppColors.gold),
+                style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
               ),
-              const SizedBox(height: 2),
-              Text('Sunday', style: AppTextStyles.displayMedium),
+              SizedBox(height: 2.h),
+              Text('Sunday', style: AppTextStyles.displayMedium(context)),
             ],
           ),
         ),
-        const AvatarChip(
+        AvatarChip(
           initial: 'Y',
           color: AppColors.gold,
           ring: true,
@@ -181,60 +183,64 @@ class _StreakBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardContainer.gold(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 44.r,
+            height: 44.r,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: AppColors.warningLight,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.local_fire_department,
               color: AppColors.warning,
-              size: 22,
+              size: 22.r,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Text(
-                      '$streak-day streak',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontWeight: FontWeight.w600,
+                    Expanded(
+                      child: Text(
+                        '$streak-day streak',
+                        style: AppTextStyles.bodyLarge(context).copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 2.h,
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.warningLight,
-                        borderRadius: BorderRadius.circular(99),
+                        borderRadius: BorderRadius.circular(99.r),
                       ),
                       child: Text(
                         'on fire',
-                        style: AppTextStyles.pill.copyWith(
+                        style: AppTextStyles.pill(context).copyWith(
                           color: AppColors.warning,
-                          fontSize: 10,
+                          fontSize: 10.sp,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   'Best: 41 days · keep it going',
-                  style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                  style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                 ),
               ],
             ),
@@ -267,29 +273,29 @@ class _ProgressCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   "Today's progress",
-                  style: AppTextStyles.bodyMedium,
+                  style: AppTextStyles.bodyMedium(context),
                 ),
               ),
               Text(
                 '$done/$total',
-                style: AppTextStyles.goldNumeric.copyWith(fontSize: 18),
+                style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 18.sp),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           ScoreBar(value: total == 0 ? 0 : done / total),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.workspace_premium_outlined,
                 color: AppColors.gold,
-                size: 14,
+                size: 14.r,
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6.w),
               Text(
                 '$score / $kMaxDailyScore points',
-                style: AppTextStyles.bodyMedium.copyWith(
+                style: AppTextStyles.bodyMedium(context).copyWith(
                   color: AppColors.textPrimary,
                 ),
               ),

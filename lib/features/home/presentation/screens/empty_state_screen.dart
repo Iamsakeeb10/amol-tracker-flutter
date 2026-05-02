@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
@@ -15,10 +16,10 @@ class EmptyStateScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        title: Text('Welcome', style: AppTextStyles.headlineMedium),
+        title: Text('Welcome', style: AppTextStyles.headlineMedium(context)),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 24.h),
         children: [
           CardContainer.gold(
             child: Column(
@@ -26,24 +27,24 @@ class EmptyStateScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.auto_awesome,
                       color: AppColors.goldLight,
-                      size: 16,
+                      size: 16.r,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6.w),
                     Text(
                       'TODAY',
-                      style: AppTextStyles.label.copyWith(color: AppColors.gold),
+                      style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(kHadiths[0], style: AppTextStyles.bodyLarge),
+                SizedBox(height: 8.h),
+                Text(kHadiths[0], style: AppTextStyles.bodyLarge(context)),
               ],
             ),
           ),
-          const SizedBox(height: 22),
+          SizedBox(height: 22.h),
           _EmptyBlock(
             icon: Icons.event_note_outlined,
             title: 'No amal logged yet',
@@ -52,9 +53,9 @@ class EmptyStateScreen extends StatelessWidget {
             ctaLabel: "Log today's amal",
             onTap: () => context.go(AppRoutes.home),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           const Divider(),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           _EmptyBlock(
             icon: Icons.group_add_outlined,
             title: 'No friends yet',
@@ -89,44 +90,44 @@ class _EmptyBlock extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: 96,
-          height: 96,
+          width: 96.r,
+          height: 96.r,
           decoration: BoxDecoration(
             color: AppColors.cardDark,
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.cardBorder),
           ),
           alignment: Alignment.center,
-          child: Icon(icon, color: AppColors.gold, size: 36),
+          child: Icon(icon, color: AppColors.gold, size: 36.r),
         ),
-        const SizedBox(height: 14),
-        Text(title, style: AppTextStyles.headlineLarge),
-        const SizedBox(height: 6),
+        SizedBox(height: 14.h),
+        Text(title, style: AppTextStyles.headlineLarge(context)),
+        SizedBox(height: 6.h),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
           child: Text(
             body,
             textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium,
+            style: AppTextStyles.bodyMedium(context),
           ),
         ),
-        const SizedBox(height: 14),
+        SizedBox(height: 14.h),
         SizedBox(
-          height: 46,
+          height: 46.h,
           child: ElevatedButton(
             onPressed: onTap,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.gold,
               foregroundColor: AppColors.emeraldDeep,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14.r),
               ),
             ),
             child: Text(
               ctaLabel,
-              style: AppTextStyles.button.copyWith(
+              style: AppTextStyles.button(context).copyWith(
                 color: AppColors.emeraldDeep,
                 fontWeight: FontWeight.w600,
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
@@ -22,7 +23,7 @@ class HistoryScreen extends StatelessWidget {
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 100.h),
         children: [
           Row(
             children: [
@@ -32,37 +33,39 @@ class HistoryScreen extends StatelessWidget {
                   children: [
                     Text(
                       'HISTORY',
-                      style: AppTextStyles.label.copyWith(
+                      style: AppTextStyles.label(context).copyWith(
                         color: AppColors.gold,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text('Shawwal 1447', style: AppTextStyles.displayMedium),
+                    SizedBox(height: 2.h),
+                    Text('Shawwal 1447', style: AppTextStyles.displayMedium(context)),
                   ],
                 ),
               ),
               IconButton(
                 onPressed: () {},
-                icon: const Icon(
+                icon: Icon(
                   Icons.chevron_left,
                   color: AppColors.textSecondary,
+                  size: 24.r,
                 ),
               ),
               IconButton(
                 onPressed: () {},
-                icon: const Icon(
+                icon: Icon(
                   Icons.chevron_right,
                   color: AppColors.textSecondary,
+                  size: 24.r,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             '$consistency% consistency',
-            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.gold),
+            style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.gold),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Row(
             children: [
               Expanded(
@@ -73,7 +76,7 @@ class HistoryScreen extends StatelessWidget {
                   icon: Icons.check_circle_outline,
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: StatCard(
                   label: 'Best streak',
@@ -84,16 +87,16 @@ class HistoryScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           _DayLabels(),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              mainAxisSpacing: 6,
-              crossAxisSpacing: 6,
+              mainAxisSpacing: 6.h,
+              crossAxisSpacing: 6.w,
             ),
             itemCount: days.length,
             itemBuilder: (_, i) => CalendarDayCell(
@@ -101,49 +104,49 @@ class HistoryScreen extends StatelessWidget {
               onTap: () => context.push(AppRoutes.dayDetail),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           const _Legend(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           CardContainer.gold(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'INSIGHT',
-                  style: AppTextStyles.label.copyWith(color: AppColors.gold),
+                  style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
                 ),
-                const SizedBox(height: 6),
-                Text(kHadiths[1], style: AppTextStyles.bodyLarge),
+                SizedBox(height: 6.h),
+                Text(kHadiths[1], style: AppTextStyles.bodyLarge(context)),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           CardContainer(
             color: AppColors.dangerLight,
             borderColor: AppColors.danger.withValues(alpha: 0.3),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.warning_amber_outlined,
                   color: AppColors.danger,
-                  size: 18,
+                  size: 18.r,
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Weakest amal',
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontSize: 13,
+                        style: AppTextStyles.bodyLarge(context).copyWith(
+                          fontSize: 13.sp,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2.h),
                       Text(
                         'Evening Azkar — missed 8 days this month',
-                        style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                        style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                       ),
                     ],
                   ),
@@ -168,7 +171,7 @@ class _DayLabels extends StatelessWidget {
               child: Text(
                 l,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.label.copyWith(
+                style: AppTextStyles.label(context).copyWith(
                   color: AppColors.textMuted,
                 ),
               ),
@@ -182,8 +185,8 @@ class _DayLabels extends StatelessWidget {
 class _Legend extends StatelessWidget {
   const _Legend();
   Widget _dot(Color color) => Container(
-        width: 10,
-        height: 10,
+        width: 10.r,
+        height: 10.r,
         decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       );
 
@@ -192,16 +195,16 @@ class _Legend extends StatelessWidget {
     return Row(
       children: [
         _dot(AppColors.gold),
-        const SizedBox(width: 6),
-        Text('Full', style: AppTextStyles.bodySmall.copyWith(fontSize: 11)),
-        const SizedBox(width: 12),
+        SizedBox(width: 6.w),
+        Text('Full', style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp)),
+        SizedBox(width: 12.w),
         _dot(AppColors.warning),
-        const SizedBox(width: 6),
-        Text('Partial', style: AppTextStyles.bodySmall.copyWith(fontSize: 11)),
-        const SizedBox(width: 12),
+        SizedBox(width: 6.w),
+        Text('Partial', style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp)),
+        SizedBox(width: 12.w),
         _dot(AppColors.danger),
-        const SizedBox(width: 6),
-        Text('Miss', style: AppTextStyles.bodySmall.copyWith(fontSize: 11)),
+        SizedBox(width: 6.w),
+        Text('Miss', style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp)),
       ],
     );
   }

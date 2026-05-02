@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
@@ -22,7 +23,7 @@ class MoreScreen extends StatelessWidget {
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
+        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 100.h),
         children: [
           Row(
             children: [
@@ -32,24 +33,24 @@ class MoreScreen extends StatelessWidget {
                   children: [
                     Text(
                       'MORE',
-                      style: AppTextStyles.label.copyWith(
+                      style: AppTextStyles.label(context).copyWith(
                         color: AppColors.gold,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text('Account', style: AppTextStyles.displayMedium),
+                    SizedBox(height: 2.h),
+                    Text('Account', style: AppTextStyles.displayMedium(context)),
                   ],
                 ),
               ),
               IconButton(
                 onPressed: () => context.push(AppRoutes.dev),
-                icon: const Icon(Icons.bug_report_outlined),
+                icon: Icon(Icons.bug_report_outlined, size: 22.r),
                 color: AppColors.textMuted,
                 tooltip: 'Dev menu',
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           CardContainer(
             onTap: () => context.push(AppRoutes.profile),
             child: Row(
@@ -60,22 +61,22 @@ class MoreScreen extends StatelessWidget {
                   size: 44,
                   ring: true,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Yousuf Khan',
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontSize: 15,
+                        style: AppTextStyles.bodyLarge(context).copyWith(
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2.h),
                       Text(
                         'View profile',
-                        style: AppTextStyles.bodySmall.copyWith(fontSize: 11),
+                        style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                       ),
                     ],
                   ),
@@ -84,10 +85,10 @@ class MoreScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           const SectionHeader(title: 'EXPLORE'),
           CardContainer(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             child: Column(
               children: [
                 NavRow(
@@ -112,10 +113,10 @@ class MoreScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           const SectionHeader(title: 'PREFERENCES'),
           CardContainer(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             child: Column(
               children: [
                 NavRow(
@@ -133,10 +134,10 @@ class MoreScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           const SectionHeader(title: 'EMPTY / DEV'),
           CardContainer(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             child: Column(
               children: [
                 NavRow(

@@ -39,12 +39,11 @@ lib/
 ├── models/
 │   ├── user_model.dart
 │   ├── amal_log_model.dart
-│   ├── group_model.dart
 │   └── badge_model.dart
 ├── providers/
 │   ├── auth_provider.dart
 │   ├── amal_provider.dart
-│   ├── group_provider.dart
+│   ├── community_provider.dart    # Replaces group_provider
 │   ├── streak_provider.dart
 │   └── notification_provider.dart
 ├── screens/
@@ -61,12 +60,9 @@ lib/
 │   │   └── day_detail_screen.dart       # S-13
 │   ├── leaderboard/
 │   │   └── leaderboard_screen.dart      # S-03
-│   ├── friends/
-│   │   ├── friends_screen.dart          # S-05
-│   │   ├── invite_screen.dart           # S-06
-│   │   ├── friend_profile_screen.dart   # S-12
-│   │   ├── group_sheet_screen.dart      # S-11
-│   │   └── group_manage_screen.dart     # S-14
+│   ├── community/
+│   │   ├── community_sheet_screen.dart  # S-05 (NEW — replaces friends/group screens)
+│   │   └── user_profile_screen.dart     # S-12 (public profile, no friend required)
 │   ├── notifications/
 │   │   └── notifications_screen.dart    # S-07
 │   ├── profile/
@@ -80,7 +76,7 @@ lib/
 │   │   ├── amal_toggle_row.dart
 │   │   ├── streak_banner.dart
 │   │   ├── score_ring.dart
-│   │   ├── member_card.dart
+│   │   ├── community_row_card.dart      # One row in community sheet
 │   │   └── geo_background.dart         # Islamic geometric SVG bg
 │   └── modals/
 │       └── streak_freeze_modal.dart     # S-16
@@ -125,7 +121,7 @@ class AmalField {
   final String id;
   final String label;
   final int points;
-  final bool isNumeric; // true for Fard (5) and Takbir (count)
+  final bool isNumeric;
   const AmalField({required this.id, required this.label, required this.points, this.isNumeric = false});
 }
 
@@ -140,7 +136,6 @@ const List<AmalField> kAmalFields = [
   AmalField(id: 'sunnah',       label: 'Sunnah + Witr',      points: 10),
   AmalField(id: 'post_azkar',   label: 'Post-prayer Azkar',  points: 10),
 ];
-// Max score = 86 base + up to 14 for full Fard = 100 total
 ```
 
 ---
@@ -170,8 +165,10 @@ users/{uid}
   bestStreak: int
   streakFreezeUsed: bool
   lastLogDate: string (YYYY-MM-DD Hijri)
-  groupId: string | null
+  isAnonymousDisplay: bool   # if true, show as "Anonymous" in community sheet
 ```
+
+> **Note:** No `groupId` field — users are part of the global community automatically.
 
 ---
 
@@ -187,8 +184,8 @@ users/{uid}
    - Live score calculation as user taps
    - Progress bar updates in real-time
    - Streak banner at top
-   - CTA button: **"Mark all done"** → toggles all ON → shows "Submit today's log"
-   - CTA button: **"Submit today's log"** → saves to Firestore → navigates to S-10
+   - CTA: **"Mark all done"** → toggles all ON
+   - CTA: **"Submit today's log"** → saves to Firestore → navigates to S-10
 
 2. `day_complete_screen.dart`
    - Animated score ring (use `fl_chart` or custom `CustomPainter`)
@@ -219,7 +216,7 @@ int calculateScore(Map<String, dynamic> log) {
 
 - Use Hive to cache today's log locally on every toggle
 - On app launch: check Hive first, sync to Firestore when online
-- Firestore offline persistence: `FirebaseFirestore.instance.settings = Settings(persistenceEnabled: true)`
+- `FirebaseFirestore.instance.settings = Settings(persistenceEnabled: true)`
 
 ---
 
@@ -251,13 +248,93 @@ int calculateScore(Map<String, dynamic> log) {
 
 4. `streak_freeze_modal.dart`
    - Bottom sheet that appears when streak would break
-   - Shows freeze count (1 per week)
-   - "Yes, use freeze" → preserve streak, mark `streakFreezeUsed = true`
+   - "Yes, use my freeze" → preserve streak, `streakFreezeUsed = true`
    - "No, reset" → streak resets to 1
 
 ---
 
-## 🔔 Phase 5 — Notifications (Week 5)
+## 🌐 Phase 5 — Community Sheet (Week 5–6)
+
+**Screen:** S-05 (Community Sheet — core social tab)
+
+This is the public Google-Sheet-style screen. It replaces the old private group system entirely.
+
+### Firestore data model
+
+```
+amal_logs/{uid}_{hijriDate}
+  uid: string
+  displayName: string        # denormalized for fast grid reads
+  photoUrl: string           # denormalized
+  isAnonymousDisplay: bool
+  hijriDate: string          # YYYY-MM-DD
+  score: int
+  fard: bool
+  takbir: bool
+  morning_azkar: bool
+  evening_azkar: bool
+  quran: bool
+  mulk: bool
+  miswak: bool
+  sunnah: bool
+  post_azkar: bool
+  submittedAt: timestamp
+```
+
+### Build order:
+
+1. `community_sheet_screen.dart`
+
+   **Header row (sticky/frozen):**
+   - Date tabs at top — today selected by default, scroll left to view past days
+   - Column headers: Name | Fard | Takbir | M.Azkar | E.Azkar | Quran | Mulk | Miswak | Sunnah | P.Azkar | Score
+
+   **Data rows:**
+   - Query `amal_logs` for selected date, ordered by `score` descending
+   - Each row: avatar + name | ✅/❌/⏳ per column | score badge
+   - Current user's row pinned at position 1 and highlighted in gold background
+   - ⏳ = user exists but has not submitted for that day
+   - ✅ = done (green), ❌ = missed (red)
+   - Rows load with pagination (20 at a time, infinite scroll)
+
+   **Search bar:**
+   - Filter rows by display name (client-side filter on loaded data)
+
+   **Real-time listener:**
+   - Use `snapshots()` stream on `amal_logs` for today's date
+   - As users submit, their row transitions from ⏳ to live amal data
+
+   **Tap any row → navigate to `user_profile_screen.dart`**
+
+2. `user_profile_screen.dart` (public, no friendship required)
+   - User avatar, name, current streak badge
+   - Stats: today's score, best streak, all-time avg score
+   - Weekly bar chart (last 7 days)
+   - Today's amal grid (same 9 columns, read-only)
+   - **"Send Dua 🤲"** button — creates a notification in recipient's feed
+   - If viewing own profile → show edit name / privacy toggle
+
+### Widgets:
+
+```dart
+// community_row_card.dart
+class CommunityRowCard extends StatelessWidget {
+  final AmalLogModel log;     // today's log, or null if not submitted
+  final bool isCurrentUser;
+  final VoidCallback onTap;
+  // Renders one row in the sheet
+}
+```
+
+### Privacy:
+
+- Users with `isAnonymousDisplay == true` show as "Anonymous 🕌" in the sheet
+- Their data is still visible — only name/avatar is hidden
+- Toggle in Settings screen
+
+---
+
+## 🔔 Phase 6 — Notifications (Week 6)
 
 **Screens:** S-07 (Notifications), S-09/S-17 (Settings/Quiet Hours)
 
@@ -270,66 +347,38 @@ int calculateScore(Map<String, dynamic> log) {
    - Night: 10:00 PM — "Submit your amal before midnight"
 3. Streak warning: trigger at 10 PM if no log found for today
 4. Friday special: every Jumu'ah morning
-5. Quiet hours: cancel/reschedule notifications to respect window
-6. `notifications_screen.dart`: fetch notification history from Firestore
-7. `quiet_hours_screen.dart`: +/- time picker, save to user doc
+5. Smart community notifications (FCM):
+   - "X community members have already logged today 👀"
+   - "You're 2nd on the leaderboard — log now to reach 1st 🏆"
+6. Dua notification: when someone sends a dua
+7. Quiet hours: cancel/reschedule notifications to respect window
+8. `notifications_screen.dart`: fetch notification history from Firestore
+9. `quiet_hours_screen.dart`: +/- time picker, save to user doc
 
 ---
 
-## 👥 Phase 6 — Friends & Social (Week 6–7)
-
-**Screens:** S-05, S-06, S-11, S-12, S-14
-
-### Build order:
-
-1. Group creation: generate 6-char invite code, save to Firestore `groups` collection
-2. Join group: query by invite code, add uid to `members[]`
-3. `friends_screen.dart`: real-time listener on group members
-4. `group_sheet_screen.dart`: scrollable day tabs + member amal grid
-5. `invite_screen.dart`: show/copy/share invite code
-6. `friend_profile_screen.dart`: other user's stats, weekly chart, send dua
-7. `group_manage_screen.dart`: admin only — rename, remove members, delete
-
-### Firestore group document:
-
-```
-groups/{groupId}
-  name: string
-  inviteCode: string (6 chars)
-  adminUid: string
-  members: [uid1, uid2, ...]
-  createdAt: timestamp
-  groupStreak: int
-```
-
-### Dua feature:
-
-- "Send Dua" creates a Firestore notification document for that user
-- The recipient sees it in S-07 as "X sent you a dua"
-
----
-
-## 🏆 Phase 7 — Leaderboard & Profile (Week 7–8)
+## 🏆 Phase 7 — Leaderboard & Profile (Week 7)
 
 **Screens:** S-03 (Leaderboard), S-08 (Profile & Badges)
 
 ### Build order:
 
 1. `leaderboard_screen.dart`
-   - Query group members' scores for today / this week
+   - Query all `amal_logs` for today / this week, aggregate by uid
    - Sort descending by score or streak (toggle tabs)
    - Podium widget for top 3
    - Always show current user rank even if outside top 3
    - Smart nudge card: "X pts behind 2nd place"
+   - Tap any user row → `user_profile_screen.dart`
 
 2. Badge system in `badge_model.dart`:
 
 ```dart
-enum BadgeType { sevenDay, fourteenDay, thirtyDay, hundredDay, topOfGroup, perfectWeek }
+enum BadgeType { sevenDay, fourteenDay, thirtyDay, hundredDay, topOfCommunity, perfectWeek }
 ```
 
 - Check badge eligibility on every streak update
-- Unlock = add to user's `badges[]` array in Firestore
+- `topOfCommunity` = ranked #1 on global weekly leaderboard
 
 3. `profile_screen.dart`
    - Personal stats grid (streak, best streak, avg score)
@@ -342,14 +391,14 @@ enum BadgeType { sevenDay, fourteenDay, thirtyDay, hundredDay, topOfGroup, perfe
 
 ### Empty states
 
-- S-15: New user with no logs, no friends
-- Empty leaderboard (no group yet)
+- New user with no logs
+- Empty leaderboard (no logs yet today)
 - Empty notifications list
 
 ### Midnight lock
 
 - On app launch: check if today's Hijri date matches last log date
-- If log already submitted today → show read-only home with "Logged ✓"
+- If log already submitted → show read-only home with "Logged ✓"
 - No editing after submission
 
 ### Error handling
@@ -363,9 +412,11 @@ enum BadgeType { sevenDay, fourteenDay, thirtyDay, hundredDay, topOfGroup, perfe
 ```
 functions/
 ├── onLogSubmit.js      # Update streak, check badges, trigger smart notifications
-├── onMemberJoin.js     # Notify group members of new member
+├── onDuaSent.js        # Create notification doc for recipient
 └── weeklyReset.js      # Reset weekly streak freeze every Monday
 ```
+
+> **Note:** `onMemberJoin.js` removed — no group join flow anymore.
 
 ---
 
@@ -376,4 +427,21 @@ functions/
 3. Add splash screen with `flutter_native_splash`
 4. Enable ProGuard for Android
 5. Test on real devices (Android + iOS)
-6. Submit to Play Store (Android) → TestFlight (iOS)
+6. Submit to Play Store → TestFlight
+
+---
+
+## 🗑️ Removed from Original Design
+
+The following were part of the original private group system and are **no longer needed:**
+
+| Removed                                 | Reason                             |
+| --------------------------------------- | ---------------------------------- |
+| `group_model.dart`                      | No groups                          |
+| `group_provider.dart`                   | No groups                          |
+| `invite_screen.dart` (S-06)             | No invite codes                    |
+| `group_sheet_screen.dart` (S-11)        | Replaced by public community sheet |
+| `group_manage_screen.dart` (S-14)       | No group admin                     |
+| `onMemberJoin.js` Cloud Function        | No join event                      |
+| `groups/{groupId}` Firestore collection | No groups                          |
+| Invite code generation logic            | Not needed                         |

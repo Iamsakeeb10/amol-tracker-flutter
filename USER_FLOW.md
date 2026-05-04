@@ -1,6 +1,7 @@
 # 🗺️ Amol Tracker — Complete User Flow
 
 > Every screen, every navigation path, every edge case.
+> **v2.0 — Public Community Model. Private groups and invite codes removed.**
 
 ---
 
@@ -25,12 +26,14 @@ Check Firebase Auth session
     │                    │
     │              S-01b: Onboarding 2
     │                    │
-    │              S-01c: Onboarding 3 (invite friends)
+    │              S-01c: Onboarding 3 (set display name, privacy pref)
     │                    │
-    │               Create user doc
+    │               Create user doc (auto-joined to global community)
     │                    │
     └── Has session ─────┴──────────────► S-02: Home
 ```
+
+> **No invite codes. No group selection.** Every new user is automatically part of the public community.
 
 ---
 
@@ -50,7 +53,7 @@ S-02: Home Screen
     │       └── All 9 toggles turn ON → CTA changes to "Submit today's log"
     │
     ├── Tap "Submit today's log"
-    │       ├── Save to Firestore + Hive
+    │       ├── Save to Firestore amal_logs + Hive
     │       ├── Trigger streak calculation
     │       │       ├── Streak continues → increment + check badges
     │       │       ├── Streak would break + freeze available → Show S-16 Modal
@@ -61,9 +64,9 @@ S-02: Home Screen
     │       └── Navigate → S-04: History
     │
     └── Bottom nav taps
-            ├── History  → S-04
-            ├── Friends  → S-05
-            └── More     → S-09 (Settings)
+            ├── Community → S-05
+            ├── History   → S-04
+            └── More      → S-09 (Settings)
 ```
 
 ---
@@ -99,49 +102,45 @@ S-04: History / Calendar
     │                           └── Back button → S-04: History
     │
     └── Bottom nav taps
-            ├── Home     → S-02
-            ├── Friends  → S-05
-            └── More     → S-09
+            ├── Home      → S-02
+            ├── Community → S-05
+            └── More      → S-09
 ```
 
 ---
 
-## 👥 Friends Flow (S-05 → S-06 → S-11 → S-12 → S-14)
+## 🌐 Community Sheet Flow (S-05 → S-12)
+
+This is the public, open community screen — the Google Sheet for the whole app.
 
 ```
-S-05: Friends & Activity Feed
+S-05: Community Sheet Screen
     │
-    ├── Shows: Activity feed, group card, friends list
+    ├── Header: date tabs (today selected, scroll left for past days)
+    ├── Column headers: Name | 9 amal columns | Score
     │
-    ├── Tap "+ Invite" button
-    │       └── Navigate → S-06: Invite / Join Group
+    ├── Current user row → pinned at top, gold highlight
+    │
+    ├── All other users listed below, sorted by score (desc)
+    │       ├── ✅ = completed that amal
+    │       ├── ❌ = missed that amal
+    │       └── ⏳ = hasn't submitted yet today
+    │
+    ├── Tap date tab (past day)
+    │       └── Reload grid for that Hijri date (read-only, no ⏳ — everyone's status final)
+    │
+    ├── Search bar → filter visible rows by display name (client-side)
+    │
+    ├── Tap any user row
+    │       └── Navigate → S-12: User Profile
     │                           │
-    │                           ├── Copy code / Share link
-    │                           ├── Enter someone else's code → Join group
+    │                           ├── Shows: avatar, name, streak badge
+    │                           ├── Today's amal grid (read-only)
+    │                           ├── Stats: score, best streak, avg score
+    │                           ├── Weekly bar chart (last 7 days)
+    │                           ├── Tap "Send Dua 🤲" → creates notification for that user
+    │                           │       └── Confirmation: "Dua sent ✓"
     │                           └── Back → S-05
-    │
-    ├── Tap group card ("The Brothers")
-    │       └── Navigate → S-11: Group Sheet View
-    │                           │
-    │                           ├── Scroll day tabs (past days)
-    │                           ├── See all members' amal grid for selected day
-    │                           └── Back → S-05
-    │
-    ├── Tap friend name / avatar
-    │       └── Navigate → S-12: Friend Profile
-    │                           │
-    │                           ├── Shows: stats, today's amal grid, weekly chart
-    │                           ├── Tap "Send Dua" → creates notification for friend
-    │                           ├── Tap "Remove" → confirmation dialog → remove from group
-    │                           └── Back → S-05
-    │
-    ├── Tap group settings icon (admin only)
-    │       └── Navigate → S-14: Group Manage
-    │                           │
-    │                           ├── Copy/share/refresh invite code
-    │                           ├── Remove member → confirmation dialog
-    │                           ├── Edit group name
-    │                           └── Delete group → confirmation dialog → S-05 (empty)
     │
     └── Bottom nav taps → Home / History / More
 ```
@@ -153,15 +152,15 @@ S-05: Friends & Activity Feed
 ```
 S-03: Leaderboard
     │
-    ├── Shows: podium top 3, full ranked list, smart nudge card
+    ├── Shows: global podium top 3, full ranked list, smart nudge card
     │
     ├── Tap "Weekly" / "Daily" / "Streak" tabs
     │       └── Re-sort list in same screen (no navigation)
     │
-    ├── Tap any friend's row
-    │       └── Navigate → S-12: Friend Profile
+    ├── Tap any user row
+    │       └── Navigate → S-12: User Profile
     │
-    └── Bottom nav taps → Home / History / Friends / More
+    └── Bottom nav taps → Home / Community / History / More
 ```
 
 ---
@@ -172,19 +171,22 @@ S-03: Leaderboard
 Notification received (system tray)
     │
     ├── Tap "Log your amal" type notification
-    │       └── Deep link → S-02: Home (logging screen)
+    │       └── Deep link → S-02: Home
     │
     ├── Tap "Streak warning" notification
     │       └── Deep link → S-02: Home
     │
-    └── Tap "Friend activity" notification
-            └── Deep link → S-05: Friends
+    ├── Tap "Community activity" notification
+    │       └── Deep link → S-05: Community Sheet
+    │
+    └── Tap "Dua received" notification
+            └── Deep link → S-07: Notifications
 
 S-07: Notifications Screen
     │
     ├── Shows: unread (gold dot) vs read notifications
     ├── Tap "Mark all read" → clears gold dots
-    └── Bottom nav taps → Home / History / Friends / More
+    └── Bottom nav taps → Home / Community / History / More
 ```
 
 ---
@@ -192,15 +194,21 @@ S-07: Notifications Screen
 ## 👤 Profile & Badges Flow (S-08)
 
 ```
-S-08: Profile
+S-08: Profile (own profile)
     │
     ├── Shows: avatar, name, streak pill, 3-stat grid,
     │         weekly bar chart, badge grid
     │
+    ├── Tap "Edit display name"
+    │       └── Inline text field → save to Firestore user doc
+    │
+    ├── Toggle "Show as Anonymous in community"
+    │       └── Updates isAnonymousDisplay in Firestore
+    │
     ├── Tap locked badge
     │       └── Show tooltip: "Complete X days to unlock"
     │
-    └── Bottom nav → More tab (access via Settings)
+    └── Bottom nav → More tab
 ```
 
 ---
@@ -210,7 +218,7 @@ S-08: Profile
 ```
 S-09: Settings
     │
-    ├── Notification toggles (morning, evening, streak, friends)
+    ├── Notification toggles (morning, evening, streak, community)
     │       └── Toggle ON/OFF → schedule/cancel local notifications
     │
     ├── Tap "Quiet hours"
@@ -221,13 +229,10 @@ S-09: Settings
     │                           ├── Tap "Save quiet hours" → save + back
     │                           └── Back → S-09
     │
-    ├── Privacy toggles
-    │       └── Toggle → update Firestore user doc
+    ├── Privacy toggle: "Show as Anonymous in community"
+    │       └── Toggle → update Firestore isAnonymousDisplay field
     │
-    ├── Calendar type → Hijri (default, no change needed for now)
-    │
-    ├── Ramadan mode toggle
-    │       └── When ON → unlock extra amal fields (Phase 3)
+    ├── Ramadan mode toggle (Phase 3)
     │
     └── Sign out
             └── Confirmation dialog → Firebase Auth sign out → S-00
@@ -247,7 +252,7 @@ S-16: Streak Freeze Modal (bottom sheet)
     │
     ├── Tap "Yes, use my freeze"
     │       ├── streak stays the same
-    │       ├── streakFreezeUsed = true (resets next Monday via Cloud Function)
+    │       ├── streakFreezeUsed = true
     │       └── Navigate → S-10: Day Complete
     │
     └── Tap "No, reset my streak"
@@ -260,27 +265,30 @@ S-16: Streak Freeze Modal (bottom sheet)
 ## 🆕 New User Empty State Flow (S-15)
 
 ```
-S-02: Home (new user, no log, no friends)
+S-02: Home (new user, no log)
     │
-    ├── Shows: welcome hadith, empty log prompt, empty friends prompt
+    ├── Shows: welcome hadith, empty log prompt
     │
-    ├── Tap "Log today's amal"
-    │       └── Scroll down to reveal amal toggles (same screen, animated)
+    └── Tap "Log today's amal"
+            └── Scroll down to reveal amal toggles (same screen, animated)
+
+S-05: Community Sheet (new user, no log yet today)
     │
-    └── Tap "Invite friends"
-            └── Navigate → S-06: Invite / Join Group
+    └── Current user row shows ⏳ with "Log today to appear here" hint
 ```
 
 ---
 
 ## 📱 Bottom Navigation Map
 
-| Tab     | Icon     | Routes accessible            |
-| ------- | -------- | ---------------------------- |
-| Home    | House    | S-02, S-10                   |
-| History | Calendar | S-04, S-13                   |
-| Friends | People   | S-05, S-06, S-11, S-12, S-14 |
-| More    | Menu     | S-07, S-08, S-09, S-17       |
+| Tab       | Icon        | Routes accessible            |
+| --------- | ----------- | ---------------------------- |
+| Home      | House       | S-02, S-10                   |
+| Community | Grid/people | S-05, S-12                   |
+| History   | Calendar    | S-04, S-13                   |
+| More      | Menu        | S-03, S-07, S-08, S-09, S-17 |
+
+> **Note:** Community tab replaces the old Friends tab. Leaderboard (S-03) is accessible from More menu.
 
 ---
 
@@ -290,7 +298,7 @@ S-02: Home (new user, no log, no friends)
 | -------------------- | --------------------- |
 | "Log today's amal"   | `/home`               |
 | "Streak warning"     | `/home`               |
-| "Friend completed"   | `/friends`            |
+| "Community activity" | `/community`          |
 | "Leaderboard change" | `/leaderboard`        |
 | "Dua received"       | `/notifications`      |
 | "Badge unlocked"     | `/profile`            |
@@ -299,23 +307,33 @@ S-02: Home (new user, no log, no friends)
 
 ## 🔒 Screen Access Rules
 
-| Screen               | Requires auth        | Requires group | Admin only  |
-| -------------------- | -------------------- | -------------- | ----------- |
-| S-00 Sign in         | No                   | No             | No          |
-| S-01a/b/c Onboarding | Yes (just signed in) | No             | No          |
-| S-02 Home            | Yes                  | No             | No          |
-| S-03 Leaderboard     | Yes                  | Yes            | No          |
-| S-04 History         | Yes                  | No             | No          |
-| S-05 Friends         | Yes                  | No             | No          |
-| S-06 Invite          | Yes                  | No             | No          |
-| S-07 Notifications   | Yes                  | No             | No          |
-| S-08 Profile         | Yes                  | No             | No          |
-| S-09 Settings        | Yes                  | No             | No          |
-| S-10 Day Complete    | Yes                  | No             | No          |
-| S-11 Group Sheet     | Yes                  | Yes            | No          |
-| S-12 Friend Profile  | Yes                  | Yes            | No          |
-| S-13 Day Detail      | Yes                  | No             | No          |
-| S-14 Group Manage    | Yes                  | Yes            | Yes (admin) |
-| S-15 Empty State     | Yes                  | No             | No          |
-| S-16 Freeze Modal    | Yes                  | No             | No          |
-| S-17 Quiet Hours     | Yes                  | No             | No          |
+| Screen               | Requires auth        | Notes                                |
+| -------------------- | -------------------- | ------------------------------------ |
+| S-00 Sign in         | No                   | —                                    |
+| S-01a/b/c Onboarding | Yes (just signed in) | New users only                       |
+| S-02 Home            | Yes                  | —                                    |
+| S-03 Leaderboard     | Yes                  | Global, no group required            |
+| S-04 History         | Yes                  | —                                    |
+| S-05 Community Sheet | Yes                  | All users visible, no group required |
+| S-07 Notifications   | Yes                  | —                                    |
+| S-08 Profile         | Yes                  | —                                    |
+| S-09 Settings        | Yes                  | —                                    |
+| S-10 Day Complete    | Yes                  | —                                    |
+| S-12 User Profile    | Yes                  | Any user's public profile            |
+| S-13 Day Detail      | Yes                  | —                                    |
+| S-15 Empty State     | Yes                  | —                                    |
+| S-16 Freeze Modal    | Yes                  | —                                    |
+| S-17 Quiet Hours     | Yes                  | —                                    |
+
+---
+
+## 🗑️ Screens Removed vs Original Design
+
+| Removed Screen           | Was                               | Why                                     |
+| ------------------------ | --------------------------------- | --------------------------------------- |
+| S-06 Invite / Join Group | Invite code entry + sharing       | No groups — everyone is auto-joined     |
+| S-11 Group Sheet View    | Private group amal grid           | Replaced by public S-05 Community Sheet |
+| S-14 Group Manage        | Admin: rename/remove/delete group | No groups to manage                     |
+
+> **S-05 in this document = Community Sheet** (previously Friends & Activity Feed).
+> **S-12 in this document = Public User Profile** (previously Friend Profile, but now requires no friendship).

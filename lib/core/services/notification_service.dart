@@ -17,6 +17,8 @@ class NotificationService {
   static final NotificationService instance = NotificationService._();
 
   static const String notifMorningKey = 'notif_morning';
+  static const String notifMorningHourKey = 'notif_morning_hour';
+  static const String notifMorningMinuteKey = 'notif_morning_min';
   static const String notifEveningKey = 'notif_evening';
   static const String notifStreakKey = 'notif_streak';
   static const String notifCommunityKey = 'notif_community';
@@ -45,8 +47,7 @@ class NotificationService {
     }
 
     tz_data.initializeTimeZones();
-    // Product docs target Bangladesh users; enforce Dhaka timezone for schedules.
-    tz.setLocalLocation(tz.getLocation('Asia/Dhaka'));
+    await _configureLocalTimezone();
 
     const settings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
@@ -103,7 +104,6 @@ class NotificationService {
     if (user == null) return;
     final token = await _messaging.getToken();
     if (token == null || token.isEmpty) return;
-    await FirebaseAuth.instance.currentUser?.getIdToken(true);
     // Keep token synced on user doc for Cloud Function push targeting.
     await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
       'fcmToken': token,
@@ -160,6 +160,12 @@ class NotificationService {
     await scheduleAll();
   }
 
+  Future<void> setMorningTime(TimeOfDay value) async {
+    await LocalStorageService.setPref(notifMorningHourKey, value.hour);
+    await LocalStorageService.setPref(notifMorningMinuteKey, value.minute);
+    await scheduleAll();
+  }
+
   Future<void> setEveningEnabled(bool enabled) async {
     await LocalStorageService.setPref(notifEveningKey, enabled);
     await scheduleAll();
@@ -181,6 +187,10 @@ class NotificationService {
 
   bool get isMorningEnabled =>
       LocalStorageService.getPref<bool>(notifMorningKey, true);
+  TimeOfDay get morningTime => TimeOfDay(
+    hour: LocalStorageService.getPref<int>(notifMorningHourKey, 6),
+    minute: LocalStorageService.getPref<int>(notifMorningMinuteKey, 0),
+  );
   bool get isEveningEnabled =>
       LocalStorageService.getPref<bool>(notifEveningKey, true);
   bool get isStreakEnabled =>
@@ -228,13 +238,22 @@ class NotificationService {
   }
 
   Future<void> _scheduleMorning() async {
-    const at = TimeOfDay(hour: 6, minute: 0);
+    final at = morningTime;
     if (_isSuppressedByQuietHours(at)) return;
+    if (_isCurrentMinute(at)) {
+      await _localNotifications.show(
+        id: _morningId + 100000,
+        title: 'Morning notification',
+        body: 'Start your day with today\'s amal.',
+        notificationDetails: _notificationDetails(payload: AppRoutes.home),
+        payload: AppRoutes.home,
+      );
+    }
     await _safeZonedSchedule(
       id: _morningId,
       title: 'Morning notification',
       body: 'Start your day with today\'s amal.',
-      scheduledDate: _nextInstance(at),
+      scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
     );
@@ -247,7 +266,7 @@ class NotificationService {
       id: _eveningId,
       title: 'Evening notification',
       body: 'Don\'t miss your evening azkar and Quran.',
-      scheduledDate: _nextInstance(at),
+      scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
     );
@@ -261,7 +280,7 @@ class NotificationService {
       title: 'Streak warning',
       body:
           'If you have not logged today yet, submit now to keep your streak alive.',
-      scheduledDate: _nextInstance(at),
+      scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
     );
@@ -301,6 +320,46 @@ class NotificationService {
     );
   }
 
+  Future<void> showDebugNotificationNow() async {
+    await _localNotifications.show(
+      id: 99999,
+      title: 'Debug notification',
+      body: 'Instant local notification test.',
+      notificationDetails: _notificationDetails(
+        payload: AppRoutes.notifications,
+      ),
+      payload: AppRoutes.notifications,
+    );
+  }
+
+  Future<void> _configureLocalTimezone() async {
+    try {
+      final timezoneName = _getLocalTimeZone();
+      tz.setLocalLocation(tz.getLocation(timezoneName));
+    } catch (_) {
+      // Fallback ensures scheduling still works if timezone lookup fails.
+      tz.setLocalLocation(tz.getLocation('UTC'));
+    }
+  }
+
+  String _getLocalTimeZone() {
+    final now = DateTime.now();
+    final offsetHours = now.timeZoneOffset.inHours;
+    const timezoneMap = <int, String>{
+      -8: 'America/Los_Angeles',
+      -7: 'America/Denver',
+      -6: 'America/Chicago',
+      -5: 'America/New_York',
+      0: 'Europe/London',
+      1: 'Europe/Paris',
+      5: 'Asia/Karachi',
+      6: 'Asia/Dhaka',
+      8: 'Asia/Shanghai',
+      9: 'Asia/Tokyo',
+    };
+    return timezoneMap[offsetHours] ?? 'UTC';
+  }
+
   NotificationDetails _notificationDetails({required String payload}) {
     return NotificationDetails(
       android: AndroidNotificationDetails(
@@ -314,7 +373,32 @@ class NotificationService {
     );
   }
 
+  bool _isCurrentMinute(TimeOfDay time) {
+    final now = tz.TZDateTime.now(tz.local);
+    return now.hour == time.hour && now.minute == time.minute;
+  }
+
   tz.TZDateTime _nextInstance(TimeOfDay time) {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      time.hour,
+      time.minute,
+    );
+    // Grace window for "set time to current minute" testing:
+    // if selected minute is only slightly in the past (< 1 minute),
+    // keep today's schedule instead of pushing to tomorrow.
+    final lag = now.difference(scheduled);
+    if (lag >= const Duration(minutes: 1)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+    return scheduled;
+  }
+
+  tz.TZDateTime _nextInstanceForRecurring(TimeOfDay time) {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(
       tz.local,

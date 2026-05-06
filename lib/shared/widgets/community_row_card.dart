@@ -37,38 +37,31 @@ class CommunityHeaderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: RawScrollbar(
+    return CardContainer(
+      color: AppColors.cardDark,
+      borderColor: AppColors.cardBorder,
+      padding: EdgeInsets.zero,
+      radius: AppRadius.md,
+      child: SingleChildScrollView(
         controller: horizontalController,
-        thumbVisibility: true,
-        trackVisibility: true,
-        thickness: 6.w,
-        radius: Radius.zero,
-        child: SingleChildScrollView(
-          controller: horizontalController,
-          scrollDirection: Axis.horizontal,
-          clipBehavior: Clip.hardEdge,
-          child: SizedBox(
-            width: kCommunityScrollableGridWidth.w,
-            child: Row(
-              children: [
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.hardEdge,
+        child: SizedBox(
+          width: kCommunityScrollableGridWidth.w,
+          child: Row(
+            children: [
+              _HeaderCell(
+                text: 'Name',
+                width: kCommunityNameColWidth,
+                align: TextAlign.left,
+              ),
+              for (final col in kCommunityColumns)
                 _HeaderCell(
-                  text: 'Name',
-                  width: kCommunityNameColWidth,
-                  align: TextAlign.left,
+                  text: col.label,
+                  width: kCommunityAmalColWidth,
                 ),
-                for (final col in kCommunityColumns)
-                  _HeaderCell(
-                    text: col.label,
-                    width: kCommunityAmalColWidth,
-                  ),
-                _HeaderCell(text: 'Score', width: kCommunityScoreColWidth),
-              ],
-            ),
+              _HeaderCell(text: 'Score', width: kCommunityScoreColWidth),
+            ],
           ),
         ),
       ),
@@ -114,7 +107,7 @@ class CommunityRowCard extends StatelessWidget {
       color: rowColor,
       borderColor: rowBorder,
       padding: EdgeInsets.zero,
-      radius: 0,
+      radius: AppRadius.md,
       child: SingleChildScrollView(
         controller: horizontalController,
         scrollDirection: Axis.horizontal,
@@ -164,7 +157,7 @@ class _HeaderCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width.w,
-      height: 40.h,
+      height: 46.h,
       padding: EdgeInsets.symmetric(horizontal: 8.w),
       alignment: align == TextAlign.left ? Alignment.centerLeft : Alignment.center,
       decoration: const BoxDecoration(

@@ -289,11 +289,16 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                   SliverPersistentHeader(
                                     pinned: true,
                                     delegate: _StickyHeaderDelegate(
-                                      minHeight: 52.h,
-                                      maxHeight: 52.h,
-                                      child: CommunityHeaderRow(
-                                        horizontalController:
-                                            _headerHorizontalController,
+                                      minHeight: 46.h,
+                                      maxHeight: 46.h,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                          AppRadius.md.r,
+                                        ),
+                                        child: CommunityHeaderRow(
+                                          horizontalController:
+                                              _headerHorizontalController,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -653,10 +658,7 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return ColoredBox(
-      color: AppColors.emeraldDeep,
-      child: SizedBox.expand(child: child),
-    );
+    return SizedBox.expand(child: child);
   }
 
   @override

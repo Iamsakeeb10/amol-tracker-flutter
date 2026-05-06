@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
@@ -31,6 +32,7 @@ class NotificationService {
   static const int _eveningId = 630;
   static const int _streakId = 2200;
   static const int _jumuahId = 800;
+  static const int _minuteTestBaseId = 90000;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -54,7 +56,7 @@ class NotificationService {
       iOS: DarwinInitializationSettings(),
     );
     await _localNotifications.initialize(
-      settings: settings,
+      settings,
       onDidReceiveNotificationResponse: _onLocalResponse,
     );
     await _ensureLocalNotificationPermission();
@@ -138,6 +140,7 @@ class NotificationService {
 
     if (android != null) {
       await android.requestNotificationsPermission();
+      await android.requestExactAlarmsPermission();
     }
     if (ios != null) {
       await ios.requestPermissions(alert: true, badge: true, sound: true);
@@ -149,10 +152,10 @@ class NotificationService {
   }
 
   Future<void> cancelLocalSchedules() async {
-    await _localNotifications.cancel(id: _morningId);
-    await _localNotifications.cancel(id: _eveningId);
-    await _localNotifications.cancel(id: _streakId);
-    await _localNotifications.cancel(id: _jumuahId);
+    await _localNotifications.cancel(_morningId);
+    await _localNotifications.cancel(_eveningId);
+    await _localNotifications.cancel(_streakId);
+    await _localNotifications.cancel(_jumuahId);
   }
 
   Future<void> setMorningEnabled(bool enabled) async {
@@ -242,10 +245,10 @@ class NotificationService {
     if (_isSuppressedByQuietHours(at)) return;
     if (_isCurrentMinute(at)) {
       await _localNotifications.show(
-        id: _morningId + 100000,
-        title: 'Morning notification',
-        body: 'Start your day with today\'s amal.',
-        notificationDetails: _notificationDetails(payload: AppRoutes.home),
+        _morningId + 100000,
+        'Morning notification',
+        'Start your day with today\'s amal.',
+        _notificationDetails(payload: AppRoutes.home),
         payload: AppRoutes.home,
       );
     }
@@ -309,27 +312,84 @@ class NotificationService {
   }) async {
     final details = _notificationDetails(payload: payload);
     await _localNotifications.zonedSchedule(
-      id: id,
-      title: title,
-      body: body,
-      scheduledDate: scheduledDate,
-      notificationDetails: details,
+      id,
+      title,
+      body,
+      scheduledDate,
+      details,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: matchDateTimeComponents,
-      // Use inexact mode for broad device compatibility without exact scheduling permission.
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 
   Future<void> showDebugNotificationNow() async {
     await _localNotifications.show(
-      id: 99999,
-      title: 'Debug notification',
-      body: 'Instant local notification test.',
-      notificationDetails: _notificationDetails(
-        payload: AppRoutes.notifications,
-      ),
+      99999,
+      'Debug notification',
+      'Instant local notification test.',
+      _notificationDetails(payload: AppRoutes.notifications),
       payload: AppRoutes.notifications,
     );
+  }
+
+  Future<void> scheduleEveryMinuteForTesting({int totalMinutes = 15}) async {
+    final boundedMinutes = totalMinutes.clamp(1, 120);
+    await cancelEveryMinuteTesting();
+    final now = tz.TZDateTime.now(tz.local);
+    final firstTick = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      now.hour,
+      now.minute,
+    ).add(const Duration(minutes: 1));
+    debugPrint(
+      '[NotificationTest] Scheduling $boundedMinutes notifications from ${now.toIso8601String()} (first tick: ${firstTick.toIso8601String()})',
+    );
+    for (var i = 1; i <= boundedMinutes; i++) {
+      final scheduledDate = firstTick.add(Duration(minutes: i - 1));
+      final id = _minuteTestBaseId + i;
+      try {
+        await _localNotifications.zonedSchedule(
+          id,
+          'Minute test #$i',
+          'Scheduled for ${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}',
+          scheduledDate,
+          _notificationDetails(payload: AppRoutes.notifications),
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        );
+      } on PlatformException catch (e) {
+        if (e.code != 'exact_alarms_not_permitted') rethrow;
+        debugPrint(
+          '[NotificationTest] Exact alarms not permitted, falling back to inexact for id=$id',
+        );
+        await _localNotifications.zonedSchedule(
+          id,
+          'Minute test #$i',
+          'Scheduled for ${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}',
+          scheduledDate,
+          _notificationDetails(payload: AppRoutes.notifications),
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        );
+      }
+      debugPrint(
+        '[NotificationTest] Scheduled id=$id at ${scheduledDate.toIso8601String()}',
+      );
+    }
+  }
+
+  Future<void> cancelEveryMinuteTesting() async {
+    for (var i = 1; i <= 120; i++) {
+      await _localNotifications.cancel(_minuteTestBaseId + i);
+    }
+    debugPrint('[NotificationTest] Cancelled all minute-test schedules');
   }
 
   Future<void> _configureLocalTimezone() async {
@@ -424,6 +484,7 @@ class NotificationService {
 
   void _onLocalResponse(NotificationResponse response) {
     final payload = response.payload;
+    debugPrint('[NotificationTest] Notification tapped payload=$payload');
     if (payload == null || payload.isEmpty) return;
     _dispatchDeepLink(payload);
   }

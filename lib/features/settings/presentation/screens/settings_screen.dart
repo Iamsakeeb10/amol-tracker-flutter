@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../providers/auth_provider.dart';
@@ -56,6 +57,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await ref.read(authServiceProvider).signOut();
     if (!mounted) return;
     context.go(AppRoutes.signIn);
+  }
+
+  Future<void> _runMinuteNotificationTest() async {
+    await NotificationService.instance.scheduleEveryMinuteForTesting(
+      totalMinutes: 10,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Scheduled notification test for next 10 minutes'),
+      ),
+    );
+  }
+
+  Future<void> _cancelMinuteNotificationTest() async {
+    await NotificationService.instance.cancelEveryMinuteTesting();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Cancelled minute notification test')),
+    );
+  }
+
+  Future<void> _showInstantDebugNotification() async {
+    await NotificationService.instance.showDebugNotificationNow();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sent instant debug notification')),
+    );
   }
 
   @override
@@ -170,6 +199,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: 'Sign out',
                   destructiveColor: AppColors.danger,
                   onTap: _confirmSignOut,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16.h),
+          const SectionHeader(title: 'DEBUG'),
+          CardContainer(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+            child: Column(
+              children: [
+                NavRow(
+                  icon: Icons.notification_add_outlined,
+                  title: 'Send instant debug notification',
+                  onTap: _showInstantDebugNotification,
+                ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.bug_report_outlined,
+                  title: 'Start 1-minute notification test',
+                  trailing: '10m',
+                  onTap: _runMinuteNotificationTest,
+                ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.stop_circle_outlined,
+                  title: 'Cancel 1-minute notification test',
+                  onTap: _cancelMinuteNotificationTest,
                 ),
               ],
             ),

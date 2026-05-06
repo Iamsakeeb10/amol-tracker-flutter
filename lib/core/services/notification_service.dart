@@ -33,14 +33,13 @@ class NotificationService {
   static const int _eveningId = 630;
   static const int _streakId = 2200;
   static const int _jumuahId = 800;
-  static const int _minuteTestBaseId = 90000;
+
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
   bool _initialized = false;
   StreamSubscription<String>? _onTokenRefreshSub;
-  Timer? _minuteTestMonitorTimer;
   void Function(String route)? _onDeepLink;
 
   Future<void> initialize({void Function(String route)? onDeepLink}) async {
@@ -101,8 +100,6 @@ class NotificationService {
   Future<void> dispose() async {
     await _onTokenRefreshSub?.cancel();
     _onTokenRefreshSub = null;
-    _minuteTestMonitorTimer?.cancel();
-    _minuteTestMonitorTimer = null;
   }
 
   Future<void> _syncFcmToken() async {
@@ -110,7 +107,6 @@ class NotificationService {
     if (user == null) return;
     final token = await _messaging.getToken();
     if (token == null || token.isEmpty) return;
-    // Keep token synced on user doc for Cloud Function push targeting.
     await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
       'fcmToken': token,
     });
@@ -143,19 +139,11 @@ class NotificationService {
         >();
 
     if (android != null) {
-      final notifGranted = await android.requestNotificationsPermission();
-      final exactGranted = await android.requestExactAlarmsPermission();
-      debugPrint(
-        '[NotificationTest] Android permission -> notifications=$notifGranted, exactAlarms=$exactGranted',
-      );
+      await android.requestNotificationsPermission();
+      await android.requestExactAlarmsPermission();
     }
     if (ios != null) {
-      final iosGranted = await ios.requestPermissions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-      debugPrint('[NotificationTest] iOS permission -> notifications=$iosGranted');
+      await ios.requestPermissions(alert: true, badge: true, sound: true);
     }
   }
 
@@ -323,182 +311,33 @@ class NotificationService {
     required DateTimeComponents matchDateTimeComponents,
   }) async {
     final details = _notificationDetails(payload: payload);
-    await _localNotifications.zonedSchedule(
-      id,
-      title,
-      body,
-      scheduledDate,
-      details,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: matchDateTimeComponents,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-    );
-  }
-
-  Future<void> showDebugNotificationNow() async {
-    await _localNotifications.show(
-      99999,
-      'Debug notification',
-      'Instant local notification test.',
-      _notificationDetails(payload: AppRoutes.notifications),
-      payload: AppRoutes.notifications,
-    );
-  }
-
-  Future<void> scheduleQuickTestInSeconds({
-    int seconds = 30,
-    AndroidScheduleMode mode = AndroidScheduleMode.alarmClock,
-  }) async {
-    final safeSeconds = seconds.clamp(5, 600);
-    final now = tz.TZDateTime.now(tz.local);
-    final scheduledDate = now.add(Duration(seconds: safeSeconds));
-    const id = _minuteTestBaseId + 999;
-    await _localNotifications.cancel(id);
-    debugPrint(
-      '[NotificationTest] Quick test scheduling -> id=$id now=${now.toIso8601String()} target=${scheduledDate.toIso8601String()} (+${safeSeconds}s) mode=$mode',
-    );
     try {
       await _localNotifications.zonedSchedule(
         id,
-        'Quick test',
-        'Should fire ~${safeSeconds}s after start ($mode)',
+        title,
+        body,
         scheduledDate,
-        _notificationDetails(payload: AppRoutes.notifications),
+        details,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
-        androidScheduleMode: mode,
+        matchDateTimeComponents: matchDateTimeComponents,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
-      debugPrint('[NotificationTest] Quick test scheduled id=$id mode=$mode');
     } on PlatformException catch (e) {
+      // Fall back to inexact when the OS denies exact-alarm permission so
+      // scheduling never fails outright.
       if (e.code != 'exact_alarms_not_permitted') rethrow;
-      debugPrint(
-        '[NotificationTest] Quick test exact denied (${e.code}): ${e.message}; falling back to inexact',
-      );
       await _localNotifications.zonedSchedule(
         id,
-        'Quick test',
-        'Should fire ~${safeSeconds}s after start (inexact)',
+        title,
+        body,
         scheduledDate,
-        _notificationDetails(payload: AppRoutes.notifications),
+        details,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: matchDateTimeComponents,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       );
-    }
-  }
-
-  Future<bool?> requestExactAlarmsPermission() async {
-    final android = _localNotifications
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-    final granted = await android?.requestExactAlarmsPermission();
-    debugPrint('[NotificationTest] Exact alarm permission requested -> $granted');
-    return granted;
-  }
-
-  Future<void> scheduleEveryMinuteForTesting({int totalMinutes = 15}) async {
-    final boundedMinutes = totalMinutes.clamp(1, 120);
-    await cancelEveryMinuteTesting();
-    final now = tz.TZDateTime.now(tz.local);
-    final firstTick = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      now.hour,
-      now.minute,
-    ).add(const Duration(minutes: 1));
-    debugPrint(
-      '[NotificationTest] Scheduling $boundedMinutes notifications from ${now.toIso8601String()} (first tick: ${firstTick.toIso8601String()})',
-    );
-    for (var i = 1; i <= boundedMinutes; i++) {
-      final scheduledDate = firstTick.add(Duration(minutes: i - 1));
-      final id = _minuteTestBaseId + i;
-      debugPrint(
-        '[NotificationTest] Attempt schedule -> id=$id target=${scheduledDate.toIso8601String()} mode=alarmClock',
-      );
-      try {
-        await _localNotifications.zonedSchedule(
-          id,
-          'Minute test #$i',
-          'Scheduled for ${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}',
-          scheduledDate,
-          _notificationDetails(payload: AppRoutes.notifications),
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-          androidScheduleMode: AndroidScheduleMode.alarmClock,
-        );
-      } on PlatformException catch (e) {
-        if (e.code != 'exact_alarms_not_permitted') rethrow;
-        debugPrint(
-          '[NotificationTest] alarmClock denied for id=$id (${e.code}): ${e.message}',
-        );
-        debugPrint(
-          '[NotificationTest] Fallback schedule -> id=$id mode=inexactAllowWhileIdle',
-        );
-        await _localNotifications.zonedSchedule(
-          id,
-          'Minute test #$i',
-          'Scheduled for ${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}',
-          scheduledDate,
-          _notificationDetails(payload: AppRoutes.notifications),
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        );
-      } catch (e) {
-        debugPrint('[NotificationTest] Failed to schedule id=$id error=$e');
-        rethrow;
-      }
-      debugPrint(
-        '[NotificationTest] Scheduled id=$id at ${scheduledDate.toIso8601String()}',
-      );
-    }
-    final pending = await _localNotifications.pendingNotificationRequests();
-    debugPrint('[NotificationTest] Pending scheduled count=${pending.length}');
-    for (final item in pending.where((n) => n.id >= _minuteTestBaseId)) {
-      debugPrint('[NotificationTest] Pending item id=${item.id} title=${item.title}');
-    }
-  }
-
-  Future<void> cancelEveryMinuteTesting() async {
-    for (var i = 1; i <= 120; i++) {
-      await _localNotifications.cancel(_minuteTestBaseId + i);
-    }
-    debugPrint('[NotificationTest] Cancelled all minute-test schedules');
-  }
-
-  Future<void> startMinuteTestMonitor({int intervalSeconds = 10}) async {
-    final safeInterval = intervalSeconds.clamp(5, 60);
-    await stopMinuteTestMonitor();
-    debugPrint(
-      '[NotificationTest] Starting pending monitor every ${safeInterval}s',
-    );
-    await _logMinutePendingSnapshot();
-    _minuteTestMonitorTimer = Timer.periodic(
-      Duration(seconds: safeInterval),
-      (_) => _logMinutePendingSnapshot(),
-    );
-  }
-
-  Future<void> stopMinuteTestMonitor() async {
-    _minuteTestMonitorTimer?.cancel();
-    _minuteTestMonitorTimer = null;
-    debugPrint('[NotificationTest] Stopped pending monitor');
-  }
-
-  Future<void> _logMinutePendingSnapshot() async {
-    final pending = await _localNotifications.pendingNotificationRequests();
-    final minutePending = pending.where((n) => n.id >= _minuteTestBaseId).toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
-    final now = tz.TZDateTime.now(tz.local);
-    debugPrint(
-      '[NotificationTest] Monitor tick at ${now.toIso8601String()} minutePending=${minutePending.length}',
-    );
-    for (final item in minutePending) {
-      debugPrint('[NotificationTest] Monitor pending id=${item.id} title=${item.title}');
     }
   }
 
@@ -506,28 +345,19 @@ class NotificationService {
     try {
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));
-      debugPrint(
-        '[NotificationTest] Timezone set from device -> ${timezoneInfo.identifier}',
-      );
       return;
     } catch (e) {
-      debugPrint(
-        '[NotificationTest] FlutterTimezone failed ($e), falling back to offset map',
-      );
+      debugPrint('NotificationService: FlutterTimezone failed -> $e');
     }
     try {
-      final timezoneName = _getLocalTimeZone();
-      tz.setLocalLocation(tz.getLocation(timezoneName));
-      debugPrint('[NotificationTest] Timezone set from offset map -> $timezoneName');
+      tz.setLocalLocation(tz.getLocation(_offsetMapTimeZone()));
     } catch (_) {
       tz.setLocalLocation(tz.getLocation('UTC'));
-      debugPrint('[NotificationTest] Timezone fallback -> UTC');
     }
   }
 
-  String _getLocalTimeZone() {
-    final now = DateTime.now();
-    final offsetHours = now.timeZoneOffset.inHours;
+  String _offsetMapTimeZone() {
+    final offsetHours = DateTime.now().timeZoneOffset.inHours;
     const timezoneMap = <int, String>{
       -8: 'America/Los_Angeles',
       -7: 'America/Denver',
@@ -585,9 +415,6 @@ class NotificationService {
       time.hour,
       time.minute,
     );
-    // Grace window for "set time to current minute" testing:
-    // if selected minute is only slightly in the past (< 1 minute),
-    // keep today's schedule instead of pushing to tomorrow.
     final lag = now.difference(scheduled);
     if (lag >= const Duration(minutes: 1)) {
       scheduled = scheduled.add(const Duration(days: 1));
@@ -621,7 +448,6 @@ class NotificationService {
 
   void _onLocalResponse(NotificationResponse response) {
     final payload = response.payload;
-    debugPrint('[NotificationTest] Notification tapped payload=$payload');
     if (payload == null || payload.isEmpty) return;
     _dispatchDeepLink(payload);
   }

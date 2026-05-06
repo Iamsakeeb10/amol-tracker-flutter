@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
-import '../../../../core/services/notification_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../providers/auth_provider.dart';
@@ -57,67 +56,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await ref.read(authServiceProvider).signOut();
     if (!mounted) return;
     context.go(AppRoutes.signIn);
-  }
-
-  Future<void> _runMinuteNotificationTest() async {
-    await NotificationService.instance.scheduleEveryMinuteForTesting(
-      totalMinutes: 10,
-    );
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Scheduled notification test for next 10 minutes'),
-      ),
-    );
-  }
-
-  Future<void> _cancelMinuteNotificationTest() async {
-    await NotificationService.instance.cancelEveryMinuteTesting();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Cancelled minute notification test')),
-    );
-  }
-
-  Future<void> _showInstantDebugNotification() async {
-    await NotificationService.instance.showDebugNotificationNow();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sent instant debug notification')),
-    );
-  }
-
-  Future<void> _scheduleQuickTest() async {
-    await NotificationService.instance.scheduleQuickTestInSeconds(seconds: 30);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Scheduled quick test in ~30s')),
-    );
-  }
-
-  Future<void> _requestExactAlarmPermission() async {
-    final granted = await NotificationService.instance
-        .requestExactAlarmsPermission();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Exact alarms permission -> $granted')),
-    );
-  }
-
-  Future<void> _startScheduleMonitor() async {
-    await NotificationService.instance.startMinuteTestMonitor(intervalSeconds: 10);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Started schedule monitor (10s interval)')),
-    );
-  }
-
-  Future<void> _stopScheduleMonitor() async {
-    await NotificationService.instance.stopMinuteTestMonitor();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Stopped schedule monitor')),
-    );
   }
 
   @override
@@ -232,59 +170,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: 'Sign out',
                   destructiveColor: AppColors.danger,
                   onTap: _confirmSignOut,
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 16.h),
-          const SectionHeader(title: 'DEBUG'),
-          CardContainer(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
-            child: Column(
-              children: [
-                NavRow(
-                  icon: Icons.notification_add_outlined,
-                  title: 'Send instant debug notification',
-                  onTap: _showInstantDebugNotification,
-                ),
-                const Divider(),
-                NavRow(
-                  icon: Icons.timer_outlined,
-                  title: 'Schedule quick test',
-                  trailing: '30s',
-                  onTap: _scheduleQuickTest,
-                ),
-                const Divider(),
-                NavRow(
-                  icon: Icons.alarm_outlined,
-                  title: 'Request exact alarm permission',
-                  onTap: _requestExactAlarmPermission,
-                ),
-                const Divider(),
-                NavRow(
-                  icon: Icons.bug_report_outlined,
-                  title: 'Start 1-minute notification test',
-                  trailing: '10m',
-                  onTap: _runMinuteNotificationTest,
-                ),
-                const Divider(),
-                NavRow(
-                  icon: Icons.stop_circle_outlined,
-                  title: 'Cancel 1-minute notification test',
-                  onTap: _cancelMinuteNotificationTest,
-                ),
-                const Divider(),
-                NavRow(
-                  icon: Icons.monitor_heart_outlined,
-                  title: 'Start schedule monitor logs',
-                  trailing: '10s',
-                  onTap: _startScheduleMonitor,
-                ),
-                const Divider(),
-                NavRow(
-                  icon: Icons.monitor_heart,
-                  title: 'Stop schedule monitor logs',
-                  onTap: _stopScheduleMonitor,
                 ),
               ],
             ),

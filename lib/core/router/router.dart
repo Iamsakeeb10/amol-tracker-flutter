@@ -125,8 +125,14 @@ GoRouter buildAppRouter() {
       GoRoute(
         path: '${AppRoutes.userProfile}/:id',
         name: 'userProfile',
-        builder: (_, state) =>
-            UserProfileScreen(userId: state.pathParameters['id'] ?? ''),
+        builder: (_, state) {
+          final extra = state.extra;
+          return UserProfileScreen(
+            userId: state.pathParameters['id'] ?? '',
+            selectedHijriDate: state.uri.queryParameters['date'],
+            selectedLogFallback: extra is AmalLogModel ? extra : null,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.leaderboard,

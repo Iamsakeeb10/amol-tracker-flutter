@@ -187,14 +187,23 @@ class FirestoreService {
   }
 
   Future<List<AmalLogModel>> getRecentLogs(String uid, {int limit = 7}) async {
-    final query = await _amalLogs
-        .where('uid', isEqualTo: uid)
-        .orderBy('hijriDate', descending: true)
-        .limit(limit)
-        .get();
-    final rows = query.docs.map(AmalLogModel.fromDoc).toList()
-      ..sort((a, b) => a.hijriDate.compareTo(b.hijriDate));
-    return rows;
+    try {
+      final query = await _amalLogs
+          .where('uid', isEqualTo: uid)
+          .orderBy('hijriDate', descending: true)
+          .limit(limit)
+          .get();
+      final rows = query.docs.map(AmalLogModel.fromDoc).toList()
+        ..sort((a, b) => a.hijriDate.compareTo(b.hijriDate));
+      return rows;
+    } on FirebaseException {
+      // Composite-index fallback for uid + orderBy(hijriDate).
+      final query = await _amalLogs.where('uid', isEqualTo: uid).get();
+      final rows = query.docs.map(AmalLogModel.fromDoc).toList()
+        ..sort((a, b) => a.hijriDate.compareTo(b.hijriDate));
+      if (rows.length <= limit) return rows;
+      return rows.sublist(rows.length - limit);
+    }
   }
 
   Future<bool> hasSentDuaToday({

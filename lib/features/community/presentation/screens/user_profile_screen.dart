@@ -9,6 +9,7 @@ import '../../../../core/services/firestore_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/hijri_helper.dart';
+import '../../../../core/utils/streak_helper.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../models/user_model.dart';
 import '../../../../providers/auth_provider.dart';
@@ -20,8 +21,15 @@ import '../../../../shared/widgets/streak_badge.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   final String userId;
+  final String? selectedHijriDate;
+  final AmalLogModel? selectedLogFallback;
 
-  const UserProfileScreen({super.key, required this.userId});
+  const UserProfileScreen({
+    super.key,
+    required this.userId,
+    this.selectedHijriDate,
+    this.selectedLogFallback,
+  });
 
   @override
   ConsumerState<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -80,15 +88,32 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           return FutureBuilder<_ProfileData>(
             future: _loadProfileData(fs, user.uid),
             builder: (context, dataSnap) {
+              if (dataSnap.connectionState == ConnectionState.waiting &&
+                  !dataSnap.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (dataSnap.hasError) {
+                debugPrint('[UserProfileError] ${dataSnap.error}');
+              }
               final profileData = dataSnap.data;
-              final todayLog = profileData?.todayLog;
+              final selectedLog = profileData?.selectedLog;
               final weekly = profileData?.weeklyLogs ?? const <AmalLogModel>[];
               final avgScore = profileData?.avgScore ?? 0;
-              final todayScore = todayLog?.score ?? 0;
+              final selectedScore = selectedLog?.score ?? 0;
+              final effectiveDate = profileData?.effectiveDate ?? HijriHelper.todayString();
+              final dateIsToday = effectiveDate == HijriHelper.todayString();
+              final displayStreak = resolveDisplayedStreakValues(
+                currentStreak: user.currentStreak,
+                bestStreak: user.bestStreak,
+                hasSubmittedToday: dateIsToday && selectedLog != null,
+              );
               final displayAnonymous = user.isAnonymousDisplay && !isOwn;
               final shownName = displayAnonymous
                   ? 'Anonymous'
                   : (user.name.trim().isEmpty ? 'Community member' : user.name.trim());
+              debugPrint(
+                '[UserProfileBuild] uid=${user.uid} date=$effectiveDate selectedScore=$selectedScore selectedLogPresent=${selectedLog != null} displayStreakCurrent=${displayStreak.currentStreak} rawCurrent=${user.currentStreak}',
+              );
 
               return ListView(
                 padding: EdgeInsets.fromLTRB(0, 6.h, 0, 24.h),
@@ -111,7 +136,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     style: AppTextStyles.displayMedium(context),
                   ),
                   SizedBox(height: 6.h),
-                  Center(child: StreakBadge(days: user.currentStreak)),
+                  Center(child: StreakBadge(days: displayStreak.currentStreak)),
                   SizedBox(height: 14.h),
                   LayoutBuilder(
                     builder: (context, constraints) {
@@ -125,14 +150,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         childAspectRatio: compact ? 1.05 : 1.28,
                         children: [
                           StatCard(
-                            label: 'Today',
-                            value: '$todayScore',
+                            label: dateIsToday ? 'Today' : 'Selected',
+                            value: '$selectedScore',
                             sublabel: '/100',
                             prominent: true,
                           ),
                           StatCard(
                             label: 'Best',
-                            value: '${user.bestStreak}',
+                            value: '${displayStreak.bestStreak}',
                             sublabel: 'days',
                             prominent: true,
                           ),
@@ -147,7 +172,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     },
                   ),
                   SizedBox(height: 16.h),
-                  Text('Today\'s amal', style: AppTextStyles.headlineMedium(context)),
+                  Text(
+                    dateIsToday
+                        ? 'Today\'s amal'
+                        : 'Amal on ${HijriHelper.displayFromStorage(effectiveDate)}',
+                    style: AppTextStyles.headlineMedium(context),
+                  ),
                   SizedBox(height: 8.h),
                   CardContainer(
                     child: Column(
@@ -155,7 +185,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         for (var i = 0; i < kAmalFields.length; i++) ...[
                           _AmalReadOnlyRow(
                             label: kAmalFields[i].label,
-                            done: (todayLog?.toggles[kAmalFields[i].id] ?? false),
+                            done: (selectedLog?.toggles[kAmalFields[i].id] ?? false),
                           ),
                           if (i != kAmalFields.length - 1) SizedBox(height: 8.h),
                         ],
@@ -249,15 +279,40 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   Future<_ProfileData> _loadProfileData(FirestoreService fs, String uid) async {
     final today = HijriHelper.todayString();
-    final todayLog = await fs.getLog(uid, today);
-    final weekly = await fs.getRecentLogs(uid, limit: 7);
+    final effectiveDate = widget.selectedHijriDate ?? today;
+    final fallback = (widget.selectedLogFallback != null &&
+            widget.selectedLogFallback!.uid == uid &&
+            widget.selectedLogFallback!.hijriDate == effectiveDate)
+        ? widget.selectedLogFallback
+        : null;
+    final selectedLog = await fs.getLog(uid, effectiveDate);
+    debugPrint(
+      '[UserProfile] uid=$uid date=$effectiveDate fetched=${selectedLog != null} fallback=${fallback != null}',
+    );
+    if (fallback != null) {
+      debugPrint(
+        '[UserProfileFallback] uid=${fallback.uid} date=${fallback.hijriDate} score=${fallback.score} toggles=${fallback.toggles}',
+      );
+    }
+    if (selectedLog != null) {
+      debugPrint(
+        '[UserProfileFetched] uid=${selectedLog.uid} date=${selectedLog.hijriDate} score=${selectedLog.score} toggles=${selectedLog.toggles}',
+      );
+    }
+    List<AmalLogModel> weekly = const <AmalLogModel>[];
+    try {
+      weekly = await fs.getRecentLogs(uid, limit: 7);
+    } catch (e) {
+      debugPrint('[UserProfileWeeklyError] uid=$uid error=$e');
+    }
     final avgScore = weekly.isEmpty
         ? 0
         : (weekly.map((e) => e.score).reduce((a, b) => a + b) / weekly.length).round();
     return _ProfileData(
-      todayLog: todayLog,
+      selectedLog: selectedLog ?? fallback,
       weeklyLogs: weekly,
       avgScore: avgScore,
+      effectiveDate: effectiveDate,
     );
   }
 
@@ -397,12 +452,14 @@ class _WeeklyBars extends StatelessWidget {
 
 class _ProfileData {
   const _ProfileData({
-    required this.todayLog,
+    required this.selectedLog,
     required this.weeklyLogs,
     required this.avgScore,
+    required this.effectiveDate,
   });
 
-  final AmalLogModel? todayLog;
+  final AmalLogModel? selectedLog;
   final List<AmalLogModel> weeklyLogs;
   final int avgScore;
+  final String effectiveDate;
 }

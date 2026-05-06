@@ -1,25 +1,565 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hijri/hijri_calendar.dart';
 
+import '../../../../core/router/routes.dart';
+import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/hijri_helper.dart';
+import '../../../../models/activity_feed_item_model.dart';
+import '../../../../models/amal_log_model.dart';
+import '../../../../providers/amal_provider.dart';
+import '../../../../providers/auth_provider.dart';
+import '../../../../providers/community_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../shared/widgets/community_row_card.dart';
+import '../../../../shared/widgets/section_header.dart';
 
-class CommunityScreen extends StatelessWidget {
+class CommunityScreen extends ConsumerStatefulWidget {
   const CommunityScreen({super.key});
 
   @override
+  ConsumerState<CommunityScreen> createState() => _CommunityScreenState();
+}
+
+class _CommunityScreenState extends ConsumerState<CommunityScreen> {
+  late final ScrollController _horizontalController;
+  late final ScrollController _verticalController;
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _horizontalController = ScrollController();
+    _verticalController = ScrollController()..addListener(_onVerticalScroll);
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _verticalController
+      ..removeListener(_onVerticalScroll)
+      ..dispose();
+    _horizontalController.dispose();
+    super.dispose();
+  }
+
+  void _onVerticalScroll() {
+    if (!_verticalController.hasClients) return;
+    final max = _verticalController.position.maxScrollExtent;
+    final cur = _verticalController.offset;
+    if (max - cur < 180) {
+      ref.read(communitySheetProvider.notifier).loadMore();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(communitySheetProvider);
+    final notifier = ref.read(communitySheetProvider.notifier);
+    final currentUser = ref.watch(currentUserProvider).asData?.value;
+    final connectivity = ref.watch(connectivityListProvider);
+    final dates = _buildDateOptions(count: 7);
+
+    final ownRow = state.ownRow(currentUser?.uid);
+    final otherRows = state.filteredRowsExcludingUid(currentUser?.uid);
+    final ownPlaceholder = currentUser == null
+        ? null
+        : _buildOwnPlaceholder(currentUser.uid, currentUser.name, state.selectedDate);
+
+    if (_searchController.text != state.searchQuery) {
+      _searchController.value = TextEditingValue(
+        text: state.searchQuery,
+        selection: TextSelection.collapsed(offset: state.searchQuery.length),
+      );
+    }
+
     return AppScaffold(
-      body: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Text(
-            'Community screen is coming in Phase 5.',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium(context),
-          ),
+      body: DefaultTabController(
+        length: 2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Community', style: AppTextStyles.headlineLarge(context)),
+            SizedBox(height: 12.h),
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.cardDark,
+                border: Border.all(color: AppColors.cardBorder),
+                borderRadius: BorderRadius.circular(AppRadius.md.r),
+              ),
+              child: TabBar(
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelStyle: AppTextStyles.bodyMedium(
+                  context,
+                ).copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                unselectedLabelStyle: AppTextStyles.bodyMedium(context),
+                tabs: const [Tab(text: 'Sheet'), Tab(text: 'Feed')],
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (connectivity.asData?.value.any(
+                            (r) => r == ConnectivityResult.none,
+                          ) ??
+                          false)
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 10.h),
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                            decoration: BoxDecoration(
+                              color: AppColors.warningLight,
+                              borderRadius: BorderRadius.circular(AppRadius.md.r),
+                              border: Border.all(color: AppColors.warning),
+                            ),
+                            child: Text(
+                              'You are offline. Showing latest available data.',
+                              style: AppTextStyles.bodySmall(context).copyWith(
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      SectionHeader(
+                        title: 'DATE',
+                        trailingText: HijriHelper.displayFromStorage(state.selectedDate),
+                      ),
+                      _DateTabsRow(
+                        options: dates,
+                        selectedDate: state.selectedDate,
+                        onTapDate: notifier.selectDate,
+                      ),
+                      SizedBox(height: 10.h),
+                      TextField(
+                        controller: _searchController,
+                        onChanged: notifier.setSearchQuery,
+                        decoration: InputDecoration(
+                          hintText: 'Search by name',
+                          hintStyle: AppTextStyles.bodyMedium(context),
+                          filled: true,
+                          fillColor: AppColors.cardDark,
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.md.r),
+                            borderSide: const BorderSide(color: AppColors.cardBorder),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.md.r),
+                            borderSide: const BorderSide(color: AppColors.cardBorder),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.md.r),
+                            borderSide: const BorderSide(color: AppColors.goldBorder),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10.h),
+                      if (state.error != null)
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 8.h),
+                          child: Text(
+                            state.error!,
+                            style: AppTextStyles.bodySmall(
+                              context,
+                            ).copyWith(color: AppColors.danger),
+                          ),
+                        ),
+                      Expanded(
+                        child: state.isLoading
+                            ? const _SheetLoadingShimmer()
+                            : CustomScrollView(
+                                key: const PageStorageKey<String>('community_sheet_scroll'),
+                                controller: _verticalController,
+                                slivers: [
+                                  SliverPersistentHeader(
+                                    pinned: true,
+                                    delegate: _StickyHeaderDelegate(
+                                      minHeight: 46.h,
+                                      maxHeight: 46.h,
+                                      child: CommunityHeaderRow(
+                                        horizontalController: _horizontalController,
+                                      ),
+                                    ),
+                                  ),
+                                  if (ownRow != null || ownPlaceholder != null)
+                                    SliverToBoxAdapter(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(top: 8.h),
+                                        child: Column(
+                                          children: [
+                                            CommunityRowCard(
+                                              log: ownRow ?? ownPlaceholder!,
+                                              horizontalController: _horizontalController,
+                                              isToday: state.isToday,
+                                              isPinned: true,
+                                              isPending: ownRow == null && state.isToday,
+                                              onTap: ownRow == null
+                                                  ? null
+                                                  : () => context.push(
+                                                      '${AppRoutes.userProfile}/${ownRow.uid}',
+                                                    ),
+                                            ),
+                                            if (ownRow == null && state.isToday)
+                                              Padding(
+                                                padding: EdgeInsets.only(top: 8.h),
+                                                child: Text(
+                                                  'Log today to appear here',
+                                                  style: AppTextStyles.bodySmall(context),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  if (otherRows.isEmpty)
+                                    SliverFillRemaining(
+                                      hasScrollBody: false,
+                                      child: Center(
+                                        child: Text(
+                                          'No logs recorded for this day',
+                                          style: AppTextStyles.bodyMedium(context),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    SliverList(
+                                      delegate: SliverChildBuilderDelegate((context, index) {
+                                        final row = otherRows[index];
+                                        return Padding(
+                                          padding: EdgeInsets.only(top: 8.h),
+                                          child: CommunityRowCard(
+                                            log: row,
+                                            horizontalController: _horizontalController,
+                                            isToday: state.isToday,
+                                            onTap: () => context.push(
+                                              '${AppRoutes.userProfile}/${row.uid}',
+                                            ),
+                                          ),
+                                        );
+                                      }, childCount: otherRows.length),
+                                    ),
+                                  SliverToBoxAdapter(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(top: 12.h, bottom: 20.h),
+                                      child: Center(
+                                        child: state.isLoadingMore
+                                            ? const CircularProgressIndicator()
+                                            : (!state.hasMore
+                                                  ? Text(
+                                                      'No more rows',
+                                                      style: AppTextStyles.bodySmall(context),
+                                                    )
+                                                  : const SizedBox.shrink()),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ],
+                  ),
+                  const _ActivityFeedTab(),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+class _ActivityFeedTab extends ConsumerWidget {
+  const _ActivityFeedTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final feed = ref.watch(activityFeedProvider);
+    return feed.when(
+      loading: () => const _FeedLoadingState(),
+      error: (_, _) => Center(
+        child: Text(
+          'Unable to load activity feed.',
+          style: AppTextStyles.bodyMedium(context),
+        ),
+      ),
+      data: (items) {
+        if (items.isEmpty) {
+          return Center(
+            child: Text(
+              'No activity yet. Community updates will appear here.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium(context),
+            ),
+          );
+        }
+        return ListView.separated(
+          key: const PageStorageKey<String>('community_feed_scroll'),
+          itemCount: items.length,
+          separatorBuilder: (_, _) => SizedBox(height: 8.h),
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return _FeedItemCard(item: item);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _FeedItemCard extends StatelessWidget {
+  const _FeedItemCard({required this.item});
+
+  final ActivityFeedItemModel item;
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = _iconForType(item.type);
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppRadius.md.r),
+      onTap: item.type == 'dua'
+          ? () => context.push(AppRoutes.notifications)
+          : null,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: AppColors.cardDark,
+          borderRadius: BorderRadius.circular(AppRadius.md.r),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 30.w,
+              height: 30.w,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.goldCard,
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: AppColors.goldBorder),
+              ),
+              child: Text(icon, style: TextStyle(fontSize: 14.sp)),
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.message,
+                    style: AppTextStyles.bodyMedium(
+                      context,
+                    ).copyWith(color: AppColors.textPrimary),
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    _timeAgo(item.createdAt),
+                    style: AppTextStyles.bodySmall(context),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _iconForType(String type) {
+    switch (type) {
+      case 'completion':
+        return '🌟';
+      case 'streak':
+        return '🔥';
+      case 'community_count':
+        return '👥';
+      case 'quote':
+        return '📜';
+      case 'dua':
+        return '🤲';
+      default:
+        return '•';
+    }
+  }
+}
+
+class _DateTabsRow extends StatelessWidget {
+  const _DateTabsRow({
+    required this.options,
+    required this.selectedDate,
+    required this.onTapDate,
+  });
+
+  final List<String> options;
+  final String selectedDate;
+  final ValueChanged<String> onTapDate;
+
+  @override
+  Widget build(BuildContext context) {
+    final today = HijriHelper.todayString();
+    return SizedBox(
+      height: 34.h,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: options.length,
+        separatorBuilder: (_, _) => SizedBox(width: 8.w),
+        itemBuilder: (context, index) {
+          final date = options[index];
+          final selected = date == selectedDate;
+          final isToday = date == today;
+          final label = isToday ? 'Today' : _shortHijriLabel(date);
+          return ChoiceChip(
+            selected: selected,
+            label: Text(label),
+            onSelected: (_) => onTapDate(date),
+            selectedColor: AppColors.goldCard,
+            backgroundColor: AppColors.cardDark,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md.r),
+              side: BorderSide(color: selected ? AppColors.goldBorder : AppColors.cardBorder),
+            ),
+            labelStyle: AppTextStyles.bodySmall(context).copyWith(
+              color: selected ? AppColors.goldLight : AppColors.textSecondary,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  String _shortHijriLabel(String storage) {
+    final display = HijriHelper.displayFromStorage(storage);
+    final parts = display.split(' ');
+    if (parts.length < 2) return display;
+    return '${parts[0]} ${parts[1]}';
+  }
+}
+
+class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _StickyHeaderDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return ColoredBox(color: AppColors.emeraldMid.withValues(alpha: 0.35), child: child);
+  }
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  bool shouldRebuild(_StickyHeaderDelegate oldDelegate) {
+    return minHeight != oldDelegate.minHeight ||
+        maxHeight != oldDelegate.maxHeight ||
+        child != oldDelegate.child;
+  }
+}
+
+class _FeedLoadingState extends StatelessWidget {
+  const _FeedLoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      itemCount: 5,
+      separatorBuilder: (_, _) => SizedBox(height: 8.h),
+      itemBuilder: (_, index) => Container(
+        height: 74.h,
+        decoration: BoxDecoration(
+          color: AppColors.cardDark,
+          borderRadius: BorderRadius.circular(AppRadius.md.r),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetLoadingShimmer extends StatelessWidget {
+  const _SheetLoadingShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      itemCount: 6,
+      separatorBuilder: (_, _) => SizedBox(height: 8.h),
+      itemBuilder: (_, index) => Container(
+        height: 46.h,
+        decoration: BoxDecoration(
+          color: AppColors.cardDark,
+          borderRadius: BorderRadius.circular(AppRadius.md.r),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+      ),
+    );
+  }
+}
+
+List<String> _buildDateOptions({required int count}) {
+  final now = HijriHelper.bangladeshNow();
+  return List<String>.generate(count, (index) {
+    final day = now.subtract(Duration(days: index));
+    final h = HijriCalendar.fromDate(day);
+    return HijriHelper.storageFromParts(h.hYear, h.hMonth, h.hDay);
+  });
+}
+
+AmalLogModel _buildOwnPlaceholder(String uid, String name, String selectedDate) {
+  return AmalLogModel(
+    uid: uid,
+    displayName: name,
+    photoUrl: '',
+    isAnonymousDisplay: false,
+    hijriDate: selectedDate,
+    toggles: const <String, bool>{
+      'fard': false,
+      'takbir': false,
+      'morning_azkar': false,
+      'evening_azkar': false,
+      'quran': false,
+      'mulk': false,
+      'miswak': false,
+      'sunnah': false,
+      'post_azkar': false,
+    },
+    score: 0,
+    submittedAt: DateTime.now().toUtc(),
+  );
+}
+
+String _timeAgo(DateTime timestamp) {
+  final now = DateTime.now();
+  final diff = now.difference(timestamp.toLocal());
+  if (diff.inMinutes < 1) return 'Just now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  final weeks = (diff.inDays / 7).floor();
+  return '${weeks}w ago';
 }

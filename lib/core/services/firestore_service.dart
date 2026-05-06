@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hijri/hijri_calendar.dart';
 
+import '../../models/activity_feed_item_model.dart';
 import '../../models/amal_log_model.dart';
 import '../../models/user_model.dart';
 
@@ -15,6 +16,16 @@ class FirestoreService {
 
   CollectionReference<Map<String, dynamic>> get _amalLogs =>
       _firestore.collection('amal_logs');
+
+  static const int _communityPageSize = 20;
+  static const int _activityFeedPageSize = 25;
+
+  CollectionReference<Map<String, dynamic>> get _activityFeed =>
+      _firestore.collection('activity_feed');
+
+  CollectionReference<Map<String, dynamic>> _notificationItems(String uid) {
+    return _firestore.collection('notifications').doc(uid).collection('items');
+  }
 
   Future<bool> userExists(String uid) async {
     final doc = await _users.doc(uid).get();
@@ -110,5 +121,84 @@ class FirestoreService {
   /// Updates [lastLogDate] (Hijri `YYYY-MM-DD`) after a successful submit.
   Future<void> updateUserLastLogDate(String uid, String hijriDate) async {
     await _users.doc(uid).update(<String, dynamic>{'lastLogDate': hijriDate});
+  }
+
+  /// Real-time stream of submitted logs for a Hijri day, sorted by score.
+  Stream<List<AmalLogModel>> communityDayStream(String hijriDate) {
+    return _amalLogs
+        .where('hijriDate', isEqualTo: hijriDate)
+        .orderBy('score', descending: true)
+        .limit(_communityPageSize)
+        .snapshots()
+        .map((snap) => snap.docs.map(AmalLogModel.fromDoc).toList());
+  }
+
+  /// One-time paginated fetch of submitted logs for a Hijri day.
+  Future<({List<AmalLogModel> rows, DocumentSnapshot<Map<String, dynamic>>? lastDoc})>
+  communityDayFetch(
+    String hijriDate, {
+    DocumentSnapshot<Map<String, dynamic>>? startAfter,
+  }) async {
+    var query = _amalLogs
+        .where('hijriDate', isEqualTo: hijriDate)
+        .orderBy('score', descending: true)
+        .limit(_communityPageSize);
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+    final snap = await query.get();
+    final rows = snap.docs.map(AmalLogModel.fromDoc).toList();
+    final lastDoc = snap.docs.isNotEmpty ? snap.docs.last : null;
+    return (rows: rows, lastDoc: lastDoc);
+  }
+
+  /// Real-time activity feed in reverse chronological order.
+  Stream<List<ActivityFeedItemModel>> activityFeedStream() {
+    return _activityFeed
+        .orderBy('createdAt', descending: true)
+        .limit(_activityFeedPageSize)
+        .snapshots()
+        .map((snap) => snap.docs.map(ActivityFeedItemModel.fromDoc).toList());
+  }
+
+  Future<List<AmalLogModel>> getRecentLogs(String uid, {int limit = 7}) async {
+    final query = await _amalLogs
+        .where('uid', isEqualTo: uid)
+        .orderBy('hijriDate', descending: true)
+        .limit(limit)
+        .get();
+    final rows = query.docs.map(AmalLogModel.fromDoc).toList()
+      ..sort((a, b) => a.hijriDate.compareTo(b.hijriDate));
+    return rows;
+  }
+
+  Future<bool> hasSentDuaToday({
+    required String senderUid,
+    required String recipientUid,
+    required String hijriDate,
+  }) async {
+    final query = await _notificationItems(recipientUid)
+        .where('type', isEqualTo: 'dua')
+        .where('senderUid', isEqualTo: senderUid)
+        .where('hijriDate', isEqualTo: hijriDate)
+        .limit(1)
+        .get();
+    return query.docs.isNotEmpty;
+  }
+
+  Future<void> sendDua({
+    required String senderUid,
+    required String recipientUid,
+    required String message,
+    required String hijriDate,
+  }) async {
+    await _notificationItems(recipientUid).add(<String, dynamic>{
+      'type': 'dua',
+      'message': message,
+      'isRead': false,
+      'createdAt': FieldValue.serverTimestamp(),
+      'senderUid': senderUid,
+      'hijriDate': hijriDate,
+    });
   }
 }

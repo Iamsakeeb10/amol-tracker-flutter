@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,6 +7,7 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/mock/mock_data.dart';
+import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -13,13 +15,22 @@ import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 import '../../../../shared/widgets/toggle_row.dart';
 
-class MoreScreen extends StatelessWidget {
+class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
+  String _formatTime(TimeOfDay value) {
+    final hh = value.hour.toString().padLeft(2, '0');
+    final mm = value.minute.toString().padLeft(2, '0');
+    return '$hh:$mm';
+  }
+
   @override
-  Widget build(BuildContext context) {
-    final unread =
-        kNotifications.where((n) => n.unread).length;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifications = ref.watch(notificationsProvider).asData?.value;
+    final prefs = ref.watch(notificationPrefsProvider);
+    final unread = (notifications ?? const []).where((n) => !n.isRead).length;
+    final quietHoursLabel =
+        '${_formatTime(prefs.quietFrom)} — ${_formatTime(prefs.quietTo)}';
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
@@ -33,12 +44,15 @@ class MoreScreen extends StatelessWidget {
                   children: [
                     Text(
                       'MORE',
-                      style: AppTextStyles.label(context).copyWith(
-                        color: AppColors.gold,
-                      ),
+                      style: AppTextStyles.label(
+                        context,
+                      ).copyWith(color: AppColors.gold),
                     ),
                     SizedBox(height: 2.h),
-                    Text('Account', style: AppTextStyles.displayMedium(context)),
+                    Text(
+                      'Account',
+                      style: AppTextStyles.displayMedium(context),
+                    ),
                   ],
                 ),
               ),
@@ -76,7 +90,9 @@ class MoreScreen extends StatelessWidget {
                       SizedBox(height: 2.h),
                       Text(
                         'View profile',
-                        style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+                        style: AppTextStyles.bodySmall(
+                          context,
+                        ).copyWith(fontSize: 11.sp),
                       ),
                     ],
                   ),
@@ -128,7 +144,7 @@ class MoreScreen extends StatelessWidget {
                 NavRow(
                   icon: Icons.do_not_disturb_on_outlined,
                   title: 'Quiet hours',
-                  trailing: '21:00 — 06:00',
+                  trailing: quietHoursLabel,
                   onTap: () => context.push(AppRoutes.quietHours),
                 ),
               ],

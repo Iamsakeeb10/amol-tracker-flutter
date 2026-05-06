@@ -1,22 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 
-class QuietHoursScreen extends StatefulWidget {
+class QuietHoursScreen extends ConsumerStatefulWidget {
   const QuietHoursScreen({super.key});
 
   @override
-  State<QuietHoursScreen> createState() => _QuietHoursScreenState();
+  ConsumerState<QuietHoursScreen> createState() => _QuietHoursScreenState();
 }
 
-class _QuietHoursScreenState extends State<QuietHoursScreen> {
+class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
   TimeOfDay _from = const TimeOfDay(hour: 21, minute: 0);
   TimeOfDay _to = const TimeOfDay(hour: 6, minute: 0);
+
+  @override
+  void initState() {
+    super.initState();
+    final prefs = ref.read(notificationPrefsProvider);
+    _from = prefs.quietFrom;
+    _to = prefs.quietTo;
+  }
 
   String _format(TimeOfDay t) {
     final hh = t.hour.toString().padLeft(2, '0');
@@ -26,7 +36,10 @@ class _QuietHoursScreenState extends State<QuietHoursScreen> {
 
   void _bumpHour(TimeOfDay t, int delta, bool start) {
     final newHour = (t.hour + delta) % 24;
-    final v = TimeOfDay(hour: newHour < 0 ? newHour + 24 : newHour, minute: t.minute);
+    final v = TimeOfDay(
+      hour: newHour < 0 ? newHour + 24 : newHour,
+      minute: t.minute,
+    );
     setState(() {
       if (start) {
         _from = v;
@@ -36,15 +49,30 @@ class _QuietHoursScreenState extends State<QuietHoursScreen> {
     });
   }
 
+  String _silenceHoursLabel() {
+    final fromMinutes = _from.hour * 60 + _from.minute;
+    final toMinutes = _to.hour * 60 + _to.minute;
+    var duration = toMinutes - fromMinutes;
+    if (duration <= 0) duration += 24 * 60;
+    final hours = duration ~/ 60;
+    final mins = duration % 60;
+    if (mins == 0) return '$hours hours of silence';
+    return '$hours h $mins m of silence';
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: 22.r),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/settings'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/settings'),
         ),
-        title: Text('Quiet hours', style: AppTextStyles.headlineMedium(context)),
+        title: Text(
+          'Quiet hours',
+          style: AppTextStyles.headlineMedium(context),
+        ),
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(0, 8.h, 0, 24.h),
@@ -84,26 +112,38 @@ class _QuietHoursScreenState extends State<QuietHoursScreen> {
           CardContainer(
             child: Row(
               children: [
-                Icon(
-                  Icons.nightlight_round,
-                  color: AppColors.gold,
-                  size: 20.r,
-                ),
+                Icon(Icons.nightlight_round, color: AppColors.gold, size: 20.r),
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
                     'Silent from ${_format(_from)} to ${_format(_to)}',
-                    style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 13.sp),
+                    style: AppTextStyles.bodyLarge(
+                      context,
+                    ).copyWith(fontSize: 13.sp),
                   ),
                 ),
               ],
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.w),
+            child: Text(
+              _silenceHoursLabel(),
+              style: AppTextStyles.bodySmall(context),
             ),
           ),
           SizedBox(height: 18.h),
           SizedBox(
             height: 50.h,
             child: ElevatedButton(
-              onPressed: () => context.canPop() ? context.pop() : context.go('/settings'),
+              onPressed: () async {
+                await ref
+                    .read(notificationPrefsProvider.notifier)
+                    .setQuietHours(from: _from, to: _to);
+                if (!context.mounted) return;
+                context.canPop() ? context.pop() : context.go('/settings');
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.gold,
                 foregroundColor: AppColors.emeraldDeep,
@@ -155,10 +195,9 @@ class _TimeCard extends StatelessWidget {
           SizedBox(height: 8.h),
           Text(
             formatted,
-            style: AppTextStyles.displayLarge(context).copyWith(
-              color: AppColors.goldLight,
-              fontSize: 36.sp,
-            ),
+            style: AppTextStyles.displayLarge(
+              context,
+            ).copyWith(color: AppColors.goldLight, fontSize: 36.sp),
           ),
           SizedBox(height: 12.h),
           Row(

@@ -1,37 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../providers/auth_provider.dart';
+import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/toggle_row.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
-  bool _dailyReminder = true;
-  bool _streakWarning = true;
-  bool _friendActivity = false;
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _showInLeaderboard = true;
-  bool _publicProfile = true;
+  bool _anonymousDisplay = false;
   bool _ramadanMode = false;
+
+  Future<void> _setAnonymous(bool value) async {
+    final uid = ref.read(authStateProvider).asData?.value?.uid;
+    if (uid == null) return;
+    setState(() => _anonymousDisplay = value);
+    await ref.read(firestoreServiceProvider).updateUser(uid, <String, dynamic>{
+      'isAnonymousDisplay': value,
+    });
+  }
+
+  Future<void> _confirmSignOut() async {
+    final shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (shouldSignOut != true) return;
+    await ref.read(authServiceProvider).signOut();
+    if (!mounted) return;
+    context.go(AppRoutes.signIn);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final prefs = ref.watch(notificationPrefsProvider);
+    final prefsNotifier = ref.read(notificationPrefsProvider.notifier);
+    final me = ref.watch(currentUserProvider).asData?.value;
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: 22.r),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/more'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/more'),
         ),
         title: Text('Settings', style: AppTextStyles.headlineMedium(context)),
       ),
@@ -45,32 +82,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 ToggleRow(
                   icon: Icons.alarm,
-                  title: 'Daily reminder',
-                  subtitle: '08:00 each morning',
-                  value: _dailyReminder,
-                  onChanged: (v) => setState(() => _dailyReminder = v),
+                  title: 'Morning reminder',
+                  subtitle: '06:00 each morning',
+                  value: prefs.morningEnabled,
+                  onChanged: (v) => prefsNotifier.setMorningEnabled(v),
+                ),
+                const Divider(),
+                ToggleRow(
+                  icon: Icons.wb_twighlight,
+                  title: 'Evening reminder',
+                  subtitle: '06:30 each evening',
+                  value: prefs.eveningEnabled,
+                  onChanged: (v) => prefsNotifier.setEveningEnabled(v),
                 ),
                 const Divider(),
                 ToggleRow(
                   icon: Icons.local_fire_department_outlined,
                   title: 'Streak warning',
                   subtitle: 'When you risk losing your streak',
-                  value: _streakWarning,
-                  onChanged: (v) => setState(() => _streakWarning = v),
+                  value: prefs.streakEnabled,
+                  onChanged: (v) => prefsNotifier.setStreakEnabled(v),
                 ),
                 const Divider(),
                 ToggleRow(
                   icon: Icons.group_outlined,
-                  title: 'Friend activity',
-                  subtitle: 'When friends complete amal',
-                  value: _friendActivity,
-                  onChanged: (v) => setState(() => _friendActivity = v),
+                  title: 'Community activity',
+                  subtitle: 'Push updates from community',
+                  value: prefs.communityEnabled,
+                  onChanged: (v) => prefsNotifier.setCommunityEnabled(v),
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.do_not_disturb_on_outlined,
                   title: 'Quiet hours',
-                  trailing: '21:00 — 06:00',
+                  trailing: prefsNotifier.quietHoursLabel,
                   onTap: () => context.push(AppRoutes.quietHours),
                 ),
               ],
@@ -91,10 +136,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const Divider(),
                 ToggleRow(
                   icon: Icons.visibility_outlined,
-                  title: 'Public profile',
-                  subtitle: 'Friends can see your stats',
-                  value: _publicProfile,
-                  onChanged: (v) => setState(() => _publicProfile = v),
+                  title: 'Show as anonymous in community',
+                  subtitle: 'Hide your real name and photo',
+                  value: me?.isAnonymousDisplay ?? _anonymousDisplay,
+                  onChanged: _setAnonymous,
                 ),
               ],
             ),
@@ -124,7 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.logout_rounded,
                   title: 'Sign out',
                   destructiveColor: AppColors.danger,
-                  onTap: () => context.go(AppRoutes.signIn),
+                  onTap: _confirmSignOut,
                 ),
               ],
             ),

@@ -1,54 +1,36 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
+import '../../../../core/router/routes.dart';
+import '../../../../core/services/firestore_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../shared/mock/mock_data.dart';
+import '../../../../models/notification_model.dart';
+import '../../../../providers/auth_provider.dart';
+import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 
-class NotificationsScreen extends StatefulWidget {
+class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final uid = ref.watch(authStateProvider).asData?.value?.uid;
+    final notifications = ref.watch(notificationsProvider);
+    final items = notifications.asData?.value ?? const <NotificationModel>[];
+    final unread = items.where((n) => !n.isRead).length;
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
-  late List<MockNotification> _items;
-
-  @override
-  void initState() {
-    super.initState();
-    _items = List.of(kNotifications);
-  }
-
-  void _markAllRead() {
-    setState(() {
-      _items = _items
-          .map(
-            (n) => MockNotification(
-              id: n.id,
-              title: n.title,
-              body: n.body,
-              time: n.time,
-              icon: n.icon,
-              unread: false,
-            ),
-          )
-          .toList();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final unread = _items.where((n) => n.unread).length;
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: 22.r),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/more'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go(AppRoutes.more),
         ),
         title: Row(
           children: [
@@ -56,10 +38,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             if (unread > 0) ...[
               SizedBox(width: 8.w),
               Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 7.w,
-                  vertical: 2.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
                 decoration: BoxDecoration(
                   color: AppColors.gold,
                   borderRadius: BorderRadius.circular(99.r),
@@ -77,34 +56,110 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: _markAllRead,
+            onPressed: uid == null || unread == 0
+                ? null
+                : () async {
+                    await ref
+                        .read(firestoreServiceProvider)
+                        .markAllNotificationsRead(uid);
+                  },
             child: Text(
               'Mark all read',
-              style: AppTextStyles.button(context).copyWith(color: AppColors.gold),
+              style: AppTextStyles.button(
+                context,
+              ).copyWith(color: AppColors.gold),
             ),
           ),
         ],
       ),
-      body: ListView.separated(
-        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
-        itemCount: _items.length,
-        separatorBuilder: (_, _) => SizedBox(height: 8.h),
-        itemBuilder: (_, i) => _NotificationRow(item: _items[i]),
+      body: notifications.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, _) => Center(
+          child: Text(
+            'Failed to load notifications.',
+            style: AppTextStyles.bodyMedium(context),
+          ),
+        ),
+        data: (rows) {
+          if (rows.isEmpty) {
+            return Center(
+              child: Text(
+                'No notifications yet',
+                style: AppTextStyles.bodyMedium(context),
+              ),
+            );
+          }
+          return ListView.separated(
+            padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
+            itemCount: rows.length,
+            separatorBuilder: (_, _) => SizedBox(height: 8.h),
+            itemBuilder: (_, i) => _NotificationRow(item: rows[i]),
+          );
+        },
       ),
     );
   }
 }
 
 class _NotificationRow extends StatelessWidget {
-  final MockNotification item;
+  final NotificationModel item;
   const _NotificationRow({required this.item});
+
+  String _timeLabel() {
+    final now = DateTime.now();
+    final diff = now.difference(item.createdAt);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    if (diff.inDays < 1) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return DateFormat('d MMM').format(item.createdAt);
+  }
+
+  IconData _iconForType() {
+    switch (item.type) {
+      case 'dua':
+        return Icons.favorite_outline;
+      case 'streak':
+        return Icons.local_fire_department_outlined;
+      case 'badge':
+        return Icons.workspace_premium_outlined;
+      case 'community':
+      default:
+        return Icons.notifications_outlined;
+    }
+  }
+
+  String _routeForType() {
+    switch (item.type) {
+      case 'streak':
+        return AppRoutes.home;
+      case 'community':
+        return AppRoutes.community;
+      case 'badge':
+        return AppRoutes.profile;
+      case 'dua':
+      default:
+        return AppRoutes.notifications;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
     return CardContainer(
+      onTap: () async {
+        if (uid != null && !item.isRead) {
+          await FirestoreService().markNotificationRead(uid, item.id);
+        }
+        if (!context.mounted) return;
+        final route = _routeForType();
+        if (route != AppRoutes.notifications) {
+          context.go(route);
+        }
+      },
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-      color: item.unread ? AppColors.goldCard : AppColors.cardDark,
-      borderColor: item.unread ? AppColors.goldBorder : AppColors.cardBorder,
+      color: !item.isRead ? AppColors.goldCard : AppColors.cardDark,
+      borderColor: !item.isRead ? AppColors.goldBorder : AppColors.cardBorder,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -117,8 +172,8 @@ class _NotificationRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
-              item.icon,
-              color: item.unread ? AppColors.gold : AppColors.textSecondary,
+              _iconForType(),
+              color: !item.isRead ? AppColors.gold : AppColors.textSecondary,
               size: 18.r,
             ),
           ),
@@ -131,14 +186,14 @@ class _NotificationRow extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        item.title,
+                        item.type.toUpperCase(),
                         style: AppTextStyles.bodyLarge(context).copyWith(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
-                    if (item.unread)
+                    if (!item.isRead)
                       Container(
                         width: 8.r,
                         height: 8.r,
@@ -151,16 +206,17 @@ class _NotificationRow extends StatelessWidget {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  item.body,
-                  style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+                  item.message,
+                  style: AppTextStyles.bodySmall(
+                    context,
+                  ).copyWith(fontSize: 11.sp),
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  item.time,
-                  style: AppTextStyles.bodySmall(context).copyWith(
-                    fontSize: 10.sp,
-                    color: AppColors.textHint,
-                  ),
+                  _timeLabel(),
+                  style: AppTextStyles.bodySmall(
+                    context,
+                  ).copyWith(fontSize: 10.sp, color: AppColors.textHint),
                 ),
               ],
             ),

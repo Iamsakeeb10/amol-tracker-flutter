@@ -3,6 +3,7 @@ import 'package:hijri/hijri_calendar.dart';
 
 import '../../models/activity_feed_item_model.dart';
 import '../../models/amal_log_model.dart';
+import '../../models/notification_model.dart';
 import '../../models/user_model.dart';
 
 class FirestoreService {
@@ -69,8 +70,7 @@ class FirestoreService {
     final daysInMonth = cal.getDaysInMonth(hijriYear, hijriMonth);
     final mm = hijriMonth.toString().padLeft(2, '0');
     final start = '$hijriYear-$mm-01';
-    final end =
-        '$hijriYear-$mm-${daysInMonth.toString().padLeft(2, '0')}';
+    final end = '$hijriYear-$mm-${daysInMonth.toString().padLeft(2, '0')}';
 
     try {
       final query = await _amalLogs
@@ -86,11 +86,16 @@ class FirestoreService {
       // Fallback when composite index is missing:
       // fetch by uid and filter month client-side.
       final query = await _amalLogs.where('uid', isEqualTo: uid).get();
-      final logs = query.docs
-          .map(AmalLogModel.fromDoc)
-          .where((log) => log.hijriDate.compareTo(start) >= 0 && log.hijriDate.compareTo(end) <= 0)
-          .toList()
-        ..sort((a, b) => a.hijriDate.compareTo(b.hijriDate));
+      final logs =
+          query.docs
+              .map(AmalLogModel.fromDoc)
+              .where(
+                (log) =>
+                    log.hijriDate.compareTo(start) >= 0 &&
+                    log.hijriDate.compareTo(end) <= 0,
+              )
+              .toList()
+            ..sort((a, b) => a.hijriDate.compareTo(b.hijriDate));
       return logs;
     }
   }
@@ -125,19 +130,20 @@ class FirestoreService {
 
   /// Real-time stream of submitted logs for a Hijri day, sorted by score.
   Stream<List<AmalLogModel>> communityDayStream(String hijriDate) {
-    return _amalLogs
-        .where('hijriDate', isEqualTo: hijriDate)
-        .snapshots()
-        .map((snap) {
-          final rows = snap.docs.map(AmalLogModel.fromDoc).toList()
-            ..sort((a, b) => b.score.compareTo(a.score));
-          if (rows.length <= _communityPageSize) return rows;
-          return rows.take(_communityPageSize).toList();
-        });
+    return _amalLogs.where('hijriDate', isEqualTo: hijriDate).snapshots().map((
+      snap,
+    ) {
+      final rows = snap.docs.map(AmalLogModel.fromDoc).toList()
+        ..sort((a, b) => b.score.compareTo(a.score));
+      if (rows.length <= _communityPageSize) return rows;
+      return rows.take(_communityPageSize).toList();
+    });
   }
 
   /// One-time paginated fetch of submitted logs for a Hijri day.
-  Future<({List<AmalLogModel> rows, DocumentSnapshot<Map<String, dynamic>>? lastDoc})>
+  Future<
+    ({List<AmalLogModel> rows, DocumentSnapshot<Map<String, dynamic>>? lastDoc})
+  >
   communityDayFetch(
     String hijriDate, {
     DocumentSnapshot<Map<String, dynamic>>? startAfter,
@@ -156,7 +162,9 @@ class FirestoreService {
       return (rows: rows, lastDoc: lastDoc);
     } on FirebaseException {
       // Index fallback: query by date only, sort client-side, then paginate locally.
-      final snap = await _amalLogs.where('hijriDate', isEqualTo: hijriDate).get();
+      final snap = await _amalLogs
+          .where('hijriDate', isEqualTo: hijriDate)
+          .get();
       final docs = snap.docs.toList()
         ..sort((a, b) {
           final aScore = (a.data()['score'] as num?)?.toInt() ?? 0;
@@ -234,5 +242,30 @@ class FirestoreService {
       'senderUid': senderUid,
       'hijriDate': hijriDate,
     });
+  }
+
+  Stream<List<NotificationModel>> notificationStream(String uid) {
+    return _notificationItems(uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map(NotificationModel.fromDoc).toList());
+  }
+
+  Future<void> markNotificationRead(String uid, String notificationId) async {
+    await _notificationItems(
+      uid,
+    ).doc(notificationId).update(<String, dynamic>{'isRead': true});
+  }
+
+  Future<void> markAllNotificationsRead(String uid) async {
+    final unread = await _notificationItems(
+      uid,
+    ).where('isRead', isEqualTo: false).get();
+    if (unread.docs.isEmpty) return;
+    final batch = _firestore.batch();
+    for (final doc in unread.docs) {
+      batch.update(doc.reference, <String, dynamic>{'isRead': true});
+    }
+    await batch.commit();
   }
 }

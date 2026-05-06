@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../models/user_model.dart';
@@ -104,6 +105,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         >();
     await ios?.requestPermissions(alert: true, badge: true, sound: true);
     await android?.requestNotificationsPermission();
+    await NotificationService.instance.initialize();
+    await NotificationService.instance.scheduleAll();
     if (mounted) {
       setState(() => _notificationRequested = true);
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/services/notification_service.dart';
 import 'core/router/router.dart';
 import 'core/theme/theme.dart';
 
@@ -18,10 +19,17 @@ class _AmolTrackerAppState extends State<AmolTrackerApp> {
   void initState() {
     super.initState();
     _router = buildAppRouter();
+    NotificationService.instance.initialize(
+      onDeepLink: (route) {
+        if (!mounted) return;
+        _router.go(route);
+      },
+    );
   }
 
   @override
   void dispose() {
+    NotificationService.instance.dispose();
     _router.dispose();
     super.dispose();
   }

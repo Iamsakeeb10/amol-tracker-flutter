@@ -1,25 +1,32 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../models/user_model.dart';
+import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _controller = PageController();
   int _index = 0;
+  bool _isSubmitting = false;
+  bool _isAnonymousDisplay = false;
+  bool _notificationRequested = false;
+  String _displayName = '';
 
-  static const _slides = [
+  static const _slides = <_SlideData>[
     _SlideData(
       icon: Icons.calendar_month_outlined,
       title: 'Build a daily habit',
@@ -36,24 +43,90 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
     _SlideData(
       icon: Icons.group_outlined,
-      title: 'Pull your brothers along',
-      body: 'Join with an invite code. Encourage each other every day.',
-      kind: _SlideKind.invite,
+      title: 'Set up your profile',
+      body: 'Set your name and privacy before joining the community.',
+      kind: _SlideKind.setup,
     ),
   ];
 
-  void _next() {
+  @override
+  void initState() {
+    super.initState();
+    final authUser = FirebaseAuth.instance.currentUser;
+    _displayName = authUser?.displayName?.trim().isNotEmpty == true
+        ? authUser!.displayName!.trim()
+        : 'Anonymous';
+    _isAnonymousDisplay = authUser?.isAnonymous ?? false;
+  }
+
+  Future<void> _next() async {
     if (_index < _slides.length - 1) {
-      _controller.nextPage(
+      await _controller.nextPage(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
       );
-    } else {
-      context.go(AppRoutes.home);
+      return;
+    }
+    await _completeOnboarding();
+  }
+
+  Future<void> _skip() => _completeOnboarding();
+
+  Future<void> _requestNotificationPermission() async {
+    final plugin = FlutterLocalNotificationsPlugin();
+    final ios = plugin.resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin>();
+    final android = plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await ios?.requestPermissions(alert: true, badge: true, sound: true);
+    await android?.requestNotificationsPermission();
+    if (mounted) {
+      setState(() => _notificationRequested = true);
     }
   }
 
-  void _skip() => context.go(AppRoutes.home);
+  Future<void> _completeOnboarding() async {
+    if (_isSubmitting) return;
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null) return;
+
+    final fallbackName = authUser.isAnonymous ? 'Anonymous' : 'User';
+    final resolvedName = _displayName.trim().isNotEmpty
+        ? _displayName.trim()
+        : (authUser.displayName?.trim().isNotEmpty == true
+              ? authUser.displayName!.trim()
+              : fallbackName);
+
+    setState(() => _isSubmitting = true);
+    try {
+      await ref
+          .read(firestoreServiceProvider)
+          .createUser(
+            UserModel(
+              uid: authUser.uid,
+              name: resolvedName,
+              email: authUser.email ?? '',
+              photoUrl: authUser.photoURL ?? '',
+              createdAt: DateTime.now(),
+              currentStreak: 0,
+              bestStreak: 0,
+              streakFreezeUsed: false,
+              lastLogDate: '',
+              isAnonymousDisplay: _isAnonymousDisplay,
+              badges: const <String>[],
+            ),
+          );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not complete onboarding: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -69,7 +142,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: _skip,
+              onPressed: _isSubmitting ? null : _skip,
               child: Text(
                 'Skip',
                 style: AppTextStyles.button(context).copyWith(
@@ -83,7 +156,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               controller: _controller,
               itemCount: _slides.length,
               onPageChanged: (i) => setState(() => _index = i),
-              itemBuilder: (_, i) => _SlideContent(slide: _slides[i]),
+              itemBuilder: (_, i) => _SlideContent(
+                slide: _slides[i],
+                displayName: _displayName,
+                isAnonymousDisplay: _isAnonymousDisplay,
+                notificationRequested: _notificationRequested,
+                onNameChanged: (value) => _displayName = value,
+                onAnonymousChanged: (value) {
+                  setState(() => _isAnonymousDisplay = value);
+                },
+                onRequestNotification: _requestNotificationPermission,
+              ),
             ),
           ),
           Row(
@@ -111,7 +194,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               width: double.infinity,
               height: 50.h,
               child: ElevatedButton(
-                onPressed: _next,
+                onPressed: _isSubmitting ? null : _next,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.gold,
                   foregroundColor: AppColors.emeraldDeep,
@@ -121,7 +204,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
                 child: Text(
-                  _index == _slides.length - 1 ? 'Get started' : 'Next',
+                  _isSubmitting
+                      ? 'Please wait...'
+                      : (_index == _slides.length - 1 ? 'Get started' : 'Next'),
                   style: AppTextStyles.button(context).copyWith(
                     color: AppColors.emeraldDeep,
                     fontWeight: FontWeight.w600,
@@ -130,13 +215,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
           ),
+          if (_isSubmitting) ...[
+            const CircularProgressIndicator(strokeWidth: 2),
+            SizedBox(height: 10.h),
+          ],
         ],
       ),
     );
   }
 }
 
-enum _SlideKind { simple, streaks, invite }
+enum _SlideKind { simple, streaks, setup }
 
 class _SlideData {
   final IconData icon;
@@ -153,7 +242,22 @@ class _SlideData {
 
 class _SlideContent extends StatelessWidget {
   final _SlideData slide;
-  const _SlideContent({required this.slide});
+  final String displayName;
+  final bool isAnonymousDisplay;
+  final bool notificationRequested;
+  final ValueChanged<String> onNameChanged;
+  final ValueChanged<bool> onAnonymousChanged;
+  final VoidCallback onRequestNotification;
+
+  const _SlideContent({
+    required this.slide,
+    required this.displayName,
+    required this.isAnonymousDisplay,
+    required this.notificationRequested,
+    required this.onNameChanged,
+    required this.onAnonymousChanged,
+    required this.onRequestNotification,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +296,15 @@ class _SlideContent extends StatelessWidget {
                     ),
                     SizedBox(height: 22.h),
                     if (slide.kind == _SlideKind.streaks) const _StreakBadgesRow(),
-                    if (slide.kind == _SlideKind.invite) const _InvitePreview(),
+                    if (slide.kind == _SlideKind.setup)
+                      _SetupSlide(
+                        displayName: displayName,
+                        isAnonymousDisplay: isAnonymousDisplay,
+                        notificationRequested: notificationRequested,
+                        onNameChanged: onNameChanged,
+                        onAnonymousChanged: onAnonymousChanged,
+                        onRequestNotification: onRequestNotification,
+                      ),
                   ],
                 ),
               ),
@@ -243,25 +355,74 @@ class _StreakBadgesRow extends StatelessWidget {
   }
 }
 
-class _InvitePreview extends StatelessWidget {
-  const _InvitePreview();
+class _SetupSlide extends StatelessWidget {
+  final String displayName;
+  final bool isAnonymousDisplay;
+  final bool notificationRequested;
+  final ValueChanged<String> onNameChanged;
+  final ValueChanged<bool> onAnonymousChanged;
+  final VoidCallback onRequestNotification;
+
+  const _SetupSlide({
+    required this.displayName,
+    required this.isAnonymousDisplay,
+    required this.notificationRequested,
+    required this.onNameChanged,
+    required this.onAnonymousChanged,
+    required this.onRequestNotification,
+  });
+
   @override
   Widget build(BuildContext context) {
     return CardContainer.gold(
       padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 18.w),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'INVITE CODE',
+            'Display name',
             style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
           ),
-          SizedBox(height: 6.h),
-          Text(
-            'BRO-447',
-            style: AppTextStyles.displayLarge(context).copyWith(
-              color: AppColors.goldLight,
-              fontSize: 32.sp,
-              letterSpacing: 4,
+          SizedBox(height: 8.h),
+          TextFormField(
+            initialValue: displayName,
+            onChanged: onNameChanged,
+            style: AppTextStyles.bodyMedium(
+              context,
+            ).copyWith(color: AppColors.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'Your name',
+              hintStyle: AppTextStyles.bodyMedium(
+                context,
+              ).copyWith(color: AppColors.textHint),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              'Show as Anonymous in community',
+              style: AppTextStyles.bodySmall(context),
+            ),
+            value: isAnonymousDisplay,
+            onChanged: onAnonymousChanged,
+          ),
+          SizedBox(height: 8.h),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: onRequestNotification,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.goldBorder),
+              ),
+              child: Text(
+                notificationRequested
+                    ? 'Notifications enabled'
+                    : 'Allow notifications',
+                style: AppTextStyles.button(
+                  context,
+                ).copyWith(color: AppColors.goldLight),
+              ),
             ),
           ),
         ],

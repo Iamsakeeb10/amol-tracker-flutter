@@ -11,11 +11,8 @@ class AppRoutes {
   static const history = '/history';
   static const dayDetail = '/history/day-detail';
 
-  static const friends = '/friends';
-  static const invite = '/friends/invite';
-  static const groupSheet = '/friends/group-sheet';
-  static const friendProfile = '/friends/profile';
-  static const groupManage = '/friends/group-manage';
+  static const community = '/community';
+  static const userProfile = '/community/user-profile';
 
   static const more = '/more';
   static const leaderboard = '/leaderboard';

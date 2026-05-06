@@ -1,12 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
-import '../../features/friends/presentation/screens/friend_profile_screen.dart';
-import '../../features/friends/presentation/screens/friends_screen.dart';
-import '../../features/friends/presentation/screens/group_manage_screen.dart';
-import '../../features/friends/presentation/screens/group_sheet_screen.dart';
-import '../../features/friends/presentation/screens/invite_screen.dart';
+import '../../features/community/presentation/screens/community_screen.dart';
+import '../../features/community/presentation/screens/user_profile_screen.dart';
 import '../../features/history/presentation/screens/day_detail_screen.dart';
 import '../../features/history/presentation/screens/history_screen.dart';
 import '../../features/home/presentation/screens/day_complete_screen.dart';
@@ -21,127 +21,152 @@ import '../../features/settings/presentation/screens/quiet_hours_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../shared/widgets/bottom_nav.dart';
 import '../../shared/widgets/dev_screen.dart';
+import '../services/firestore_service.dart';
 import 'routes.dart';
 
-GoRouter buildAppRouter() => GoRouter(
-  initialLocation: AppRoutes.signIn,
-  debugLogDiagnostics: false,
-  routes: [
-    GoRoute(
-      path: AppRoutes.signIn,
-      name: 'signIn',
-      builder: (_, _) => const SignInScreen(),
+GoRouter buildAppRouter() {
+  final firestoreService = FirestoreService();
+  return GoRouter(
+    initialLocation: AppRoutes.signIn,
+    debugLogDiagnostics: false,
+    refreshListenable: GoRouterRefreshStream(
+      FirebaseAuth.instance.authStateChanges(),
     ),
-    GoRoute(
-      path: AppRoutes.onboarding,
-      name: 'onboarding',
-      builder: (_, _) => const OnboardingScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.dev,
-      name: 'dev',
-      builder: (_, _) => const DevScreen(),
-    ),
+    redirect: (_, state) async {
+      final location = state.matchedLocation;
+      final authUser = FirebaseAuth.instance.currentUser;
+      final isSigningIn = location == AppRoutes.signIn;
+      final isOnboarding = location == AppRoutes.onboarding;
+      final isDev = location == AppRoutes.dev;
 
-    // Main shell with bottom nav (4 tabs: Home, History, Friends, More)
-    ShellRoute(
-      builder: (context, state, child) {
-        return ScaffoldWithBottomNav(child: child);
-      },
-      routes: [
-        GoRoute(
-          path: AppRoutes.home,
-          name: 'home',
-          builder: (_, _) => const HomeScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.history,
-          name: 'history',
-          builder: (_, _) => const HistoryScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.friends,
-          name: 'friends',
-          builder: (_, _) => const FriendsScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.more,
-          name: 'more',
-          builder: (_, _) => const MoreScreen(),
-        ),
-      ],
-    ),
+      if (isDev) return null;
+      if (authUser == null) {
+        return isSigningIn ? null : AppRoutes.signIn;
+      }
 
-    // Full-screen routes (no bottom nav)
-    GoRoute(
-      path: AppRoutes.dayComplete,
-      name: 'dayComplete',
-      builder: (_, _) => const DayCompleteScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.emptyState,
-      name: 'emptyState',
-      builder: (_, _) => const EmptyStateScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.dayDetail,
-      name: 'dayDetail',
-      builder: (_, _) => const DayDetailScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.invite,
-      name: 'invite',
-      builder: (_, _) => const InviteScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.groupSheet,
-      name: 'groupSheet',
-      builder: (_, _) => const GroupSheetScreen(),
-    ),
-    GoRoute(
-      path: '${AppRoutes.friendProfile}/:id',
-      name: 'friendProfile',
-      builder: (_, state) =>
-          FriendProfileScreen(friendId: state.pathParameters['id'] ?? ''),
-    ),
-    GoRoute(
-      path: AppRoutes.groupManage,
-      name: 'groupManage',
-      builder: (_, _) => const GroupManageScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.leaderboard,
-      name: 'leaderboard',
-      builder: (_, _) => const LeaderboardScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.notifications,
-      name: 'notifications',
-      builder: (_, _) => const NotificationsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.profile,
-      name: 'profile',
-      builder: (_, _) => const ProfileScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.settings,
-      name: 'settings',
-      builder: (_, _) => const SettingsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.quietHours,
-      name: 'quietHours',
-      builder: (_, _) => const QuietHoursScreen(),
-    ),
-  ],
-  errorBuilder: (_, state) => Scaffold(
-    body: Center(
-      child: Text(
-        'Route not found: ${state.uri.path}',
-        style: const TextStyle(color: Colors.white70),
+      final userExists = await firestoreService.userExists(authUser.uid);
+      if (!userExists) {
+        return isOnboarding ? null : AppRoutes.onboarding;
+      }
+
+      if (isSigningIn || isOnboarding) {
+        return AppRoutes.home;
+      }
+      return null;
+    },
+    routes: [
+      GoRoute(
+        path: AppRoutes.signIn,
+        name: 'signIn',
+        builder: (_, _) => const SignInScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        name: 'onboarding',
+        builder: (_, _) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.dev,
+        name: 'dev',
+        builder: (_, _) => const DevScreen(),
+      ),
+      ShellRoute(
+        builder: (context, state, child) {
+          return ScaffoldWithBottomNav(child: child);
+        },
+        routes: [
+          GoRoute(
+            path: AppRoutes.home,
+            name: 'home',
+            builder: (_, _) => const HomeScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.history,
+            name: 'history',
+            builder: (_, _) => const HistoryScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.community,
+            name: 'community',
+            builder: (_, _) => const CommunityScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.more,
+            name: 'more',
+            builder: (_, _) => const MoreScreen(),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.dayComplete,
+        name: 'dayComplete',
+        builder: (_, _) => const DayCompleteScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.emptyState,
+        name: 'emptyState',
+        builder: (_, _) => const EmptyStateScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.dayDetail,
+        name: 'dayDetail',
+        builder: (_, _) => const DayDetailScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.userProfile}/:id',
+        name: 'userProfile',
+        builder: (_, state) =>
+            UserProfileScreen(userId: state.pathParameters['id'] ?? ''),
+      ),
+      GoRoute(
+        path: AppRoutes.leaderboard,
+        name: 'leaderboard',
+        builder: (_, _) => const LeaderboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        name: 'notifications',
+        builder: (_, _) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        name: 'profile',
+        builder: (_, _) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        name: 'settings',
+        builder: (_, _) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.quietHours,
+        name: 'quietHours',
+        builder: (_, _) => const QuietHoursScreen(),
+      ),
+    ],
+    errorBuilder: (_, state) => Scaffold(
+      body: Center(
+        child: Text(
+          'Route not found: ${state.uri.path}',
+          style: const TextStyle(color: Colors.white70),
+        ),
       ),
     ),
-  ),
-);
+  );
+}
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
 

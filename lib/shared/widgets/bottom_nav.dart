@@ -14,7 +14,7 @@ class ScaffoldWithBottomNav extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith('/home')) return 0;
     if (location.startsWith('/history')) return 1;
-    if (location.startsWith('/friends')) return 2;
+    if (location.startsWith('/community')) return 2;
     if (location.startsWith('/more') ||
         location.startsWith('/profile') ||
         location.startsWith('/notifications') ||
@@ -32,7 +32,7 @@ class ScaffoldWithBottomNav extends StatelessWidget {
       case 1:
         context.go(AppRoutes.history);
       case 2:
-        context.go(AppRoutes.friends);
+        context.go(AppRoutes.community);
       case 3:
         context.go(AppRoutes.more);
     }
@@ -65,7 +65,7 @@ class _BottomNavBar extends StatelessWidget {
       Icons.calendar_today,
       'History',
     ),
-    _NavItem(Icons.people_outline, Icons.people, 'Friends'),
+    _NavItem(Icons.grid_view_outlined, Icons.grid_view_rounded, 'Community'),
     _NavItem(Icons.menu, Icons.menu_open, 'More'),
   ];
 

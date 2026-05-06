@@ -41,7 +41,7 @@ class FriendsScreen extends StatelessWidget {
                 ),
               ),
               ElevatedButton.icon(
-                onPressed: () => context.push(AppRoutes.invite),
+                onPressed: () => context.push(AppRoutes.community),
                 icon: Icon(Icons.add, size: 16.r),
                 label: const Text('Invite'),
                 style: ElevatedButton.styleFrom(
@@ -67,7 +67,7 @@ class FriendsScreen extends StatelessWidget {
           SectionHeader(
             title: 'YOUR GROUP',
             trailingText: 'MANAGE',
-            onTrailingTap: () => context.push(AppRoutes.groupManage),
+            onTrailingTap: () => context.push(AppRoutes.settings),
           ),
           _GroupCard(),
           SizedBox(height: 18.h),
@@ -151,7 +151,7 @@ class _GroupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardContainer(
-      onTap: () => context.push(AppRoutes.groupSheet),
+      onTap: () => context.push(AppRoutes.community),
       color: AppColors.goldCard,
       borderColor: AppColors.goldBorder,
       child: Column(
@@ -207,7 +207,7 @@ class _FriendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CardContainer(
-      onTap: () => context.push('${AppRoutes.friendProfile}/${user.id}'),
+      onTap: () => context.push('${AppRoutes.userProfile}/${user.id}'),
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       child: Row(
         children: [

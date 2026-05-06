@@ -1,7 +1,7 @@
 # 🗺️ Amol Tracker — Complete User Flow
 
+> v2.0 — Public Community Model. Private groups and invite codes removed.
 > Every screen, every navigation path, every edge case.
-> **v2.0 — Public Community Model. Private groups and invite codes removed.**
 
 ---
 
@@ -15,25 +15,27 @@ Check Firebase Auth session
     │
     ├── No session ──────────────► S-00: Sign In
     │                                   │
-    │                              Google Sign-In / Guest
+    │                         Google Sign-In / Guest
     │                                   │
-    │                         Check Firestore user doc
+    │                      Check Firestore user doc exists?
     │                                   │
-    │                    ┌──────────────┴─────────────┐
-    │               New user                      Existing user
-    │                    │                              │
-    │              S-01a: Onboarding 1            S-02: Home
+    │                    ┌─────────────┴─────────────┐
+    │               New user                     Existing user
+    │                    │                             │
+    │              S-01a: Onboarding 1           S-02: Home
     │                    │
-    │              S-01b: Onboarding 2
+    │              S-01b: Onboarding 2 (streaks/badges)
     │                    │
-    │              S-01c: Onboarding 3 (set display name, privacy pref)
+    │              S-01c: Onboarding 3
+    │                    ├── Set display name
+    │                    ├── Set privacy (anonymous toggle)
+    │                    └── Request notification permission
     │                    │
-    │               Create user doc (auto-joined to global community)
+    │         Create user doc in Firestore
+    │         (auto-joined to global community — no invite needed)
     │                    │
-    └── Has session ─────┴──────────────► S-02: Home
+    └── Has session ─────┴─────────────► S-02: Home
 ```
-
-> **No invite codes. No group selection.** Every new user is automatically part of the public community.
 
 ---
 
@@ -42,31 +44,36 @@ Check Firebase Auth session
 ```
 S-02: Home Screen
     │
-    ├── Already submitted today?
-    │       ├── YES → Show locked "Logged today ✓" state (no editing)
-    │       └── NO  → Show active amal toggle list
+    ├── Already submitted today (Hijri date match)?
+    │       ├── YES → Locked state: "Logged today ✓" (read-only, no toggles)
+    │       └── NO  → Active amal toggle list
     │
     ├── Tap individual amal toggle
-    │       └── Toggle ON/OFF → Update local score live
+    │       └── Toggle ON/OFF → score + progress bar updates live
     │
     ├── Tap "Mark all done"
-    │       └── All 9 toggles turn ON → CTA changes to "Submit today's log"
+    │       └── All 9 ON → CTA label changes to "Submit today's log"
     │
     ├── Tap "Submit today's log"
-    │       ├── Save to Firestore amal_logs + Hive
-    │       ├── Trigger streak calculation
-    │       │       ├── Streak continues → increment + check badges
-    │       │       ├── Streak would break + freeze available → Show S-16 Modal
-    │       │       └── Streak breaks → reset to 1
+    │       ├── Validate: at least 1 field toggled
+    │       ├── Save to Firestore amal_logs/{uid}_{hijriDate}
+    │       ├── Save to Hive (offline backup)
+    │       ├── Streak calculation:
+    │       │       ├── Consecutive day → increment currentStreak + check badges
+    │       │       ├── 1 day gap + freeze available → Show S-16 Freeze Modal
+    │       │       └── Gap > 1 day → reset streak to 1
     │       └── Navigate → S-10: Day Complete
     │
     ├── Tap streak banner
     │       └── Navigate → S-04: History
     │
-    └── Bottom nav taps
+    ├── Tap Hijri date header
+    │       └── Navigate → S-04: History (calendar view)
+    │
+    └── Bottom nav
             ├── Community → S-05
             ├── History   → S-04
-            └── More      → S-09 (Settings)
+            └── More      → More screen
 ```
 
 ---
@@ -74,14 +81,14 @@ S-02: Home Screen
 ## 🎉 Day Complete Flow (S-10)
 
 ```
-S-10: Day Complete
+S-10: Day Complete (full-screen, no bottom nav)
     │
-    ├── Shows: score ring, hadith, amal summary (done/missed)
+    ├── Shows animated score ring, random hadith, amal summary
     │
     ├── Tap "Back to home"
-    │       └── Pop → S-02: Home (locked state)
+    │       └── Pop → S-02 (locked state, "Logged ✓")
     │
-    └── Auto-back after 30s (optional UX improvement)
+    └── Hardware back → same as "Back to home"
 ```
 
 ---
@@ -89,60 +96,101 @@ S-10: Day Complete
 ## 📅 History Flow (S-04 → S-13)
 
 ```
-S-04: History / Calendar
+S-04: History
     │
-    ├── Shows: Hijri calendar grid, monthly stats, insight card
+    ├── Hijri calendar grid, monthly stats, weakest amal insight
     │
-    ├── Tap any past day (green/amber/red cell)
-    │       └── Navigate → S-13: Day Detail (read-only)
+    ├── Tap past day cell (green/amber/red)
+    │       └── Navigate → S-13: Day Detail
     │                           │
-    │                           ├── Shows: score, streak that day,
-    │                           │         each amal done/missed, locked banner
-    │                           │
-    │                           └── Back button → S-04: History
+    │                           ├── Read-only amal list (✓/✗ per field)
+    │                           ├── Score, streak value that day
+    │                           ├── "Locked — cannot edit" banner at bottom
+    │                           └── Back → S-04
     │
-    └── Bottom nav taps
-            ├── Home      → S-02
-            ├── Community → S-05
-            └── More      → S-09
+    ├── Tap today's cell
+    │       └── Navigate → S-02 Home (if not yet logged) or show today's summary
+    │
+    └── Bottom nav → Home / Community / More
 ```
 
 ---
 
-## 🌐 Community Sheet Flow (S-05 → S-12)
-
-This is the public, open community screen — the Google Sheet for the whole app.
+## 🌐 Community Screen Flow (S-05 → S-12)
 
 ```
-S-05: Community Sheet Screen
+S-05: Community Screen
     │
-    ├── Header: date tabs (today selected, scroll left for past days)
-    ├── Column headers: Name | 9 amal columns | Score
+    ├── Two tabs at top:
+    │       ├── [Sheet] ← default tab
+    │       └── [Feed]
     │
-    ├── Current user row → pinned at top, gold highlight
+    │── TAB 1: Community Sheet
+    │       │
+    │       ├── Date tabs (horizontal scroll): Today ← past Hijri days
+    │       │       ├── Today tab → real-time stream (⏳/✅/❌)
+    │       │       └── Past tab  → one-time fetch (✅/❌ only, no ⏳)
+    │       │
+    │       ├── Sticky column header: Name | 9 amal cols | Score
+    │       │
+    │       ├── Current user row (pinned top, gold bg)
+    │       │       └── If not yet submitted → shows ⏳ "Log today to appear"
+    │       │
+    │       ├── All other users sorted by score desc
+    │       │       ├── ✅ = done (green cell)
+    │       │       ├── ❌ = missed (red cell)
+    │       │       └── ⏳ = not yet submitted (grey, today only)
+    │       │
+    │       ├── Real-time updates: submitted user row transitions ⏳ → live data
+    │       │
+    │       ├── Infinite scroll: loads next 20 on reach bottom
+    │       │
+    │       ├── Search bar → filter by displayName (client-side)
+    │       │       └── Anonymous users excluded from name search
+    │       │
+    │       └── Tap any row → S-12: User Profile
+    │               │
+    │               ├── Regular user → full profile (name, avatar, stats)
+    │               └── Anonymous user → minimal profile
+    │                       (shows 🕌 avatar, "Anonymous", stats only — no real name)
     │
-    ├── All other users listed below, sorted by score (desc)
-    │       ├── ✅ = completed that amal
-    │       ├── ❌ = missed that amal
-    │       └── ⏳ = hasn't submitted yet today
+    └── TAB 2: Activity Feed
+            │
+            ├── Real-time list from Firestore `activity_feed` collection
+            │
+            ├── Feed item types:
+            │       ├── "[Name] completed all amal today 🌟"
+            │       ├── "[Name] is on a X-day streak 🔥"
+            │       ├── "X community members have logged today"
+            │       ├── Islamic quote of the day (rotated daily from hadiths.json)
+            │       └── "A community member sent you a dua 🤲"
+            │
+            └── Tap dua item → S-07 Notifications
+```
+
+---
+
+## 👤 User Profile Flow (S-12)
+
+```
+S-12: User Profile (public — any user, no friendship needed)
     │
-    ├── Tap date tab (past day)
-    │       └── Reload grid for that Hijri date (read-only, no ⏳ — everyone's status final)
+    ├── Viewing another user:
+    │       ├── Avatar / name (or 🕌 / "Anonymous" if isAnonymousDisplay)
+    │       ├── Streak badge, stats grid, weekly chart
+    │       ├── Today's amal grid (read-only, same 9 columns)
+    │       ├── Tap "Send Dua 🤲"
+    │       │       ├── Check: already sent dua to this user today?
+    │       │       │       ├── YES → "You already sent a dua today"
+    │       │       │       └── NO  → Write notification doc, show "Dua sent ✓"
+    │       └── Back → wherever they came from (S-05 or S-03)
     │
-    ├── Search bar → filter visible rows by display name (client-side)
-    │
-    ├── Tap any user row
-    │       └── Navigate → S-12: User Profile
-    │                           │
-    │                           ├── Shows: avatar, name, streak badge
-    │                           ├── Today's amal grid (read-only)
-    │                           ├── Stats: score, best streak, avg score
-    │                           ├── Weekly bar chart (last 7 days)
-    │                           ├── Tap "Send Dua 🤲" → creates notification for that user
-    │                           │       └── Confirmation: "Dua sent ✓"
-    │                           └── Back → S-05
-    │
-    └── Bottom nav taps → Home / History / More
+    └── Viewing own profile (tapping own row in sheet):
+            ├── Same layout + stats
+            ├── Edit display name (inline TextField → save to Firestore)
+            ├── Anonymous toggle → updates isAnonymousDisplay in Firestore
+            │       └── Community sheet reflects change immediately
+            └── Back → S-05
 ```
 
 ---
@@ -150,17 +198,34 @@ S-05: Community Sheet Screen
 ## 🏆 Leaderboard Flow (S-03)
 
 ```
-S-03: Leaderboard
+S-03: Leaderboard (accessed via More menu)
     │
-    ├── Shows: global podium top 3, full ranked list, smart nudge card
+    ├── Tabs: Weekly (default) | Daily | Streak
+    │       └── Toggle re-sorts list in place (no navigation)
     │
-    ├── Tap "Weekly" / "Daily" / "Streak" tabs
-    │       └── Re-sort list in same screen (no navigation)
+    ├── Podium: top 3 (anonymous users show 🕌 / "Anonymous")
     │
-    ├── Tap any user row
-    │       └── Navigate → S-12: User Profile
+    ├── Full ranked list below podium
+    │       └── Current user's row always visible (pinned if outside top view)
     │
-    └── Bottom nav taps → Home / Community / History / More
+    ├── Smart nudge card: "X pts behind 2nd place — log today to close the gap"
+    │
+    ├── Tap any user row → S-12: User Profile
+    │
+    └── Back → More screen
+```
+
+---
+
+## 📋 More Menu Flow
+
+```
+More Screen (bottom nav tab 4)
+    │
+    ├── Leaderboard     → S-03
+    ├── Notifications   → S-07
+    ├── My Profile      → S-08
+    └── Settings        → S-09
 ```
 
 ---
@@ -168,47 +233,38 @@ S-03: Leaderboard
 ## 🔔 Notifications Flow (S-07)
 
 ```
-Notification received (system tray)
+System tray notification tapped
     │
-    ├── Tap "Log your amal" type notification
-    │       └── Deep link → S-02: Home
-    │
-    ├── Tap "Streak warning" notification
-    │       └── Deep link → S-02: Home
-    │
-    ├── Tap "Community activity" notification
-    │       └── Deep link → S-05: Community Sheet
-    │
-    └── Tap "Dua received" notification
-            └── Deep link → S-07: Notifications
+    ├── "Log your amal"         → deep link → S-02 Home
+    ├── "Streak warning"        → deep link → S-02 Home
+    ├── "Community activity"    → deep link → S-05 Community (Sheet tab)
+    ├── "Leaderboard position"  → deep link → S-03 Leaderboard
+    └── "Dua received"          → deep link → S-07 Notifications
 
 S-07: Notifications Screen
     │
-    ├── Shows: unread (gold dot) vs read notifications
-    ├── Tap "Mark all read" → clears gold dots
-    └── Bottom nav taps → Home / Community / History / More
+    ├── Unread items: gold dot indicator
+    ├── Read items: dimmed
+    ├── Tap "Mark all read" → clear all gold dots
+    └── Tap individual item → mark read + relevant deep link
 ```
 
 ---
 
-## 👤 Profile & Badges Flow (S-08)
+## 👤 Own Profile Flow (S-08)
 
 ```
-S-08: Profile (own profile)
+S-08: My Profile (via More menu)
     │
-    ├── Shows: avatar, name, streak pill, 3-stat grid,
-    │         weekly bar chart, badge grid
-    │
-    ├── Tap "Edit display name"
-    │       └── Inline text field → save to Firestore user doc
-    │
-    ├── Toggle "Show as Anonymous in community"
-    │       └── Updates isAnonymousDisplay in Firestore
-    │
-    ├── Tap locked badge
-    │       └── Show tooltip: "Complete X days to unlock"
-    │
-    └── Bottom nav → More tab
+    ├── Avatar (or initials), display name, streak pill
+    ├── Stats: current streak, best streak, avg score
+    ├── Weekly bar chart (fl_chart, last 7 days)
+    ├── Badge grid:
+    │       ├── Unlocked → gold state
+    │       └── Locked   → grey + tap shows "Complete X days to unlock"
+    ├── Edit display name → inline TextField → save → update Firestore
+    ├── Anonymous toggle → update isAnonymousDisplay in Firestore
+    └── Back → More screen
 ```
 
 ---
@@ -218,122 +274,125 @@ S-08: Profile (own profile)
 ```
 S-09: Settings
     │
-    ├── Notification toggles (morning, evening, streak, community)
-    │       └── Toggle ON/OFF → schedule/cancel local notifications
+    ├── Notification toggles (each cancels/reschedules local notifications):
+    │       ├── Morning reminder (6:00 AM)
+    │       ├── Evening reminder (6:30 PM)
+    │       ├── Streak warning (10:00 PM)
+    │       └── Community activity (FCM — toggle disables FCM topic sub)
     │
-    ├── Tap "Quiet hours"
-    │       └── Navigate → S-17: Quiet Hours
-    │                           │
-    │                           ├── Adjust start/end time with +/- controls
-    │                           ├── Preview: "X hours of silence"
-    │                           ├── Tap "Save quiet hours" → save + back
-    │                           └── Back → S-09
+    ├── Tap "Quiet hours" →
+    │       S-17: Quiet Hours
+    │               ├── +/- controls for start and end time
+    │               ├── Preview: "X hours of silence"
+    │               ├── Tap "Save" → SharedPreferences + reschedule
+    │               └── Back → S-09
     │
-    ├── Privacy toggle: "Show as Anonymous in community"
-    │       └── Toggle → update Firestore isAnonymousDisplay field
+    ├── Privacy: "Show as Anonymous in community"
+    │       └── Toggle → update Firestore isAnonymousDisplay
+    │
+    ├── Calendar type: Hijri (default, read-only for now)
     │
     ├── Ramadan mode toggle (Phase 3)
     │
     └── Sign out
-            └── Confirmation dialog → Firebase Auth sign out → S-00
+            └── Confirmation dialog → sign out → clear Hive → S-00
 ```
 
 ---
 
-## 🔥 Streak Freeze Modal Flow (S-16)
+## 🔥 Streak Freeze Modal (S-16)
 
 ```
-Triggered automatically when:
-    User submits today's log AND missed yesterday AND
-    streakFreezeUsed == false (weekly freeze available)
+Trigger: user submits log + missed exactly 1 day + streakFreezeUsed == false
     │
     ▼
-S-16: Streak Freeze Modal (bottom sheet)
+S-16: Bottom Sheet Modal
     │
-    ├── Tap "Yes, use my freeze"
-    │       ├── streak stays the same
-    │       ├── streakFreezeUsed = true
-    │       └── Navigate → S-10: Day Complete
+    ├── Shows: current streak, freeze count (1 remaining this week)
+    ├── "Yes, use my freeze"
+    │       ├── currentStreak unchanged
+    │       ├── streakFreezeUsed = true (resets Monday via Cloud Function)
+    │       └── Navigate → S-10 Day Complete
     │
-    └── Tap "No, reset my streak"
+    └── "No, reset my streak"
             ├── currentStreak = 1
-            └── Navigate → S-10: Day Complete
+            └── Navigate → S-10 Day Complete
 ```
 
 ---
 
-## 🆕 New User Empty State Flow (S-15)
+## 🆕 Empty State Flows (S-15)
 
 ```
-S-02: Home (new user, no log)
-    │
-    ├── Shows: welcome hadith, empty log prompt
-    │
-    └── Tap "Log today's amal"
-            └── Scroll down to reveal amal toggles (same screen, animated)
+S-02 Home (new user, no logs ever):
+    └── Welcome state: hadith card + "Log today's amal" CTA
 
-S-05: Community Sheet (new user, no log yet today)
-    │
-    └── Current user row shows ⏳ with "Log today to appear here" hint
+S-05 Community Sheet (current user not yet logged today):
+    └── Own row pinned at top, ⏳, text: "Log today to appear in the sheet"
+
+S-03 Leaderboard (no logs today yet):
+    └── "Be the first to log today! 🌟"
+
+S-07 Notifications (none yet):
+    └── "No notifications yet — your community activity will appear here"
+
+S-04 History (brand new user, no past logs):
+    └── Calendar shows all grey + "Start logging to build your history"
 ```
 
 ---
 
 ## 📱 Bottom Navigation Map
 
-| Tab       | Icon        | Routes accessible            |
-| --------- | ----------- | ---------------------------- |
-| Home      | House       | S-02, S-10                   |
-| Community | Grid/people | S-05, S-12                   |
-| History   | Calendar    | S-04, S-13                   |
-| More      | Menu        | S-03, S-07, S-08, S-09, S-17 |
-
-> **Note:** Community tab replaces the old Friends tab. Leaderboard (S-03) is accessible from More menu.
+| Tab       | Icon     | Primary screens                            |
+| --------- | -------- | ------------------------------------------ |
+| Home      | House    | S-02, S-10                                 |
+| Community | Grid     | S-05 (Sheet + Feed tabs), S-12             |
+| History   | Calendar | S-04, S-13                                 |
+| More      | Menu     | More screen → S-03, S-07, S-08, S-09, S-17 |
 
 ---
 
-## 🔗 Deep Link Map (Notifications)
+## 🔗 Deep Link Map
 
-| Notification type    | Deep link destination |
-| -------------------- | --------------------- |
-| "Log today's amal"   | `/home`               |
-| "Streak warning"     | `/home`               |
-| "Community activity" | `/community`          |
-| "Leaderboard change" | `/leaderboard`        |
-| "Dua received"       | `/notifications`      |
-| "Badge unlocked"     | `/profile`            |
+| Notification type    | Route            |
+| -------------------- | ---------------- |
+| Log today's amal     | `/home`          |
+| Streak warning       | `/home`          |
+| Community activity   | `/community`     |
+| Leaderboard position | `/leaderboard`   |
+| Dua received         | `/notifications` |
+| Badge unlocked       | `/profile`       |
 
 ---
 
 ## 🔒 Screen Access Rules
 
-| Screen               | Requires auth        | Notes                                |
-| -------------------- | -------------------- | ------------------------------------ |
-| S-00 Sign in         | No                   | —                                    |
-| S-01a/b/c Onboarding | Yes (just signed in) | New users only                       |
-| S-02 Home            | Yes                  | —                                    |
-| S-03 Leaderboard     | Yes                  | Global, no group required            |
-| S-04 History         | Yes                  | —                                    |
-| S-05 Community Sheet | Yes                  | All users visible, no group required |
-| S-07 Notifications   | Yes                  | —                                    |
-| S-08 Profile         | Yes                  | —                                    |
-| S-09 Settings        | Yes                  | —                                    |
-| S-10 Day Complete    | Yes                  | —                                    |
-| S-12 User Profile    | Yes                  | Any user's public profile            |
-| S-13 Day Detail      | Yes                  | —                                    |
-| S-15 Empty State     | Yes                  | —                                    |
-| S-16 Freeze Modal    | Yes                  | —                                    |
-| S-17 Quiet Hours     | Yes                  | —                                    |
+| Screen               | Auth required | Notes                   |
+| -------------------- | ------------- | ----------------------- |
+| S-00 Sign In         | No            | —                       |
+| S-01a/b/c Onboarding | Yes (new)     | One-time only           |
+| S-02 Home            | Yes           | —                       |
+| S-03 Leaderboard     | Yes           | Global, no group        |
+| S-04 History         | Yes           | Own logs only           |
+| S-05 Community Sheet | Yes           | All users visible       |
+| S-07 Notifications   | Yes           | Own notifications       |
+| S-08 Profile         | Yes           | Own profile             |
+| S-09 Settings        | Yes           | —                       |
+| S-10 Day Complete    | Yes           | Requires submitted log  |
+| S-12 User Profile    | Yes           | Any user, public        |
+| S-13 Day Detail      | Yes           | Own past log, read-only |
+| S-15 Empty State     | Yes           | Auto-shown when empty   |
+| S-16 Freeze Modal    | Yes           | Auto-triggered          |
+| S-17 Quiet Hours     | Yes           | —                       |
+| More Screen          | Yes           | Menu only               |
 
 ---
 
-## 🗑️ Screens Removed vs Original Design
+## 🗑️ Removed Screens vs v1.0
 
-| Removed Screen           | Was                               | Why                                     |
-| ------------------------ | --------------------------------- | --------------------------------------- |
-| S-06 Invite / Join Group | Invite code entry + sharing       | No groups — everyone is auto-joined     |
-| S-11 Group Sheet View    | Private group amal grid           | Replaced by public S-05 Community Sheet |
-| S-14 Group Manage        | Admin: rename/remove/delete group | No groups to manage                     |
-
-> **S-05 in this document = Community Sheet** (previously Friends & Activity Feed).
-> **S-12 in this document = Public User Profile** (previously Friend Profile, but now requires no friendship).
+| Screen | Was                   | Why removed                               |
+| ------ | --------------------- | ----------------------------------------- |
+| S-06   | Invite / Join Group   | No groups — everyone auto-joined          |
+| S-11   | Group Sheet (private) | → replaced by public S-05 Community Sheet |
+| S-14   | Group Manage          | No groups to manage                       |

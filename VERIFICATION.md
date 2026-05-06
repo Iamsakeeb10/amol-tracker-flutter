@@ -1,7 +1,7 @@
 # ✅ Amol Tracker — Verification Checklist
 
-> Test every feature before shipping. Check each box only after manual testing on a real device.
-> **v2.0 — Public Community Model. Private groups and invite codes removed.**
+> v2.0 — Public Community Model. Private groups and invite codes removed.
+> Test every feature before shipping. Check only after manual testing on real device.
 
 ---
 
@@ -9,30 +9,30 @@
 
 ### Sign In (S-00)
 
-- [ ] Google Sign-In button opens Google account picker
-- [ ] After selecting account, user is authenticated in Firebase
+- [ ] Google Sign-In opens Google account picker
+- [ ] After account selection, user is authenticated in Firebase
 - [ ] Guest / anonymous login works as fallback
-- [ ] New users are routed to Onboarding (S-01a)
-- [ ] Returning users are routed directly to Home (S-02)
-- [ ] Sign-in screen does NOT show if user is already authenticated
-- [ ] App handles Google Sign-In cancellation gracefully (no crash)
+- [ ] New users → Onboarding S-01a
+- [ ] Returning users → Home S-02 directly
+- [ ] Sign-in screen NOT shown if already authenticated
+- [ ] Google Sign-In cancellation handled gracefully (no crash)
 
 ### Onboarding (S-01a, S-01b, S-01c)
 
 - [ ] Slide 1 → Slide 2 → Slide 3 navigation works
 - [ ] "Skip" on any slide routes to Home
-- [ ] User can set display name on Slide 3
-- [ ] Privacy preference (anonymous mode) can be set on Slide 3
-- [ ] User document is created in Firestore on first login
-- [ ] User is **automatically part of global community** — no group join step
-- [ ] Onboarding is NOT shown again after first completion
-- [ ] Notification permission is requested on Slide 3
+- [ ] Slide 3: user can set display name (pre-filled from Google)
+- [ ] Slide 3: anonymous toggle works (saved to Firestore)
+- [ ] Slide 3: notification permission is requested
+- [ ] User document created in Firestore on completion
+- [ ] User auto-joined to global community — no group join step
+- [ ] Onboarding NOT shown again after first completion
 
 ### Sign Out
 
-- [ ] Sign out clears Firebase Auth session
-- [ ] After sign out, app routes to S-00
-- [ ] Hive local cache is cleared on sign out
+- [ ] Firebase Auth session cleared
+- [ ] Hive local cache cleared on sign out
+- [ ] App routes to S-00 after sign out
 
 ---
 
@@ -40,146 +40,185 @@
 
 ### Amal toggles
 
-- [ ] All 9 amal rows render correctly with correct labels and point values
-- [ ] Tapping a toggle switches it ON (green) or OFF (grey)
-- [ ] Score updates live with every toggle tap
-- [ ] Progress bar updates in real-time (0–100%)
-- [ ] "7 / 9" counter updates as toggles turn on
-- [ ] Fard and Takbir show numeric input, not just YES/NO toggle
+- [ ] All 9 amal rows render with correct labels and point values
+- [ ] Toggle switches ON (green) / OFF (grey) correctly
+- [ ] Score updates live on every toggle tap
+- [ ] Progress bar updates in real-time
+- [ ] "7 / 9" counter updates correctly
+- [ ] Fard and Takbir fields accept numeric input (not just toggle)
 
 ### Submit flow
 
-- [ ] "Mark all done" sets all 9 toggles to ON
-- [ ] CTA button label changes from "Mark all done" to "Submit today's log" after any toggle
-- [ ] Tapping "Submit today's log" saves data to Firestore `amal_logs` collection
-- [ ] Data is also saved to Hive for offline access
-- [ ] After submit, app navigates to S-10 (Day Complete)
-- [ ] Submitted log is locked — cannot be edited after submission
-- [ ] Re-opening app after submit shows "Logged today ✓" locked state
-- [ ] After submission, user's row in Community Sheet updates from ⏳ to live data
+- [ ] "Mark all done" sets all 9 toggles ON
+- [ ] CTA label changes from "Mark all done" → "Submit today's log" after any toggle
+- [ ] "Submit today's log" saves to Firestore `amal_logs/{uid}_{hijriDate}`
+- [ ] Same data saved to Hive (offline backup)
+- [ ] Navigate to S-10 Day Complete after save
+- [ ] Submitted log is locked — cannot be re-edited
+- [ ] Re-opening app after submit shows locked "Logged today ✓" state
+- [ ] After submission, own row in Community Sheet updates from ⏳ → live data in real-time
 
 ### Offline behaviour
 
-- [ ] Toggles work with no internet connection
-- [ ] Data is saved to Hive when offline
-- [ ] Hive data syncs to Firestore when connection is restored
-- [ ] Offline banner is shown when no connectivity detected
-- [ ] Hijri date header shows correctly regardless of internet
+- [ ] Toggles work with no internet
+- [ ] Data saved to Hive when offline
+- [ ] Hive data syncs to Firestore when connection restored
+- [ ] Offline banner shown when no connectivity detected
+- [ ] Hijri date header correct regardless of internet
 
 ---
 
-## 🎉 Day Complete Screen (S-10)
+## 🎉 Day Complete (S-10)
 
-- [ ] Score ring shows correct score (matches submitted log)
+- [ ] Score ring shows correct score matching submitted log
 - [ ] Score ring animation plays on screen load
-- [ ] Hadith card shows a relevant hadith
-- [ ] All 9 amal fields show correct done (green ✓) or missed (red ✗) status
-- [ ] Points are correct per field (Fard 20, Azkar 8, etc.)
-- [ ] "Back to home" returns to Home in locked state
-- [ ] Screen cannot be reached without a submitted log
+- [ ] Random hadith shown from hadiths.json (not always same one)
+- [ ] All 9 fields show correct ✓ done or ✗ missed
+- [ ] Points correct per field
+- [ ] "Back to home" → Home locked state
+- [ ] Cannot reach this screen without a submitted log
 
 ---
 
 ## 🔥 Streak System
 
-- [ ] Streak increments by 1 when log is submitted on consecutive Hijri days
-- [ ] Streak resets to 1 when a day is skipped (no log submitted)
-- [ ] Best streak is saved and never decreases
-- [ ] Streak value on Home screen updates after submission
-- [ ] Streak freeze modal (S-16) appears when:
-  - [ ] User missed exactly 1 day
-  - [ ] `streakFreezeUsed == false` for this week
-- [ ] "Use freeze" preserves streak and sets `streakFreezeUsed = true`
-- [ ] "Reset my streak" sets streak to 1
-- [ ] Streak freeze resets every Monday (via Cloud Function)
-- [ ] Streak freeze does NOT appear if already used this week
-- [ ] Streak freeze does NOT appear if missed more than 1 day
+- [ ] Streak increments on consecutive Hijri days
+- [ ] Streak resets to 1 when a day is skipped
+- [ ] Best streak never decreases
+- [ ] Streak value updates on Home after submission
+- [ ] Streak freeze modal (S-16) shows when:
+  - [ ] Missed exactly 1 day
+  - [ ] `streakFreezeUsed == false`
+- [ ] "Use freeze" preserves streak, sets `streakFreezeUsed = true`
+- [ ] "Reset my streak" sets currentStreak = 1
+- [ ] Freeze resets every Monday (Cloud Function weeklyReset.js)
+- [ ] Freeze modal NOT shown if already used this week
+- [ ] Freeze modal NOT shown if missed more than 1 day
 
 ---
 
 ## 📅 History & Calendar (S-04, S-13)
 
 - [ ] Hijri calendar grid renders correctly for current month
-- [ ] Days with score ≥ 80 show green
-- [ ] Days with score 50–79 show amber
-- [ ] Days with score < 50 or no log show red
-- [ ] Days not yet reached show empty/grey
-- [ ] Today's cell is highlighted distinctly
-- [ ] Monthly consistency % calculates correctly
-- [ ] Average daily score calculates correctly
-- [ ] Weakest amal insight is accurate (most-missed amal this month)
-- [ ] Tapping a day opens S-13 Day Detail
-- [ ] Day Detail shows correct amal data for that specific date
+- [ ] Score ≥ 80 → green, 50–79 → amber, < 50 or no log → red, future → grey
+- [ ] Today's cell distinctly highlighted
+- [ ] Monthly consistency % correct
+- [ ] Average daily score correct
+- [ ] Weakest amal insight accurate (most-missed field this month)
+- [ ] Tap past day → S-13 Day Detail
+- [ ] Day Detail shows correct amal data for that date
 - [ ] Day Detail shows "read-only — cannot edit" banner
+- [ ] Back from Day Detail → History
 
 ---
 
-## 🌐 Community Sheet (S-05)
+## 🌐 Community Sheet (S-05 — Tab 1)
 
 ### Grid display
 
-- [ ] Column headers render: Name | Fard | Takbir | M.Azkar | E.Azkar | Quran | Mulk | Miswak | Sunnah | P.Azkar | Score
-- [ ] Current user's row is pinned at position 1 with gold background
-- [ ] All other users appear below, sorted by score descending
-- [ ] ✅ = amal done (green), ❌ = amal missed (red), ⏳ = not yet submitted (grey)
+- [ ] Column headers render: Name | Fard | Takbir | M.Az | E.Az | Quran | Mulk | Miswak | Sunnah | P.Az | Score
+- [ ] Column headers stay frozen/sticky during vertical scroll
+- [ ] Own row pinned at position 0 with gold background
+- [ ] All other users below, sorted by score descending
+- [ ] ✅ = done (green), ❌ = missed (red), ⏳ = not submitted (grey, today only)
+- [ ] Anonymous users show 🕌 and "Anonymous" (no real name or avatar)
 - [ ] Score badge at end of each row is correct
-- [ ] Anonymous users show as "Anonymous 🕌" (no real name or avatar)
-- [ ] Rows load in batches (pagination, 20 at a time)
-- [ ] Infinite scroll loads more users correctly
+- [ ] Own row shows ⏳ + "Log today to appear here" if not yet submitted
 
 ### Date tabs
 
-- [ ] Today is selected by default
-- [ ] Scrolling left shows past dates (Hijri)
-- [ ] Tapping a past date reloads the grid for that date
-- [ ] Past date view: no ⏳ status — all rows are final (✅ or ❌)
-- [ ] Today's view: real-time updates as users submit
+- [ ] Today tab selected by default
+- [ ] Scrolling left shows past Hijri dates
+- [ ] Tapping past date reloads grid for that date (one-time fetch, not real-time)
+- [ ] Past date view: no ⏳ — all rows ✅ or ❌ only
+- [ ] Today view: real-time Firestore stream (snapshots())
 
 ### Real-time updates
 
-- [ ] When a user submits today's log, their row updates live (⏳ → live data) without page refresh
+- [ ] When user submits, their row updates ⏳ → live data without page refresh
 - [ ] Score column updates live
-- [ ] Row re-sorts by score after update (or shows update in place — consistent UX)
+- [ ] Row resorting after update is smooth (no jarring jump)
+
+### Pagination
+
+- [ ] First 20 rows load on screen open
+- [ ] Scrolling to bottom loads next 20 rows
+- [ ] Last page loads correctly even if fewer than 20 rows remain
+- [ ] No duplicate rows across pages
+- [ ] Loading indicator shown while fetching next page
 
 ### Search
 
-- [ ] Search bar filters visible rows by display name
+- [ ] Search bar filters rows by displayName (client-side)
 - [ ] Clearing search restores full list
-- [ ] Anonymous users excluded from name search (or shown as "Anonymous")
+- [ ] Anonymous users not findable by name search
+- [ ] Search works on both today and past date views
 
 ### Navigation
 
-- [ ] Tapping any row navigates to S-12 User Profile
-- [ ] Back from S-12 returns to S-05 correctly
+- [ ] Tapping any row → S-12 User Profile
+- [ ] Tapping anonymous row → minimal profile (🕌, "Anonymous", stats only)
+- [ ] Back from User Profile → S-05 Community Sheet (correct tab preserved)
+
+---
+
+## 📣 Activity Feed (S-05 — Tab 2)
+
+- [ ] Feed loads real-time from Firestore `activity_feed` collection
+- [ ] "X completed all amal today 🌟" appears after user submits perfect log
+- [ ] "X is on a Y-day streak 🔥" appears on streak milestone
+- [ ] "N community members logged today" counter updates through day
+- [ ] Islamic quote of the day shows (rotates daily, not randomly)
+- [ ] "A community member sent you a dua 🤲" appears in own feed when dua received
+- [ ] Feed items are in reverse chronological order (newest first)
+- [ ] Switching between Sheet and Feed tabs preserves scroll position
 
 ---
 
 ## 👤 User Profile (S-12)
 
-- [ ] Correct name, avatar (or anonymous placeholder) displays
-- [ ] Current streak and best streak are accurate
-- [ ] Today's amal grid shows correct data for that user
-- [ ] Weekly bar chart shows that user's real score data for last 7 days
-- [ ] Average score is accurate
-- [ ] "Send Dua 🤲" button creates a notification document in recipient's Firestore notifications
-- [ ] Confirmation message shows after dua sent: "Dua sent ✓"
+### Viewing another user
+
+- [ ] Correct name/avatar (or 🕌/"Anonymous" if anonymous)
+- [ ] Current streak and best streak accurate
+- [ ] Today's amal grid shows correct data (read-only)
+- [ ] Weekly bar chart shows last 7 days real score data
+- [ ] Average score accurate
+- [ ] "Send Dua 🤲" creates notification doc in recipient's Firestore
+- [ ] After sending: "Dua sent ✓" confirmation shown
 - [ ] Dua can be sent to any user — no friendship required
-- [ ] Viewing own profile: edit display name works
-- [ ] Viewing own profile: anonymous toggle works and updates community sheet display
+- [ ] **Rate limit enforced: only 1 dua per sender per recipient per day**
+- [ ] Attempting second dua same day → "You already sent a dua today"
+
+### Viewing own profile (via S-05 own row tap)
+
+- [ ] Edit display name inline → saves to Firestore
+- [ ] Anonymous toggle updates `isAnonymousDisplay` in Firestore
+- [ ] Community sheet reflects name/anonymity change immediately
 
 ---
 
 ## 🏆 Leaderboard (S-03)
 
-- [ ] Users ranked correctly by weekly score (default)
-- [ ] "Daily" tab shows today's scores
-- [ ] "Streak" tab ranks by current streak
-- [ ] Top 3 podium renders with correct names/avatars
-- [ ] Anonymous users show anonymised on leaderboard
-- [ ] Current user's rank is always visible (even if below top 3)
-- [ ] "X pts behind 2nd" nudge calculates correctly
-- [ ] Scores update in real-time (or near real-time)
-- [ ] Tapping a user row navigates to S-12 User Profile
+- [ ] Weekly tab: ranked by weekly cumulative score (default)
+- [ ] Daily tab: ranked by today's score
+- [ ] Streak tab: ranked by current streak
+- [ ] Podium renders top 3 correctly
+- [ ] Anonymous users show 🕌 / "Anonymous" on podium and list
+- [ ] Own rank always visible even if outside top 3 (pinned or shown separately)
+- [ ] "X pts behind 2nd place" nudge calculates correctly
+- [ ] Tapping any user → S-12 User Profile
+- [ ] Leaderboard updates near real-time as users submit
+
+---
+
+## 📋 More Screen
+
+- [ ] "Leaderboard" → S-03
+- [ ] "Notifications" → S-07
+- [ ] "My Profile" → S-08
+- [ ] "Settings" → S-09
+- [ ] More screen accessible from bottom nav tab 4
 
 ---
 
@@ -190,56 +229,67 @@
 - [ ] Morning reminder fires at 6:00 AM
 - [ ] Evening reminder fires at 6:30 PM
 - [ ] Streak warning fires at 10:00 PM if no log today
-- [ ] Friday special message fires Friday morning
-- [ ] "X community members already completed" notification fires (FCM)
-- [ ] Dua received notification fires when another user sends a dua
-- [ ] Notifications do NOT fire during quiet hours
-- [ ] Tapping any notification deep-links to correct screen
+- [ ] Friday Jumu'ah special fires Friday morning
+- [ ] "X community members already completed" FCM fires (via Cloud Function)
+- [ ] Dua received FCM fires when another user sends dua
+- [ ] Notifications NOT sent during quiet hours
+- [ ] Each notification deep-links to correct screen
+
+### Notification screen (S-07)
+
+- [ ] Unread items show gold dot
+- [ ] Read items dimmed
+- [ ] "Mark all read" clears all gold dots
+- [ ] Tapping item marks it read + follows deep link
 
 ### Settings (S-09)
 
-- [ ] Toggling morning reminder OFF cancels that scheduled notification
-- [ ] Toggling back ON re-schedules the notification
-- [ ] Same for evening, streak, and community activity toggles
-- [ ] Privacy toggle (anonymous) updates Firestore `isAnonymousDisplay` immediately
-- [ ] Sign out confirmation dialog appears before signing out
+- [ ] Morning toggle OFF → cancels scheduled notification
+- [ ] Morning toggle ON → re-schedules notification
+- [ ] Same for evening, streak warning, community activity toggles
+- [ ] Anonymous toggle updates Firestore `isAnonymousDisplay` immediately
+- [ ] Sign out confirmation dialog appears
+- [ ] Sign out clears session + Hive + routes to S-00
 
 ### Quiet Hours (S-17)
 
-- [ ] +/- controls adjust time correctly (no overflow past 23:59 / 0:00)
-- [ ] Preview text updates as time changes
-- [ ] "Save quiet hours" persists to SharedPreferences
-- [ ] After save, notifications are rescheduled to respect quiet hours
-- [ ] Quiet hours span midnight correctly (e.g. 10 PM to 5 AM)
+- [ ] +/- controls adjust time without overflow (wraps at 23:59 / 0:00)
+- [ ] Preview text updates as time changes: "X hours of silence"
+- [ ] "Save" persists to SharedPreferences
+- [ ] After save, all notifications rescheduled respecting quiet window
+- [ ] Quiet hours spanning midnight work correctly (e.g. 10 PM to 5 AM)
 
 ---
 
-## 👤 Profile & Badges (S-08)
+## 👤 Own Profile & Badges (S-08)
 
-- [ ] Name, avatar (or initials) display correctly
-- [ ] Current streak and best streak are accurate
-- [ ] Average score calculates correctly (all-time)
-- [ ] Weekly bar chart shows last 7 days of scores
-- [ ] Today's bar is highlighted/distinct
-- [ ] Unlocked badges show gold state
-- [ ] Locked badges show greyed-out state with requirement hint
-- [ ] Badges unlock automatically when condition is met:
+- [ ] Name, avatar / initials correct
+- [ ] Current + best streak accurate
+- [ ] All-time average score correct
+- [ ] Weekly bar chart (last 7 days) renders correctly
+- [ ] Today's bar highlighted distinctly
+- [ ] Badge unlocked → gold
+- [ ] Badge locked → grey + tap shows "Complete X to unlock"
+- [ ] Badges unlock automatically:
+  - [ ] 3-day streak badge
   - [ ] 7-day streak badge
   - [ ] 14-day streak badge
   - [ ] 30-day streak badge
+  - [ ] 60-day streak badge
   - [ ] 100-day streak badge
-  - [ ] Top of community badge (ranked #1 on global weekly leaderboard)
-  - [ ] Perfect week badge (7 consecutive days with score ≥ 80)
+  - [ ] Top of community badge (ranked #1 global weekly)
+  - [ ] Perfect week badge (7 days score ≥ 80)
 
 ---
 
 ## 🆕 Empty States (S-15)
 
-- [ ] New user with no logs sees welcome empty state (not a broken screen)
-- [ ] Empty leaderboard shows "Be the first to log today!" prompt
-- [ ] Empty notifications list shows appropriate message
-- [ ] Empty history (no past logs) shows prompt to start logging
-- [ ] Community sheet for new user: their row shows ⏳ with "Log today to appear here" hint
+- [ ] New user Home: welcome state + "Log today's amal" CTA (no broken screen)
+- [ ] Community sheet own row: ⏳ + "Log today to appear here"
+- [ ] Community sheet past date with no logs: "No logs recorded for this day"
+- [ ] Leaderboard empty: "Be the first to log today! 🌟"
+- [ ] Notifications empty: "No notifications yet"
+- [ ] History no past logs: "Start logging to build your history"
 
 ---
 
@@ -248,98 +298,105 @@
 ### Offline
 
 - [ ] App launches without internet
-- [ ] Today's log persists across app restarts (Hive)
+- [ ] Today's log persists across restarts (Hive)
 - [ ] No crashes when network drops mid-session
-- [ ] Sync completes successfully when network restores
+- [ ] Sync completes when network restores
+- [ ] Community sheet shows cached data offline with "offline" badge
 
 ### Data accuracy
 
-- [ ] Score never exceeds 100
-- [ ] Score never goes below 0
-- [ ] Hijri dates are correct for Bangladesh timezone (UTC+6)
+- [ ] Score never exceeds 100 / never below 0
+- [ ] Hijri dates correct for Bangladesh timezone (UTC+6)
 - [ ] Midnight lock uses Hijri date, not Gregorian
-- [ ] Streak calculation uses Hijri consecutive days
+- [ ] Streak uses Hijri consecutive days
 
 ### Community sheet performance
 
 - [ ] Grid does not freeze on 100+ users
 - [ ] Pagination loads without visible lag
-- [ ] Real-time Firestore listener does not cause excessive rebuilds
+- [ ] Real-time Firestore listener does not cause excessive widget rebuilds
 - [ ] Column headers stay frozen during vertical scroll
+- [ ] `RepaintBoundary` on each row prevents cascade rebuilds
+- [ ] Horizontal scroll is smooth on all screen sizes
+
+### Firestore security
+
+- [ ] User cannot write another user's amal_log (security rules block it)
+- [ ] User cannot edit/delete their own submitted log (rules block update/delete)
+- [ ] User cannot write to activity_feed (Cloud Functions only)
+- [ ] Unauthenticated user cannot read any data
 
 ### UI / UX
 
-- [ ] No screen has broken layout on small screen (360px width)
-- [ ] No screen has broken layout on large screen (428px+ width)
-- [ ] Community sheet horizontal scroll is smooth on all screen sizes
-- [ ] Islamic geometric background renders on all screens
-- [ ] Gold/emerald color palette is consistent throughout
-- [ ] All animations are smooth (60fps) on mid-range Android
+- [ ] No broken layout on 360px width (small Android)
+- [ ] No broken layout on 428px+ width (large iPhone)
+- [ ] Islamic geometric background on all screens
+- [ ] Gold/emerald palette consistent throughout
+- [ ] 60fps animations on mid-range Android
 - [ ] Bottom nav highlights correct tab on every screen
-- [ ] Back navigation works correctly on all screens
 - [ ] Android hardware back button works on all screens
+- [ ] Shimmer loading shown while community sheet fetches
 
-### Crash & Error handling
+### Crash & Error
 
-- [ ] App does not crash if Firestore write fails
-- [ ] App does not crash if Firebase Auth token expires
-- [ ] App does not crash with empty data (new user)
-- [ ] Error messages are shown in Bengali or English (not raw exceptions)
-- [ ] Loading states (shimmer) show while community sheet is fetching
+- [ ] No crash if Firestore write fails
+- [ ] No crash if Firebase Auth token expires
+- [ ] No crash with empty data (new user)
+- [ ] Error messages shown in English/Bengali (not raw exceptions)
 
 ---
 
 ## 🚀 Pre-Release Checklist
 
-- [ ] App icon is set for Android and iOS
-- [ ] Splash screen shows brand colors and logo
+- [ ] App icon set for Android and iOS
+- [ ] Splash screen correct brand colors
 - [ ] App name shows "Amol Tracker" (not "amol_tracker")
-- [ ] All debug prints are removed
-- [ ] Firebase Analytics events are firing correctly
-- [ ] Firestore security rules are deployed (users can only write their own `amal_logs`, read all)
-- [ ] Cloud Functions are deployed
-- [ ] ProGuard/R8 rules are set for Android release build
-- [ ] App tested on Android 10, 12, 14
-- [ ] App tested on iOS 16, 17
-- [ ] Play Store internal testing track is configured
-- [ ] TestFlight build is distributed
+- [ ] All debug prints removed
+- [ ] Firebase Analytics events firing
+- [ ] Firestore security rules deployed and tested
+- [ ] Cloud Functions deployed (onLogSubmit, onDuaSent, weeklyReset)
+- [ ] ProGuard/R8 rules set for Android release
+- [ ] Tested on Android 10, 12, 14
+- [ ] Tested on iOS 16, 17
+- [ ] Play Store internal testing track configured
+- [ ] TestFlight build distributed
 
 ---
 
 ## 📊 Screen Completion Summary
 
-| #     | Screen                | Designed | Built | Tested |
-| ----- | --------------------- | -------- | ----- | ------ |
-| S-00  | Sign In               | ✅       | ☐     | ☐      |
-| S-01a | Onboarding 1          | ✅       | ☐     | ☐      |
-| S-01b | Onboarding 2          | ✅       | ☐     | ☐      |
-| S-01c | Onboarding 3          | ✅       | ☐     | ☐      |
-| S-02  | Home / Daily Log      | ✅       | ☐     | ☐      |
-| S-03  | Leaderboard           | ✅       | ☐     | ☐      |
-| S-04  | History / Calendar    | ✅       | ☐     | ☐      |
-| S-05  | Community Sheet       | ✅       | ☐     | ☐      |
-| S-07  | Notifications         | ✅       | ☐     | ☐      |
-| S-08  | Profile & Badges      | ✅       | ☐     | ☐      |
-| S-09  | Settings              | ✅       | ☐     | ☐      |
-| S-10  | Day Complete          | ✅       | ☐     | ☐      |
-| S-12  | User Profile (public) | ✅       | ☐     | ☐      |
-| S-13  | Day Detail            | ✅       | ☐     | ☐      |
-| S-15  | Empty State           | ✅       | ☐     | ☐      |
-| S-16  | Streak Freeze Modal   | ✅       | ☐     | ☐      |
-| S-17  | Quiet Hours           | ✅       | ☐     | ☐      |
+| #     | Screen                          | Designed | Built | Tested |
+| ----- | ------------------------------- | -------- | ----- | ------ |
+| S-00  | Sign In                         | ✅       | ☐     | ☐      |
+| S-01a | Onboarding 1                    | ✅       | ☐     | ☐      |
+| S-01b | Onboarding 2 (streaks)          | ✅       | ☐     | ☐      |
+| S-01c | Onboarding 3 (name + privacy)   | ✅       | ☐     | ☐      |
+| S-02  | Home / Daily Log                | ✅       | ☐     | ☐      |
+| S-03  | Leaderboard (global)            | ✅       | ☐     | ☐      |
+| S-04  | History / Calendar              | ✅       | ☐     | ☐      |
+| S-05  | Community Screen (Sheet + Feed) | ✅       | ☐     | ☐      |
+| S-07  | Notifications                   | ✅       | ☐     | ☐      |
+| S-08  | Profile & Badges                | ✅       | ☐     | ☐      |
+| S-09  | Settings                        | ✅       | ☐     | ☐      |
+| S-10  | Day Complete                    | ✅       | ☐     | ☐      |
+| S-12  | User Profile (public)           | ✅       | ☐     | ☐      |
+| S-13  | Day Detail                      | ✅       | ☐     | ☐      |
+| S-15  | Empty State                     | ✅       | ☐     | ☐      |
+| S-16  | Streak Freeze Modal             | ✅       | ☐     | ☐      |
+| S-17  | Quiet Hours                     | ✅       | ☐     | ☐      |
+| —     | More Screen                     | ✅       | ☐     | ☐      |
 
-**Total: 17 screens designed. 0 built. 0 tested.**
+**Total: 18 screens designed. 0 built. 0 tested.**
 
-> 3 screens removed from original (S-06 Invite, S-11 Group Sheet, S-14 Group Manage).
-> S-05 repurposed: was Friends & Activity Feed → now Public Community Sheet.
-> S-12 repurposed: was Friend Profile (required friendship) → now Public User Profile (no friendship needed).
+> Removed from v1.0: S-06 (Invite), S-11 (Group Sheet), S-14 (Group Manage) — 3 screens.
+> Added in v2.0: More Screen, Activity Feed tab inside S-05 — net screen count nearly same.
 
 ---
 
-## 🗑️ Screens Removed vs v1.0
+## 🗑️ Removed Screens vs v1.0
 
-| Screen | Was                 | Removed Because                         |
+| Screen | Was                 | Why                                     |
 | ------ | ------------------- | --------------------------------------- |
-| S-06   | Invite / Join Group | No groups, no invite codes              |
-| S-11   | Group Sheet View    | Replaced by public S-05 Community Sheet |
+| S-06   | Invite / Join Group | No groups — everyone auto-joined        |
+| S-11   | Private Group Sheet | Replaced by public S-05 Community Sheet |
 | S-14   | Group Manage        | No groups to manage                     |

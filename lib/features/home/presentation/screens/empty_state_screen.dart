@@ -61,8 +61,8 @@ class EmptyStateScreen extends StatelessWidget {
             title: 'No friends yet',
             body:
                 'Pull a brother along. Invite friends to keep each other consistent.',
-            ctaLabel: 'Invite friends',
-            onTap: () => context.go(AppRoutes.invite),
+            ctaLabel: 'Open community',
+            onTap: () => context.go(AppRoutes.community),
           ),
         ],
       ),

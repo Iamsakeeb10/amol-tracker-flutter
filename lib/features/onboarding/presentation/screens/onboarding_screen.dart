@@ -1,9 +1,13 @@
+import 'dart:developer' as developer;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../models/user_model.dart';
@@ -26,6 +30,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _notificationRequested = false;
   String _displayName = '';
 
+  void _logOnboardingEvent(String message) {
+    developer.log(message, name: 'Onboarding');
+  }
+
+  void _logOnboardingError(Object error, StackTrace stackTrace) {
+    developer.log(
+      'Failed to complete onboarding',
+      name: 'Onboarding',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+
   static const _slides = <_SlideData>[
     _SlideData(
       icon: Icons.calendar_month_outlined,
@@ -37,8 +54,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _SlideData(
       icon: Icons.local_fire_department_rounded,
       title: 'Streaks keep you going',
-      body:
-          "Don't break the chain. Hit 7, 30, 100 days — earn your khair.",
+      body: "Don't break the chain. Hit 7, 30, 100 days — earn your khair.",
       kind: _SlideKind.streaks,
     ),
     _SlideData(
@@ -67,17 +83,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
       return;
     }
+    _logOnboardingEvent('Get started button pressed');
     await _completeOnboarding();
   }
 
-  Future<void> _skip() => _completeOnboarding();
+  Future<void> _skip() {
+    _logOnboardingEvent('Skip button pressed');
+    return _completeOnboarding();
+  }
 
   Future<void> _requestNotificationPermission() async {
     final plugin = FlutterLocalNotificationsPlugin();
-    final ios = plugin.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
-    final android = plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final ios = plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    final android = plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     await ios?.requestPermissions(alert: true, badge: true, sound: true);
     await android?.requestNotificationsPermission();
     if (mounted) {
@@ -99,6 +123,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     setState(() => _isSubmitting = true);
     try {
+      _logOnboardingEvent('Creating user doc for uid=${authUser.uid}');
       await ref
           .read(firestoreServiceProvider)
           .createUser(
@@ -116,7 +141,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               badges: const <String>[],
             ),
           );
-    } catch (e) {
+      _logOnboardingEvent('User doc created successfully');
+      if (!mounted) return;
+      context.go(AppRoutes.home);
+    } catch (e, st) {
+      _logOnboardingError(e, st);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not complete onboarding: $e')),
@@ -145,9 +174,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               onPressed: _isSubmitting ? null : _skip,
               child: Text(
                 'Skip',
-                style: AppTextStyles.button(context).copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: AppTextStyles.button(
+                  context,
+                ).copyWith(color: AppColors.textSecondary),
               ),
             ),
           ),
@@ -278,9 +307,16 @@ class _SlideContent extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: AppColors.goldCard,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.goldBorder, width: 1.r),
+                        border: Border.all(
+                          color: AppColors.goldBorder,
+                          width: 1.r,
+                        ),
                       ),
-                      child: Icon(slide.icon, color: AppColors.goldLight, size: 60.r),
+                      child: Icon(
+                        slide.icon,
+                        color: AppColors.goldLight,
+                        size: 60.r,
+                      ),
                     ),
                     SizedBox(height: 28.h),
                     Text(
@@ -295,7 +331,8 @@ class _SlideContent extends StatelessWidget {
                       style: AppTextStyles.bodyMedium(context),
                     ),
                     SizedBox(height: 22.h),
-                    if (slide.kind == _SlideKind.streaks) const _StreakBadgesRow(),
+                    if (slide.kind == _SlideKind.streaks)
+                      const _StreakBadgesRow(),
                     if (slide.kind == _SlideKind.setup)
                       _SetupSlide(
                         displayName: displayName,
@@ -330,10 +367,17 @@ class _StreakBadgesRow extends StatelessWidget {
             children: [
               Text(
                 days,
-                style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 22.sp),
+                style: AppTextStyles.goldNumeric(
+                  context,
+                ).copyWith(fontSize: 22.sp),
               ),
               SizedBox(height: 2.h),
-              Text(label, style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp)),
+              Text(
+                label,
+                style: AppTextStyles.bodySmall(
+                  context,
+                ).copyWith(fontSize: 10.sp),
+              ),
             ],
           ),
         ),

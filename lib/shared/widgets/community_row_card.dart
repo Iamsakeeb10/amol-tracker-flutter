@@ -42,26 +42,34 @@ class CommunityHeaderRow extends StatelessWidget {
       borderColor: AppColors.cardBorder,
       padding: EdgeInsets.zero,
       radius: AppRadius.md,
-      child: SingleChildScrollView(
+      child: RawScrollbar(
         controller: horizontalController,
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.hardEdge,
-        child: SizedBox(
-          width: kCommunityScrollableGridWidth.w,
-          child: Row(
-            children: [
-              _HeaderCell(
-                text: 'Name',
-                width: kCommunityNameColWidth,
-                align: TextAlign.left,
-              ),
-              for (final col in kCommunityColumns)
+        thumbVisibility: true,
+        trackVisibility: true,
+        thickness: 5.w,
+        radius: Radius.zero,
+        scrollbarOrientation: ScrollbarOrientation.bottom,
+        child: SingleChildScrollView(
+          controller: horizontalController,
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.hardEdge,
+          child: SizedBox(
+            width: kCommunityScrollableGridWidth.w,
+            child: Row(
+              children: [
                 _HeaderCell(
-                  text: col.label,
-                  width: kCommunityAmalColWidth,
+                  text: 'Name',
+                  width: kCommunityNameColWidth,
+                  align: TextAlign.left,
                 ),
-              _HeaderCell(text: 'Score', width: kCommunityScoreColWidth),
-            ],
+                for (final col in kCommunityColumns)
+                  _HeaderCell(
+                    text: col.label,
+                    width: kCommunityAmalColWidth,
+                  ),
+                _HeaderCell(text: 'Score', width: kCommunityScoreColWidth),
+              ],
+            ),
           ),
         ),
       ),
@@ -247,7 +255,9 @@ class _StatusCell extends StatelessWidget {
         : isDone
         ? AppColors.success
         : AppColors.danger;
-    final label = pending ? '⏳' : (isDone ? '✅' : '❌');
+    final icon = pending
+        ? Icons.hourglass_top_rounded
+        : (isDone ? Icons.check_circle_rounded : Icons.cancel_rounded);
     return Container(
       width: width.w,
       height: 46.h,
@@ -257,11 +267,10 @@ class _StatusCell extends StatelessWidget {
         ),
       ),
       child: Center(
-        child: Text(
-          label,
-          style: AppTextStyles.bodyMedium(
-            context,
-          ).copyWith(color: color, fontWeight: FontWeight.w700),
+        child: Icon(
+          icon,
+          color: color,
+          size: 17.sp,
         ),
       ),
     );

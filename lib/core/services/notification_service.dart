@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -39,6 +40,7 @@ class NotificationService {
 
   bool _initialized = false;
   StreamSubscription<String>? _onTokenRefreshSub;
+  Timer? _minuteTestMonitorTimer;
   void Function(String route)? _onDeepLink;
 
   Future<void> initialize({void Function(String route)? onDeepLink}) async {
@@ -99,6 +101,8 @@ class NotificationService {
   Future<void> dispose() async {
     await _onTokenRefreshSub?.cancel();
     _onTokenRefreshSub = null;
+    _minuteTestMonitorTimer?.cancel();
+    _minuteTestMonitorTimer = null;
   }
 
   Future<void> _syncFcmToken() async {
@@ -139,11 +143,19 @@ class NotificationService {
         >();
 
     if (android != null) {
-      await android.requestNotificationsPermission();
-      await android.requestExactAlarmsPermission();
+      final notifGranted = await android.requestNotificationsPermission();
+      final exactGranted = await android.requestExactAlarmsPermission();
+      debugPrint(
+        '[NotificationTest] Android permission -> notifications=$notifGranted, exactAlarms=$exactGranted',
+      );
     }
     if (ios != null) {
-      await ios.requestPermissions(alert: true, badge: true, sound: true);
+      final iosGranted = await ios.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      debugPrint('[NotificationTest] iOS permission -> notifications=$iosGranted');
     }
   }
 
@@ -334,6 +346,58 @@ class NotificationService {
     );
   }
 
+  Future<void> scheduleQuickTestInSeconds({
+    int seconds = 30,
+    AndroidScheduleMode mode = AndroidScheduleMode.alarmClock,
+  }) async {
+    final safeSeconds = seconds.clamp(5, 600);
+    final now = tz.TZDateTime.now(tz.local);
+    final scheduledDate = now.add(Duration(seconds: safeSeconds));
+    const id = _minuteTestBaseId + 999;
+    await _localNotifications.cancel(id);
+    debugPrint(
+      '[NotificationTest] Quick test scheduling -> id=$id now=${now.toIso8601String()} target=${scheduledDate.toIso8601String()} (+${safeSeconds}s) mode=$mode',
+    );
+    try {
+      await _localNotifications.zonedSchedule(
+        id,
+        'Quick test',
+        'Should fire ~${safeSeconds}s after start ($mode)',
+        scheduledDate,
+        _notificationDetails(payload: AppRoutes.notifications),
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: mode,
+      );
+      debugPrint('[NotificationTest] Quick test scheduled id=$id mode=$mode');
+    } on PlatformException catch (e) {
+      if (e.code != 'exact_alarms_not_permitted') rethrow;
+      debugPrint(
+        '[NotificationTest] Quick test exact denied (${e.code}): ${e.message}; falling back to inexact',
+      );
+      await _localNotifications.zonedSchedule(
+        id,
+        'Quick test',
+        'Should fire ~${safeSeconds}s after start (inexact)',
+        scheduledDate,
+        _notificationDetails(payload: AppRoutes.notifications),
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    }
+  }
+
+  Future<bool?> requestExactAlarmsPermission() async {
+    final android = _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    final granted = await android?.requestExactAlarmsPermission();
+    debugPrint('[NotificationTest] Exact alarm permission requested -> $granted');
+    return granted;
+  }
+
   Future<void> scheduleEveryMinuteForTesting({int totalMinutes = 15}) async {
     final boundedMinutes = totalMinutes.clamp(1, 120);
     await cancelEveryMinuteTesting();
@@ -352,6 +416,9 @@ class NotificationService {
     for (var i = 1; i <= boundedMinutes; i++) {
       final scheduledDate = firstTick.add(Duration(minutes: i - 1));
       final id = _minuteTestBaseId + i;
+      debugPrint(
+        '[NotificationTest] Attempt schedule -> id=$id target=${scheduledDate.toIso8601String()} mode=alarmClock',
+      );
       try {
         await _localNotifications.zonedSchedule(
           id,
@@ -361,12 +428,15 @@ class NotificationService {
           _notificationDetails(payload: AppRoutes.notifications),
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          androidScheduleMode: AndroidScheduleMode.alarmClock,
         );
       } on PlatformException catch (e) {
         if (e.code != 'exact_alarms_not_permitted') rethrow;
         debugPrint(
-          '[NotificationTest] Exact alarms not permitted, falling back to inexact for id=$id',
+          '[NotificationTest] alarmClock denied for id=$id (${e.code}): ${e.message}',
+        );
+        debugPrint(
+          '[NotificationTest] Fallback schedule -> id=$id mode=inexactAllowWhileIdle',
         );
         await _localNotifications.zonedSchedule(
           id,
@@ -378,10 +448,18 @@ class NotificationService {
               UILocalNotificationDateInterpretation.absoluteTime,
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         );
+      } catch (e) {
+        debugPrint('[NotificationTest] Failed to schedule id=$id error=$e');
+        rethrow;
       }
       debugPrint(
         '[NotificationTest] Scheduled id=$id at ${scheduledDate.toIso8601String()}',
       );
+    }
+    final pending = await _localNotifications.pendingNotificationRequests();
+    debugPrint('[NotificationTest] Pending scheduled count=${pending.length}');
+    for (final item in pending.where((n) => n.id >= _minuteTestBaseId)) {
+      debugPrint('[NotificationTest] Pending item id=${item.id} title=${item.title}');
     }
   }
 
@@ -392,13 +470,58 @@ class NotificationService {
     debugPrint('[NotificationTest] Cancelled all minute-test schedules');
   }
 
+  Future<void> startMinuteTestMonitor({int intervalSeconds = 10}) async {
+    final safeInterval = intervalSeconds.clamp(5, 60);
+    await stopMinuteTestMonitor();
+    debugPrint(
+      '[NotificationTest] Starting pending monitor every ${safeInterval}s',
+    );
+    await _logMinutePendingSnapshot();
+    _minuteTestMonitorTimer = Timer.periodic(
+      Duration(seconds: safeInterval),
+      (_) => _logMinutePendingSnapshot(),
+    );
+  }
+
+  Future<void> stopMinuteTestMonitor() async {
+    _minuteTestMonitorTimer?.cancel();
+    _minuteTestMonitorTimer = null;
+    debugPrint('[NotificationTest] Stopped pending monitor');
+  }
+
+  Future<void> _logMinutePendingSnapshot() async {
+    final pending = await _localNotifications.pendingNotificationRequests();
+    final minutePending = pending.where((n) => n.id >= _minuteTestBaseId).toList()
+      ..sort((a, b) => a.id.compareTo(b.id));
+    final now = tz.TZDateTime.now(tz.local);
+    debugPrint(
+      '[NotificationTest] Monitor tick at ${now.toIso8601String()} minutePending=${minutePending.length}',
+    );
+    for (final item in minutePending) {
+      debugPrint('[NotificationTest] Monitor pending id=${item.id} title=${item.title}');
+    }
+  }
+
   Future<void> _configureLocalTimezone() async {
+    try {
+      final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));
+      debugPrint(
+        '[NotificationTest] Timezone set from device -> ${timezoneInfo.identifier}',
+      );
+      return;
+    } catch (e) {
+      debugPrint(
+        '[NotificationTest] FlutterTimezone failed ($e), falling back to offset map',
+      );
+    }
     try {
       final timezoneName = _getLocalTimeZone();
       tz.setLocalLocation(tz.getLocation(timezoneName));
+      debugPrint('[NotificationTest] Timezone set from offset map -> $timezoneName');
     } catch (_) {
-      // Fallback ensures scheduling still works if timezone lookup fails.
       tz.setLocalLocation(tz.getLocation('UTC'));
+      debugPrint('[NotificationTest] Timezone fallback -> UTC');
     }
   }
 
@@ -422,14 +545,28 @@ class NotificationService {
 
   NotificationDetails _notificationDetails({required String payload}) {
     return NotificationDetails(
-      android: AndroidNotificationDetails(
+      android: const AndroidNotificationDetails(
         'amal_tracker_daily',
         'Daily Notifications',
         channelDescription: 'Daily and weekly notifications for amal logging',
-        importance: Importance.high,
-        priority: Priority.high,
+        importance: Importance.max,
+        priority: Priority.max,
+        icon: '@mipmap/ic_launcher',
+        playSound: true,
+        enableVibration: true,
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
+        fullScreenIntent: true,
       ),
-      iOS: DarwinNotificationDetails(threadIdentifier: payload),
+      iOS: DarwinNotificationDetails(
+        threadIdentifier: payload,
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        presentBanner: true,
+        presentList: true,
+        interruptionLevel: InterruptionLevel.active,
+      ),
     );
   }
 

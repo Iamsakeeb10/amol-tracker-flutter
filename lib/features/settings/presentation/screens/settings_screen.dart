@@ -87,6 +87,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Future<void> _scheduleQuickTest() async {
+    await NotificationService.instance.scheduleQuickTestInSeconds(seconds: 30);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Scheduled quick test in ~30s')),
+    );
+  }
+
+  Future<void> _requestExactAlarmPermission() async {
+    final granted = await NotificationService.instance
+        .requestExactAlarmsPermission();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Exact alarms permission -> $granted')),
+    );
+  }
+
+  Future<void> _startScheduleMonitor() async {
+    await NotificationService.instance.startMinuteTestMonitor(intervalSeconds: 10);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Started schedule monitor (10s interval)')),
+    );
+  }
+
+  Future<void> _stopScheduleMonitor() async {
+    await NotificationService.instance.stopMinuteTestMonitor();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Stopped schedule monitor')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final prefs = ref.watch(notificationPrefsProvider);
@@ -216,6 +249,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Divider(),
                 NavRow(
+                  icon: Icons.timer_outlined,
+                  title: 'Schedule quick test',
+                  trailing: '30s',
+                  onTap: _scheduleQuickTest,
+                ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.alarm_outlined,
+                  title: 'Request exact alarm permission',
+                  onTap: _requestExactAlarmPermission,
+                ),
+                const Divider(),
+                NavRow(
                   icon: Icons.bug_report_outlined,
                   title: 'Start 1-minute notification test',
                   trailing: '10m',
@@ -226,6 +272,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   icon: Icons.stop_circle_outlined,
                   title: 'Cancel 1-minute notification test',
                   onTap: _cancelMinuteNotificationTest,
+                ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.monitor_heart_outlined,
+                  title: 'Start schedule monitor logs',
+                  trailing: '10s',
+                  onTap: _startScheduleMonitor,
+                ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.monitor_heart,
+                  title: 'Stop schedule monitor logs',
+                  onTap: _stopScheduleMonitor,
                 ),
               ],
             ),

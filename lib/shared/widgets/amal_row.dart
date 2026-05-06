@@ -1,10 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../core/constants/amal_fields.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
-import '../mock/mock_data.dart';
 import 'card_container.dart';
+
+IconData amalFieldIcon(String id) {
+  switch (id) {
+    case 'fard':
+      return Icons.circle_outlined;
+    case 'takbir':
+      return Icons.star_outline;
+    case 'morning_azkar':
+      return Icons.wb_sunny_outlined;
+    case 'evening_azkar':
+      return Icons.nightlight_outlined;
+    case 'quran':
+      return Icons.menu_book_outlined;
+    case 'mulk':
+      return Icons.bookmark_outline;
+    case 'miswak':
+      return Icons.cleaning_services_outlined;
+    case 'sunnah':
+      return Icons.brightness_low_outlined;
+    case 'post_azkar':
+      return Icons.access_time_outlined;
+    default:
+      return Icons.check_circle_outline;
+  }
+}
 
 class AmalRow extends StatelessWidget {
   final AmalField field;
@@ -39,7 +64,7 @@ class AmalRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
-              field.icon,
+              amalFieldIcon(field.id),
               color: done ? AppColors.emeraldDeep : AppColors.textSecondary,
               size: 18.r,
             ),

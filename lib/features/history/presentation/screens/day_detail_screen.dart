@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/amal_fields.dart' as amal_const;
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/mock/mock_data.dart';
@@ -85,9 +86,9 @@ class DayDetailScreen extends StatelessWidget {
           Text("Amal", style: AppTextStyles.headlineMedium(context)),
           SizedBox(height: 8.h),
           ...kTodayAmalEntries.map((entry) {
-            final field = kAmalFields.firstWhere(
+            final field = amal_const.kAmalFields.firstWhere(
               (f) => f.id == entry.fieldId,
-              orElse: () => kAmalFields.first,
+              orElse: () => amal_const.kAmalFields.first,
             );
             return Padding(
               padding: EdgeInsets.only(bottom: 8.h),

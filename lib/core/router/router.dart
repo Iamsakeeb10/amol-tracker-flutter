@@ -10,6 +10,7 @@ import '../../features/community/presentation/screens/user_profile_screen.dart';
 import '../../features/history/presentation/screens/day_detail_screen.dart';
 import '../../features/history/presentation/screens/history_screen.dart';
 import '../../features/home/presentation/screens/day_complete_screen.dart';
+import '../../models/amal_log_model.dart';
 import '../../features/home/presentation/screens/empty_state_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart';
@@ -100,7 +101,13 @@ GoRouter buildAppRouter() {
       GoRoute(
         path: AppRoutes.dayComplete,
         name: 'dayComplete',
-        builder: (_, _) => const DayCompleteScreen(),
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is! AmalLogModel) {
+            return _DayCompleteRedirect();
+          }
+          return DayCompleteScreen(log: extra);
+        },
       ),
       GoRoute(
         path: AppRoutes.emptyState,
@@ -153,6 +160,30 @@ GoRouter buildAppRouter() {
       ),
     ),
   );
+}
+
+/// Shown briefly when opening day-complete without a submitted [AmalLogModel].
+class _DayCompleteRedirect extends StatefulWidget {
+  @override
+  State<_DayCompleteRedirect> createState() => _DayCompleteRedirectState();
+}
+
+class _DayCompleteRedirectState extends State<_DayCompleteRedirect> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.go(AppRoutes.home);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
 }
 
 class GoRouterRefreshStream extends ChangeNotifier {

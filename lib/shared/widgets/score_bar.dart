@@ -22,28 +22,34 @@ class ScoreBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = borderRadius ?? BorderRadius.circular(99.r);
+    final clamped = value.clamp(0.0, 1.0);
     return ClipRRect(
       borderRadius: r,
-      child: SizedBox(
-        height: height.h,
-        child: Stack(
-          children: [
-            Container(color: trackColor ?? AppColors.cardBorder),
-            FractionallySizedBox(
-              widthFactor: value.clamp(0.0, 1.0),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      (color ?? AppColors.gold),
-                      (color ?? AppColors.goldLight),
-                    ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final fillWidth = constraints.maxWidth * clamped;
+          return SizedBox(
+            height: height.h,
+            child: Stack(
+              children: [
+                Container(color: trackColor ?? AppColors.cardBorder),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                  width: fillWidth,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        (color ?? AppColors.gold),
+                        (color ?? AppColors.goldLight),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

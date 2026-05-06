@@ -127,10 +127,13 @@ class FirestoreService {
   Stream<List<AmalLogModel>> communityDayStream(String hijriDate) {
     return _amalLogs
         .where('hijriDate', isEqualTo: hijriDate)
-        .orderBy('score', descending: true)
-        .limit(_communityPageSize)
         .snapshots()
-        .map((snap) => snap.docs.map(AmalLogModel.fromDoc).toList());
+        .map((snap) {
+          final rows = snap.docs.map(AmalLogModel.fromDoc).toList()
+            ..sort((a, b) => b.score.compareTo(a.score));
+          if (rows.length <= _communityPageSize) return rows;
+          return rows.take(_communityPageSize).toList();
+        });
   }
 
   /// One-time paginated fetch of submitted logs for a Hijri day.
@@ -139,17 +142,39 @@ class FirestoreService {
     String hijriDate, {
     DocumentSnapshot<Map<String, dynamic>>? startAfter,
   }) async {
-    var query = _amalLogs
-        .where('hijriDate', isEqualTo: hijriDate)
-        .orderBy('score', descending: true)
-        .limit(_communityPageSize);
-    if (startAfter != null) {
-      query = query.startAfterDocument(startAfter);
+    try {
+      var query = _amalLogs
+          .where('hijriDate', isEqualTo: hijriDate)
+          .orderBy('score', descending: true)
+          .limit(_communityPageSize);
+      if (startAfter != null) {
+        query = query.startAfterDocument(startAfter);
+      }
+      final snap = await query.get();
+      final rows = snap.docs.map(AmalLogModel.fromDoc).toList();
+      final lastDoc = snap.docs.isNotEmpty ? snap.docs.last : null;
+      return (rows: rows, lastDoc: lastDoc);
+    } on FirebaseException {
+      // Index fallback: query by date only, sort client-side, then paginate locally.
+      final snap = await _amalLogs.where('hijriDate', isEqualTo: hijriDate).get();
+      final docs = snap.docs.toList()
+        ..sort((a, b) {
+          final aScore = (a.data()['score'] as num?)?.toInt() ?? 0;
+          final bScore = (b.data()['score'] as num?)?.toInt() ?? 0;
+          return bScore.compareTo(aScore);
+        });
+
+      var start = 0;
+      if (startAfter != null) {
+        final idx = docs.indexWhere((d) => d.id == startAfter.id);
+        if (idx >= 0) start = idx + 1;
+      }
+      final end = (start + _communityPageSize).clamp(0, docs.length);
+      final pageDocs = docs.sublist(start, end);
+      final rows = pageDocs.map(AmalLogModel.fromDoc).toList();
+      final lastDoc = pageDocs.isNotEmpty ? pageDocs.last : null;
+      return (rows: rows, lastDoc: lastDoc);
     }
-    final snap = await query.get();
-    final rows = snap.docs.map(AmalLogModel.fromDoc).toList();
-    final lastDoc = snap.docs.isNotEmpty ? snap.docs.last : null;
-    return (rows: rows, lastDoc: lastDoc);
   }
 
   /// Real-time activity feed in reverse chronological order.

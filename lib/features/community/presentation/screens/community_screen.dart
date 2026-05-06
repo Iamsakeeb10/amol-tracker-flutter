@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hijri/hijri_calendar.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
@@ -15,6 +16,7 @@ import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/community_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/community_row_card.dart';
 import '../../../../shared/widgets/section_header.dart';
 
@@ -84,7 +86,12 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Community', style: AppTextStyles.headlineLarge(context)),
+            Text(
+              'COMMUNITY',
+              style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+            ),
+            SizedBox(height: 2.h),
+            Text('Community', style: AppTextStyles.displayMedium(context)),
             SizedBox(height: 12.h),
             Container(
               decoration: BoxDecoration(
@@ -93,7 +100,10 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                 borderRadius: BorderRadius.circular(AppRadius.md.r),
               ),
               child: TabBar(
+                dividerColor: Colors.transparent,
+                indicatorColor: AppColors.gold,
                 indicatorSize: TabBarIndicatorSize.tab,
+                splashBorderRadius: BorderRadius.circular(AppRadius.md.r),
                 labelStyle: AppTextStyles.bodyMedium(
                   context,
                 ).copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
@@ -114,19 +124,23 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                           false)
                         Padding(
                           padding: EdgeInsets.only(bottom: 10.h),
-                          child: Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                            decoration: BoxDecoration(
-                              color: AppColors.warningLight,
-                              borderRadius: BorderRadius.circular(AppRadius.md.r),
-                              border: Border.all(color: AppColors.warning),
-                            ),
-                            child: Text(
-                              'You are offline. Showing latest available data.',
-                              style: AppTextStyles.bodySmall(context).copyWith(
-                                color: AppColors.textPrimary,
-                              ),
+                          child: CardContainer(
+                            color: AppColors.warningLight.withValues(alpha: 0.35),
+                            borderColor: AppColors.warning.withValues(alpha: 0.5),
+                            child: Row(
+                              children: [
+                                Icon(Icons.wifi_off, color: AppColors.warning, size: 18.r),
+                                SizedBox(width: 8.w),
+                                Expanded(
+                                  child: Text(
+                                    'Offline — showing latest available data.',
+                                    style: AppTextStyles.bodySmall(context).copyWith(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 11.sp,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -212,9 +226,25 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                             if (ownRow == null && state.isToday)
                                               Padding(
                                                 padding: EdgeInsets.only(top: 8.h),
-                                                child: Text(
-                                                  'Log today to appear here',
-                                                  style: AppTextStyles.bodySmall(context),
+                                                child: CardContainer(
+                                                  color: AppColors.goldCard,
+                                                  borderColor: AppColors.goldBorder,
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.schedule_outlined,
+                                                        color: AppColors.gold,
+                                                        size: 16.r,
+                                                      ),
+                                                      SizedBox(width: 10.w),
+                                                      Expanded(
+                                                        child: Text(
+                                                          'Log today to appear here',
+                                                          style: AppTextStyles.bodySmall(context),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                           ],
@@ -224,10 +254,16 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                   if (otherRows.isEmpty)
                                     SliverFillRemaining(
                                       hasScrollBody: false,
-                                      child: Center(
-                                        child: Text(
-                                          'No logs recorded for this day',
-                                          style: AppTextStyles.bodyMedium(context),
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                                        child: Center(
+                                          child: Text(
+                                            'No logs recorded for this day',
+                                            textAlign: TextAlign.center,
+                                            style: AppTextStyles.bodyMedium(
+                                              context,
+                                            ).copyWith(color: AppColors.textMuted),
+                                          ),
                                         ),
                                       ),
                                     )
@@ -253,7 +289,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                       padding: EdgeInsets.only(top: 12.h, bottom: 20.h),
                                       child: Center(
                                         child: state.isLoadingMore
-                                            ? const CircularProgressIndicator()
+                                            ? CircularProgressIndicator(color: AppColors.gold)
                                             : (!state.hasMore
                                                   ? Text(
                                                       'No more rows',
@@ -290,16 +326,19 @@ class _ActivityFeedTab extends ConsumerWidget {
       error: (_, _) => Center(
         child: Text(
           'Unable to load activity feed.',
-          style: AppTextStyles.bodyMedium(context),
+          style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textMuted),
         ),
       ),
       data: (items) {
         if (items.isEmpty) {
           return Center(
-            child: Text(
-              'No activity yet. Community updates will appear here.',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium(context),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              child: Text(
+                'No activity yet. Community updates will appear here.',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textMuted),
+                              ),
             ),
           );
         }
@@ -325,55 +364,53 @@ class _FeedItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icon = _iconForType(item.type);
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppRadius.md.r),
-      onTap: item.type == 'dua'
-          ? () => context.push(AppRoutes.notifications)
-          : null,
-      child: Container(
-        width: double.infinity,
+    final onTap = item.type == 'dua' ? () => context.push(AppRoutes.notifications) : null;
+    final row = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 30.w,
+          height: 30.w,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.goldCard,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: Text(icon, style: TextStyle(fontSize: 14.sp)),
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.message,
+                style: AppTextStyles.bodyMedium(
+                  context,
+                ).copyWith(color: AppColors.textPrimary),
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                _timeAgo(item.createdAt),
+                style: AppTextStyles.bodySmall(context),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+    if (item.type == 'dua') {
+      return CardContainer.gold(
+        onTap: onTap,
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: AppColors.cardDark,
-          borderRadius: BorderRadius.circular(AppRadius.md.r),
-          border: Border.all(color: AppColors.cardBorder),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 30.w,
-              height: 30.w,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.goldCard,
-                borderRadius: BorderRadius.circular(20.r),
-                border: Border.all(color: AppColors.goldBorder),
-              ),
-              child: Text(icon, style: TextStyle(fontSize: 14.sp)),
-            ),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.message,
-                    style: AppTextStyles.bodyMedium(
-                      context,
-                    ).copyWith(color: AppColors.textPrimary),
-                  ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    _timeAgo(item.createdAt),
-                    style: AppTextStyles.bodySmall(context),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+        child: row,
+      );
+    }
+    return CardContainer(
+      onTap: onTap,
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      child: row,
     );
   }
 
@@ -464,7 +501,10 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return ColoredBox(color: AppColors.emeraldMid.withValues(alpha: 0.35), child: child);
+    return ColoredBox(
+      color: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: SizedBox.expand(child: child),
+    );
   }
 
   @override
@@ -486,15 +526,18 @@ class _FeedLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      itemCount: 5,
-      separatorBuilder: (_, _) => SizedBox(height: 8.h),
-      itemBuilder: (_, index) => Container(
-        height: 74.h,
-        decoration: BoxDecoration(
-          color: AppColors.cardDark,
-          borderRadius: BorderRadius.circular(AppRadius.md.r),
-          border: Border.all(color: AppColors.cardBorder),
+    return Shimmer.fromColors(
+      baseColor: AppColors.cardDark,
+      highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: ListView.separated(
+        itemCount: 5,
+        separatorBuilder: (_, _) => SizedBox(height: 8.h),
+        itemBuilder: (_, index) => Container(
+          height: 74.h,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.md.r),
+          ),
         ),
       ),
     );
@@ -506,15 +549,18 @@ class _SheetLoadingShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      itemCount: 6,
-      separatorBuilder: (_, _) => SizedBox(height: 8.h),
-      itemBuilder: (_, index) => Container(
-        height: 46.h,
-        decoration: BoxDecoration(
-          color: AppColors.cardDark,
-          borderRadius: BorderRadius.circular(AppRadius.md.r),
-          border: Border.all(color: AppColors.cardBorder),
+    return Shimmer.fromColors(
+      baseColor: AppColors.cardDark,
+      highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: ListView.separated(
+        itemCount: 6,
+        separatorBuilder: (_, _) => SizedBox(height: 8.h),
+        itemBuilder: (_, index) => Container(
+          height: 46.h,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.md.r),
+          ),
         ),
       ),
     );

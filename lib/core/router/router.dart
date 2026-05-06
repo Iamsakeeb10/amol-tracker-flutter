@@ -115,9 +115,12 @@ GoRouter buildAppRouter() {
         builder: (_, _) => const EmptyStateScreen(),
       ),
       GoRoute(
-        path: AppRoutes.dayDetail,
+        path: AppRoutes.dayDetailPattern,
         name: 'dayDetail',
-        builder: (_, _) => const DayDetailScreen(),
+        builder: (_, state) {
+          final date = state.pathParameters['date'] ?? '';
+          return DayDetailScreen(hijriDate: date);
+        },
       ),
       GoRoute(
         path: '${AppRoutes.userProfile}/:id',

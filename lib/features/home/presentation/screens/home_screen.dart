@@ -14,6 +14,8 @@ import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../core/utils/streak_helper.dart';
+import '../../../../shared/widgets/streak_freeze_modal.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
@@ -48,6 +50,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final offline = connectivity != null &&
         connectivity.contains(ConnectivityResult.none);
 
+    final displayStreak = resolveDisplayedStreakValues(
+      currentStreak: user.currentStreak,
+      bestStreak: user.bestStreak,
+      hasSubmittedToday: amal.isSubmitted,
+    );
+
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
@@ -79,8 +87,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _Header(displayName: user.name),
           SizedBox(height: 18.h),
           _StreakBanner(
-            streak: user.currentStreak,
-            bestStreak: user.bestStreak,
+            streak: displayStreak.currentStreak,
+            bestStreak: displayStreak.bestStreak,
             onTap: () => context.push(AppRoutes.history),
           ),
           SizedBox(height: 14.h),
@@ -233,10 +241,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     UserModel user,
   ) async {
     final notifier = ref.read(amalProvider(uid).notifier);
-    final log = await notifier.submit(user);
+    final result = await notifier.submit(user);
     if (!context.mounted) return;
-    if (log != null) {
-      context.push(AppRoutes.dayComplete, extra: log);
+    if (result == null) return;
+
+    if (result.streakResult.action == StreakAction.showFreeze) {
+      await StreakFreezeModal.show(
+        context,
+        preservedStreak: result.streakResult.newCurrentStreak,
+        onUseFreeze: () async {
+          await notifier.applyFreeze(user);
+          if (!context.mounted) return;
+          context.push(AppRoutes.dayComplete, extra: result.log);
+        },
+        onResetStreak: () async {
+          await notifier.resetStreak(user.uid);
+          if (!context.mounted) return;
+          context.push(AppRoutes.dayComplete, extra: result.log);
+        },
+      );
+    } else {
+      context.push(AppRoutes.dayComplete, extra: result.log);
     }
   }
 }

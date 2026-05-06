@@ -88,7 +88,8 @@ class StatCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: (prominent ? (isCompact ? 6 : 8) : (isCompact ? 4 : 6)).h),
-            Flexible(
+            Align(
+              alignment: Alignment.centerLeft,
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,

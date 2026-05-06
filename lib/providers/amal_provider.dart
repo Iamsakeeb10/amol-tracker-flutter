@@ -5,9 +5,11 @@ import 'package:riverpod/legacy.dart';
 import '../core/constants/amal_fields.dart';
 import '../core/services/local_storage_service.dart';
 import '../core/utils/hijri_helper.dart';
+import '../core/utils/streak_helper.dart';
 import '../models/amal_log_model.dart';
 import '../models/user_model.dart';
 import 'auth_provider.dart';
+import 'history_provider.dart';
 
 /// Network status for offline banner (Phase 3).
 final connectivityListProvider = StreamProvider<List<ConnectivityResult>>((ref) async* {
@@ -66,6 +68,17 @@ class AmalState {
           : (submittedLog ?? this.submittedLog),
     );
   }
+}
+
+/// Returned from [AmalNotifier.submit] after a successful local submit (includes streak decision).
+class SubmitResult {
+  const SubmitResult({
+    required this.log,
+    required this.streakResult,
+  });
+
+  final AmalLogModel log;
+  final StreakResult streakResult;
 }
 
 final amalProvider =
@@ -181,8 +194,20 @@ class AmalNotifier extends StateNotifier<AmalState> {
     Future<void>.microtask(_persistDraft);
   }
 
-  /// Returns the saved log for navigation, or null on validation / failure.
-  Future<AmalLogModel?> submit(UserModel user) async {
+  /// Persists freeze choice after S-16 — keeps streak, marks freeze used for the week.
+  Future<void> applyFreeze(UserModel user) async {
+    final fs = _ref.read(firestoreServiceProvider);
+    await fs.updateStreak(user.uid, streakFreezeUsed: true);
+  }
+
+  /// User declined freeze — streak restarts at 1 ([lastLogDate] already set on submit).
+  Future<void> resetStreak(String uid) async {
+    final fs = _ref.read(firestoreServiceProvider);
+    await fs.updateStreak(uid, currentStreak: 1);
+  }
+
+  /// Returns the saved log + streak outcome for navigation / S-16, or null on validation / failure.
+  Future<SubmitResult?> submit(UserModel user) async {
     if (state.isSubmitted || state.isLoading) return null;
     if (!state.hasAnyDone) {
       state = state.copyWith(error: 'Toggle at least one amal before submitting.');
@@ -205,15 +230,36 @@ class AmalNotifier extends StateNotifier<AmalState> {
       submittedAt: now,
     );
 
+    final streakResult = computeStreakResult(
+      lastLogDate: user.lastLogDate,
+      todayHijri: hijri,
+      currentStreak: user.currentStreak,
+      bestStreak: user.bestStreak,
+      streakFreezeUsed: user.streakFreezeUsed,
+    );
+
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
       final fs = _ref.read(firestoreServiceProvider);
       await fs.saveAmalLog(log);
       try {
-        await fs.updateUserLastLogDate(user.uid, hijri);
+        switch (streakResult.action) {
+          case StreakAction.increment:
+          case StreakAction.reset:
+            await fs.updateStreak(
+              user.uid,
+              currentStreak: streakResult.newCurrentStreak,
+              bestStreak: streakResult.newBestStreak,
+              lastLogDate: hijri,
+            );
+            break;
+          case StreakAction.showFreeze:
+            await fs.updateStreak(user.uid, lastLogDate: hijri);
+            break;
+        }
       } catch (_) {
-        // Log doc is the source of truth; lastLogDate can sync later.
+        // Streak fields can sync later; log doc is saved.
       }
     } catch (_) {
       // Offline or write failure: cache locally; Firestore will sync when possible.
@@ -228,7 +274,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
         submittedLog: log,
       );
     }
+    _ref.invalidate(historyMonthProvider);
     Future<void>.microtask(() => _trySyncSubmittedLog(log));
-    return log;
+    return SubmitResult(log: log, streakResult: streakResult);
   }
 }

@@ -6,6 +6,7 @@ import '../../core/theme/text_styles.dart';
 import 'card_container.dart';
 
 class StreakFreezeModal extends StatelessWidget {
+  final int preservedStreak;
   final int freezesLeft;
   final int totalFreezes;
   final VoidCallback? onUseFreeze;
@@ -13,18 +14,33 @@ class StreakFreezeModal extends StatelessWidget {
 
   const StreakFreezeModal({
     super.key,
-    this.freezesLeft = 2,
-    this.totalFreezes = 3,
+    this.preservedStreak = 1,
+    this.freezesLeft = 1,
+    this.totalFreezes = 1,
     this.onUseFreeze,
     this.onResetStreak,
   });
 
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
+  /// S-16 — one freeze per week when user missed exactly one Hijri day.
+  static Future<void> show(
+    BuildContext context, {
+    required int preservedStreak,
+    VoidCallback? onUseFreeze,
+    VoidCallback? onResetStreak,
+    int freezesLeft = 1,
+    int totalFreezes = 1,
+  }) {
+    return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const StreakFreezeModal(),
+      builder: (_) => StreakFreezeModal(
+        preservedStreak: preservedStreak,
+        freezesLeft: freezesLeft,
+        totalFreezes: totalFreezes,
+        onUseFreeze: onUseFreeze,
+        onResetStreak: onResetStreak,
+      ),
     );
   }
 
@@ -81,7 +97,7 @@ class StreakFreezeModal extends StatelessWidget {
               ),
               SizedBox(height: 4.h),
               Text(
-                "You missed yesterday. Use a streak freeze to keep your 23-day streak alive — your habit, intact.",
+                "You missed yesterday. Use a streak freeze to keep your $preservedStreak-day streak alive — your habit, intact.",
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium(context),
               ),
@@ -136,7 +152,7 @@ class StreakFreezeModal extends StatelessWidget {
                     Navigator.of(context).maybePop();
                   },
                   child: Text(
-                    'Use a freeze',
+                    'Yes, use my freeze',
                     style: AppTextStyles.button(context).copyWith(
                       color: AppColors.emeraldDeep,
                       fontWeight: FontWeight.w600,
@@ -153,7 +169,7 @@ class StreakFreezeModal extends StatelessWidget {
                     Navigator.of(context).maybePop();
                   },
                   child: Text(
-                    'Reset streak',
+                    'No, reset my streak',
                     style: AppTextStyles.button(context).copyWith(
                       color: AppColors.textSecondary,
                     ),

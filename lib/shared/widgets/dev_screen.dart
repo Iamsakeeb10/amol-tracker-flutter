@@ -12,7 +12,7 @@ import 'streak_freeze_modal.dart';
 class DevScreen extends StatelessWidget {
   const DevScreen({super.key});
 
-  static const _entries = <_DevEntry>[
+  static final _entries = <_DevEntry>[
     _DevEntry('S-00', 'Sign In', AppRoutes.signIn),
     _DevEntry('S-01', 'Onboarding', AppRoutes.onboarding),
     _DevEntry('S-02', 'Home', AppRoutes.home),
@@ -24,7 +24,7 @@ class DevScreen extends StatelessWidget {
     _DevEntry('S-09', 'Settings', AppRoutes.settings),
     _DevEntry('S-10', 'Day Complete', AppRoutes.dayComplete),
     _DevEntry('S-12', 'User Profile', '${AppRoutes.userProfile}/u1'),
-    _DevEntry('S-13', 'Day Detail', AppRoutes.dayDetail),
+    _DevEntry('S-13', 'Day Detail', AppRoutes.dayDetailPath('1447-10-14')),
     _DevEntry('S-15', 'Empty State', AppRoutes.emptyState),
     _DevEntry('S-16', 'Streak Freeze (modal)', '__modal_freeze__'),
     _DevEntry('S-17', 'Quiet Hours', AppRoutes.quietHours),
@@ -63,7 +63,10 @@ class DevScreen extends StatelessWidget {
                   borderColor: AppColors.goldBorder,
                   onTap: () {
                     if (e.path == '__modal_freeze__') {
-                      StreakFreezeModal.show(context);
+                      StreakFreezeModal.show(
+                        context,
+                        preservedStreak: 23,
+                      );
                     } else {
                       context.go(e.path);
                     }

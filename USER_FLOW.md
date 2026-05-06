@@ -275,8 +275,8 @@ S-08: My Profile (via More menu)
 S-09: Settings
     │
     ├── Notification toggles (each cancels/reschedules local notifications):
-    │       ├── Morning reminder (6:00 AM)
-    │       ├── Evening reminder (6:30 PM)
+    │       ├── Morning notification (6:00 AM)
+    │       ├── Evening notification (6:30 PM)
     │       ├── Streak warning (10:00 PM)
     │       └── Community activity (FCM — toggle disables FCM topic sub)
     │

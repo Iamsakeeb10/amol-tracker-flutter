@@ -226,8 +226,8 @@
 
 ### Delivery
 
-- [ ] Morning reminder fires at 6:00 AM
-- [ ] Evening reminder fires at 6:30 PM
+- [ ] Morning notification fires at 6:00 AM
+- [ ] Evening notification fires at 6:30 PM
 - [ ] Streak warning fires at 10:00 PM if no log today
 - [ ] Friday Jumu'ah special fires Friday morning
 - [ ] "X community members already completed" FCM fires (via Cloud Function)

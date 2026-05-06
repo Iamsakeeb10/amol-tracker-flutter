@@ -111,13 +111,13 @@ Each amal has a point value. Maximum daily score = 100 points.
 
 ### 6. Push Notifications
 
-- Basic reminders:
+- Basic notifications:
   - "You haven't logged today yet"
   - "Don't break your streak 🔥"
-  - Morning / evening / night time-based reminders
+  - Morning / evening / night time-based notifications
   - Prayer time-based triggers (optional, uses location)
 - Quiet hours setting — user can set do-not-disturb window
-- Special Friday reminder
+- Special Friday notification
 
 ---
 

@@ -238,7 +238,7 @@ const List<MockNotification> kNotifications = [
     title: 'Fajr is 12 min away',
     body: 'Get ready for the morning prayer',
     time: '4:38 AM',
-    icon: Icons.alarm_outlined,
+    icon: Icons.notifications_active_outlined,
     unread: true,
   ),
   MockNotification(
@@ -265,10 +265,10 @@ const List<MockNotification> kNotifications = [
   ),
   MockNotification(
     id: 'n5',
-    title: 'Daily reminder',
+    title: 'Daily notification',
     body: "Don't forget your evening azkar",
     time: '3d ago',
-    icon: Icons.nightlight_outlined,
+    icon: Icons.notifications_outlined,
   ),
 ];
 

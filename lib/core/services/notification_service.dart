@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter/services.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -30,7 +29,6 @@ class NotificationService {
   static const int _eveningId = 630;
   static const int _streakId = 2200;
   static const int _jumuahId = 800;
-
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -41,7 +39,10 @@ class NotificationService {
 
   Future<void> initialize({void Function(String route)? onDeepLink}) async {
     _onDeepLink = onDeepLink;
-    if (_initialized) return;
+    if (_initialized) {
+      await _safeRescheduleAll();
+      return;
+    }
 
     tz_data.initializeTimeZones();
     // Product docs target Bangladesh users; enforce Dhaka timezone for schedules.
@@ -55,6 +56,7 @@ class NotificationService {
       settings: settings,
       onDidReceiveNotificationResponse: _onLocalResponse,
     );
+    await _ensureLocalNotificationPermission();
 
     final launchDetails = await _localNotifications
         .getNotificationAppLaunchDetails();
@@ -64,6 +66,7 @@ class NotificationService {
     }
 
     await _setupFcm();
+    await _safeRescheduleAll();
     _initialized = true;
   }
 
@@ -113,6 +116,32 @@ class NotificationService {
     if (isEveningEnabled) await _scheduleEvening();
     if (isStreakEnabled) await _scheduleStreakWarning();
     await _scheduleJumuah();
+  }
+
+  Future<void> _safeRescheduleAll() async {
+    try {
+      await scheduleAll();
+    } catch (_) {
+      // Never crash app startup due to platform scheduling quirks.
+    }
+  }
+
+  Future<void> _ensureLocalNotificationPermission() async {
+    final android = _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    final ios = _localNotifications
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+
+    if (android != null) {
+      await android.requestNotificationsPermission();
+    }
+    if (ios != null) {
+      await ios.requestPermissions(alert: true, badge: true, sound: true);
+    }
   }
 
   Future<void> rescheduleAll() async {
@@ -203,7 +232,7 @@ class NotificationService {
     if (_isSuppressedByQuietHours(at)) return;
     await _safeZonedSchedule(
       id: _morningId,
-      title: 'Morning reminder',
+      title: 'Morning notification',
       body: 'Start your day with today\'s amal.',
       scheduledDate: _nextInstance(at),
       payload: AppRoutes.home,
@@ -216,7 +245,7 @@ class NotificationService {
     if (_isSuppressedByQuietHours(at)) return;
     await _safeZonedSchedule(
       id: _eveningId,
-      title: 'Evening reminder',
+      title: 'Evening notification',
       body: 'Don\'t miss your evening azkar and Quran.',
       scheduledDate: _nextInstance(at),
       payload: AppRoutes.home,
@@ -260,40 +289,15 @@ class NotificationService {
     required DateTimeComponents matchDateTimeComponents,
   }) async {
     final details = _notificationDetails(payload: payload);
-    try {
-      await _localNotifications.zonedSchedule(
-        id: id,
-        title: title,
-        body: body,
-        scheduledDate: scheduledDate,
-        notificationDetails: details,
-        matchDateTimeComponents: matchDateTimeComponents,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      );
-    } on PlatformException catch (e) {
-      if (e.code != 'exact_alarms_not_permitted') rethrow;
-      // On Android 12+/emulators without exact alarm permission, degrade gracefully.
-      await _localNotifications.zonedSchedule(
-        id: id,
-        title: title,
-        body: body,
-        scheduledDate: scheduledDate,
-        notificationDetails: details,
-        matchDateTimeComponents: matchDateTimeComponents,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      );
-    }
-  }
-
-  Future<void> showTestNotificationNow() async {
-    await _localNotifications.show(
-      id: 99999,
-      title: 'Test notification',
-      body: 'If you can see this, local notifications are working.',
-      notificationDetails: _notificationDetails(
-        payload: AppRoutes.notifications,
-      ),
-      payload: AppRoutes.notifications,
+    await _localNotifications.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      notificationDetails: details,
+      matchDateTimeComponents: matchDateTimeComponents,
+      // Use inexact mode for broad device compatibility without exact scheduling permission.
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
   }
 
@@ -301,8 +305,8 @@ class NotificationService {
     return NotificationDetails(
       android: AndroidNotificationDetails(
         'amal_tracker_daily',
-        'Daily Reminders',
-        channelDescription: 'Daily and weekly reminders for amal logging',
+        'Daily Notifications',
+        channelDescription: 'Daily and weekly notifications for amal logging',
         importance: Importance.high,
         priority: Priority.high,
       ),

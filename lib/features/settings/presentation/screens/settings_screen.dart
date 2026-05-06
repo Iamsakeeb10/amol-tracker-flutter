@@ -81,8 +81,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Column(
               children: [
                 ToggleRow(
-                  icon: Icons.alarm,
-                  title: 'Morning reminder',
+                  icon: Icons.notifications_active_outlined,
+                  title: 'Morning notification',
                   subtitle: '06:00 each morning',
                   value: prefs.morningEnabled,
                   onChanged: (v) => prefsNotifier.setMorningEnabled(v),
@@ -90,7 +90,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Divider(),
                 ToggleRow(
                   icon: Icons.wb_twighlight,
-                  title: 'Evening reminder',
+                  title: 'Evening notification',
                   subtitle: '06:30 each evening',
                   value: prefs.eveningEnabled,
                   onChanged: (v) => prefsNotifier.setEveningEnabled(v),
@@ -160,7 +160,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ToggleRow(
                   icon: Icons.brightness_2_outlined,
                   title: 'Ramadan mode',
-                  subtitle: 'Adjust schedule and reminders',
+                  subtitle: 'Adjust schedule and notifications',
                   value: _ramadanMode,
                   onChanged: (v) => setState(() => _ramadanMode = v),
                 ),

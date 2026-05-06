@@ -370,8 +370,8 @@ final communitySheetProvider = StreamProvider<List<AmalLogModel>>((ref) {
 
 1. Request notification permission on Onboarding S-01c
 2. Local notifications via `flutter_local_notifications`:
-   - 6:00 AM — Morning reminder
-   - 6:30 PM — Evening reminder
+   - 6:00 AM — Morning notification
+   - 6:30 PM — Evening notification
    - 10:00 PM — Streak warning (if no log today)
    - Every Friday morning — Jumu'ah motivation
 3. FCM push notifications (via Cloud Functions):

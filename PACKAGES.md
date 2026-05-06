@@ -274,14 +274,14 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 ```dart
 // notification_service.dart
-// Morning reminder at 6:00 AM daily
+// Morning notification at 6:00 AM daily
 await flutterLocalNotificationsPlugin.zonedSchedule(
   0,
   'Assalamu Alaikum',
   'Start your day with your morning amal 🌅',
   _nextInstanceOf(hour: 6, minute: 0),
   const NotificationDetails(
-    android: AndroidNotificationDetails('daily', 'Daily Reminders',
+    android: AndroidNotificationDetails('daily', 'Daily Notifications',
         importance: Importance.high),
     iOS: DarwinNotificationDetails(),
   ),

@@ -80,7 +80,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 4.w),
             child: Text(
-              'Notifications stay silent during these hours. Reminders still run.',
+              'Notifications stay silent during these hours. Notification schedules still run.',
               style: AppTextStyles.bodyMedium(context),
             ),
           ),

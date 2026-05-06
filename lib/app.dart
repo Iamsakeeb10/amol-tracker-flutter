@@ -12,12 +12,14 @@ class AmolTrackerApp extends StatefulWidget {
   State<AmolTrackerApp> createState() => _AmolTrackerAppState();
 }
 
-class _AmolTrackerAppState extends State<AmolTrackerApp> {
+class _AmolTrackerAppState extends State<AmolTrackerApp>
+    with WidgetsBindingObserver {
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _router = buildAppRouter();
     NotificationService.instance.initialize(
       onDeepLink: (route) {
@@ -28,7 +30,16 @@ class _AmolTrackerAppState extends State<AmolTrackerApp> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      NotificationService.instance.rescheduleAll();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     NotificationService.instance.dispose();
     _router.dispose();
     super.dispose();

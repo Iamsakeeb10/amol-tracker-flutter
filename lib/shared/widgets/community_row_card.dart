@@ -12,19 +12,20 @@ const double kCommunityNameColWidth = 120;
 const double kCommunityAmalColWidth = 44;
 const double kCommunityScoreColWidth = 52;
 
-const List<({String id, String label})> kCommunityColumns = <({String id, String label})>[
-  (id: 'fard', label: 'Fard'),
-  (id: 'takbir', label: 'Takbir'),
-  (id: 'morning_azkar', label: 'M.Az'),
-  (id: 'evening_azkar', label: 'E.Az'),
-  (id: 'quran', label: 'Quran'),
-  (id: 'mulk', label: 'Mulk'),
-  (id: 'miswak', label: 'Miswak'),
-  (id: 'sunnah', label: 'Sunnah'),
-  (id: 'post_azkar', label: 'P.Az'),
-];
+const List<({String id, String label})> kCommunityColumns =
+    <({String id, String label})>[
+      (id: 'fard', label: 'Fard'),
+      (id: 'takbir', label: 'Takbir'),
+      (id: 'morning_azkar', label: 'M.Az'),
+      (id: 'evening_azkar', label: 'E.Az'),
+      (id: 'quran', label: 'Quran'),
+      (id: 'mulk', label: 'Mulk'),
+      (id: 'miswak', label: 'Miswak'),
+      (id: 'sunnah', label: 'Sunnah'),
+      (id: 'post_azkar', label: 'P.Az'),
+    ];
 
-double get kCommunityMinGridWidth =>
+double get kCommunityScrollableGridWidth =>
     kCommunityNameColWidth +
     (kCommunityAmalColWidth * kAmalFields.length) +
     kCommunityScoreColWidth;
@@ -36,25 +37,38 @@ class CommunityHeaderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CardContainer(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-      radius: AppRadius.md,
-      child: SingleChildScrollView(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.cardDark,
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: RawScrollbar(
         controller: horizontalController,
-        scrollDirection: Axis.horizontal,
-        child: SizedBox(
-          width: kCommunityMinGridWidth.w,
-          child: Row(
-            children: [
-              _HeaderCell(
-                text: 'Name',
-                width: kCommunityNameColWidth,
-                align: TextAlign.left,
-              ),
-              for (final col in kCommunityColumns)
-                _HeaderCell(text: col.label, width: kCommunityAmalColWidth),
-              _HeaderCell(text: 'Score', width: kCommunityScoreColWidth),
-            ],
+        thumbVisibility: true,
+        trackVisibility: true,
+        thickness: 6.w,
+        radius: Radius.zero,
+        child: SingleChildScrollView(
+          controller: horizontalController,
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.hardEdge,
+          child: SizedBox(
+            width: kCommunityScrollableGridWidth.w,
+            child: Row(
+              children: [
+                _HeaderCell(
+                  text: 'Name',
+                  width: kCommunityNameColWidth,
+                  align: TextAlign.left,
+                ),
+                for (final col in kCommunityColumns)
+                  _HeaderCell(
+                    text: col.label,
+                    width: kCommunityAmalColWidth,
+                  ),
+                _HeaderCell(text: 'Score', width: kCommunityScoreColWidth),
+              ],
+            ),
           ),
         ),
       ),
@@ -84,10 +98,14 @@ class CommunityRowCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final displayName = log.isAnonymousDisplay
         ? 'Anonymous'
-        : (log.displayName.trim().isEmpty ? 'Community member' : log.displayName.trim());
+        : (log.displayName.trim().isEmpty
+              ? 'Community member'
+              : log.displayName.trim());
     final initial = log.isAnonymousDisplay
         ? '🕌'
-        : (displayName.isNotEmpty ? displayName.substring(0, 1).toUpperCase() : 'A');
+        : (displayName.isNotEmpty
+              ? displayName.substring(0, 1).toUpperCase()
+              : 'A');
     final rowColor = isPinned ? AppColors.goldCard : AppColors.cardDark;
     final rowBorder = isPinned ? AppColors.goldBorder : AppColors.cardBorder;
 
@@ -95,38 +113,22 @@ class CommunityRowCard extends StatelessWidget {
       onTap: onTap,
       color: rowColor,
       borderColor: rowBorder,
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-      radius: AppRadius.md,
+      padding: EdgeInsets.zero,
+      radius: 0,
       child: SingleChildScrollView(
         controller: horizontalController,
         scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.hardEdge,
         child: SizedBox(
-          width: kCommunityMinGridWidth.w,
+          width: kCommunityScrollableGridWidth.w,
           child: Row(
             children: [
-              SizedBox(
-                width: kCommunityNameColWidth.w,
-                child: Row(
-                  children: [
-                    AvatarChip(
-                      initial: initial,
-                      color: log.isAnonymousDisplay ? AppColors.emeraldLight : AppColors.emeraldMid,
-                      size: 28,
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: Text(
-                        displayName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodyMedium(context).copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: isPinned ? FontWeight.w600 : FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              _NameCell(
+                width: kCommunityNameColWidth,
+                displayName: displayName,
+                initial: initial,
+                isAnonymousDisplay: log.isAnonymousDisplay,
+                isPinned: isPinned,
               ),
               for (final col in kCommunityColumns)
                 _StatusCell(
@@ -134,17 +136,10 @@ class CommunityRowCard extends StatelessWidget {
                   isDone: log.toggles[col.id] ?? false,
                   pending: isPending && isToday,
                 ),
-              SizedBox(
-                width: kCommunityScoreColWidth.w,
-                child: Center(
-                  child: Text(
-                    isPending ? '--' : '${log.score}',
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: isPinned ? AppColors.goldLight : AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+              _ScoreCell(
+                width: kCommunityScoreColWidth,
+                scoreLabel: isPending ? '--' : '${log.score}',
+                isPinned: isPinned,
               ),
             ],
           ),
@@ -167,17 +162,75 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: width.w,
+      height: 40.h,
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
+      alignment: align == TextAlign.left ? Alignment.centerLeft : Alignment.center,
+      decoration: const BoxDecoration(
+        border: Border(
+          right: BorderSide(color: AppColors.cardBorder),
+        ),
+      ),
       child: Text(
         text,
         textAlign: align,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: AppTextStyles.bodySmall(context).copyWith(
-          color: AppColors.textSecondary,
-          fontWeight: FontWeight.w600,
+        style: AppTextStyles.bodySmall(
+          context,
+        ).copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+}
+
+class _NameCell extends StatelessWidget {
+  const _NameCell({
+    required this.width,
+    required this.displayName,
+    required this.initial,
+    required this.isAnonymousDisplay,
+    required this.isPinned,
+  });
+
+  final double width;
+  final String displayName;
+  final String initial;
+  final bool isAnonymousDisplay;
+  final bool isPinned;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width.w,
+      height: 46.h,
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
+      decoration: const BoxDecoration(
+        border: Border(
+          right: BorderSide(color: AppColors.cardBorder),
         ),
+      ),
+      child: Row(
+        children: [
+          AvatarChip(
+            initial: initial,
+            color: isAnonymousDisplay ? AppColors.emeraldLight : AppColors.emeraldMid,
+            size: 24,
+          ),
+          SizedBox(width: 6.w),
+          Expanded(
+            child: Text(
+              displayName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.bodyMedium(context).copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: isPinned ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -202,13 +255,52 @@ class _StatusCell extends StatelessWidget {
         ? AppColors.success
         : AppColors.danger;
     final label = pending ? '⏳' : (isDone ? '✅' : '❌');
-    return SizedBox(
+    return Container(
       width: width.w,
+      height: 46.h,
+      decoration: const BoxDecoration(
+        border: Border(
+          right: BorderSide(color: AppColors.cardBorder),
+        ),
+      ),
       child: Center(
         child: Text(
           label,
+          style: AppTextStyles.bodyMedium(
+            context,
+          ).copyWith(color: color, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScoreCell extends StatelessWidget {
+  const _ScoreCell({
+    required this.width,
+    required this.scoreLabel,
+    required this.isPinned,
+  });
+
+  final double width;
+  final String scoreLabel;
+  final bool isPinned;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width.w,
+      height: 46.h,
+      decoration: const BoxDecoration(
+        border: Border(
+          right: BorderSide(color: AppColors.cardBorder),
+        ),
+      ),
+      child: Center(
+        child: Text(
+          scoreLabel,
           style: AppTextStyles.bodyMedium(context).copyWith(
-            color: color,
+            color: isPinned ? AppColors.goldLight : AppColors.textPrimary,
             fontWeight: FontWeight.w700,
           ),
         ),

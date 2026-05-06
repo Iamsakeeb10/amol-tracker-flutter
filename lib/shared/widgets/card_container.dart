@@ -25,8 +25,8 @@ class CardContainer extends StatelessWidget {
     this.onTap,
     this.border,
     this.boxShadow,
-  })  : padding = padding ?? EdgeInsets.all(AppSpacing.lg.r),
-        radius = radius ?? AppRadius.lg;
+  }) : padding = padding ?? EdgeInsets.all(AppSpacing.lg.r),
+       radius = radius ?? AppRadius.lg;
 
   factory CardContainer.gold({
     Key? key,
@@ -50,28 +50,46 @@ class CardContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final container = Container(
-      margin: margin,
-      padding: padding,
-      decoration: BoxDecoration(
-        color: color ?? AppColors.cardDark,
-        borderRadius: BorderRadius.circular(radius.r),
-        border:
-            border ?? Border.all(color: borderColor ?? AppColors.cardBorder),
-        boxShadow: boxShadow,
+    final borderRadius = BorderRadius.circular(radius.r);
+    final resolvedColor = color ?? AppColors.cardDark;
+    final resolvedSide = _resolveBorderSide();
+
+    Widget content = Padding(padding: padding, child: child);
+
+    // Material renders fill + border + clip in one atomic paint pass via its
+    // ShapeBorder, which prevents the background fill from antialiasing
+    // outside the border at rounded corners (the issue with separate
+    // ClipRRect + foreground-border layers).
+    Widget card = Material(
+      color: resolvedColor,
+      shape: RoundedRectangleBorder(
+        side: resolvedSide,
+        borderRadius: borderRadius,
       ),
-      child: child,
+      clipBehavior: Clip.antiAlias,
+      child: onTap != null ? InkWell(onTap: onTap, child: content) : content,
     );
 
-    if (onTap == null) return container;
+    if (boxShadow != null && boxShadow!.isNotEmpty) {
+      card = DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          boxShadow: boxShadow,
+        ),
+        child: card,
+      );
+    }
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(radius.r),
-        onTap: onTap,
-        child: container,
-      ),
-    );
+    if (margin != null) {
+      card = Padding(padding: margin!, child: card);
+    }
+
+    return card;
+  }
+
+  BorderSide _resolveBorderSide() {
+    final b = border;
+    if (b is Border) return b.top;
+    return BorderSide(color: borderColor ?? AppColors.cardBorder, width: 1.0);
   }
 }

@@ -28,14 +28,20 @@ class CommunityScreen extends ConsumerStatefulWidget {
 }
 
 class _CommunityScreenState extends ConsumerState<CommunityScreen> {
-  late final ScrollController _horizontalController;
+  late final ScrollController _headerHorizontalController;
   late final ScrollController _verticalController;
   late final TextEditingController _searchController;
+  final Map<String, ScrollController> _rowHorizontalControllers = {};
+  bool _isSyncingHorizontal = false;
+  double _horizontalOffset = 0;
 
   @override
   void initState() {
     super.initState();
-    _horizontalController = ScrollController();
+    _headerHorizontalController = ScrollController();
+    _headerHorizontalController.addListener(
+      () => _syncHorizontalOffsets(_headerHorizontalController),
+    );
     _verticalController = ScrollController()..addListener(_onVerticalScroll);
     _searchController = TextEditingController();
   }
@@ -46,7 +52,11 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     _verticalController
       ..removeListener(_onVerticalScroll)
       ..dispose();
-    _horizontalController.dispose();
+    _headerHorizontalController.dispose();
+    for (final controller in _rowHorizontalControllers.values) {
+      controller.dispose();
+    }
+    _rowHorizontalControllers.clear();
     super.dispose();
   }
 
@@ -56,6 +66,45 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     final cur = _verticalController.offset;
     if (max - cur < 180) {
       ref.read(communitySheetProvider.notifier).loadMore();
+    }
+  }
+
+  ScrollController _controllerForRow(String key) {
+    return _rowHorizontalControllers.putIfAbsent(key, () {
+      final controller = ScrollController(
+        initialScrollOffset: _horizontalOffset,
+      );
+      controller.addListener(() => _syncHorizontalOffsets(controller));
+      return controller;
+    });
+  }
+
+  void _syncHorizontalOffsets(ScrollController source) {
+    if (_isSyncingHorizontal || !source.hasClients) return;
+    _isSyncingHorizontal = true;
+    _horizontalOffset = source.offset;
+    final allControllers = <ScrollController>[
+      _headerHorizontalController,
+      ..._rowHorizontalControllers.values,
+    ];
+    for (final controller in allControllers) {
+      if (identical(controller, source) || !controller.hasClients) continue;
+      final max = controller.position.maxScrollExtent;
+      final nextOffset = _horizontalOffset.clamp(0.0, max);
+      if ((controller.offset - nextOffset).abs() > 0.5) {
+        controller.jumpTo(nextOffset);
+      }
+    }
+    _isSyncingHorizontal = false;
+  }
+
+  void _cleanupStaleRowControllers(Iterable<String> activeKeys) {
+    final active = activeKeys.toSet();
+    final stale = _rowHorizontalControllers.keys
+        .where((k) => !active.contains(k))
+        .toList();
+    for (final key in stale) {
+      _rowHorizontalControllers.remove(key)?.dispose();
     }
   }
 
@@ -71,7 +120,11 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     final otherRows = state.filteredRowsExcludingUid(currentUser?.uid);
     final ownPlaceholder = currentUser == null
         ? null
-        : _buildOwnPlaceholder(currentUser.uid, currentUser.name, state.selectedDate);
+        : _buildOwnPlaceholder(
+            currentUser.uid,
+            currentUser.name,
+            state.selectedDate,
+          );
 
     if (_searchController.text != state.searchQuery) {
       _searchController.value = TextEditingValue(
@@ -79,6 +132,13 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
         selection: TextSelection.collapsed(offset: state.searchQuery.length),
       );
     }
+
+    final activeRowKeys = <String>[
+      if (ownRow != null || ownPlaceholder != null)
+        'own-${currentUser?.uid ?? 'me'}',
+      ...otherRows.map((row) => 'row-${row.uid}'),
+    ];
+    _cleanupStaleRowControllers(activeRowKeys);
 
     return AppScaffold(
       body: DefaultTabController(
@@ -88,12 +148,15 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
           children: [
             Text(
               'COMMUNITY',
-              style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+              style: AppTextStyles.label(
+                context,
+              ).copyWith(color: AppColors.gold),
             ),
             SizedBox(height: 2.h),
             Text('Community', style: AppTextStyles.displayMedium(context)),
             SizedBox(height: 12.h),
             Container(
+              padding: EdgeInsets.all(3.r),
               decoration: BoxDecoration(
                 color: AppColors.cardDark,
                 border: Border.all(color: AppColors.cardBorder),
@@ -101,14 +164,23 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
               ),
               child: TabBar(
                 dividerColor: Colors.transparent,
-                indicatorColor: AppColors.gold,
+                indicator: BoxDecoration(
+                  color: AppColors.goldCard,
+                  borderRadius: BorderRadius.circular((AppRadius.md - 2).r),
+                  border: Border.all(color: AppColors.goldBorder),
+                ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 splashBorderRadius: BorderRadius.circular(AppRadius.md.r),
+                labelColor: AppColors.goldLight,
+                unselectedLabelColor: AppColors.textSecondary,
                 labelStyle: AppTextStyles.bodyMedium(
                   context,
-                ).copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                ).copyWith(fontWeight: FontWeight.w600),
                 unselectedLabelStyle: AppTextStyles.bodyMedium(context),
-                tabs: const [Tab(text: 'Sheet'), Tab(text: 'Feed')],
+                tabs: const [
+                  Tab(text: 'Sheet'),
+                  Tab(text: 'Feed'),
+                ],
               ),
             ),
             SizedBox(height: 12.h),
@@ -125,19 +197,28 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                         Padding(
                           padding: EdgeInsets.only(bottom: 10.h),
                           child: CardContainer(
-                            color: AppColors.warningLight.withValues(alpha: 0.35),
-                            borderColor: AppColors.warning.withValues(alpha: 0.5),
+                            color: AppColors.warningLight.withValues(
+                              alpha: 0.35,
+                            ),
+                            borderColor: AppColors.warning.withValues(
+                              alpha: 0.5,
+                            ),
                             child: Row(
                               children: [
-                                Icon(Icons.wifi_off, color: AppColors.warning, size: 18.r),
+                                Icon(
+                                  Icons.wifi_off,
+                                  color: AppColors.warning,
+                                  size: 18.r,
+                                ),
                                 SizedBox(width: 8.w),
                                 Expanded(
                                   child: Text(
                                     'Offline — showing latest available data.',
-                                    style: AppTextStyles.bodySmall(context).copyWith(
-                                      color: AppColors.textPrimary,
-                                      fontSize: 11.sp,
-                                    ),
+                                    style: AppTextStyles.bodySmall(context)
+                                        .copyWith(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 11.sp,
+                                        ),
                                   ),
                                 ),
                               ],
@@ -146,7 +227,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                         ),
                       SectionHeader(
                         title: 'DATE',
-                        trailingText: HijriHelper.displayFromStorage(state.selectedDate),
+                        trailingText: HijriHelper.displayFromStorage(
+                          state.selectedDate,
+                        ),
                       ),
                       _DateTabsRow(
                         options: dates,
@@ -165,15 +248,21 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                           prefixIcon: const Icon(Icons.search_rounded),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(AppRadius.md.r),
-                            borderSide: const BorderSide(color: AppColors.cardBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.cardBorder,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(AppRadius.md.r),
-                            borderSide: const BorderSide(color: AppColors.cardBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.cardBorder,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(AppRadius.md.r),
-                            borderSide: const BorderSide(color: AppColors.goldBorder),
+                            borderSide: const BorderSide(
+                              color: AppColors.goldBorder,
+                            ),
                           ),
                         ),
                       ),
@@ -192,16 +281,19 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                         child: state.isLoading
                             ? const _SheetLoadingShimmer()
                             : CustomScrollView(
-                                key: const PageStorageKey<String>('community_sheet_scroll'),
+                                key: const PageStorageKey<String>(
+                                  'community_sheet_scroll',
+                                ),
                                 controller: _verticalController,
                                 slivers: [
                                   SliverPersistentHeader(
                                     pinned: true,
                                     delegate: _StickyHeaderDelegate(
-                                      minHeight: 46.h,
-                                      maxHeight: 46.h,
+                                      minHeight: 52.h,
+                                      maxHeight: 52.h,
                                       child: CommunityHeaderRow(
-                                        horizontalController: _horizontalController,
+                                        horizontalController:
+                                            _headerHorizontalController,
                                       ),
                                     ),
                                   ),
@@ -213,10 +305,15 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                           children: [
                                             CommunityRowCard(
                                               log: ownRow ?? ownPlaceholder!,
-                                              horizontalController: _horizontalController,
+                                              horizontalController:
+                                                  _controllerForRow(
+                                                    'own-${currentUser?.uid ?? 'me'}',
+                                                  ),
                                               isToday: state.isToday,
                                               isPinned: true,
-                                              isPending: ownRow == null && state.isToday,
+                                              isPending:
+                                                  ownRow == null &&
+                                                  state.isToday,
                                               onTap: ownRow == null
                                                   ? null
                                                   : () {
@@ -231,10 +328,13 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                             ),
                                             if (ownRow == null && state.isToday)
                                               Padding(
-                                                padding: EdgeInsets.only(top: 8.h),
+                                                padding: EdgeInsets.only(
+                                                  top: 8.h,
+                                                ),
                                                 child: CardContainer(
                                                   color: AppColors.goldCard,
-                                                  borderColor: AppColors.goldBorder,
+                                                  borderColor:
+                                                      AppColors.goldBorder,
                                                   child: Row(
                                                     children: [
                                                       Icon(
@@ -246,7 +346,10 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                                       Expanded(
                                                         child: Text(
                                                           'Log today to appear here',
-                                                          style: AppTextStyles.bodySmall(context),
+                                                          style:
+                                                              AppTextStyles.bodySmall(
+                                                                context,
+                                                              ),
                                                         ),
                                                       ),
                                                     ],
@@ -261,27 +364,38 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                     SliverFillRemaining(
                                       hasScrollBody: false,
                                       child: Padding(
-                                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 16.h,
+                                        ),
                                         child: Center(
                                           child: Text(
                                             'No logs recorded for this day',
                                             textAlign: TextAlign.center,
-                                            style: AppTextStyles.bodyMedium(
-                                              context,
-                                            ).copyWith(color: AppColors.textMuted),
+                                            style:
+                                                AppTextStyles.bodyMedium(
+                                                  context,
+                                                ).copyWith(
+                                                  color: AppColors.textMuted,
+                                                ),
                                           ),
                                         ),
                                       ),
                                     )
                                   else
                                     SliverList(
-                                      delegate: SliverChildBuilderDelegate((context, index) {
+                                      delegate: SliverChildBuilderDelegate((
+                                        context,
+                                        index,
+                                      ) {
                                         final row = otherRows[index];
                                         return Padding(
                                           padding: EdgeInsets.only(top: 8.h),
                                           child: CommunityRowCard(
                                             log: row,
-                                            horizontalController: _horizontalController,
+                                            horizontalController:
+                                                _controllerForRow(
+                                                  'row-${row.uid}',
+                                                ),
                                             isToday: state.isToday,
                                             onTap: () {
                                               debugPrint(
@@ -298,14 +412,22 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                     ),
                                   SliverToBoxAdapter(
                                     child: Padding(
-                                      padding: EdgeInsets.only(top: 12.h, bottom: 20.h),
+                                      padding: EdgeInsets.only(
+                                        top: 12.h,
+                                        bottom: 20.h,
+                                      ),
                                       child: Center(
                                         child: state.isLoadingMore
-                                            ? CircularProgressIndicator(color: AppColors.gold)
+                                            ? CircularProgressIndicator(
+                                                color: AppColors.gold,
+                                              )
                                             : (!state.hasMore
                                                   ? Text(
                                                       'No more rows',
-                                                      style: AppTextStyles.bodySmall(context),
+                                                      style:
+                                                          AppTextStyles.bodySmall(
+                                                            context,
+                                                          ),
                                                     )
                                                   : const SizedBox.shrink()),
                                       ),
@@ -338,7 +460,9 @@ class _ActivityFeedTab extends ConsumerWidget {
       error: (_, _) => Center(
         child: Text(
           'Unable to load activity feed.',
-          style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textMuted),
+          style: AppTextStyles.bodyMedium(
+            context,
+          ).copyWith(color: AppColors.textMuted),
         ),
       ),
       data: (items) {
@@ -349,8 +473,10 @@ class _ActivityFeedTab extends ConsumerWidget {
               child: Text(
                 'No activity yet. Community updates will appear here.',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textMuted),
-                              ),
+                style: AppTextStyles.bodyMedium(
+                  context,
+                ).copyWith(color: AppColors.textMuted),
+              ),
             ),
           );
         }
@@ -376,7 +502,9 @@ class _FeedItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icon = _iconForType(item.type);
-    final onTap = item.type == 'dua' ? () => context.push(AppRoutes.notifications) : null;
+    final onTap = item.type == 'dua'
+        ? () => context.push(AppRoutes.notifications)
+        : null;
     final row = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -469,18 +597,30 @@ class _DateTabsRow extends StatelessWidget {
           final selected = date == selectedDate;
           final isToday = date == today;
           final label = isToday ? 'Today' : _shortHijriLabel(date);
-          return ChoiceChip(
-            selected: selected,
-            label: Text(label),
-            onSelected: (_) => onTapDate(date),
-            selectedColor: AppColors.goldCard,
-            backgroundColor: AppColors.cardDark,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md.r),
-              side: BorderSide(color: selected ? AppColors.goldBorder : AppColors.cardBorder),
-            ),
-            labelStyle: AppTextStyles.bodySmall(context).copyWith(
-              color: selected ? AppColors.goldLight : AppColors.textSecondary,
+          return GestureDetector(
+            onTap: () => onTapDate(date),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: selected ? AppColors.goldCard : AppColors.cardDark,
+                borderRadius: BorderRadius.circular(AppRadius.md.r),
+                border: Border.all(
+                  color: selected ? AppColors.goldBorder : AppColors.cardBorder,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  label,
+                  style: AppTextStyles.bodySmall(context).copyWith(
+                    color: selected
+                        ? AppColors.goldLight
+                        : AppColors.textSecondary,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ),
             ),
           );
         },
@@ -514,7 +654,7 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     return ColoredBox(
-      color: AppColors.emeraldMid.withValues(alpha: 0.35),
+      color: AppColors.emeraldDeep,
       child: SizedBox.expand(child: child),
     );
   }
@@ -588,7 +728,11 @@ List<String> _buildDateOptions({required int count}) {
   });
 }
 
-AmalLogModel _buildOwnPlaceholder(String uid, String name, String selectedDate) {
+AmalLogModel _buildOwnPlaceholder(
+  String uid,
+  String name,
+  String selectedDate,
+) {
   return AmalLogModel(
     uid: uid,
     displayName: name,

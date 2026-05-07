@@ -1,0 +1,3 @@
+name = "amol-dua-push"
+main = "dua-push-worker.js"
+compatibility_date = "2026-05-07"

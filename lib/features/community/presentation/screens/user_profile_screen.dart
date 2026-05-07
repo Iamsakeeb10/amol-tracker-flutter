@@ -254,10 +254,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                                         'isAnonymousDisplay': value,
                                       });
                                     } finally {
-                                      if (mounted)
+                                      if (mounted) {
                                         setState(
                                           () => _savingOwnProfile = false,
                                         );
+                                      }
                                     }
                                   },
                           ),
@@ -376,6 +377,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     String recipientUid,
     String senderName,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
+    debugPrint('👆 Send Dua pressed sender=$senderUid recipient=$recipientUid');
     setState(() => _sendingDua = true);
     try {
       final today = HijriHelper.todayString();
@@ -385,12 +388,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         hijriDate: today,
       );
       if (exists) {
+        debugPrint('⛔ blocked_already_sent recipient=$recipientUid');
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.alreadySentDuaToday),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.alreadySentDuaToday)));
         return;
       }
       await fs.sendDua(
@@ -398,12 +400,13 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         senderName: senderName,
         recipientUid: recipientUid,
         hijriDate: today,
-        message: AppLocalizations.of(context)!.duaFromSender(senderName),
+        message: l10n.duaFromSender(senderName),
       );
+      debugPrint('🎉 Send Dua completed recipient=$recipientUid');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.duaSent)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.duaSent)));
     } finally {
       if (mounted) setState(() => _sendingDua = false);
     }

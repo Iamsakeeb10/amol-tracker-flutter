@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../providers/auth_provider.dart';
@@ -26,6 +27,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     try {
       print('🔐 [Google SignIn] Calling authService.signInWithGoogle()');
       await ref.read(authServiceProvider).signInWithGoogle();
+      await NotificationService.instance.syncFcmTokenNow();
       print('✅ [Google SignIn] Google sign-in successful');
       if (!mounted) return;
     } catch (e, stackTrace) {
@@ -53,6 +55,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     try {
       print('👤 [Guest SignIn] Calling authService.signInAnonymously()');
       await ref.read(authServiceProvider).signInAnonymously();
+      await NotificationService.instance.syncFcmTokenNow();
       print('✅ [Guest SignIn] Guest sign-in successful');
       if (!mounted) return;
     } catch (e, stackTrace) {

@@ -40,6 +40,8 @@ class NotificationService {
 
   bool _initialized = false;
   StreamSubscription<String>? _onTokenRefreshSub;
+  StreamSubscription<RemoteMessage>? _onMessageSub;
+  StreamSubscription<RemoteMessage>? _onMessageOpenedSub;
   void Function(String route)? _onDeepLink;
 
   Future<void> initialize({void Function(String route)? onDeepLink}) async {
@@ -92,24 +94,54 @@ class NotificationService {
       _dispatchDeepLink(_routeFromMessage(initialMessage));
     }
 
-    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+    _onMessageSub = FirebaseMessaging.onMessage.listen(
+      _handleForegroundMessage,
+    );
+    _onMessageOpenedSub = FirebaseMessaging.onMessageOpenedApp.listen((
+      message,
+    ) {
       _dispatchDeepLink(_routeFromMessage(message));
     });
   }
 
   Future<void> dispose() async {
     await _onTokenRefreshSub?.cancel();
+    await _onMessageSub?.cancel();
+    await _onMessageOpenedSub?.cancel();
     _onTokenRefreshSub = null;
+    _onMessageSub = null;
+    _onMessageOpenedSub = null;
+  }
+
+  Future<void> syncFcmTokenNow() async {
+    await _syncFcmToken();
   }
 
   Future<void> _syncFcmToken() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      debugPrint('🔕 FCM sync skipped: no logged in user');
+      return;
+    }
     final token = await _messaging.getToken();
-    if (token == null || token.isEmpty) return;
-    await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-      'fcmToken': token,
-    });
+    if (token == null || token.isEmpty) {
+      debugPrint('⚠️ FCM sync failed: token is null/empty for uid=${user.uid}');
+      return;
+    }
+    final preview = token.substring(0, token.length > 14 ? 14 : token.length);
+    debugPrint('📲 FCM token fetched uid=${user.uid} tokenPrefix=$preview');
+    final userRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid);
+    final userSnap = await userRef.get();
+    if (!userSnap.exists) {
+      debugPrint(
+        '⏭️ FCM sync deferred: user doc not created yet for uid=${user.uid}',
+      );
+      return;
+    }
+    await userRef.set({'fcmToken': token}, SetOptions(merge: true));
+    debugPrint('✅ FCM token saved to Firestore for uid=${user.uid}');
   }
 
   Future<void> scheduleAll() async {
@@ -475,5 +507,21 @@ class NotificationService {
 
   void _dispatchDeepLink(String route) {
     _onDeepLink?.call(route);
+  }
+
+  Future<void> _handleForegroundMessage(RemoteMessage message) async {
+    final notification = message.notification;
+    final title = notification?.title ?? 'New notification';
+    final body = notification?.body ?? '';
+    final route = _routeFromMessage(message);
+    final id =
+        message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch;
+    await _localNotifications.show(
+      id,
+      title,
+      body,
+      _notificationDetails(payload: route),
+      payload: route,
+    );
   }
 }

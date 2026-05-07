@@ -148,6 +148,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
           );
       _logOnboardingEvent('User doc created successfully');
+      await NotificationService.instance.syncFcmTokenNow();
+      _logOnboardingEvent('FCM token synced after onboarding');
       if (!mounted) return;
       context.go(AppRoutes.home);
     } catch (e, st) {

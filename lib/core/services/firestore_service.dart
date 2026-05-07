@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hijri/hijri_calendar.dart';
 
+import 'dua_push_gateway_service.dart';
 import '../utils/hijri_helper.dart';
 import '../../models/activity_feed_item_model.dart';
 import '../../models/amal_log_model.dart';
@@ -8,10 +10,15 @@ import '../../models/notification_model.dart';
 import '../../models/user_model.dart';
 
 class FirestoreService {
-  FirestoreService({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  FirestoreService({
+    FirebaseFirestore? firestore,
+    DuaPushGatewayService? duaPushGateway,
+  }) : _firestore = firestore ?? FirebaseFirestore.instance,
+       _duaPushGateway =
+           duaPushGateway ?? DuaPushGatewayService.fromEnvironment();
 
   final FirebaseFirestore _firestore;
+  final DuaPushGatewayService _duaPushGateway;
 
   CollectionReference<Map<String, dynamic>> get _users =>
       _firestore.collection('users');
@@ -334,6 +341,9 @@ class FirestoreService {
         .where('hijriDate', isEqualTo: hijriDate)
         .limit(1)
         .get();
+    debugPrint(
+      '🧪 hasSentDuaToday sender=$senderUid recipient=$recipientUid hijriDate=$hijriDate found=${query.docs.isNotEmpty}',
+    );
     return query.docs.isNotEmpty;
   }
 
@@ -344,15 +354,19 @@ class FirestoreService {
     required String message,
     required String hijriDate,
   }) async {
-    await _notificationItems(recipientUid).add(<String, dynamic>{
-      'type': 'dua',
-      'message': message,
-      'isRead': false,
-      'createdAt': FieldValue.serverTimestamp(),
-      'senderUid': senderUid,
-      'senderName': senderName,
-      'hijriDate': hijriDate,
-    });
+    debugPrint(
+      '🕊️ sendDua start sender=$senderUid recipient=$recipientUid hijriDate=$hijriDate',
+    );
+    final notificationRef = await _notificationItems(recipientUid)
+        .add(<String, dynamic>{
+          'type': 'dua',
+          'message': message,
+          'isRead': false,
+          'createdAt': FieldValue.serverTimestamp(),
+          'senderUid': senderUid,
+          'senderName': senderName,
+          'hijriDate': hijriDate,
+        });
 
     await _activityFeed.add(<String, dynamic>{
       'type': 'dua',
@@ -361,6 +375,33 @@ class FirestoreService {
       'targetUid': recipientUid,
       'createdAt': FieldValue.serverTimestamp(),
     });
+
+    try {
+      final recipientUser = await _users.doc(recipientUid).get();
+      final recipientToken = (recipientUser.data()?['fcmToken'] as String?)
+          ?.trim();
+      if (recipientToken != null && recipientToken.isNotEmpty) {
+        debugPrint(
+          '🚀 gateway_call_start recipient=$recipientUid tokenPrefix=${recipientToken.substring(0, recipientToken.length > 12 ? 12 : recipientToken.length)}',
+        );
+        await _duaPushGateway.sendDuaPush(
+          recipientFcmToken: recipientToken,
+          senderUid: senderUid,
+          senderName: senderName,
+          recipientUid: recipientUid,
+          message: message,
+          notificationId: notificationRef.id,
+        );
+        debugPrint(
+          '✅ gateway_call_done recipient=$recipientUid notificationId=${notificationRef.id}',
+        );
+      } else {
+        debugPrint('⚠️ skip_gateway_missing_token recipient=$recipientUid');
+      }
+    } catch (e) {
+      // Never block dua write flow if push gateway fails.
+      debugPrint('❌ push gateway failed: $e');
+    }
   }
 
   Stream<List<NotificationModel>> notificationStream(String uid) {

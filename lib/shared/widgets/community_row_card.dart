@@ -8,22 +8,13 @@ import '../../models/amal_log_model.dart';
 import 'avatar_chip.dart';
 import 'card_container.dart';
 
-const double kCommunityNameColWidth = 120;
-const double kCommunityAmalColWidth = 44;
-const double kCommunityScoreColWidth = 52;
+const double kCommunityHeaderRowHeight = 60;
+const double kCommunityNameColWidth = 132;
+const double kCommunityAmalColWidth = 82;
+const double kCommunityScoreColWidth = 60;
 
-const List<({String id, String label})> kCommunityColumns =
-    <({String id, String label})>[
-      (id: 'fard', label: 'Fard'),
-      (id: 'takbir', label: 'Takbir'),
-      (id: 'morning_azkar', label: 'M.Az'),
-      (id: 'evening_azkar', label: 'E.Az'),
-      (id: 'quran', label: 'Quran'),
-      (id: 'mulk', label: 'Mulk'),
-      (id: 'miswak', label: 'Miswak'),
-      (id: 'sunnah', label: 'Sunnah'),
-      (id: 'post_azkar', label: 'P.Az'),
-    ];
+final List<({String id, String label})> kCommunityColumns =
+    kAmalFields.map((field) => (id: field.id, label: field.labelBn)).toList();
 
 double get kCommunityScrollableGridWidth =>
     kCommunityNameColWidth +
@@ -181,7 +172,7 @@ class _HeaderCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width.w,
-      height: 46.h,
+      height: kCommunityHeaderRowHeight.h,
       padding: EdgeInsets.symmetric(horizontal: 8.w),
       alignment: align == TextAlign.left ? Alignment.centerLeft : Alignment.center,
       decoration: const BoxDecoration(
@@ -192,11 +183,16 @@ class _HeaderCell extends StatelessWidget {
       child: Text(
         text,
         textAlign: align,
-        maxLines: 1,
+        maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: AppTextStyles.bodySmall(
           context,
-        ).copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w700),
+        ).copyWith(
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w700,
+          fontSize: 10.sp,
+          height: 1.15,
+        ),
       ),
     );
   }

@@ -292,8 +292,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                   SliverPersistentHeader(
                                     pinned: true,
                                     delegate: _StickyHeaderDelegate(
-                                      minHeight: 46.h,
-                                      maxHeight: 46.h,
+                                      minHeight: kCommunityHeaderRowHeight.h,
+                                      maxHeight: kCommunityHeaderRowHeight.h,
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(
                                           AppRadius.md.r,

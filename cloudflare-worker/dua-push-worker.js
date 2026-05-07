@@ -222,8 +222,8 @@ export default {
     const senderUid = String(body.senderUid || '');
     const recipientUid = String(body.recipientUid || '');
     const recipientFcmToken = String(body.recipientFcmToken || '');
-    const senderName = String(body.senderName || 'Someone');
-    const message = String(body.message || 'You received a dua');
+    const senderName = String(body.senderName || 'কেউ একজন');
+    const message = String(body.message || 'আপনি একটি দোয়া পেয়েছেন');
     const notificationId = String(body.notificationId || '');
 
     if (!senderUid || !recipientUid || !recipientFcmToken) {
@@ -244,8 +244,8 @@ export default {
     const fcmPayload = {
       token: recipientFcmToken,
       notification: {
-        title: 'New dua received',
-        body: `${senderName} sent you a dua`,
+        title: 'নতুন দোয়া পেয়েছেন',
+        body: `${senderName} আপনাকে দোয়া পাঠিয়েছেন`,
       },
       data: {
         type: 'dua',

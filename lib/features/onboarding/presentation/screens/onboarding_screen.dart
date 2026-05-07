@@ -261,10 +261,34 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: ValueListenableBuilder<int>(
                   valueListenable: _pageIndexNotifier,
                   builder: (_, __, ___) {
+                    if (_isSubmitting) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 16.r,
+                            height: 16.r,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.emeraldDeep,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Text(
+                            l10n.pleaseWait,
+                            style: AppTextStyles.button(context).copyWith(
+                              color: AppColors.emeraldDeep,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      );
+                    }
                     return Text(
-                      _isSubmitting
-                          ? l10n.pleaseWait
-                          : _buttonLabel(slides.length, l10n),
+                      _buttonLabel(slides.length, l10n),
                       style: AppTextStyles.button(context).copyWith(
                         color: AppColors.emeraldDeep,
                         fontWeight: FontWeight.w600,
@@ -275,10 +299,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
           ),
-          if (_isSubmitting) ...[
-            const CircularProgressIndicator(strokeWidth: 2),
-            SizedBox(height: 10.h),
-          ],
         ],
       ),
     );

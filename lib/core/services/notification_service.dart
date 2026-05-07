@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -35,10 +36,16 @@ class NotificationService {
   static const int _eveningId = 630;
   static const int _streakId = 2200;
   static const int _jumuahId = 800;
+  static const int _hadithMorningBaseId = 710;
+  static const int _hadithEveningBaseId = 740;
+  static const int _hadithDaysAhead = 7;
+  static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 7, minute: 0);
+  static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 20, minute: 0);
 
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  List<String> _hadithList = const [];
 
   bool _initialized = false;
   StreamSubscription<String>? _onTokenRefreshSub;
@@ -65,6 +72,7 @@ class NotificationService {
       onDidReceiveNotificationResponse: _onLocalResponse,
     );
     await _ensureLocalNotificationPermission();
+    await _loadHadith();
 
     final launchDetails = await _localNotifications
         .getNotificationAppLaunchDetails();
@@ -152,6 +160,7 @@ class NotificationService {
     if (isEveningEnabled) await _scheduleEvening();
     if (isStreakEnabled) await _scheduleStreakWarning();
     await _scheduleJumuah();
+    await _scheduleHadithNotifications();
   }
 
   Future<void> _safeRescheduleAll() async {
@@ -190,6 +199,10 @@ class NotificationService {
     await _localNotifications.cancel(_eveningId);
     await _localNotifications.cancel(_streakId);
     await _localNotifications.cancel(_jumuahId);
+    for (var i = 0; i < _hadithDaysAhead; i++) {
+      await _localNotifications.cancel(_hadithMorningBaseId + i);
+      await _localNotifications.cancel(_hadithEveningBaseId + i);
+    }
   }
 
   Future<void> setMorningEnabled(bool enabled) async {
@@ -337,13 +350,85 @@ class NotificationService {
     );
   }
 
+  Future<void> _loadHadith() async {
+    try {
+      final raw = await rootBundle.loadString('assets/hadiths/hadiths.json');
+      final decoded = jsonDecode(raw);
+      if (decoded is List) {
+        _hadithList = decoded
+            .whereType<String>()
+            .map((hadith) => hadith.trim())
+            .where((hadith) => hadith.isNotEmpty)
+            .toList(growable: false);
+      }
+    } catch (_) {
+      _hadithList = const [];
+    }
+  }
+
+  Future<void> _scheduleHadithNotifications() async {
+    if (_hadithList.isEmpty) return;
+    final now = tz.TZDateTime.now(tz.local);
+    for (var i = 0; i < _hadithDaysAhead; i++) {
+      final day = now.add(Duration(days: i));
+      final dayKey = DateTime.utc(
+        day.year,
+        day.month,
+        day.day,
+      ).millisecondsSinceEpoch ~/
+          Duration.millisecondsPerDay;
+      final hadith = _hadithList[dayKey % _hadithList.length];
+      await _scheduleHadithForTime(
+        id: _hadithMorningBaseId + i,
+        date: day,
+        at: _hadithMorningTime,
+        title: 'আজকের হাদীস (সকাল)',
+        hadith: hadith,
+      );
+      await _scheduleHadithForTime(
+        id: _hadithEveningBaseId + i,
+        date: day,
+        at: _hadithEveningTime,
+        title: 'আজকের হাদীস (রাত)',
+        hadith: hadith,
+      );
+    }
+  }
+
+  Future<void> _scheduleHadithForTime({
+    required int id,
+    required tz.TZDateTime date,
+    required TimeOfDay at,
+    required String title,
+    required String hadith,
+  }) async {
+    if (_isSuppressedByQuietHours(at)) return;
+    final scheduledDate = tz.TZDateTime(
+      tz.local,
+      date.year,
+      date.month,
+      date.day,
+      at.hour,
+      at.minute,
+    );
+    if (!scheduledDate.isAfter(tz.TZDateTime.now(tz.local))) return;
+    await _safeZonedSchedule(
+      id: id,
+      title: title,
+      body: hadith,
+      scheduledDate: scheduledDate,
+      payload: AppRoutes.notifications,
+      matchDateTimeComponents: null,
+    );
+  }
+
   Future<void> _safeZonedSchedule({
     required int id,
     required String title,
     required String body,
     required tz.TZDateTime scheduledDate,
     required String payload,
-    required DateTimeComponents matchDateTimeComponents,
+    DateTimeComponents? matchDateTimeComponents,
   }) async {
     final details = _notificationDetails(payload: payload);
     try {

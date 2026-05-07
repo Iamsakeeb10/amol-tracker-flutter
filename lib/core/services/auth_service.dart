@@ -12,6 +12,15 @@ class AuthService {
   final GoogleSignIn _googleSignIn;
 
   Future<UserCredential> signInWithGoogle() async {
+    // Force a fresh account/token handshake to avoid stale cached credentials
+    // from Credential Manager on emulator/device restarts.
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {}
+    try {
+      await _googleSignIn.disconnect();
+    } catch (_) {}
+
     await _googleSignIn.initialize();
     final account = await _googleSignIn.authenticate();
     final authData = account.authentication;

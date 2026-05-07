@@ -136,6 +136,7 @@ class FirestoreService {
     int? currentStreak,
     int? bestStreak,
     bool? streakFreezeUsed,
+    String? streakFreezeWeekKey,
     String? lastLogDate,
   }) async {
     final fields = <String, dynamic>{};
@@ -143,6 +144,9 @@ class FirestoreService {
     if (bestStreak != null) fields['bestStreak'] = bestStreak;
     if (streakFreezeUsed != null) {
       fields['streakFreezeUsed'] = streakFreezeUsed;
+    }
+    if (streakFreezeWeekKey != null) {
+      fields['streakFreezeWeekKey'] = streakFreezeWeekKey;
     }
     if (lastLogDate != null) fields['lastLogDate'] = lastLogDate;
     if (fields.isEmpty) return;
@@ -371,5 +375,18 @@ class FirestoreService {
       batch.update(doc.reference, <String, dynamic>{'isRead': true});
     }
     await batch.commit();
+  }
+
+  Future<void> addActivityFeedItem({
+    required String type,
+    required String message,
+    String? uid,
+  }) async {
+    await _activityFeed.add(<String, dynamic>{
+      'type': type,
+      'message': message,
+      'uid': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 }

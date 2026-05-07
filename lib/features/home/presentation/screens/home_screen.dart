@@ -15,6 +15,7 @@ import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../core/utils/streak_helper.dart';
+import '../../../../shared/mock/mock_data.dart' show kHadiths;
 import '../../../../shared/widgets/streak_freeze_modal.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -27,7 +28,49 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
+  ProviderSubscription<AmalState>? _amalErrorSubscription;
+  String? _listeningUid;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    _amalErrorSubscription?.close();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    final uid = ref.read(authStateProvider).asData?.value?.uid;
+    if (uid == null) return;
+    ref.invalidate(amalProvider(uid));
+  }
+
+  void _ensureAmalErrorListener(String uid) {
+    if (_listeningUid == uid) return;
+    _amalErrorSubscription?.close();
+    _listeningUid = uid;
+    _amalErrorSubscription = ref.listenManual<AmalState>(
+      amalProvider(uid),
+      (previous, next) {
+        if (!mounted || next.error == null || previous?.error == next.error) {
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.error!)),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authUser = ref.watch(authStateProvider).asData?.value;
@@ -45,6 +88,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final amal = ref.watch(amalProvider(authUser.uid));
     final amalNotifier = ref.read(amalProvider(authUser.uid).notifier);
+    _ensureAmalErrorListener(authUser.uid);
 
     // Only show banner once we know status; [none] means offline per connectivity_plus.
     final offline = connectivity != null &&
@@ -55,6 +99,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bestStreak: user.bestStreak,
       hasSubmittedToday: amal.isSubmitted,
     );
+    final isNewUser = user.lastLogDate.trim().isEmpty && !amal.isSubmitted;
 
     return AppScaffold(
       padding: EdgeInsets.zero,
@@ -107,6 +152,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             total: kAmalFields.length,
             score: amal.totalScore,
           ),
+          if (isNewUser) ...[
+            SizedBox(height: 14.h),
+            const _WelcomeCard(),
+          ],
           SizedBox(height: 14.h),
           if (amal.isSubmitted) ...[
             CardContainer.gold(
@@ -263,6 +312,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } else {
       context.push(AppRoutes.dayComplete, extra: result.log);
     }
+  }
+}
+
+class _WelcomeCard extends StatelessWidget {
+  const _WelcomeCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final hadith = kHadiths.first;
+    return CardContainer.gold(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, color: AppColors.goldLight, size: 16.r),
+              SizedBox(width: 6.w),
+              Text(
+                'WELCOME',
+                style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Your first amal starts today.',
+            style: AppTextStyles.bodyLarge(context).copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(hadith, style: AppTextStyles.bodyMedium(context)),
+        ],
+      ),
+    );
   }
 }
 

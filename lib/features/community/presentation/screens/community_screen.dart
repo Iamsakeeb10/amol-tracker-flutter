@@ -395,22 +395,25 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                         final row = otherRows[index];
                                         return Padding(
                                           padding: EdgeInsets.only(top: 8.h),
-                                          child: CommunityRowCard(
-                                            log: row,
-                                            horizontalController:
-                                                _controllerForRow(
-                                                  'row-${row.uid}',
-                                                ),
-                                            isToday: state.isToday,
-                                            onTap: () {
-                                              debugPrint(
-                                                '[CommunityTap][row] uid=${row.uid} date=${state.selectedDate} score=${row.score} toggles=${row.toggles}',
-                                              );
-                                              context.push(
-                                                '${AppRoutes.userProfile}/${row.uid}?date=${state.selectedDate}',
-                                                extra: row,
-                                              );
-                                            },
+                                          child: RepaintBoundary(
+                                            key: ValueKey(row.uid),
+                                            child: CommunityRowCard(
+                                              log: row,
+                                              horizontalController:
+                                                  _controllerForRow(
+                                                    'row-${row.uid}',
+                                                  ),
+                                              isToday: state.isToday,
+                                              onTap: () {
+                                                debugPrint(
+                                                  '[CommunityTap][row] uid=${row.uid} date=${state.selectedDate} score=${row.score} toggles=${row.toggles}',
+                                                );
+                                                context.push(
+                                                  '${AppRoutes.userProfile}/${row.uid}?date=${state.selectedDate}',
+                                                  extra: row,
+                                                );
+                                              },
+                                            ),
                                           ),
                                         );
                                       }, childCount: otherRows.length),

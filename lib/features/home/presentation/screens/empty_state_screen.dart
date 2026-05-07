@@ -57,10 +57,10 @@ class EmptyStateScreen extends StatelessWidget {
           const Divider(),
           SizedBox(height: 18.h),
           _EmptyBlock(
-            icon: Icons.group_add_outlined,
-            title: 'No friends yet',
+            icon: Icons.public_rounded,
+            title: 'Join the community',
             body:
-                'Pull a brother along. Invite friends to keep each other consistent.',
+                'See today\'s community sheet and stay motivated with everyone\'s progress.',
             ctaLabel: 'Open community',
             onTap: () => context.go(AppRoutes.community),
           ),

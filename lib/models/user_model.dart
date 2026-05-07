@@ -9,6 +9,7 @@ class UserModel {
   final int currentStreak;
   final int bestStreak;
   final bool streakFreezeUsed;
+  final String streakFreezeWeekKey;
   final String lastLogDate;
   final bool isAnonymousDisplay;
   final List<String> badges;
@@ -22,6 +23,7 @@ class UserModel {
     required this.currentStreak,
     required this.bestStreak,
     required this.streakFreezeUsed,
+    required this.streakFreezeWeekKey,
     required this.lastLogDate,
     required this.isAnonymousDisplay,
     required this.badges,
@@ -38,6 +40,7 @@ class UserModel {
       currentStreak: (map['currentStreak'] as num?)?.toInt() ?? 0,
       bestStreak: (map['bestStreak'] as num?)?.toInt() ?? 0,
       streakFreezeUsed: (map['streakFreezeUsed'] as bool?) ?? false,
+      streakFreezeWeekKey: (map['streakFreezeWeekKey'] as String?) ?? '',
       lastLogDate: (map['lastLogDate'] as String?) ?? '',
       isAnonymousDisplay: (map['isAnonymousDisplay'] as bool?) ?? false,
       badges: ((map['badges'] as List<dynamic>?) ?? const [])
@@ -59,6 +62,7 @@ class UserModel {
       'currentStreak': currentStreak,
       'bestStreak': bestStreak,
       'streakFreezeUsed': streakFreezeUsed,
+      'streakFreezeWeekKey': streakFreezeWeekKey,
       'lastLogDate': lastLogDate,
       'isAnonymousDisplay': isAnonymousDisplay,
       'badges': badges,

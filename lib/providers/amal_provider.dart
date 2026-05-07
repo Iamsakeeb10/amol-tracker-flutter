@@ -4,8 +4,10 @@ import 'package:riverpod/legacy.dart';
 
 import '../core/constants/amal_fields.dart';
 import '../core/services/local_storage_service.dart';
+import '../core/services/firestore_service.dart';
 import '../core/utils/hijri_helper.dart';
 import '../core/utils/streak_helper.dart';
+import '../models/badge_model.dart';
 import '../models/amal_log_model.dart';
 import '../models/user_model.dart';
 import 'auth_provider.dart';
@@ -197,7 +199,11 @@ class AmalNotifier extends StateNotifier<AmalState> {
   /// Persists freeze choice after S-16 — keeps streak, marks freeze used for the week.
   Future<void> applyFreeze(UserModel user) async {
     final fs = _ref.read(firestoreServiceProvider);
-    await fs.updateStreak(user.uid, streakFreezeUsed: true);
+    await fs.updateStreak(
+      user.uid,
+      streakFreezeUsed: true,
+      streakFreezeWeekKey: weekKeyFromDate(HijriHelper.bangladeshNow()),
+    );
   }
 
   /// User declined freeze — streak restarts at 1 ([lastLogDate] already set on submit).
@@ -218,6 +224,9 @@ class AmalNotifier extends StateNotifier<AmalState> {
     final toggles = Map<String, bool>.from(state.toggles);
     final score = calculateScore(toggles);
     final now = DateTime.now().toUtc();
+    final currentWeekKey = weekKeyFromDate(HijriHelper.bangladeshNow());
+    final freezeAvailableThisWeek =
+        user.streakFreezeWeekKey != currentWeekKey ? true : !user.streakFreezeUsed;
 
     final log = AmalLogModel(
       uid: user.uid,
@@ -242,7 +251,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       todayHijri: hijri,
       currentStreak: user.currentStreak,
       bestStreak: user.bestStreak,
-      streakFreezeUsed: user.streakFreezeUsed,
+      streakFreezeUsed: !freezeAvailableThisWeek,
     );
 
     print(
@@ -253,6 +262,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
     );
 
     state = state.copyWith(isLoading: true, clearError: true);
+    String? submitWarning;
 
     try {
       final fs = _ref.read(firestoreServiceProvider);
@@ -270,7 +280,19 @@ class AmalNotifier extends StateNotifier<AmalState> {
               user.uid,
               currentStreak: streakResult.newCurrentStreak,
               bestStreak: streakResult.newBestStreak,
+              streakFreezeUsed:
+                  user.streakFreezeWeekKey != currentWeekKey
+                  ? false
+                  : user.streakFreezeUsed,
+              streakFreezeWeekKey: currentWeekKey,
               lastLogDate: hijri,
+            );
+            await _syncClientSideBadgesAndFeed(
+              fs: fs,
+              user: user,
+              submittedLog: log,
+              resultingCurrentStreak: streakResult.newCurrentStreak,
+              currentWeekKey: currentWeekKey,
             );
             break;
           case StreakAction.showFreeze:
@@ -278,7 +300,22 @@ class AmalNotifier extends StateNotifier<AmalState> {
               '[AmalSubmit] Calling updateStreak (freeze only) for uid=${user.uid} '
               'with lastLogDate=$hijri',
             );
-            await fs.updateStreak(user.uid, lastLogDate: hijri);
+            await fs.updateStreak(
+              user.uid,
+              streakFreezeUsed:
+                  user.streakFreezeWeekKey != currentWeekKey
+                  ? false
+                  : user.streakFreezeUsed,
+              streakFreezeWeekKey: currentWeekKey,
+              lastLogDate: hijri,
+            );
+            await _syncClientSideBadgesAndFeed(
+              fs: fs,
+              user: user,
+              submittedLog: log,
+              resultingCurrentStreak: streakResult.newCurrentStreak,
+              currentWeekKey: currentWeekKey,
+            );
             break;
         }
       } catch (e) {
@@ -288,6 +325,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
     } catch (e) {
       // Offline or write failure: cache locally; Firestore will sync when possible.
       print('[AmalSubmit] Error while saving amal log for uid=${user.uid}: $e');
+      submitWarning = 'Saved locally - will sync when back online.';
     } finally {
       await LocalStorageService.saveLog(_submittedHiveKey(hijri), log.toHiveMap());
       await LocalStorageService.deleteLog(_draftHiveKey(hijri));
@@ -296,11 +334,61 @@ class AmalNotifier extends StateNotifier<AmalState> {
         toggles: toggles,
         isSubmitted: true,
         isLoading: false,
+        error: submitWarning,
         submittedLog: log,
       );
     }
     _ref.invalidate(historyMonthProvider);
     Future<void>.microtask(() => _trySyncSubmittedLog(log));
     return SubmitResult(log: log, streakResult: streakResult);
+  }
+
+  Future<void> _syncClientSideBadgesAndFeed({
+    required FirestoreService fs,
+    required UserModel user,
+    required AmalLogModel submittedLog,
+    required int resultingCurrentStreak,
+    required String currentWeekKey,
+  }) async {
+    final nextBadges = <String>{...user.badges};
+
+    for (final badge in kBadgeDefinitions) {
+      if (badge.streakThreshold != null &&
+          resultingCurrentStreak >= badge.streakThreshold!) {
+        nextBadges.add(badge.id);
+      }
+    }
+
+    final recent = await fs.getRecentLogs(user.uid, limit: 7);
+    final perfectWeek = recent.length >= 7 && recent.every((log) => log.score >= 80);
+    if (perfectWeek) nextBadges.add('perfectWeek');
+
+    final weeklyRows = await fs.weeklyLeaderboard();
+    final isTopThisWeek = weeklyRows.isNotEmpty && weeklyRows.first['uid'] == user.uid;
+    if (isTopThisWeek) nextBadges.add('topOfCommunity');
+
+    await fs.updateUser(user.uid, <String, dynamic>{
+      'badges': nextBadges.toList(),
+      'streakFreezeWeekKey': currentWeekKey,
+    });
+
+    final displayName = submittedLog.isAnonymousDisplay
+        ? 'Anonymous'
+        : (submittedLog.displayName.trim().isEmpty
+              ? 'Community member'
+              : submittedLog.displayName.trim());
+
+    await fs.addActivityFeedItem(
+      type: 'completion',
+      message: '$displayName completed today\'s amal.',
+      uid: user.uid,
+    );
+    if (resultingCurrentStreak > 0 && resultingCurrentStreak % 7 == 0) {
+      await fs.addActivityFeedItem(
+        type: 'streak',
+        message: '$displayName is on a $resultingCurrentStreak-day streak.',
+        uid: user.uid,
+      );
+    }
   }
 }

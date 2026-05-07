@@ -55,6 +55,13 @@ int _calendarDaysBetween(DateTime a, DateTime b) {
   return bb.difference(aa).inDays;
 }
 
+String weekKeyFromDate(DateTime date) {
+  final midnight = DateTime(date.year, date.month, date.day);
+  final weekday = midnight.weekday; // Monday = 1
+  final monday = midnight.subtract(Duration(days: weekday - 1));
+  return '${monday.year}-${monday.month.toString().padLeft(2, '0')}-${monday.day.toString().padLeft(2, '0')}';
+}
+
 /// Computes streak transition when submitting a log on [todayHijri].
 ///
 /// [lastLogDate] is the user's previous `lastLogDate` from Firestore (before this submit).

@@ -10,9 +10,9 @@
   "english": "English",
   "bangla": "বাংলা",
   "morningNotification": "Morning notification",
-  "morningNotificationTime": "06:00 each morning",
+  "morningNotificationTime": "6:00 AM each morning",
   "eveningNotification": "Evening notification",
-  "eveningNotificationTime": "06:30 each evening",
+  "eveningNotificationTime": "6:30 PM each evening",
   "streakWarning": "Streak warning",
   "streakWarningSubtitle": "When you risk losing your streak",
   "communityActivity": "Community activity",
@@ -88,6 +88,12 @@
   "@daysAgo": {
     "placeholders": {
       "days": {}
+    }
+  },
+  "weeksAgo": "{weeks}w ago",
+  "@weeksAgo": {
+    "placeholders": {
+      "weeks": {}
     }
   },
   "welcome": "Welcome",

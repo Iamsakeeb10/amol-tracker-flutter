@@ -117,13 +117,14 @@ class _NotificationRow extends StatelessWidget {
 
   String _timeLabel(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
     final now = DateTime.now();
     final diff = now.difference(item.createdAt);
     if (diff.inMinutes < 1) return l10n.justNow;
     if (diff.inHours < 1) return l10n.minutesAgo(diff.inMinutes);
     if (diff.inDays < 1) return l10n.hoursAgo(diff.inHours);
     if (diff.inDays < 7) return l10n.daysAgo(diff.inDays);
-    return DateFormat('d MMM').format(item.createdAt);
+    return DateFormat('d MMM', locale).format(item.createdAt);
   }
 
   IconData _iconForType() {

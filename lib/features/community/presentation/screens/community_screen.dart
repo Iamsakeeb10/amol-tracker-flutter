@@ -545,7 +545,7 @@ class _FeedItemCard extends StatelessWidget {
               ),
               SizedBox(height: 6.h),
               Text(
-                _timeAgo(item.createdAt),
+                _timeAgo(context, item.createdAt),
                 style: AppTextStyles.bodySmall(context),
               ),
             ],
@@ -767,14 +767,14 @@ AmalLogModel _buildOwnPlaceholder(
   );
 }
 
-String _timeAgo(DateTime timestamp) {
+String _timeAgo(BuildContext context, DateTime timestamp) {
+  final l10n = AppLocalizations.of(context)!;
   final now = DateTime.now();
   final diff = now.difference(timestamp.toLocal());
-  // time labels localized in notifications/feed style
-  if (diff.inMinutes < 1) return 'Just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  if (diff.inMinutes < 1) return l10n.justNow;
+  if (diff.inMinutes < 60) return l10n.minutesAgo(diff.inMinutes);
+  if (diff.inHours < 24) return l10n.hoursAgo(diff.inHours);
+  if (diff.inDays < 7) return l10n.daysAgo(diff.inDays);
   final weeks = (diff.inDays / 7).floor();
-  return '${weeks}w ago';
+  return l10n.weeksAgo(weeks);
 }

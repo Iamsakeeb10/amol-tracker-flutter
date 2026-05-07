@@ -39,13 +39,13 @@ class AppLocalizationsBn extends AppLocalizations {
   String get morningNotification => 'সকালের নোটিফিকেশন';
 
   @override
-  String get morningNotificationTime => 'প্রতি সকাল ০৬:০০';
+  String get morningNotificationTime => 'প্রতি সকাল ৬:০০ AM';
 
   @override
   String get eveningNotification => 'সন্ধ্যার নোটিফিকেশন';
 
   @override
-  String get eveningNotificationTime => 'প্রতি সন্ধ্যা ০৬:৩০';
+  String get eveningNotificationTime => 'প্রতি সন্ধ্যা ৬:৩০ PM';
 
   @override
   String get streakWarning => 'স্ট্রিক ওয়ার্নিং';
@@ -193,6 +193,11 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String daysAgo(Object days) {
     return '$daysদিন আগে';
+  }
+
+  @override
+  String weeksAgo(Object weeks) {
+    return '$weeksসপ্তাহ আগে';
   }
 
   @override

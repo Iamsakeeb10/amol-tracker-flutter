@@ -75,8 +75,6 @@ class NotificationPrefsNotifier extends StateNotifier<NotificationPrefsState> {
 
   final NotificationService _service;
 
-  String get quietHoursLabel => _service.quietHoursLabel;
-
   Future<void> setMorningEnabled(bool value) async {
     await _service.setMorningEnabled(value);
     state = state.copyWith(morningEnabled: value);

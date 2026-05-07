@@ -39,13 +39,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get morningNotification => 'Morning notification';
 
   @override
-  String get morningNotificationTime => '06:00 each morning';
+  String get morningNotificationTime => '6:00 AM each morning';
 
   @override
   String get eveningNotification => 'Evening notification';
 
   @override
-  String get eveningNotificationTime => '06:30 each evening';
+  String get eveningNotificationTime => '6:30 PM each evening';
 
   @override
   String get streakWarning => 'Streak warning';
@@ -193,6 +193,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String daysAgo(Object days) {
     return '${days}d ago';
+  }
+
+  @override
+  String weeksAgo(Object weeks) {
+    return '${weeks}w ago';
   }
 
   @override

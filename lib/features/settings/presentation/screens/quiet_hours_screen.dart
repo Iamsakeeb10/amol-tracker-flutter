@@ -29,12 +29,6 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
     _to = prefs.quietTo;
   }
 
-  String _format(TimeOfDay t) {
-    final hh = t.hour.toString().padLeft(2, '0');
-    final mm = t.minute.toString().padLeft(2, '0');
-    return '$hh:$mm';
-  }
-
   void _bumpHour(TimeOfDay t, int delta, bool start) {
     final newHour = (t.hour + delta) % 24;
     final v = TimeOfDay(
@@ -93,7 +87,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
                 child: _TimeCard(
                   label: l10n.from,
                   time: _from,
-                  formatted: _format(_from),
+                  formatted: _from.format(context),
                   onUp: () => _bumpHour(_from, 1, true),
                   onDown: () => _bumpHour(_from, -1, true),
                 ),
@@ -103,7 +97,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
                 child: _TimeCard(
                   label: l10n.to,
                   time: _to,
-                  formatted: _format(_to),
+                  formatted: _to.format(context),
                   onUp: () => _bumpHour(_to, 1, false),
                   onDown: () => _bumpHour(_to, -1, false),
                 ),
@@ -118,7 +112,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
-                    l10n.silentFromTo(_format(_from), _format(_to)),
+                    l10n.silentFromTo(_from.format(context), _to.format(context)),
                     style: AppTextStyles.bodyLarge(
                       context,
                     ).copyWith(fontSize: 13.sp),

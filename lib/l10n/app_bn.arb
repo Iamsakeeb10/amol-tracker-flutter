@@ -10,9 +10,9 @@
   "english": "English",
   "bangla": "বাংলা",
   "morningNotification": "সকালের নোটিফিকেশন",
-  "morningNotificationTime": "প্রতি সকাল ০৬:০০",
+  "morningNotificationTime": "প্রতি সকাল ৬:০০ AM",
   "eveningNotification": "সন্ধ্যার নোটিফিকেশন",
-  "eveningNotificationTime": "প্রতি সন্ধ্যা ০৬:৩০",
+  "eveningNotificationTime": "প্রতি সন্ধ্যা ৬:৩০ PM",
   "streakWarning": "স্ট্রিক ওয়ার্নিং",
   "streakWarningSubtitle": "স্ট্রিক হারানোর আগে জানিয়ে দেবে",
   "communityActivity": "কমিউনিটি অ্যাক্টিভিটি",
@@ -88,6 +88,12 @@
   "@daysAgo": {
     "placeholders": {
       "days": {}
+    }
+  },
+  "weeksAgo": "{weeks}সপ্তাহ আগে",
+  "@weeksAgo": {
+    "placeholders": {
+      "weeks": {}
     }
   },
   "welcome": "স্বাগতম",

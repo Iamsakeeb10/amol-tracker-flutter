@@ -161,7 +161,7 @@ abstract class AppLocalizations {
   /// No description provided for @morningNotificationTime.
   ///
   /// In en, this message translates to:
-  /// **'06:00 each morning'**
+  /// **'6:00 AM each morning'**
   String get morningNotificationTime;
 
   /// No description provided for @eveningNotification.
@@ -173,7 +173,7 @@ abstract class AppLocalizations {
   /// No description provided for @eveningNotificationTime.
   ///
   /// In en, this message translates to:
-  /// **'06:30 each evening'**
+  /// **'6:30 PM each evening'**
   String get eveningNotificationTime;
 
   /// No description provided for @streakWarning.
@@ -445,6 +445,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days}d ago'**
   String daysAgo(Object days);
+
+  /// No description provided for @weeksAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{weeks}w ago'**
+  String weeksAgo(Object weeks);
 
   /// No description provided for @welcome.
   ///

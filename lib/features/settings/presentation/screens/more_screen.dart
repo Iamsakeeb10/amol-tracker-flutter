@@ -19,12 +19,6 @@ import '../../../../l10n/app_localizations.dart';
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
-  String _formatTime(TimeOfDay value) {
-    final hh = value.hour.toString().padLeft(2, '0');
-    final mm = value.minute.toString().padLeft(2, '0');
-    return '$hh:$mm';
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
@@ -33,7 +27,7 @@ class MoreScreen extends ConsumerWidget {
     final prefs = ref.watch(notificationPrefsProvider);
     final unread = (notifications ?? const []).where((n) => !n.isRead).length;
     final quietHoursLabel =
-        '${_formatTime(prefs.quietFrom)} — ${_formatTime(prefs.quietTo)}';
+        '${prefs.quietFrom.format(context)} — ${prefs.quietTo.format(context)}';
     final rawName = user?.name ?? '';
     final displayName = rawName.trim().isEmpty ? l10n.profile : rawName.trim();
     final initial = displayName.substring(0, 1).toUpperCase();

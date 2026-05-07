@@ -254,15 +254,6 @@ class NotificationService {
     await scheduleAll();
   }
 
-  String get quietHoursLabel =>
-      '${_timeLabel(quietFrom)} — ${_timeLabel(quietTo)}';
-
-  String _timeLabel(TimeOfDay value) {
-    final hh = value.hour.toString().padLeft(2, '0');
-    final mm = value.minute.toString().padLeft(2, '0');
-    return '$hh:$mm';
-  }
-
   bool _isSuppressedByQuietHours(TimeOfDay scheduled) {
     final from = quietFrom.hour * 60 + quietFrom.minute;
     final to = quietTo.hour * 60 + quietTo.minute;

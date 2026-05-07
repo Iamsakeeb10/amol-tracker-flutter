@@ -123,7 +123,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 NavRow(
                   icon: Icons.do_not_disturb_on_outlined,
                   title: l10n.quietHours,
-                  trailing: prefsNotifier.quietHoursLabel,
+                  trailing:
+                      '${prefs.quietFrom.format(context)} — ${prefs.quietTo.format(context)}',
                   onTap: () => context.push(AppRoutes.quietHours),
                 ),
               ],

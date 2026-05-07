@@ -65,8 +65,18 @@ StreakResult computeStreakResult({
   required int bestStreak,
   required bool streakFreezeUsed,
 }) {
+  // Debug logging to trace streak transitions.
+  // This is intentionally verbose to help diagnose streak issues in production.
+  print(
+    '[StreakHelper] computeStreakResult(lastLogDate=$lastLogDate, todayHijri=$todayHijri, '
+    'currentStreak=$currentStreak, bestStreak=$bestStreak, streakFreezeUsed=$streakFreezeUsed)',
+  );
+
   if (lastLogDate.isEmpty) {
     const newStreak = 1;
+    print(
+      '[StreakHelper] No lastLogDate; starting new streak at $newStreak (best=${newStreak > bestStreak ? newStreak : bestStreak})',
+    );
     return StreakResult(
       action: StreakAction.increment,
       newCurrentStreak: newStreak,
@@ -80,6 +90,10 @@ StreakResult computeStreakResult({
     lastG = hijriStorageStringToGregorian(lastLogDate);
     todayG = hijriStorageStringToGregorian(todayHijri);
   } catch (_) {
+    print(
+      '[StreakHelper] Failed to parse Hijri dates (lastLogDate=$lastLogDate, todayHijri=$todayHijri); '
+      'resetting streak to 1 and keeping bestStreak=$bestStreak',
+    );
     return StreakResult(
       action: StreakAction.reset,
       newCurrentStreak: 1,
@@ -88,9 +102,15 @@ StreakResult computeStreakResult({
   }
 
   final diffDays = _calendarDaysBetween(lastG, todayG);
+  print(
+    '[StreakHelper] diffDays between lastG=$lastG and todayG=$todayG is $diffDays',
+  );
 
   if (diffDays <= 0) {
     final keep = currentStreak > 0 ? currentStreak : 1;
+    print(
+      '[StreakHelper] diffDays<=0; keeping streak at $keep (best=${keep > bestStreak ? keep : bestStreak})',
+    );
     return StreakResult(
       action: StreakAction.increment,
       newCurrentStreak: keep,
@@ -99,8 +119,16 @@ StreakResult computeStreakResult({
   }
 
   if (diffDays == 1) {
-    final newCurrent = currentStreak + 1;
+    // If Firestore hasn't yet updated `currentStreak` for the previous day,
+    // we might see `currentStreak == 0` even though [lastLogDate] is a valid
+    // logged day. In that case, treat the baseline as 1 before incrementing.
+    final baselineCurrent = currentStreak <= 0 ? 1 : currentStreak;
+    final newCurrent = baselineCurrent + 1;
     final newBest = newCurrent > bestStreak ? newCurrent : bestStreak;
+    print(
+      '[StreakHelper] Consecutive day; incrementing streak from baseline=$baselineCurrent '
+      'to $newCurrent (best=$newBest)',
+    );
     return StreakResult(
       action: StreakAction.increment,
       newCurrentStreak: newCurrent,
@@ -109,6 +137,10 @@ StreakResult computeStreakResult({
   }
 
   if (diffDays == 2 && !streakFreezeUsed) {
+    print(
+      '[StreakHelper] Missed exactly one day and freeze not used; showing freeze modal, '
+      'keeping currentStreak=$currentStreak, bestStreak=$bestStreak',
+    );
     return StreakResult(
       action: StreakAction.showFreeze,
       newCurrentStreak: currentStreak,
@@ -116,6 +148,9 @@ StreakResult computeStreakResult({
     );
   }
 
+  print(
+    '[StreakHelper] Gap too large or freeze already used; resetting streak to 1 (bestStreak=$bestStreak)',
+  );
   return StreakResult(
     action: StreakAction.reset,
     newCurrentStreak: 1,

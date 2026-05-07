@@ -230,12 +230,26 @@ class AmalNotifier extends StateNotifier<AmalState> {
       submittedAt: now,
     );
 
+    // Debug logging of user + log state before streak computation.
+    print(
+      '[AmalSubmit] uid=${user.uid} hijri=$hijri score=$score '
+      'currentStreak=${user.currentStreak} bestStreak=${user.bestStreak} '
+      'lastLogDate=${user.lastLogDate} streakFreezeUsed=${user.streakFreezeUsed}',
+    );
+
     final streakResult = computeStreakResult(
       lastLogDate: user.lastLogDate,
       todayHijri: hijri,
       currentStreak: user.currentStreak,
       bestStreak: user.bestStreak,
       streakFreezeUsed: user.streakFreezeUsed,
+    );
+
+    print(
+      '[AmalSubmit] StreakResult for uid=${user.uid}: '
+      'action=${streakResult.action}, '
+      'newCurrentStreak=${streakResult.newCurrentStreak}, '
+      'newBestStreak=${streakResult.newBestStreak}',
     );
 
     state = state.copyWith(isLoading: true, clearError: true);
@@ -247,6 +261,11 @@ class AmalNotifier extends StateNotifier<AmalState> {
         switch (streakResult.action) {
           case StreakAction.increment:
           case StreakAction.reset:
+            print(
+              '[AmalSubmit] Calling updateStreak for uid=${user.uid} with '
+              'currentStreak=${streakResult.newCurrentStreak}, '
+              'bestStreak=${streakResult.newBestStreak}, lastLogDate=$hijri',
+            );
             await fs.updateStreak(
               user.uid,
               currentStreak: streakResult.newCurrentStreak,
@@ -255,14 +274,20 @@ class AmalNotifier extends StateNotifier<AmalState> {
             );
             break;
           case StreakAction.showFreeze:
+            print(
+              '[AmalSubmit] Calling updateStreak (freeze only) for uid=${user.uid} '
+              'with lastLogDate=$hijri',
+            );
             await fs.updateStreak(user.uid, lastLogDate: hijri);
             break;
         }
-      } catch (_) {
+      } catch (e) {
         // Streak fields can sync later; log doc is saved.
+        print('[AmalSubmit] Error while updating streak for uid=${user.uid}: $e');
       }
-    } catch (_) {
+    } catch (e) {
       // Offline or write failure: cache locally; Firestore will sync when possible.
+      print('[AmalSubmit] Error while saving amal log for uid=${user.uid}: $e');
     } finally {
       await LocalStorageService.saveLog(_submittedHiveKey(hijri), log.toHiveMap());
       await LocalStorageService.deleteLog(_draftHiveKey(hijri));

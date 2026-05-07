@@ -24,6 +24,7 @@ class AppRoutes {
   static const profile = '/profile';
   static const settings = '/settings';
   static const quietHours = '/settings/quiet-hours';
+  static const reminderTimes = '/settings/reminder-times';
 
   static const dev = '/dev';
 }

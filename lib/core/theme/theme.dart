@@ -35,6 +35,7 @@ class AppTheme {
         labelLarge: AppTextStyles.button(context),
       ),
       appBarTheme: AppBarTheme(
+        scrolledUnderElevation: 0,
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,

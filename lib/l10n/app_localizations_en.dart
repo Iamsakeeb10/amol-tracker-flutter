@@ -42,10 +42,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get morningNotificationTime => '6:00 AM each morning';
 
   @override
+  String get morningNotificationTimeLabel => 'Morning time';
+
+  @override
   String get eveningNotification => 'Evening notification';
 
   @override
   String get eveningNotificationTime => '6:30 PM each evening';
+
+  @override
+  String get eveningNotificationTimeLabel => 'Evening time';
+
+  @override
+  String get notificationTimeTapToChange => 'Tap to customize time';
 
   @override
   String get streakWarning => 'Streak warning';
@@ -58,6 +67,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityActivitySubtitle => 'Push updates from community';
+
+  @override
+  String get reminderTimes => 'Reminder times';
+
+  @override
+  String get reminderTimesDescription =>
+      'Set the exact reminder time for morning and evening notifications.';
 
   @override
   String get quietHours => 'Quiet hours';

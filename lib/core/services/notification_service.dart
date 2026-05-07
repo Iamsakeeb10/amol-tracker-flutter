@@ -22,6 +22,8 @@ class NotificationService {
   static const String notifMorningHourKey = 'notif_morning_hour';
   static const String notifMorningMinuteKey = 'notif_morning_min';
   static const String notifEveningKey = 'notif_evening';
+  static const String notifEveningHourKey = 'notif_evening_hour';
+  static const String notifEveningMinuteKey = 'notif_evening_min';
   static const String notifStreakKey = 'notif_streak';
   static const String notifCommunityKey = 'notif_community';
   static const String quietFromHourKey = 'quiet_from_hour';
@@ -206,6 +208,12 @@ class NotificationService {
     await scheduleAll();
   }
 
+  Future<void> setEveningTime(TimeOfDay value) async {
+    await LocalStorageService.setPref(notifEveningHourKey, value.hour);
+    await LocalStorageService.setPref(notifEveningMinuteKey, value.minute);
+    await scheduleAll();
+  }
+
   Future<void> setStreakEnabled(bool enabled) async {
     await LocalStorageService.setPref(notifStreakKey, enabled);
     await scheduleAll();
@@ -228,6 +236,10 @@ class NotificationService {
   );
   bool get isEveningEnabled =>
       LocalStorageService.getPref<bool>(notifEveningKey, true);
+  TimeOfDay get eveningTime => TimeOfDay(
+    hour: LocalStorageService.getPref<int>(notifEveningHourKey, 18),
+    minute: LocalStorageService.getPref<int>(notifEveningMinuteKey, 30),
+  );
   bool get isStreakEnabled =>
       LocalStorageService.getPref<bool>(notifStreakKey, true);
   bool get isCommunityEnabled =>
@@ -286,7 +298,7 @@ class NotificationService {
   }
 
   Future<void> _scheduleEvening() async {
-    const at = TimeOfDay(hour: 18, minute: 30);
+    final at = eveningTime;
     if (_isSuppressedByQuietHours(at)) return;
     await _safeZonedSchedule(
       id: _eveningId,

@@ -42,10 +42,19 @@ class AppLocalizationsBn extends AppLocalizations {
   String get morningNotificationTime => 'প্রতি সকাল ৬:০০ AM';
 
   @override
+  String get morningNotificationTimeLabel => 'সকালের সময়';
+
+  @override
   String get eveningNotification => 'সন্ধ্যার নোটিফিকেশন';
 
   @override
   String get eveningNotificationTime => 'প্রতি সন্ধ্যা ৬:৩০ PM';
+
+  @override
+  String get eveningNotificationTimeLabel => 'সন্ধ্যার সময়';
+
+  @override
+  String get notificationTimeTapToChange => 'ট্যাপ করে সময় পরিবর্তন করুন';
 
   @override
   String get streakWarning => 'স্ট্রিক ওয়ার্নিং';
@@ -58,6 +67,13 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get communityActivitySubtitle => 'কমিউনিটি থেকে আপডেট পাবেন';
+
+  @override
+  String get reminderTimes => 'রিমাইন্ডার সময়';
+
+  @override
+  String get reminderTimesDescription =>
+      'সকালের ও সন্ধ্যার নোটিফিকেশনের নির্দিষ্ট সময় সেট করুন।';
 
   @override
   String get quietHours => 'কোয়ায়েট আওয়ার';

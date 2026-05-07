@@ -19,6 +19,7 @@ import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/more_screen.dart';
 import '../../features/settings/presentation/screens/quiet_hours_screen.dart';
+import '../../features/settings/presentation/screens/reminder_times_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../shared/widgets/bottom_nav.dart';
 import '../../shared/widgets/dev_screen.dart';
@@ -153,11 +154,18 @@ GoRouter buildAppRouter() {
         path: AppRoutes.settings,
         name: 'settings',
         builder: (_, _) => const SettingsScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.quietHours,
-        name: 'quietHours',
-        builder: (_, _) => const QuietHoursScreen(),
+        routes: [
+          GoRoute(
+            path: 'quiet-hours',
+            name: 'quietHours',
+            builder: (_, _) => const QuietHoursScreen(),
+          ),
+          GoRoute(
+            path: 'reminder-times',
+            name: 'reminderTimes',
+            builder: (_, _) => const ReminderTimesScreen(),
+          ),
+        ],
       ),
     ],
     errorBuilder: (_, state) => Scaffold(

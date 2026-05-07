@@ -91,7 +91,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ToggleRow(
                   icon: Icons.notifications_active_outlined,
                   title: l10n.morningNotification,
-                  subtitle: l10n.morningNotificationTime,
+                  subtitle: prefs.morningTime.format(context),
                   value: prefs.morningEnabled,
                   onChanged: (v) => prefsNotifier.setMorningEnabled(v),
                 ),
@@ -99,9 +99,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ToggleRow(
                   icon: Icons.wb_twighlight,
                   title: l10n.eveningNotification,
-                  subtitle: l10n.eveningNotificationTime,
+                  subtitle: prefs.eveningTime.format(context),
                   value: prefs.eveningEnabled,
                   onChanged: (v) => prefsNotifier.setEveningEnabled(v),
+                ),
+                const Divider(),
+                InkWell(
+                  onTap: () => context.pushNamed('reminderTimes'),
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 34.r,
+                          height: 34.r,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppColors.cardBorder,
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Icon(
+                            Icons.schedule_outlined,
+                            size: 16.r,
+                            color: AppColors.gold,
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Text(
+                            l10n.reminderTimes,
+                            style: AppTextStyles.bodyLarge(
+                              context,
+                            ).copyWith(fontSize: 14.sp),
+                          ),
+                        ),
+                        Text(
+                          prefs.morningTime.format(context),
+                          style: AppTextStyles.bodyMedium(
+                            context,
+                          ).copyWith(color: AppColors.textMuted),
+                        ),
+                        SizedBox(width: 6.w),
+                        Icon(
+                          Icons.chevron_right,
+                          color: AppColors.textMuted,
+                          size: 18.r,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 const Divider(),
                 ToggleRow(
@@ -120,12 +167,51 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   onChanged: (v) => prefsNotifier.setCommunityEnabled(v),
                 ),
                 const Divider(),
-                NavRow(
-                  icon: Icons.do_not_disturb_on_outlined,
-                  title: l10n.quietHours,
-                  trailing:
-                      '${prefs.quietFrom.format(context)} — ${prefs.quietTo.format(context)}',
+                InkWell(
                   onTap: () => context.push(AppRoutes.quietHours),
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 34.r,
+                          height: 34.r,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppColors.cardBorder,
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Icon(
+                            Icons.do_not_disturb_on_outlined,
+                            size: 16.r,
+                            color: AppColors.gold,
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Text(
+                            l10n.quietHours,
+                            style: AppTextStyles.bodyLarge(
+                              context,
+                            ).copyWith(fontSize: 14.sp),
+                          ),
+                        ),
+                        Text(
+                          '${prefs.quietFrom.format(context)} — ${prefs.quietTo.format(context)}',
+                          style: AppTextStyles.bodyMedium(
+                            context,
+                          ).copyWith(color: AppColors.textMuted),
+                        ),
+                        SizedBox(width: 6.w),
+                        Icon(
+                          Icons.chevron_right,
+                          color: AppColors.textMuted,
+                          size: 18.r,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),

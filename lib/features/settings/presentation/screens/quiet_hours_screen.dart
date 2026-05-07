@@ -44,6 +44,21 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
     });
   }
 
+  Future<void> _pickTime({required bool start}) async {
+    final selected = await showTimePicker(
+      context: context,
+      initialTime: start ? _from : _to,
+    );
+    if (selected == null) return;
+    setState(() {
+      if (start) {
+        _from = selected;
+      } else {
+        _to = selected;
+      }
+    });
+  }
+
   String _silenceHoursLabel(AppLocalizations l10n) {
     final fromMinutes = _from.hour * 60 + _from.minute;
     final toMinutes = _to.hour * 60 + _to.minute;
@@ -88,6 +103,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
                   label: l10n.from,
                   time: _from,
                   formatted: _from.format(context),
+                  onPick: () => _pickTime(start: true),
                   onUp: () => _bumpHour(_from, 1, true),
                   onDown: () => _bumpHour(_from, -1, true),
                 ),
@@ -98,6 +114,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
                   label: l10n.to,
                   time: _to,
                   formatted: _to.format(context),
+                  onPick: () => _pickTime(start: false),
                   onUp: () => _bumpHour(_to, 1, false),
                   onDown: () => _bumpHour(_to, -1, false),
                 ),
@@ -167,6 +184,7 @@ class _TimeCard extends StatelessWidget {
   final String label;
   final TimeOfDay time;
   final String formatted;
+  final VoidCallback onPick;
   final VoidCallback onUp;
   final VoidCallback onDown;
 
@@ -174,6 +192,7 @@ class _TimeCard extends StatelessWidget {
     required this.label,
     required this.time,
     required this.formatted,
+    required this.onPick,
     required this.onUp,
     required this.onDown,
   });
@@ -187,6 +206,18 @@ class _TimeCard extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+          ),
+          SizedBox(height: 4.h),
+          IconButton(
+            onPressed: onPick,
+            icon: Icon(Icons.access_time_rounded, size: 18.r),
+            color: AppColors.gold,
+            style: IconButton.styleFrom(
+              side: const BorderSide(color: AppColors.cardBorder),
+              shape: const CircleBorder(),
+              visualDensity: VisualDensity.compact,
+            ),
+            tooltip: 'Pick time',
           ),
           SizedBox(height: 8.h),
           Text(

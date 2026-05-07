@@ -164,6 +164,12 @@ abstract class AppLocalizations {
   /// **'6:00 AM each morning'**
   String get morningNotificationTime;
 
+  /// No description provided for @morningNotificationTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning time'**
+  String get morningNotificationTimeLabel;
+
   /// No description provided for @eveningNotification.
   ///
   /// In en, this message translates to:
@@ -175,6 +181,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'6:30 PM each evening'**
   String get eveningNotificationTime;
+
+  /// No description provided for @eveningNotificationTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening time'**
+  String get eveningNotificationTimeLabel;
+
+  /// No description provided for @notificationTimeTapToChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to customize time'**
+  String get notificationTimeTapToChange;
 
   /// No description provided for @streakWarning.
   ///
@@ -199,6 +217,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Push updates from community'**
   String get communityActivitySubtitle;
+
+  /// No description provided for @reminderTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder times'**
+  String get reminderTimes;
+
+  /// No description provided for @reminderTimesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Set the exact reminder time for morning and evening notifications.'**
+  String get reminderTimesDescription;
 
   /// No description provided for @quietHours.
   ///

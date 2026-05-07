@@ -20,7 +20,9 @@ final notificationsProvider = StreamProvider<List<NotificationModel>>((ref) {
 class NotificationPrefsState {
   const NotificationPrefsState({
     required this.morningEnabled,
+    required this.morningTime,
     required this.eveningEnabled,
+    required this.eveningTime,
     required this.streakEnabled,
     required this.communityEnabled,
     required this.quietFrom,
@@ -28,7 +30,9 @@ class NotificationPrefsState {
   });
 
   final bool morningEnabled;
+  final TimeOfDay morningTime;
   final bool eveningEnabled;
+  final TimeOfDay eveningTime;
   final bool streakEnabled;
   final bool communityEnabled;
   final TimeOfDay quietFrom;
@@ -36,7 +40,9 @@ class NotificationPrefsState {
 
   NotificationPrefsState copyWith({
     bool? morningEnabled,
+    TimeOfDay? morningTime,
     bool? eveningEnabled,
+    TimeOfDay? eveningTime,
     bool? streakEnabled,
     bool? communityEnabled,
     TimeOfDay? quietFrom,
@@ -44,7 +50,9 @@ class NotificationPrefsState {
   }) {
     return NotificationPrefsState(
       morningEnabled: morningEnabled ?? this.morningEnabled,
+      morningTime: morningTime ?? this.morningTime,
       eveningEnabled: eveningEnabled ?? this.eveningEnabled,
+      eveningTime: eveningTime ?? this.eveningTime,
       streakEnabled: streakEnabled ?? this.streakEnabled,
       communityEnabled: communityEnabled ?? this.communityEnabled,
       quietFrom: quietFrom ?? this.quietFrom,
@@ -65,7 +73,9 @@ class NotificationPrefsNotifier extends StateNotifier<NotificationPrefsState> {
     : super(
         NotificationPrefsState(
           morningEnabled: _service.isMorningEnabled,
+          morningTime: _service.morningTime,
           eveningEnabled: _service.isEveningEnabled,
+          eveningTime: _service.eveningTime,
           streakEnabled: _service.isStreakEnabled,
           communityEnabled: _service.isCommunityEnabled,
           quietFrom: _service.quietFrom,
@@ -80,9 +90,19 @@ class NotificationPrefsNotifier extends StateNotifier<NotificationPrefsState> {
     state = state.copyWith(morningEnabled: value);
   }
 
+  Future<void> setMorningTime(TimeOfDay value) async {
+    await _service.setMorningTime(value);
+    state = state.copyWith(morningTime: value);
+  }
+
   Future<void> setEveningEnabled(bool value) async {
     await _service.setEveningEnabled(value);
     state = state.copyWith(eveningEnabled: value);
+  }
+
+  Future<void> setEveningTime(TimeOfDay value) async {
+    await _service.setEveningTime(value);
+    state = state.copyWith(eveningTime: value);
   }
 
   Future<void> setStreakEnabled(bool value) async {
@@ -106,7 +126,9 @@ class NotificationPrefsNotifier extends StateNotifier<NotificationPrefsState> {
   Future<void> refresh() async {
     state = NotificationPrefsState(
       morningEnabled: _service.isMorningEnabled,
+      morningTime: _service.morningTime,
       eveningEnabled: _service.isEveningEnabled,
+      eveningTime: _service.eveningTime,
       streakEnabled: _service.isStreakEnabled,
       communityEnabled: _service.isCommunityEnabled,
       quietFrom: _service.quietFrom,

@@ -10,42 +10,20 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
+import '../../../../shared/widgets/time_picker_sheet.dart';
 import '../../../../shared/widgets/toggle_row.dart';
 
 class ReminderTimesScreen extends ConsumerWidget {
   const ReminderTimesScreen({super.key});
-
-  Widget _buildTimePicker(
-    BuildContext context,
-    Widget? child,
-  ) {
-    final mediaQueryWrapper = MediaQuery(
-      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
-      child: child!,
-    );
-
-    final locale = Localizations.localeOf(context);
-    if (locale.languageCode == 'bn') {
-      // Force 12-hour dial for Bangla locale where 24-hour is default.
-      return Localizations.override(
-        context: context,
-        locale: const Locale('en', 'US'),
-        child: mediaQueryWrapper,
-      );
-    }
-
-    return mediaQueryWrapper;
-  }
 
   Future<void> _pickMorningTime(
     BuildContext context,
     WidgetRef ref,
     NotificationPrefsState prefs,
   ) async {
-    final selected = await showTimePicker(
+    final selected = await showBdTimePicker(
       context: context,
       initialTime: prefs.morningTime,
-      builder: _buildTimePicker,
     );
     if (selected == null) return;
     await ref.read(notificationPrefsProvider.notifier).setMorningTime(selected);
@@ -56,10 +34,9 @@ class ReminderTimesScreen extends ConsumerWidget {
     WidgetRef ref,
     NotificationPrefsState prefs,
   ) async {
-    final selected = await showTimePicker(
+    final selected = await showBdTimePicker(
       context: context,
       initialTime: prefs.eveningTime,
-      builder: _buildTimePicker,
     );
     if (selected == null) return;
     await ref.read(notificationPrefsProvider.notifier).setEveningTime(selected);

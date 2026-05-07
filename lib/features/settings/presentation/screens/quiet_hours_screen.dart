@@ -10,6 +10,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
+import '../../../../shared/widgets/time_picker_sheet.dart';
 
 class QuietHoursScreen extends ConsumerStatefulWidget {
   const QuietHoursScreen({super.key});
@@ -21,28 +22,6 @@ class QuietHoursScreen extends ConsumerStatefulWidget {
 class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
   TimeOfDay _from = const TimeOfDay(hour: 21, minute: 0);
   TimeOfDay _to = const TimeOfDay(hour: 6, minute: 0);
-
-  Widget _buildTimePicker(
-    BuildContext context,
-    Widget? child,
-  ) {
-    final mediaQueryWrapper = MediaQuery(
-      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
-      child: child!,
-    );
-
-    final locale = Localizations.localeOf(context);
-    if (locale.languageCode == 'bn') {
-      // Force 12-hour dial for Bangla locale where 24-hour is default.
-      return Localizations.override(
-        context: context,
-        locale: const Locale('en', 'US'),
-        child: mediaQueryWrapper,
-      );
-    }
-
-    return mediaQueryWrapper;
-  }
 
   @override
   void initState() {
@@ -68,10 +47,9 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
   }
 
   Future<void> _pickTime({required bool start}) async {
-    final selected = await showTimePicker(
+    final selected = await showBdTimePicker(
       context: context,
       initialTime: start ? _from : _to,
-      builder: _buildTimePicker,
     );
     if (selected == null) return;
     setState(() {

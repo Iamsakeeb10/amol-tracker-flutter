@@ -37,12 +37,14 @@ class CommunityHeaderRow extends StatelessWidget {
         controller: horizontalController,
         thumbVisibility: true,
         trackVisibility: true,
+        interactive: false,
         thickness: 5.w,
         radius: Radius.zero,
         scrollbarOrientation: ScrollbarOrientation.bottom,
         child: SingleChildScrollView(
           controller: horizontalController,
           scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
           clipBehavior: Clip.hardEdge,
           child: SizedBox(
             width: kCommunityScrollableGridWidth.w,
@@ -110,6 +112,7 @@ class CommunityRowCard extends StatelessWidget {
       child: SingleChildScrollView(
         controller: horizontalController,
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         clipBehavior: Clip.hardEdge,
         child: SizedBox(
           width: kCommunityScrollableGridWidth.w,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,7 +27,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _controller = PageController();
-  int _index = 0;
+  final ValueNotifier<int> _pageIndexNotifier = ValueNotifier<int>(0);
   bool _isSubmitting = false;
   bool _isAnonymousDisplay = false;
   bool _notificationRequested = false;
@@ -78,9 +79,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _next() async {
     final slides = _slides(AppLocalizations.of(context)!);
-    if (_index < slides.length - 1) {
+    if (_pageIndexNotifier.value < slides.length - 1) {
       await _controller.nextPage(
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
       );
       return;
@@ -127,49 +128,49 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               : fallbackName);
 
     setState(() => _isSubmitting = true);
+    final userModel = UserModel(
+      uid: authUser.uid,
+      name: resolvedName,
+      email: authUser.email ?? '',
+      photoUrl: authUser.photoURL ?? '',
+      createdAt: DateTime.now(),
+      currentStreak: 0,
+      bestStreak: 0,
+      streakFreezeUsed: false,
+      streakFreezeWeekKey: '',
+      lastLogDate: '',
+      isAnonymousDisplay: _isAnonymousDisplay,
+      badges: const <String>[],
+    );
+
+    if (!mounted) return;
+    context.go(AppRoutes.home);
+
+    // Keep navigation snappy by moving network setup off the tap path.
+    unawaited(_persistOnboardingData(userModel));
+  }
+
+  Future<void> _persistOnboardingData(UserModel user) async {
     try {
-      _logOnboardingEvent('Creating user doc for uid=${authUser.uid}');
-      await ref
-          .read(firestoreServiceProvider)
-          .createUser(
-            UserModel(
-              uid: authUser.uid,
-              name: resolvedName,
-              email: authUser.email ?? '',
-              photoUrl: authUser.photoURL ?? '',
-              createdAt: DateTime.now(),
-              currentStreak: 0,
-              bestStreak: 0,
-              streakFreezeUsed: false,
-              streakFreezeWeekKey: '',
-              lastLogDate: '',
-              isAnonymousDisplay: _isAnonymousDisplay,
-              badges: const <String>[],
-            ),
-          );
+      _logOnboardingEvent('Creating user doc for uid=${user.uid}');
+      await ref.read(firestoreServiceProvider).createUser(user);
       _logOnboardingEvent('User doc created successfully');
       await NotificationService.instance.syncFcmTokenNow();
       _logOnboardingEvent('FCM token synced after onboarding');
-      if (!mounted) return;
-      context.go(AppRoutes.home);
     } catch (e, st) {
       _logOnboardingError(e, st);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.onboardingFailed('$e')),
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
     }
+  }
+
+  String _buttonLabel(int slideCount, AppLocalizations l10n) {
+    final isLastPage = _pageIndexNotifier.value == slideCount - 1;
+    return isLastPage ? l10n.getStarted : l10n.next;
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _pageIndexNotifier.dispose();
     super.dispose();
   }
 
@@ -177,6 +178,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final slides = _slides(l10n);
+    final slidePages = List<Widget>.generate(
+      slides.length,
+      (i) => _SlideContent(
+        slide: slides[i],
+        displayName: _displayName,
+        isAnonymousDisplay: _isAnonymousDisplay,
+        notificationRequested: _notificationRequested,
+        onNameChanged: (value) => _displayName = value,
+        onAnonymousChanged: (value) {
+          setState(() => _isAnonymousDisplay = value);
+        },
+        onRequestNotification: _requestNotificationPermission,
+      ),
+    );
     return AppScaffold(
       body: Column(
         children: [
@@ -193,40 +208,39 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
           ),
           Expanded(
-            child: PageView.builder(
+            child: PageView(
               controller: _controller,
-              itemCount: slides.length,
-              onPageChanged: (i) => setState(() => _index = i),
-              itemBuilder: (_, i) => _SlideContent(
-                slide: slides[i],
-                displayName: _displayName,
-                isAnonymousDisplay: _isAnonymousDisplay,
-                notificationRequested: _notificationRequested,
-                onNameChanged: (value) => _displayName = value,
-                onAnonymousChanged: (value) {
-                  setState(() => _isAnonymousDisplay = value);
-                },
-                onRequestNotification: _requestNotificationPermission,
-              ),
+              allowImplicitScrolling: true,
+              onPageChanged: (i) => _pageIndexNotifier.value = i,
+              children: slidePages,
             ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(slides.length, (i) {
-              final active = i == _index;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: EdgeInsets.symmetric(horizontal: 4.w),
-                height: 6.r,
-                width: active ? 22.w : 6.r,
-                decoration: BoxDecoration(
-                  color: active
-                      ? AppColors.gold
-                      : AppColors.textMuted.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(99.r),
-                ),
-              );
-            }),
+            children: [
+              ValueListenableBuilder<int>(
+                valueListenable: _pageIndexNotifier,
+                builder: (_, pageIndex, __) {
+                  return Row(
+                    children: List.generate(slides.length, (i) {
+                      final active = i == pageIndex;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: EdgeInsets.symmetric(horizontal: 4.w),
+                        height: 6.r,
+                        width: active ? 22.w : 6.r,
+                        decoration: BoxDecoration(
+                          color: active
+                              ? AppColors.gold
+                              : AppColors.textMuted.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(99.r),
+                        ),
+                      );
+                    }),
+                  );
+                },
+              ),
+            ],
           ),
           SizedBox(height: 18.h),
           Padding(
@@ -244,16 +258,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     borderRadius: BorderRadius.circular(14.r),
                   ),
                 ),
-                child: Text(
-                  _isSubmitting
-                      ? l10n.pleaseWait
-                      : (_index == slides.length - 1
-                            ? l10n.getStarted
-                            : l10n.next),
-                  style: AppTextStyles.button(context).copyWith(
-                    color: AppColors.emeraldDeep,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: ValueListenableBuilder<int>(
+                  valueListenable: _pageIndexNotifier,
+                  builder: (_, __, ___) {
+                    return Text(
+                      _isSubmitting
+                          ? l10n.pleaseWait
+                          : _buttonLabel(slides.length, l10n),
+                      style: AppTextStyles.button(context).copyWith(
+                        color: AppColors.emeraldDeep,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),

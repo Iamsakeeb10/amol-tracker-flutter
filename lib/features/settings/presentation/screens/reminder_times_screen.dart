@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/time_display_helper.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -74,14 +75,14 @@ class ReminderTimesScreen extends ConsumerWidget {
                 NavRow(
                   icon: Icons.alarm_outlined,
                   title: l10n.morningNotificationTimeLabel,
-                  trailing: prefs.morningTime.format(context),
+                  trailing: formatBdTime(context, prefs.morningTime),
                   onTap: () => _pickMorningTime(context, ref, prefs),
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.nights_stay_outlined,
                   title: l10n.eveningNotificationTimeLabel,
-                  trailing: prefs.eveningTime.format(context),
+                  trailing: formatBdTime(context, prefs.eveningTime),
                   onTap: () => _pickEveningTime(context, ref, prefs),
                 ),
               ],

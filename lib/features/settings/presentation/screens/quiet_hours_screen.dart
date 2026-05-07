@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/time_display_helper.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -102,7 +103,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
                 child: _TimeCard(
                   label: l10n.from,
                   time: _from,
-                  formatted: _from.format(context),
+                  formatted: formatBdTime(context, _from),
                   onPick: () => _pickTime(start: true),
                   onUp: () => _bumpHour(_from, 1, true),
                   onDown: () => _bumpHour(_from, -1, true),
@@ -113,7 +114,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
                 child: _TimeCard(
                   label: l10n.to,
                   time: _to,
-                  formatted: _to.format(context),
+                  formatted: formatBdTime(context, _to),
                   onPick: () => _pickTime(start: false),
                   onUp: () => _bumpHour(_to, 1, false),
                   onDown: () => _bumpHour(_to, -1, false),
@@ -129,7 +130,10 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
-                    l10n.silentFromTo(_from.format(context), _to.format(context)),
+                    l10n.silentFromTo(
+                      formatBdTime(context, _from),
+                      formatBdTime(context, _to),
+                    ),
                     style: AppTextStyles.bodyLarge(
                       context,
                     ).copyWith(fontSize: 13.sp),

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/time_display_helper.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../../../providers/notification_provider.dart';
@@ -91,7 +92,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ToggleRow(
                   icon: Icons.notifications_active_outlined,
                   title: l10n.morningNotification,
-                  subtitle: prefs.morningTime.format(context),
+                  subtitle: formatBdTime(context, prefs.morningTime),
                   value: prefs.morningEnabled,
                   onChanged: (v) => prefsNotifier.setMorningEnabled(v),
                 ),
@@ -99,7 +100,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ToggleRow(
                   icon: Icons.wb_twighlight,
                   title: l10n.eveningNotification,
-                  subtitle: prefs.eveningTime.format(context),
+                  subtitle: formatBdTime(context, prefs.eveningTime),
                   value: prefs.eveningEnabled,
                   onChanged: (v) => prefsNotifier.setEveningEnabled(v),
                 ),
@@ -135,7 +136,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                         ),
                         Text(
-                          prefs.morningTime.format(context),
+                          formatBdTime(context, prefs.morningTime),
                           style: AppTextStyles.bodyMedium(
                             context,
                           ).copyWith(color: AppColors.textMuted),
@@ -198,7 +199,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                         ),
                         Text(
-                          '${prefs.quietFrom.format(context)} — ${prefs.quietTo.format(context)}',
+                          '${formatBdTime(context, prefs.quietFrom)} — ${formatBdTime(context, prefs.quietTo)}',
                           style: AppTextStyles.bodyMedium(
                             context,
                           ).copyWith(color: AppColors.textMuted),

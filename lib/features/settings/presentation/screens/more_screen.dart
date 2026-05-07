@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/time_display_helper.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -27,7 +28,7 @@ class MoreScreen extends ConsumerWidget {
     final prefs = ref.watch(notificationPrefsProvider);
     final unread = (notifications ?? const []).where((n) => !n.isRead).length;
     final quietHoursLabel =
-        '${prefs.quietFrom.format(context)} — ${prefs.quietTo.format(context)}';
+        '${formatBdTime(context, prefs.quietFrom)} — ${formatBdTime(context, prefs.quietTo)}';
     final rawName = user?.name ?? '';
     final displayName = rawName.trim().isEmpty ? l10n.profile : rawName.trim();
     final initial = displayName.substring(0, 1).toUpperCase();

@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../shared/mock/mock_data.dart';
+import '../../../../providers/auth_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
@@ -27,10 +27,15 @@ class MoreScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifications = ref.watch(notificationsProvider).asData?.value;
+    final user = ref.watch(currentUserProvider).asData?.value;
     final prefs = ref.watch(notificationPrefsProvider);
     final unread = (notifications ?? const []).where((n) => !n.isRead).length;
     final quietHoursLabel =
         '${_formatTime(prefs.quietFrom)} — ${_formatTime(prefs.quietTo)}';
+    final rawName = user?.name ?? '';
+    final displayName = rawName.trim().isEmpty ? 'Profile' : rawName.trim();
+    final initial = displayName.substring(0, 1).toUpperCase();
+    final streak = user?.currentStreak ?? 0;
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
@@ -70,8 +75,8 @@ class MoreScreen extends ConsumerWidget {
             child: Row(
               children: [
                 AvatarChip(
-                  initial: kCurrentUser.initial,
-                  color: kCurrentUser.avatarColor,
+                  initial: user?.isAnonymousDisplay == true ? '🕌' : initial,
+                  color: AppColors.gold,
                   size: 44,
                   ring: true,
                 ),
@@ -81,7 +86,7 @@ class MoreScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Yousuf Khan',
+                        displayName,
                         style: AppTextStyles.bodyLarge(context).copyWith(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
@@ -97,7 +102,7 @@ class MoreScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                StreakBadge(days: kCurrentUser.currentStreak),
+                StreakBadge(days: streak),
               ],
             ),
           ),

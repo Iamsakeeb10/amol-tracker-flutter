@@ -1,72 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../shared/mock/mock_data.dart';
+import '../../../../providers/auth_provider.dart';
+import '../../../../providers/leaderboard_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 
-class LeaderboardScreen extends StatefulWidget {
+class LeaderboardScreen extends ConsumerStatefulWidget {
   const LeaderboardScreen({super.key});
 
   @override
-  State<LeaderboardScreen> createState() => _LeaderboardScreenState();
+  ConsumerState<LeaderboardScreen> createState() => _LeaderboardScreenState();
 }
 
-class _LeaderboardScreenState extends State<LeaderboardScreen> {
+class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   int _periodIndex = 0;
   static const _periods = ['Weekly', 'Daily', 'Streak'];
 
-  List<MockUser> get _ranked {
-    final list = [...kFriends, kCurrentUser];
-    list.sort((a, b) {
-      switch (_periodIndex) {
-        case 1:
-          return b.todayScore.compareTo(a.todayScore);
-        case 2:
-          return b.currentStreak.compareTo(a.currentStreak);
-        default:
-          return b.weeklyScore.compareTo(a.weeklyScore);
-      }
-    });
-    return list;
-  }
+  bool get _isStreak => _periodIndex == 2;
 
-  int _statValue(MockUser u) {
-    switch (_periodIndex) {
-      case 1:
-        return u.todayScore;
-      case 2:
-        return u.currentStreak;
-      default:
-        return u.weeklyScore;
-    }
-  }
+  String _displayName(LeaderboardEntry user) =>
+      user.isAnonymousDisplay ? '🕌 Anonymous' : user.displayName;
 
-  String _statLabel() {
-    switch (_periodIndex) {
-      case 1:
-        return 'pts';
-      case 2:
-        return 'days';
-      default:
-        return 'pts';
-    }
-  }
+  String _statLabel() => _isStreak ? 'days' : 'pts';
 
   @override
   Widget build(BuildContext context) {
-    final ranked = _ranked;
+    final authUid = ref.watch(authStateProvider).asData?.value?.uid;
+    final data = _periodIndex == 0
+        ? ref.watch(weeklyLeaderboardProvider)
+        : _periodIndex == 1
+        ? ref.watch(dailyLeaderboardProvider)
+        : ref.watch(streakLeaderboardProvider);
+
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: 22.r),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/more'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go(AppRoutes.more),
         ),
         title: Text('Leaderboard', style: AppTextStyles.headlineMedium(context)),
       ),
@@ -79,44 +60,133 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             onChanged: (i) => setState(() => _periodIndex = i),
           ),
           SizedBox(height: 16.h),
-          _Podium(top3: ranked.take(3).toList(), getStat: _statValue),
-          SizedBox(height: 18.h),
-          ...ranked.asMap().entries.map((e) {
-            final rank = e.key + 1;
-            final user = e.value;
-            return Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
-              child: _RankRow(
-                rank: rank,
-                user: user,
-                statValue: _statValue(user),
-                statLabel: _statLabel(),
-                isYou: user.id == 'me',
-              ),
-            );
-          }),
-          SizedBox(height: 16.h),
-          CardContainer.gold(
-            child: Row(
-              children: [
-                Icon(
-                  Icons.star_rounded,
-                  color: AppColors.goldLight,
-                  size: 20.r,
-                ),
-                SizedBox(width: 10.w),
-                Expanded(
+          data.when(
+            data: (entries) {
+              if (entries.isEmpty) {
+                return CardContainer(
                   child: Text(
-                    'Keep climbing — every amal counts.',
-                    style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 13.sp),
+                    'Be the first to log today!',
+                    style: AppTextStyles.bodyLarge(context),
                   ),
-                ),
-              ],
+                );
+              }
+              final top3 = entries.take(3).toList();
+              final nudge = _buildNudge(entries, authUid);
+              final userIndex = authUid == null
+                  ? -1
+                  : entries.indexWhere((u) => u.uid == authUid);
+              final pinnedUser = userIndex >= 0 ? entries[userIndex] : null;
+
+              return Column(
+                children: [
+                  _Podium(top3: top3, displayName: _displayName),
+                  SizedBox(height: 18.h),
+                  ...entries.asMap().entries.map((e) {
+                    final rank = e.key + 1;
+                    final user = e.value;
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 8.h),
+                      child: _RankRow(
+                        rank: rank,
+                        user: user,
+                        statLabel: _statLabel(),
+                        displayName: _displayName(user),
+                        isYou: user.uid == authUid,
+                        maxScore: entries.first.score,
+                        onTap: () => context.push('${AppRoutes.userProfile}/${user.uid}'),
+                      ),
+                    );
+                  }),
+                  if (pinnedUser != null && userIndex >= 3) ...[
+                    SizedBox(height: 8.h),
+                    CardContainer.gold(
+                      child: Row(
+                        children: [
+                          Icon(Icons.push_pin_outlined, color: AppColors.gold),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Text(
+                              'Your rank: #${userIndex + 1} · ${pinnedUser.score} ${_statLabel()}',
+                              style: AppTextStyles.bodyMedium(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  SizedBox(height: 16.h),
+                  CardContainer.gold(
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.star_rounded,
+                          color: AppColors.goldLight,
+                          size: 20.r,
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            nudge,
+                            style: AppTextStyles.bodyLarge(context).copyWith(
+                              fontSize: 13.sp,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+            loading: _buildLoading,
+            error: (error, _) => CardContainer(
+              child: Text(
+                'Could not load leaderboard right now.',
+                style: AppTextStyles.bodyMedium(context),
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildLoading() {
+    return Column(
+      children: List.generate(
+        4,
+        (index) => Padding(
+          padding: EdgeInsets.only(bottom: 8.h),
+          child: Shimmer.fromColors(
+            baseColor: AppColors.cardDark,
+            highlightColor: AppColors.cardBorder,
+            child: Container(
+              height: 58.h,
+              decoration: BoxDecoration(
+                color: AppColors.cardDark,
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _buildNudge(List<LeaderboardEntry> entries, String? authUid) {
+    if (authUid == null || entries.length < 2) {
+      return 'Keep climbing - every amal counts.';
+    }
+    final meIndex = entries.indexWhere((u) => u.uid == authUid);
+    if (meIndex <= 0) {
+      return 'You are on top - stay consistent.';
+    }
+    final meScore = entries[meIndex].score;
+    final secondScore = entries.length > 1 ? entries[1].score : entries[0].score;
+    final behind = (secondScore - meScore).clamp(0, 99999);
+    return _isStreak
+        ? '$behind days behind 2nd place - keep your streak alive.'
+        : '$behind pts behind 2nd place - log today to close the gap.';
   }
 }
 
@@ -173,9 +243,9 @@ class _Tabs extends StatelessWidget {
 }
 
 class _Podium extends StatelessWidget {
-  final List<MockUser> top3;
-  final int Function(MockUser u) getStat;
-  const _Podium({required this.top3, required this.getStat});
+  final List<LeaderboardEntry> top3;
+  final String Function(LeaderboardEntry user) displayName;
+  const _Podium({required this.top3, required this.displayName});
 
   @override
   Widget build(BuildContext context) {
@@ -193,6 +263,8 @@ class _Podium extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: List.generate(3, (i) {
               final user = order[i];
+              final name = displayName(user);
+              final initial = name.isEmpty ? '?' : name.substring(0, 1).toUpperCase();
               return Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -200,21 +272,21 @@ class _Podium extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       AvatarChip(
-                        initial: user.initial,
-                        color: user.avatarColor,
+                        initial: user.isAnonymousDisplay ? '🕌' : initial,
+                        color: user.isAnonymousDisplay ? AppColors.cardBorder : AppColors.gold,
                         size: ranks[i] == 1 ? 56 : 44,
                         ring: ranks[i] == 1,
                         fontSize: ranks[i] == 1 ? 22 : 18,
                       ),
                       SizedBox(height: 6.h),
                       Text(
-                        user.name,
+                        name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 12.sp),
                       ),
                       Text(
-                        '${getStat(user)}',
+                        '${user.score}',
                         style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 16.sp),
                       ),
                       SizedBox(height: 6.h),
@@ -254,27 +326,33 @@ class _Podium extends StatelessWidget {
 
 class _RankRow extends StatelessWidget {
   final int rank;
-  final MockUser user;
-  final int statValue;
+  final LeaderboardEntry user;
   final String statLabel;
+  final String displayName;
   final bool isYou;
+  final int maxScore;
+  final VoidCallback onTap;
 
   const _RankRow({
     required this.rank,
     required this.user,
-    required this.statValue,
     required this.statLabel,
+    required this.displayName,
     required this.isYou,
+    required this.maxScore,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CardContainer(
-      color: isYou ? AppColors.goldCard : AppColors.cardDark,
-      borderColor: isYou ? AppColors.goldBorder : AppColors.cardBorder,
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-      child: Row(
-        children: [
+    return GestureDetector(
+      onTap: onTap,
+      child: CardContainer(
+        color: isYou ? AppColors.goldCard : AppColors.cardDark,
+        borderColor: isYou ? AppColors.goldBorder : AppColors.cardBorder,
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        child: Row(
+          children: [
           SizedBox(
             width: 28.w,
             child: Text(
@@ -282,7 +360,11 @@ class _RankRow extends StatelessWidget {
               style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 18.sp),
             ),
           ),
-          AvatarChip(initial: user.initial, color: user.avatarColor, size: 32),
+          AvatarChip(
+            initial: user.isAnonymousDisplay ? '🕌' : displayName.substring(0, 1).toUpperCase(),
+            color: user.isAnonymousDisplay ? AppColors.cardBorder : AppColors.gold,
+            size: 32,
+          ),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
@@ -291,7 +373,7 @@ class _RankRow extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      user.name,
+                      displayName,
                       style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 13.sp),
                     ),
                     if (isYou) ...[
@@ -305,13 +387,16 @@ class _RankRow extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 4.h),
-                ScoreBar(value: statValue / 700, height: 4),
+                ScoreBar(
+                  value: maxScore == 0 ? 0 : (user.score / maxScore).clamp(0.0, 1.0),
+                  height: 4,
+                ),
               ],
             ),
           ),
           SizedBox(width: 8.w),
           Text(
-            '$statValue',
+            '${user.score}',
             style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 16.sp),
           ),
           SizedBox(width: 2.w),
@@ -319,7 +404,8 @@ class _RankRow extends StatelessWidget {
             statLabel,
             style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }

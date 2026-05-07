@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../models/badge_model.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
-import '../mock/mock_data.dart';
 import 'card_container.dart';
 import 'score_bar.dart';
 
 class BadgeTile extends StatelessWidget {
-  final MockBadge badge;
+  final BadgeDefinition badge;
+  final bool unlocked;
+  final double progress;
 
-  const BadgeTile({super.key, required this.badge});
+  const BadgeTile({
+    super.key,
+    required this.badge,
+    required this.unlocked,
+    required this.progress,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final unlocked = badge.unlocked;
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact =
@@ -75,10 +81,10 @@ class BadgeTile extends StatelessWidget {
                     ),
                     if (!unlocked) ...[
                       SizedBox(height: (compact ? 6 : 8).h),
-                      ScoreBar(value: badge.progress, height: 4),
+                      ScoreBar(value: progress, height: 4),
                       SizedBox(height: (compact ? 3 : 4).h),
                       Text(
-                        '${(badge.progress * 100).toInt()}%',
+                        '${(progress * 100).toInt()}%',
                         style: AppTextStyles.bodySmall(context).copyWith(
                           fontSize: 10.sp,
                           color: AppColors.gold,

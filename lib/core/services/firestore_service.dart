@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hijri/hijri_calendar.dart';
 
+import '../utils/hijri_helper.dart';
 import '../../models/activity_feed_item_model.dart';
 import '../../models/amal_log_model.dart';
 import '../../models/notification_model.dart';
@@ -39,6 +40,35 @@ class FirestoreService {
 
   Future<void> updateUser(String uid, Map<String, dynamic> fields) async {
     await _users.doc(uid).update(fields);
+  }
+
+  Future<void> updateUserDisplayFields(
+    String uid, {
+    String? name,
+    bool? isAnonymousDisplay,
+  }) async {
+    final userFields = <String, dynamic>{};
+    if (name != null) userFields['name'] = name;
+    if (isAnonymousDisplay != null) {
+      userFields['isAnonymousDisplay'] = isAnonymousDisplay;
+    }
+    if (userFields.isNotEmpty) {
+      await _users.doc(uid).update(userFields);
+    }
+
+    final logFields = <String, dynamic>{};
+    if (name != null) logFields['displayName'] = name;
+    if (isAnonymousDisplay != null) {
+      logFields['isAnonymousDisplay'] = isAnonymousDisplay;
+    }
+    if (logFields.isEmpty) return;
+
+    final todayDocId = '${uid}_${HijriHelper.todayString()}';
+    final todayRef = _amalLogs.doc(todayDocId);
+    final todaySnap = await todayRef.get();
+    if (todaySnap.exists) {
+      await todayRef.update(logFields);
+    }
   }
 
   Stream<UserModel?> userStream(String uid) {
@@ -212,6 +242,80 @@ class FirestoreService {
       if (rows.length <= limit) return rows;
       return rows.sublist(rows.length - limit);
     }
+  }
+
+  Future<List<Map<String, dynamic>>> weeklyLeaderboard() async {
+    final now = HijriCalendar.fromDate(HijriHelper.bangladeshNow());
+    final currentDate = HijriHelper.bangladeshNow();
+    final startDate = currentDate.subtract(const Duration(days: 6));
+    final startHijri = HijriCalendar.fromDate(startDate);
+    final start =
+        '${startHijri.hYear}-${startHijri.hMonth.toString().padLeft(2, '0')}-${startHijri.hDay.toString().padLeft(2, '0')}';
+    final end =
+        '${now.hYear}-${now.hMonth.toString().padLeft(2, '0')}-${now.hDay.toString().padLeft(2, '0')}';
+
+    final query = await _amalLogs
+        .where('hijriDate', isGreaterThanOrEqualTo: start)
+        .where('hijriDate', isLessThanOrEqualTo: end)
+        .get();
+
+    final grouped = <String, Map<String, dynamic>>{};
+    for (final doc in query.docs) {
+      final data = doc.data();
+      final uid = (data['uid'] as String?) ?? '';
+      if (uid.isEmpty) continue;
+      final score = (data['score'] as num?)?.toInt() ?? 0;
+      final submittedAt = data['submittedAt'];
+      final currentTimestamp = submittedAt is Timestamp
+          ? submittedAt
+          : Timestamp.fromDate(DateTime.fromMillisecondsSinceEpoch(0));
+
+      final existing = grouped[uid];
+      if (existing == null) {
+        grouped[uid] = <String, dynamic>{
+          'uid': uid,
+          'displayName': (data['displayName'] as String?) ?? '',
+          'isAnonymousDisplay': (data['isAnonymousDisplay'] as bool?) ?? false,
+          'score': score,
+          '_latestSubmittedAt': currentTimestamp,
+        };
+      } else {
+        existing['score'] = ((existing['score'] as int?) ?? 0) + score;
+        final latest = existing['_latestSubmittedAt'] as Timestamp;
+        if (currentTimestamp.compareTo(latest) > 0) {
+          existing['displayName'] = (data['displayName'] as String?) ?? '';
+          existing['isAnonymousDisplay'] =
+              (data['isAnonymousDisplay'] as bool?) ?? false;
+          existing['_latestSubmittedAt'] = currentTimestamp;
+        }
+      }
+    }
+
+    final rows = grouped.values.toList()
+      ..sort(
+        (a, b) => ((b['score'] as int?) ?? 0).compareTo((a['score'] as int?) ?? 0),
+      );
+    for (final row in rows) {
+      row.remove('_latestSubmittedAt');
+    }
+    return rows;
+  }
+
+  Future<List<Map<String, dynamic>>> streakLeaderboard() async {
+    final query = await _users
+        .orderBy('currentStreak', descending: true)
+        .limit(50)
+        .get();
+
+    return query.docs.map((doc) {
+      final data = doc.data();
+      return <String, dynamic>{
+        'uid': doc.id,
+        'displayName': (data['name'] as String?) ?? '',
+        'isAnonymousDisplay': (data['isAnonymousDisplay'] as bool?) ?? false,
+        'score': (data['currentStreak'] as num?)?.toInt() ?? 0,
+      };
+    }).toList();
   }
 
   Future<bool> hasSentDuaToday({

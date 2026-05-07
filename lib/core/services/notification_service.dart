@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,6 +12,7 @@ import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../router/routes.dart';
+import 'hadith_asset_service.dart';
 import 'local_storage_service.dart';
 
 class NotificationService {
@@ -130,28 +131,41 @@ class NotificationService {
   Future<void> _syncFcmToken() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      debugPrint('🔕 FCM sync skipped: no logged in user');
+      developer.log(
+        'FCM sync skipped: no logged in user',
+        name: 'NotificationService',
+      );
       return;
     }
     final token = await _messaging.getToken();
     if (token == null || token.isEmpty) {
-      debugPrint('⚠️ FCM sync failed: token is null/empty for uid=${user.uid}');
+      developer.log(
+        'FCM sync failed: token is null/empty for uid=${user.uid}',
+        name: 'NotificationService',
+      );
       return;
     }
     final preview = token.substring(0, token.length > 14 ? 14 : token.length);
-    debugPrint('📲 FCM token fetched uid=${user.uid} tokenPrefix=$preview');
+    developer.log(
+      'FCM token fetched uid=${user.uid} tokenPrefix=$preview',
+      name: 'NotificationService',
+    );
     final userRef = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid);
     final userSnap = await userRef.get();
     if (!userSnap.exists) {
-      debugPrint(
-        '⏭️ FCM sync deferred: user doc not created yet for uid=${user.uid}',
+      developer.log(
+        'FCM sync deferred: user doc not created yet for uid=${user.uid}',
+        name: 'NotificationService',
       );
       return;
     }
     await userRef.set({'fcmToken': token}, SetOptions(merge: true));
-    debugPrint('✅ FCM token saved to Firestore for uid=${user.uid}');
+    developer.log(
+      'FCM token saved to Firestore for uid=${user.uid}',
+      name: 'NotificationService',
+    );
   }
 
   Future<void> scheduleAll() async {
@@ -329,8 +343,7 @@ class NotificationService {
     await _safeZonedSchedule(
       id: _streakId,
       title: 'স্ট্রিক সতর্কতা',
-      body:
-          'আজকের লগ এখনো না দিলে এখনই সাবমিট করুন, স্ট্রিক ধরে রাখুন।',
+      body: 'আজকের লগ এখনো না দিলে এখনই সাবমিট করুন, স্ট্রিক ধরে রাখুন।',
       scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -351,19 +364,7 @@ class NotificationService {
   }
 
   Future<void> _loadHadith() async {
-    try {
-      final raw = await rootBundle.loadString('assets/hadiths/hadiths.json');
-      final decoded = jsonDecode(raw);
-      if (decoded is List) {
-        _hadithList = decoded
-            .whereType<String>()
-            .map((hadith) => hadith.trim())
-            .where((hadith) => hadith.isNotEmpty)
-            .toList(growable: false);
-      }
-    } catch (_) {
-      _hadithList = const [];
-    }
+    _hadithList = await HadithAssetService.loadHadithTexts();
   }
 
   Future<void> _scheduleHadithNotifications() async {
@@ -371,11 +372,8 @@ class NotificationService {
     final now = tz.TZDateTime.now(tz.local);
     for (var i = 0; i < _hadithDaysAhead; i++) {
       final day = now.add(Duration(days: i));
-      final dayKey = DateTime.utc(
-        day.year,
-        day.month,
-        day.day,
-      ).millisecondsSinceEpoch ~/
+      final dayKey =
+          DateTime.utc(day.year, day.month, day.day).millisecondsSinceEpoch ~/
           Duration.millisecondsPerDay;
       final hadith = _hadithList[dayKey % _hadithList.length];
       await _scheduleHadithForTime(
@@ -467,7 +465,11 @@ class NotificationService {
       tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));
       return;
     } catch (e) {
-      debugPrint('NotificationService: FlutterTimezone failed -> $e');
+      developer.log(
+        'FlutterTimezone failed.',
+        name: 'NotificationService',
+        error: e,
+      );
     }
     try {
       tz.setLocalLocation(tz.getLocation(_offsetMapTimeZone()));

@@ -9,6 +9,7 @@ import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/services/hadith_asset_service.dart';
 import '../../../../core/services/islamic_date_service.dart';
 import '../../../../models/user_model.dart';
 import '../../../../providers/amal_provider.dart';
@@ -16,7 +17,6 @@ import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../core/utils/streak_helper.dart';
-import '../../../../shared/mock/mock_data.dart' show kHadiths;
 import '../../../../shared/widgets/streak_freeze_modal.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -378,7 +378,6 @@ class _WelcomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hadith = kHadiths.first;
     return CardContainer.gold(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,7 +402,15 @@ class _WelcomeCard extends StatelessWidget {
             ).copyWith(fontWeight: FontWeight.w600),
           ),
           SizedBox(height: 6.h),
-          Text(hadith, style: AppTextStyles.bodyMedium(context)),
+          FutureBuilder<List<String>>(
+            future: HadithAssetService.loadHadithTexts(),
+            builder: (context, snapshot) {
+              final hadiths = snapshot.data ?? const <String>[];
+              final hadith = hadiths.isEmpty ? null : hadiths.first;
+              if (hadith == null) return const SizedBox.shrink();
+              return Text(hadith, style: AppTextStyles.bodyMedium(context));
+            },
+          ),
         ],
       ),
     );

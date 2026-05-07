@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -22,19 +24,24 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   bool _isSigningIn = false;
 
   Future<void> _handleGoogleSignIn() async {
-    print('🔐 [Google SignIn] Starting Google sign-in flow...');
+    developer.log('Starting Google sign-in flow.', name: 'SignInScreen');
     setState(() => _isSigningIn = true);
     try {
-      print('🔐 [Google SignIn] Calling authService.signInWithGoogle()');
+      developer.log(
+        'Calling authService.signInWithGoogle().',
+        name: 'SignInScreen',
+      );
       await ref.read(authServiceProvider).signInWithGoogle();
       await NotificationService.instance.syncFcmTokenNow();
-      print('✅ [Google SignIn] Google sign-in successful');
+      developer.log('Google sign-in successful.', name: 'SignInScreen');
       if (!mounted) return;
     } catch (e, stackTrace) {
-      print('❌ [Google SignIn] Error during Google sign-in');
-      print('❌ [Google SignIn] Error type: ${e.runtimeType}');
-      print('❌ [Google SignIn] Error message: $e');
-      print('❌ [Google SignIn] Stack trace: $stackTrace');
+      developer.log(
+        'Error during Google sign-in.',
+        name: 'SignInScreen',
+        error: e,
+        stackTrace: stackTrace,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -42,7 +49,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         ),
       );
     } finally {
-      print('🔐 [Google SignIn] Stopping loading state');
+      developer.log(
+        'Stopping Google sign-in loading state.',
+        name: 'SignInScreen',
+      );
       if (mounted) {
         setState(() => _isSigningIn = false);
       }
@@ -50,19 +60,24 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 
   Future<void> _handleGuestSignIn() async {
-    print('👤 [Guest SignIn] Starting guest sign-in flow...');
+    developer.log('Starting guest sign-in flow.', name: 'SignInScreen');
     setState(() => _isSigningIn = true);
     try {
-      print('👤 [Guest SignIn] Calling authService.signInAnonymously()');
+      developer.log(
+        'Calling authService.signInAnonymously().',
+        name: 'SignInScreen',
+      );
       await ref.read(authServiceProvider).signInAnonymously();
       await NotificationService.instance.syncFcmTokenNow();
-      print('✅ [Guest SignIn] Guest sign-in successful');
+      developer.log('Guest sign-in successful.', name: 'SignInScreen');
       if (!mounted) return;
     } catch (e, stackTrace) {
-      print('❌ [Guest SignIn] Error during guest sign-in');
-      print('❌ [Guest SignIn] Error type: ${e.runtimeType}');
-      print('❌ [Guest SignIn] Error message: $e');
-      print('❌ [Guest SignIn] Stack trace: $stackTrace');
+      developer.log(
+        'Error during guest sign-in.',
+        name: 'SignInScreen',
+        error: e,
+        stackTrace: stackTrace,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -70,7 +85,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         ),
       );
     } finally {
-      print('👤 [Guest SignIn] Stopping loading state');
+      developer.log(
+        'Stopping guest sign-in loading state.',
+        name: 'SignInScreen',
+      );
       if (mounted) {
         setState(() => _isSigningIn = false);
       }

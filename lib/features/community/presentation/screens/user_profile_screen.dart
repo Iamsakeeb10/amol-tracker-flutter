@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -113,7 +115,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 return const _UserProfileLoadingShimmer();
               }
               if (dataSnap.hasError) {
-                debugPrint('[UserProfileError] ${dataSnap.error}');
+                developer.log(
+                  '[UserProfileError]',
+                  name: 'UserProfileScreen',
+                  error: dataSnap.error,
+                );
               }
               final profileData = dataSnap.data;
               final selectedLog = profileData?.selectedLog;
@@ -137,8 +143,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   : (user.name.trim().isEmpty
                         ? l10n.communityMember
                         : user.name.trim());
-              debugPrint(
+              developer.log(
                 '[UserProfileBuild] uid=${user.uid} date=$effectiveDate selectedScore=$selectedScore selectedLogPresent=${selectedLog != null} displayStreakCurrent=${displayStreak.currentStreak} rawCurrent=${user.currentStreak}',
+                name: 'UserProfileScreen',
               );
 
               return ListView(
@@ -357,24 +364,31 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         ? widget.selectedLogFallback
         : null;
     final selectedLog = await fs.getLog(uid, effectiveDate);
-    debugPrint(
+    developer.log(
       '[UserProfile] uid=$uid date=$effectiveDate fetched=${selectedLog != null} fallback=${fallback != null}',
+      name: 'UserProfileScreen',
     );
     if (fallback != null) {
-      debugPrint(
+      developer.log(
         '[UserProfileFallback] uid=${fallback.uid} date=${fallback.hijriDate} score=${fallback.score} toggles=${fallback.toggles}',
+        name: 'UserProfileScreen',
       );
     }
     if (selectedLog != null) {
-      debugPrint(
+      developer.log(
         '[UserProfileFetched] uid=${selectedLog.uid} date=${selectedLog.hijriDate} score=${selectedLog.score} toggles=${selectedLog.toggles}',
+        name: 'UserProfileScreen',
       );
     }
     List<AmalLogModel> weekly = const <AmalLogModel>[];
     try {
       weekly = await fs.getRecentLogs(uid, limit: 7);
     } catch (e) {
-      debugPrint('[UserProfileWeeklyError] uid=$uid error=$e');
+      developer.log(
+        '[UserProfileWeeklyError] uid=$uid',
+        name: 'UserProfileScreen',
+        error: e,
+      );
     }
     final avgScore = weekly.isEmpty
         ? 0
@@ -429,7 +443,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     required String message,
   }) async {
     final l10n = AppLocalizations.of(context)!;
-    debugPrint('👆 Send Dua pressed sender=$senderUid recipient=$recipientUid');
+    developer.log(
+      '👆 Send Dua pressed sender=$senderUid recipient=$recipientUid',
+      name: 'UserProfileScreen',
+    );
     setState(() => _sendingDua = true);
     try {
       final today = IslamicDateService.getCurrentIslamicDateString();
@@ -439,7 +456,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         hijriDate: today,
       );
       if (exists) {
-        debugPrint('⛔ blocked_already_sent recipient=$recipientUid');
+        developer.log(
+          '⛔ blocked_already_sent recipient=$recipientUid',
+          name: 'UserProfileScreen',
+        );
         if (!context.mounted) return false;
         ScaffoldMessenger.of(
           context,
@@ -453,7 +473,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         hijriDate: today,
         message: message,
       );
-      debugPrint('🎉 Send Dua completed recipient=$recipientUid');
+      developer.log(
+        '🎉 Send Dua completed recipient=$recipientUid',
+        name: 'UserProfileScreen',
+      );
       if (!context.mounted) return false;
       ScaffoldMessenger.of(
         context,
@@ -521,7 +544,9 @@ class _DuaSheetState extends State<_DuaSheet> {
                   backgroundColor: AppColors.cardDark,
                   selectedColor: AppColors.goldCard,
                   side: BorderSide(
-                    color: selected ? AppColors.goldBorder : AppColors.cardBorder,
+                    color: selected
+                        ? AppColors.goldBorder
+                        : AppColors.cardBorder,
                   ),
                   onSelected: (value) {
                     setState(() => _selectedPhrase = value ? phrase : null);
@@ -538,7 +563,7 @@ class _DuaSheetState extends State<_DuaSheet> {
                     : () async {
                         setState(() => _isSending = true);
                         final didSend = await widget.onSend(_selectedPhrase!);
-                        if (!mounted) return;
+                        if (!context.mounted) return;
                         setState(() => _isSending = false);
                         if (didSend) {
                           Navigator.of(context).pop();

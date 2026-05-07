@@ -3,9 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/hadith_asset_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../shared/mock/mock_data.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -44,7 +44,18 @@ class EmptyStateScreen extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 8.h),
-                Text(kHadiths[0], style: AppTextStyles.bodyLarge(context)),
+                FutureBuilder<List<String>>(
+                  future: HadithAssetService.loadHadithTexts(),
+                  builder: (context, snapshot) {
+                    final hadiths = snapshot.data ?? const <String>[];
+                    final hadith = hadiths.isEmpty ? null : hadiths.first;
+                    if (hadith == null) return const SizedBox.shrink();
+                    return Text(
+                      hadith,
+                      style: AppTextStyles.bodyLarge(context),
+                    );
+                  },
+                ),
               ],
             ),
           ),

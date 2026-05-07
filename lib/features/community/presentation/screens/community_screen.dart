@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -325,8 +327,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                               onTap: ownRow == null
                                                   ? null
                                                   : () {
-                                                      debugPrint(
+                                                      developer.log(
                                                         '[CommunityTap][own] uid=${ownRow.uid} date=${state.selectedDate} score=${ownRow.score} toggles=${ownRow.toggles}',
+                                                        name: 'CommunityScreen',
                                                       );
                                                       context.push(
                                                         '${AppRoutes.userProfile}/${ownRow.uid}?date=${state.selectedDate}',
@@ -408,8 +411,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                                   ),
                                               isToday: state.isToday,
                                               onTap: () {
-                                                debugPrint(
+                                                developer.log(
                                                   '[CommunityTap][row] uid=${row.uid} date=${state.selectedDate} score=${row.score} toggles=${row.toggles}',
+                                                  name: 'CommunityScreen',
                                                 );
                                                 context.push(
                                                   '${AppRoutes.userProfile}/${row.uid}?date=${state.selectedDate}',

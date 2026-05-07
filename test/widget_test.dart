@@ -24,8 +24,9 @@ void main() {
     expect(find.text('Continue as guest'), findsOneWidget);
   });
 
-  testWidgets('Tapping "Continue as guest" navigates to onboarding',
-      (tester) async {
+  testWidgets('Tapping "Continue as guest" navigates to onboarding', (
+    tester,
+  ) async {
     await pumpApp(tester);
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
@@ -36,8 +37,9 @@ void main() {
     expect(find.text('Skip'), findsOneWidget);
   });
 
-  testWidgets('Skipping onboarding lands on Home with bottom nav',
-      (tester) async {
+  testWidgets('Skipping onboarding lands on Home with bottom nav', (
+    tester,
+  ) async {
     await pumpApp(tester);
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
@@ -50,7 +52,7 @@ void main() {
     expect(find.text('Sunday'), findsOneWidget);
     expect(find.text('Home'), findsWidgets);
     expect(find.text('History'), findsWidgets);
-    expect(find.text('Friends'), findsWidgets);
+    expect(find.text('Community'), findsWidgets);
     expect(find.text('More'), findsWidgets);
   });
 }

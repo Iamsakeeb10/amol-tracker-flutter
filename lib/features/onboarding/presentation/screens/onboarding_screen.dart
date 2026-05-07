@@ -220,7 +220,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             children: [
               ValueListenableBuilder<int>(
                 valueListenable: _pageIndexNotifier,
-                builder: (_, pageIndex, __) {
+                builder: (context, pageIndex, child) {
                   return Row(
                     children: List.generate(slides.length, (i) {
                       final active = i == pageIndex;
@@ -260,7 +260,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 child: ValueListenableBuilder<int>(
                   valueListenable: _pageIndexNotifier,
-                  builder: (_, __, ___) {
+                  builder: (context, pageIndex, child) {
                     if (_isSubmitting) {
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.center,

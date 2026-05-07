@@ -1,8 +1,8 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 
 /// Sends remote push requests through an external gateway (Cloudflare Worker).
 class DuaPushGatewayService {
@@ -45,7 +45,7 @@ class DuaPushGatewayService {
     final authUser = FirebaseAuth.instance.currentUser;
     final idToken = await authUser?.getIdToken();
     if (idToken == null || idToken.isEmpty) {
-      debugPrint('DuaPushGatewayService: missing sender idToken.');
+      developer.log('Missing sender idToken.', name: 'DuaPushGatewayService');
       return;
     }
 
@@ -73,8 +73,10 @@ class DuaPushGatewayService {
     final response = await request.close().timeout(const Duration(seconds: 8));
     if (response.statusCode >= 400) {
       final body = await utf8.decoder.bind(response).join();
-      debugPrint(
-        'DuaPushGatewayService: gateway failed ${response.statusCode} $body',
+      developer.log(
+        'Gateway failed with status ${response.statusCode}.',
+        name: 'DuaPushGatewayService',
+        error: body,
       );
     }
   }

@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
@@ -15,7 +17,9 @@ import 'auth_provider.dart';
 import 'history_provider.dart';
 
 /// Network status for offline banner (Phase 3).
-final connectivityListProvider = StreamProvider<List<ConnectivityResult>>((ref) async* {
+final connectivityListProvider = StreamProvider<List<ConnectivityResult>>((
+  ref,
+) async* {
   yield await Connectivity().checkConnectivity();
   yield* Connectivity().onConnectivityChanged;
 });
@@ -46,14 +50,16 @@ class AmalState {
   final String? error;
   final AmalLogModel? submittedLog;
 
-  int get doneCount => toggles.values.where((v) => v == true || (v is int && v > 0)).length;
+  int get doneCount =>
+      toggles.values.where((v) => v == true || (v is int && v > 0)).length;
 
   int get totalScore {
     final m = <String, dynamic>{...toggles};
     return calculateScore(m);
   }
 
-  bool get hasAnyDone => toggles.values.any((v) => v == true || (v is int && v > 0));
+  bool get hasAnyDone =>
+      toggles.values.any((v) => v == true || (v is int && v > 0));
 
   AmalState copyWith({
     Map<String, dynamic>? toggles,
@@ -78,10 +84,7 @@ class AmalState {
 
 /// Returned from [AmalNotifier.submit] after a successful local submit (includes streak decision).
 class SubmitResult {
-  const SubmitResult({
-    required this.log,
-    required this.streakResult,
-  });
+  const SubmitResult({required this.log, required this.streakResult});
 
   final AmalLogModel log;
   final StreakResult streakResult;
@@ -89,8 +92,8 @@ class SubmitResult {
 
 final amalProvider =
     StateNotifierProvider.family<AmalNotifier, AmalState, String>(
-  (ref, uid) => AmalNotifier(ref, uid),
-);
+      (ref, uid) => AmalNotifier(ref, uid),
+    );
 
 class AmalNotifier extends StateNotifier<AmalState> {
   AmalNotifier(this._ref, this._uid) : super(AmalState.initial()) {
@@ -164,11 +167,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
                 ? getNumericValue(rawToggles[f.id], f.maxValue)
                 : (rawToggles[f.id] as bool? ?? false),
         };
-        state = AmalState(
-          toggles: next,
-          isSubmitted: false,
-          isLoading: false,
-        );
+        state = AmalState(toggles: next, isSubmitted: false, isLoading: false);
         return;
       }
     }
@@ -249,7 +248,9 @@ class AmalNotifier extends StateNotifier<AmalState> {
   Future<SubmitResult?> submit(UserModel user) async {
     if (state.isSubmitted || state.isLoading) return null;
     if (!state.hasAnyDone) {
-      state = state.copyWith(error: 'Toggle at least one amal before submitting.');
+      state = state.copyWith(
+        error: 'Toggle at least one amal before submitting.',
+      );
       return null;
     }
 
@@ -258,8 +259,9 @@ class AmalNotifier extends StateNotifier<AmalState> {
     final score = calculateScore(toggles);
     final now = DateTime.now().toUtc();
     final currentWeekKey = weekKeyFromDate(HijriHelper.bangladeshNow());
-    final freezeAvailableThisWeek =
-        user.streakFreezeWeekKey != currentWeekKey ? true : !user.streakFreezeUsed;
+    final freezeAvailableThisWeek = user.streakFreezeWeekKey != currentWeekKey
+        ? true
+        : !user.streakFreezeUsed;
 
     final log = AmalLogModel(
       uid: user.uid,
@@ -272,11 +274,11 @@ class AmalNotifier extends StateNotifier<AmalState> {
       submittedAt: now,
     );
 
-    // Debug logging of user + log state before streak computation.
-    print(
+    developer.log(
       '[AmalSubmit] uid=${user.uid} hijri=$hijri score=$score '
       'currentStreak=${user.currentStreak} bestStreak=${user.bestStreak} '
       'lastLogDate=${user.lastLogDate} streakFreezeUsed=${user.streakFreezeUsed}',
+      name: 'AmalProvider',
     );
 
     final streakResult = computeStreakResult(
@@ -287,11 +289,12 @@ class AmalNotifier extends StateNotifier<AmalState> {
       streakFreezeUsed: !freezeAvailableThisWeek,
     );
 
-    print(
+    developer.log(
       '[AmalSubmit] StreakResult for uid=${user.uid}: '
       'action=${streakResult.action}, '
       'newCurrentStreak=${streakResult.newCurrentStreak}, '
       'newBestStreak=${streakResult.newBestStreak}',
+      name: 'AmalProvider',
     );
 
     state = state.copyWith(isLoading: true, clearError: true);
@@ -304,17 +307,17 @@ class AmalNotifier extends StateNotifier<AmalState> {
         switch (streakResult.action) {
           case StreakAction.increment:
           case StreakAction.reset:
-            print(
+            developer.log(
               '[AmalSubmit] Calling updateStreak for uid=${user.uid} with '
               'currentStreak=${streakResult.newCurrentStreak}, '
               'bestStreak=${streakResult.newBestStreak}, lastLogDate=$hijri',
+              name: 'AmalProvider',
             );
             await fs.updateStreak(
               user.uid,
               currentStreak: streakResult.newCurrentStreak,
               bestStreak: streakResult.newBestStreak,
-              streakFreezeUsed:
-                  user.streakFreezeWeekKey != currentWeekKey
+              streakFreezeUsed: user.streakFreezeWeekKey != currentWeekKey
                   ? false
                   : user.streakFreezeUsed,
               streakFreezeWeekKey: currentWeekKey,
@@ -329,14 +332,14 @@ class AmalNotifier extends StateNotifier<AmalState> {
             );
             break;
           case StreakAction.showFreeze:
-            print(
+            developer.log(
               '[AmalSubmit] Calling updateStreak (freeze only) for uid=${user.uid} '
               'with lastLogDate=$hijri',
+              name: 'AmalProvider',
             );
             await fs.updateStreak(
               user.uid,
-              streakFreezeUsed:
-                  user.streakFreezeWeekKey != currentWeekKey
+              streakFreezeUsed: user.streakFreezeWeekKey != currentWeekKey
                   ? false
                   : user.streakFreezeUsed,
               streakFreezeWeekKey: currentWeekKey,
@@ -353,14 +356,25 @@ class AmalNotifier extends StateNotifier<AmalState> {
         }
       } catch (e) {
         // Streak fields can sync later; log doc is saved.
-        print('[AmalSubmit] Error while updating streak for uid=${user.uid}: $e');
+        developer.log(
+          '[AmalSubmit] Error while updating streak for uid=${user.uid}.',
+          name: 'AmalProvider',
+          error: e,
+        );
       }
     } catch (e) {
       // Offline or write failure: cache locally; Firestore will sync when possible.
-      print('[AmalSubmit] Error while saving amal log for uid=${user.uid}: $e');
+      developer.log(
+        '[AmalSubmit] Error while saving amal log for uid=${user.uid}.',
+        name: 'AmalProvider',
+        error: e,
+      );
       submitWarning = 'Saved locally - will sync when back online.';
     } finally {
-      await LocalStorageService.saveLog(_submittedHiveKey(hijri), log.toHiveMap());
+      await LocalStorageService.saveLog(
+        _submittedHiveKey(hijri),
+        log.toHiveMap(),
+      );
       await LocalStorageService.deleteLog(_draftHiveKey(hijri));
 
       state = AmalState(
@@ -393,11 +407,13 @@ class AmalNotifier extends StateNotifier<AmalState> {
     }
 
     final recent = await fs.getRecentLogs(user.uid, limit: 7);
-    final perfectWeek = recent.length >= 7 && recent.every((log) => log.score >= 80);
+    final perfectWeek =
+        recent.length >= 7 && recent.every((log) => log.score >= 80);
     if (perfectWeek) nextBadges.add('perfectWeek');
 
     final weeklyRows = await fs.weeklyLeaderboard();
-    final isTopThisWeek = weeklyRows.isNotEmpty && weeklyRows.first['uid'] == user.uid;
+    final isTopThisWeek =
+        weeklyRows.isNotEmpty && weeklyRows.first['uid'] == user.uid;
     if (isTopThisWeek) nextBadges.add('topOfCommunity');
 
     await fs.updateUser(user.uid, <String, dynamic>{

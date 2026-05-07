@@ -8,6 +8,7 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class QuietHoursScreen extends ConsumerStatefulWidget {
   const QuietHoursScreen({super.key});
@@ -49,19 +50,20 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
     });
   }
 
-  String _silenceHoursLabel() {
+  String _silenceHoursLabel(AppLocalizations l10n) {
     final fromMinutes = _from.hour * 60 + _from.minute;
     final toMinutes = _to.hour * 60 + _to.minute;
     var duration = toMinutes - fromMinutes;
     if (duration <= 0) duration += 24 * 60;
     final hours = duration ~/ 60;
     final mins = duration % 60;
-    if (mins == 0) return '$hours hours of silence';
-    return '$hours h $mins m of silence';
+    if (mins == 0) return l10n.hoursSilence(hours);
+    return l10n.hoursMinutesSilence(hours, mins);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -70,7 +72,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
               context.canPop() ? context.pop() : context.go('/settings'),
         ),
         title: Text(
-          'Quiet hours',
+          l10n.quietHours,
           style: AppTextStyles.headlineMedium(context),
         ),
       ),
@@ -80,7 +82,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 4.w),
             child: Text(
-              'Notifications stay silent during these hours. Notification schedules still run.',
+              l10n.quietHoursDescription,
               style: AppTextStyles.bodyMedium(context),
             ),
           ),
@@ -89,7 +91,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
             children: [
               Expanded(
                 child: _TimeCard(
-                  label: 'FROM',
+                  label: l10n.from,
                   time: _from,
                   formatted: _format(_from),
                   onUp: () => _bumpHour(_from, 1, true),
@@ -99,7 +101,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
               SizedBox(width: 10.w),
               Expanded(
                 child: _TimeCard(
-                  label: 'TO',
+                  label: l10n.to,
                   time: _to,
                   formatted: _format(_to),
                   onUp: () => _bumpHour(_to, 1, false),
@@ -116,7 +118,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
-                    'Silent from ${_format(_from)} to ${_format(_to)}',
+                    l10n.silentFromTo(_format(_from), _format(_to)),
                     style: AppTextStyles.bodyLarge(
                       context,
                     ).copyWith(fontSize: 13.sp),
@@ -129,7 +131,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 4.w),
             child: Text(
-              _silenceHoursLabel(),
+              _silenceHoursLabel(l10n),
               style: AppTextStyles.bodySmall(context),
             ),
           ),
@@ -153,7 +155,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
                 ),
               ),
               child: Text(
-                'Save',
+                l10n.save,
                 style: AppTextStyles.button(context).copyWith(
                   color: AppColors.emeraldDeep,
                   fontWeight: FontWeight.w600,

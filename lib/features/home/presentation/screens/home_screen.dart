@@ -20,6 +20,7 @@ import '../../../../shared/widgets/streak_freeze_modal.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -58,21 +59,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (_listeningUid == uid) return;
     _amalErrorSubscription?.close();
     _listeningUid = uid;
-    _amalErrorSubscription = ref.listenManual<AmalState>(
-      amalProvider(uid),
-      (previous, next) {
-        if (!mounted || next.error == null || previous?.error == next.error) {
-          return;
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(next.error!)),
-        );
-      },
-    );
+    _amalErrorSubscription = ref.listenManual<AmalState>(amalProvider(uid), (
+      previous,
+      next,
+    ) {
+      if (!mounted || next.error == null || previous?.error == next.error) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(next.error!)));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authUser = ref.watch(authStateProvider).asData?.value;
     final userAsync = ref.watch(currentUserProvider);
     final user = userAsync.asData?.value;
@@ -80,9 +82,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     if (authUser == null || user == null) {
       return AppScaffold(
-        body: Center(
-          child: CircularProgressIndicator(color: AppColors.gold),
-        ),
+        body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
       );
     }
 
@@ -91,8 +91,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _ensureAmalErrorListener(authUser.uid);
 
     // Only show banner once we know status; [none] means offline per connectivity_plus.
-    final offline = connectivity != null &&
-        connectivity.contains(ConnectivityResult.none);
+    final offline =
+        connectivity != null && connectivity.contains(ConnectivityResult.none);
 
     final displayStreak = resolveDisplayedStreakValues(
       currentStreak: user.currentStreak,
@@ -118,7 +118,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
-                        'Offline — your log is saved on this device and will sync when you reconnect.',
+                        l10n.homeOfflineSyncMessage,
                         style: AppTextStyles.bodySmall(context).copyWith(
                           color: AppColors.textPrimary,
                           fontSize: 11.sp,
@@ -140,10 +140,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           if (amal.error != null) ...[
             Text(
               amal.error!,
-              style: AppTextStyles.bodySmall(context).copyWith(
-                color: AppColors.danger,
-                fontSize: 12.sp,
-              ),
+              style: AppTextStyles.bodySmall(
+                context,
+              ).copyWith(color: AppColors.danger, fontSize: 12.sp),
             ),
             SizedBox(height: 8.h),
           ],
@@ -152,31 +151,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             total: kAmalFields.length,
             score: amal.totalScore,
           ),
-          if (isNewUser) ...[
-            SizedBox(height: 14.h),
-            const _WelcomeCard(),
-          ],
+          if (isNewUser) ...[SizedBox(height: 14.h), _WelcomeCard(l10n: l10n)],
           SizedBox(height: 14.h),
           if (amal.isSubmitted) ...[
             CardContainer.gold(
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
               child: Row(
                 children: [
-                  Icon(Icons.check_circle, color: AppColors.success, size: 22.r),
+                  Icon(
+                    Icons.check_circle,
+                    color: AppColors.success,
+                    size: 22.r,
+                  ),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
-                      'Logged today ✓',
-                      style: AppTextStyles.bodyLarge(context).copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      l10n.loggedToday,
+                      style: AppTextStyles.bodyLarge(
+                        context,
+                      ).copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
               ),
             ),
             SizedBox(height: 14.h),
-            Text("Today's Amal", style: AppTextStyles.headlineMedium(context)),
+            Text(l10n.todaysAmal, style: AppTextStyles.headlineMedium(context)),
             SizedBox(height: 6.h),
             ...kAmalFields.map(
               (f) => Padding(
@@ -193,15 +193,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               children: [
                 Expanded(
                   child: Text(
-                    "Today's Amal",
+                    l10n.todaysAmal,
                     style: AppTextStyles.headlineMedium(context),
                   ),
                 ),
                 TextButton(
                   onPressed: amal.isLoading ? null : amalNotifier.markAllDone,
                   child: Text(
-                    'Mark all done',
-                    style: AppTextStyles.button(context).copyWith(color: AppColors.gold),
+                    l10n.markAllDone,
+                    style: AppTextStyles.button(
+                      context,
+                    ).copyWith(color: AppColors.gold),
                   ),
                 ),
               ],
@@ -252,7 +254,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               ),
                             )
                           : Text(
-                              "Submit today's log",
+                              l10n.submitTodaysLog,
                               style: AppTextStyles.button(context).copyWith(
                                 color: AppColors.emeraldDeep,
                                 fontWeight: FontWeight.w600,
@@ -260,7 +262,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             ),
                     )
                   : OutlinedButton(
-                      onPressed: amal.isLoading ? null : amalNotifier.markAllDone,
+                      onPressed: amal.isLoading
+                          ? null
+                          : amalNotifier.markAllDone,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.gold,
                         side: const BorderSide(color: AppColors.goldBorder),
@@ -270,7 +274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                       ),
                       child: Text(
-                        'Mark all done',
+                        l10n.markAllDone,
                         style: AppTextStyles.button(context).copyWith(
                           color: AppColors.gold,
                           fontWeight: FontWeight.w600,
@@ -316,7 +320,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 }
 
 class _WelcomeCard extends StatelessWidget {
-  const _WelcomeCard();
+  const _WelcomeCard({required this.l10n});
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -330,17 +335,19 @@ class _WelcomeCard extends StatelessWidget {
               Icon(Icons.auto_awesome, color: AppColors.goldLight, size: 16.r),
               SizedBox(width: 6.w),
               Text(
-                'WELCOME',
-                style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+                l10n.welcomeUpper,
+                style: AppTextStyles.label(
+                  context,
+                ).copyWith(color: AppColors.gold),
               ),
             ],
           ),
           SizedBox(height: 8.h),
           Text(
-            'Your first amal starts today.',
-            style: AppTextStyles.bodyLarge(context).copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            l10n.firstAmalStartsToday,
+            style: AppTextStyles.bodyLarge(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
           SizedBox(height: 6.h),
           Text(hadith, style: AppTextStyles.bodyMedium(context)),
@@ -375,7 +382,9 @@ class _Header extends ConsumerWidget {
                   children: [
                     Text(
                       HijriHelper.todayDisplayString(),
-                      style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+                      style: AppTextStyles.label(
+                        context,
+                      ).copyWith(color: AppColors.gold),
                     ),
                     SizedBox(height: 2.h),
                     Text(
@@ -413,6 +422,7 @@ class _StreakBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: CardContainer.gold(
@@ -442,10 +452,10 @@ class _StreakBanner extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          '$streak-day streak',
-                          style: AppTextStyles.bodyLarge(context).copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          l10n.dayStreak(streak),
+                          style: AppTextStyles.bodyLarge(
+                            context,
+                          ).copyWith(fontWeight: FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -461,19 +471,20 @@ class _StreakBanner extends StatelessWidget {
                           borderRadius: BorderRadius.circular(99.r),
                         ),
                         child: Text(
-                          'on fire',
-                          style: AppTextStyles.pill(context).copyWith(
-                            color: AppColors.warning,
-                            fontSize: 10.sp,
-                          ),
+                          l10n.onFire,
+                          style: AppTextStyles.pill(
+                            context,
+                          ).copyWith(color: AppColors.warning, fontSize: 10.sp),
                         ),
                       ),
                     ],
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    'Best: $bestStreak days · keep it going',
-                    style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+                    l10n.bestStreakKeepGoing(bestStreak),
+                    style: AppTextStyles.bodySmall(
+                      context,
+                    ).copyWith(fontSize: 11.sp),
                   ),
                 ],
               ),
@@ -498,6 +509,7 @@ class _ProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return CardContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,13 +518,15 @@ class _ProgressCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  "Today's progress",
+                  l10n.todaysProgress,
                   style: AppTextStyles.bodyMedium(context),
                 ),
               ),
               Text(
                 '$done/$total',
-                style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 18.sp),
+                style: AppTextStyles.goldNumeric(
+                  context,
+                ).copyWith(fontSize: 18.sp),
               ),
             ],
           ),
@@ -528,10 +542,10 @@ class _ProgressCard extends StatelessWidget {
               ),
               SizedBox(width: 6.w),
               Text(
-                '$score / $kMaxDailyScore points',
-                style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: AppColors.textPrimary,
-                ),
+                l10n.scoreOutOfPoints(score, kMaxDailyScore),
+                style: AppTextStyles.bodyMedium(
+                  context,
+                ).copyWith(color: AppColors.textPrimary),
               ),
             ],
           ),

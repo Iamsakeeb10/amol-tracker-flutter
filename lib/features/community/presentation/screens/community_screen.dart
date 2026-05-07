@@ -19,6 +19,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/community_row_card.dart';
 import '../../../../shared/widgets/section_header.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class CommunityScreen extends ConsumerStatefulWidget {
   const CommunityScreen({super.key});
@@ -110,6 +111,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(communitySheetProvider);
     final notifier = ref.read(communitySheetProvider.notifier);
     final currentUser = ref.watch(currentUserProvider).asData?.value;
@@ -147,13 +149,13 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'COMMUNITY',
+              l10n.communityUpper,
               style: AppTextStyles.label(
                 context,
               ).copyWith(color: AppColors.gold),
             ),
             SizedBox(height: 2.h),
-            Text('Community', style: AppTextStyles.displayMedium(context)),
+            Text(l10n.community, style: AppTextStyles.displayMedium(context)),
             SizedBox(height: 12.h),
             Container(
               padding: EdgeInsets.all(3.r),
@@ -177,9 +179,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                   context,
                 ).copyWith(fontWeight: FontWeight.w600),
                 unselectedLabelStyle: AppTextStyles.bodyMedium(context),
-                tabs: const [
-                  Tab(text: 'Sheet'),
-                  Tab(text: 'Feed'),
+                tabs: [
+                  Tab(text: l10n.sheet),
+                  Tab(text: l10n.feed),
                 ],
               ),
             ),
@@ -213,7 +215,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                 SizedBox(width: 8.w),
                                 Expanded(
                                   child: Text(
-                                    'Offline — showing latest available data.',
+                                    l10n.offlineShowingLatest,
                                     style: AppTextStyles.bodySmall(context)
                                         .copyWith(
                                           color: AppColors.textPrimary,
@@ -226,7 +228,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                           ),
                         ),
                       SectionHeader(
-                        title: 'DATE',
+                        title: l10n.date,
                         trailingText: HijriHelper.displayFromStorage(
                           state.selectedDate,
                         ),
@@ -241,7 +243,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                         controller: _searchController,
                         onChanged: notifier.setSearchQuery,
                         decoration: InputDecoration(
-                          hintText: 'Search by name',
+                          hintText: l10n.searchByName,
                           hintStyle: AppTextStyles.bodyMedium(context),
                           filled: true,
                           fillColor: AppColors.cardDark,
@@ -350,7 +352,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                                       SizedBox(width: 10.w),
                                                       Expanded(
                                                         child: Text(
-                                                          'Log today to appear here',
+                                                          l10n.logTodayToAppear,
                                                           style:
                                                               AppTextStyles.bodySmall(
                                                                 context,
@@ -374,7 +376,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                         ),
                                         child: Center(
                                           child: Text(
-                                            'No logs recorded for this day',
+                                            l10n.noLogsForDay,
                                             textAlign: TextAlign.center,
                                             style:
                                                 AppTextStyles.bodyMedium(
@@ -431,7 +433,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                               )
                                             : (!state.hasMore
                                                   ? Text(
-                                                      'No more rows',
+                                                      l10n.noMoreRows,
                                                       style:
                                                           AppTextStyles.bodySmall(
                                                             context,
@@ -467,7 +469,7 @@ class _ActivityFeedTab extends ConsumerWidget {
       loading: () => const _FeedLoadingState(),
       error: (_, _) => Center(
         child: Text(
-          'Unable to load activity feed.',
+          AppLocalizations.of(context)!.unableLoadActivityFeed,
           style: AppTextStyles.bodyMedium(
             context,
           ).copyWith(color: AppColors.textMuted),
@@ -479,7 +481,7 @@ class _ActivityFeedTab extends ConsumerWidget {
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 16.h),
               child: Text(
-                'No activity yet. Community updates will appear here.',
+                AppLocalizations.of(context)!.noActivityYet,
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium(
                   context,
@@ -604,7 +606,9 @@ class _DateTabsRow extends StatelessWidget {
           final date = options[index];
           final selected = date == selectedDate;
           final isToday = date == today;
-          final label = isToday ? 'Today' : _shortHijriLabel(date);
+          final label = isToday
+              ? AppLocalizations.of(context)!.today
+              : _shortHijriLabel(date);
           return GestureDetector(
             onTap: () => onTapDate(date),
             child: AnimatedContainer(
@@ -763,6 +767,7 @@ AmalLogModel _buildOwnPlaceholder(
 String _timeAgo(DateTime timestamp) {
   final now = DateTime.now();
   final diff = now.difference(timestamp.toLocal());
+  // time labels localized in notifications/feed style
   if (diff.inMinutes < 1) return 'Just now';
   if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
   if (diff.inHours < 24) return '${diff.inHours}h ago';

@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/services/notification_service.dart';
 import 'core/router/router.dart';
 import 'core/theme/theme.dart';
+import 'l10n/app_localizations.dart';
+import 'providers/locale_provider.dart';
 
-class AmolTrackerApp extends StatefulWidget {
+class AmolTrackerApp extends ConsumerStatefulWidget {
   const AmolTrackerApp({super.key});
 
   @override
-  State<AmolTrackerApp> createState() => _AmolTrackerAppState();
+  ConsumerState<AmolTrackerApp> createState() => _AmolTrackerAppState();
 }
 
-class _AmolTrackerAppState extends State<AmolTrackerApp>
+class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     with WidgetsBindingObserver {
   late final GoRouter _router;
 
@@ -47,9 +50,13 @@ class _AmolTrackerAppState extends State<AmolTrackerApp>
 
   @override
   Widget build(BuildContext context) {
+    final locale = ref.watch(localeProvider);
     return MaterialApp.router(
-      title: 'Amol Tracker',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       debugShowCheckedModeBanner: false,
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: AppTheme.build(context),
       routerConfig: _router,
     );

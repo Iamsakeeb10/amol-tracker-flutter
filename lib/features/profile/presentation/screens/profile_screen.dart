@@ -15,15 +15,16 @@ import '../../../../shared/widgets/badge_tile.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
 import '../../../../shared/widgets/streak_badge.dart';
+import '../../../../l10n/app_localizations.dart';
 
-final profileRecentLogsProvider = FutureProvider.family<List<AmalLogModel>, int>((
-  ref,
-  limit,
-) async {
-  final user = ref.watch(authStateProvider).asData?.value;
-  if (user == null) return <AmalLogModel>[];
-  return ref.read(firestoreServiceProvider).getRecentLogs(user.uid, limit: limit);
-});
+final profileRecentLogsProvider =
+    FutureProvider.family<List<AmalLogModel>, int>((ref, limit) async {
+      final user = ref.watch(authStateProvider).asData?.value;
+      if (user == null) return <AmalLogModel>[];
+      return ref
+          .read(firestoreServiceProvider)
+          .getRecentLogs(user.uid, limit: limit);
+    });
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -45,10 +46,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authUser = ref.watch(authStateProvider).asData?.value;
     final user = ref.watch(currentUserProvider).asData?.value;
-    final weekLogs = ref.watch(profileRecentLogsProvider(7)).asData?.value ?? [];
-    final monthLogs = ref.watch(profileRecentLogsProvider(30)).asData?.value ?? [];
+    final weekLogs =
+        ref.watch(profileRecentLogsProvider(7)).asData?.value ?? [];
+    final monthLogs =
+        ref.watch(profileRecentLogsProvider(30)).asData?.value ?? [];
 
     if (authUser == null || user == null) {
       return AppScaffold(
@@ -68,7 +72,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         : user.name.trim().substring(0, 1).toUpperCase();
     final averageScore = monthLogs.isEmpty
         ? 0
-        : (monthLogs.map((e) => e.score).reduce((a, b) => a + b) / monthLogs.length)
+        : (monthLogs.map((e) => e.score).reduce((a, b) => a + b) /
+                  monthLogs.length)
               .round();
 
     return AppScaffold(
@@ -78,7 +83,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           onPressed: () =>
               context.canPop() ? context.pop() : context.go(AppRoutes.more),
         ),
-        title: Text('Profile', style: AppTextStyles.headlineMedium(context)),
+        title: Text(l10n.profile, style: AppTextStyles.headlineMedium(context)),
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
@@ -102,9 +107,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     controller: _nameController,
                     style: AppTextStyles.displayMedium(context),
                     textAlign: TextAlign.center,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: 'Display name',
+                      hintText: l10n.displayName,
                     ),
                   ),
                 ),
@@ -128,7 +133,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           SizedBox(height: 4.h),
           Text(
-            'Member since ${user.createdAt.year}',
+            l10n.memberSince(user.createdAt.year),
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium(context),
           ),
@@ -147,21 +152,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 childAspectRatio: compact ? 1.02 : 1.28,
                 children: [
                   StatCard(
-                    label: 'Streak',
+                    label: l10n.streak,
                     value: '${user.currentStreak}',
-                    sublabel: 'days',
+                    sublabel: l10n.historyDays,
                     prominent: true,
                   ),
                   StatCard(
-                    label: 'Best',
+                    label: l10n.best,
                     value: '${user.bestStreak}',
-                    sublabel: 'days',
+                    sublabel: l10n.historyDays,
                     prominent: true,
                   ),
                   StatCard(
-                    label: 'Avg',
+                    label: l10n.avg,
                     value: '$averageScore',
-                    sublabel: '/100',
+                    sublabel: l10n.outOf100Compact,
                     prominent: true,
                   ),
                 ],
@@ -169,7 +174,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             },
           ),
           SizedBox(height: 18.h),
-          Text('This week', style: AppTextStyles.headlineMedium(context)),
+          Text(l10n.thisWeek, style: AppTextStyles.headlineMedium(context)),
           SizedBox(height: 8.h),
           _WeekChart(logs: weekLogs),
           SizedBox(height: 18.h),
@@ -181,17 +186,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ? null
                   : (value) => _saveAnonymous(authUser.uid, value),
               title: Text(
-                'Show as Anonymous in community',
+                l10n.showAnonymousCommunity,
                 style: AppTextStyles.bodyLarge(context),
               ),
               subtitle: Text(
-                user.isAnonymousDisplay ? 'Anonymous enabled' : 'Real name visible',
+                user.isAnonymousDisplay
+                    ? l10n.anonymousEnabled
+                    : l10n.realNameVisible,
                 style: AppTextStyles.bodySmall(context),
               ),
             ),
           ),
           SizedBox(height: 18.h),
-          Text('Badges', style: AppTextStyles.headlineMedium(context)),
+          Text(l10n.badges, style: AppTextStyles.headlineMedium(context)),
           SizedBox(height: 8.h),
           LayoutBuilder(
             builder: (context, constraints) {
@@ -205,7 +212,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 childAspectRatio: compact ? 1.05 : 1.5,
                 children: kBadgeDefinitions.map((b) {
                   final unlocked = user.badges.contains(b.id);
-                  final progress = _badgeProgress(b, user.currentStreak, unlocked);
+                  final progress = _badgeProgress(
+                    b,
+                    user.currentStreak,
+                    unlocked,
+                  );
                   return BadgeTile(
                     badge: b,
                     unlocked: unlocked,
@@ -220,7 +231,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  double _badgeProgress(BadgeDefinition badge, int currentStreak, bool unlocked) {
+  double _badgeProgress(
+    BadgeDefinition badge,
+    int currentStreak,
+    bool unlocked,
+  ) {
     if (unlocked) return 1;
     if (badge.streakThreshold == null || badge.streakThreshold == 0) return 0;
     return (currentStreak / badge.streakThreshold!).clamp(0.0, 1.0);
@@ -231,10 +246,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (name.isEmpty) return;
     setState(() => _isSavingName = true);
     try {
-      await ref.read(firestoreServiceProvider).updateUserDisplayFields(
-        uid,
-        name: name,
-      );
+      await ref
+          .read(firestoreServiceProvider)
+          .updateUserDisplayFields(uid, name: name);
     } finally {
       if (mounted) setState(() => _isSavingName = false);
     }
@@ -243,10 +257,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _saveAnonymous(String uid, bool value) async {
     setState(() => _isSavingPrivacy = true);
     try {
-      await ref.read(firestoreServiceProvider).updateUserDisplayFields(
-        uid,
-        isAnonymousDisplay: value,
-      );
+      await ref
+          .read(firestoreServiceProvider)
+          .updateUserDisplayFields(uid, isAnonymousDisplay: value);
     } finally {
       if (mounted) setState(() => _isSavingPrivacy = false);
     }
@@ -260,12 +273,13 @@ class _WeekChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return CardContainer(
       child: SizedBox(
         height: 130.h,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
-          children: _buildBars()
+          children: _buildBars(l10n)
               .map(
                 (b) => Expanded(
                   child: Padding(
@@ -277,9 +291,7 @@ class _WeekChart extends StatelessWidget {
                           '${(b.value * 100).round()}',
                           style: AppTextStyles.bodySmall(context).copyWith(
                             fontSize: 9.sp,
-                            color: b.missed
-                                ? AppColors.danger
-                                : AppColors.gold,
+                            color: b.missed ? AppColors.danger : AppColors.gold,
                           ),
                         ),
                         SizedBox(height: 4.h),
@@ -304,7 +316,9 @@ class _WeekChart extends StatelessWidget {
                         SizedBox(height: 6.h),
                         Text(
                           b.label,
-                          style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
+                          style: AppTextStyles.bodySmall(
+                            context,
+                          ).copyWith(fontSize: 10.sp),
                         ),
                       ],
                     ),
@@ -317,15 +331,15 @@ class _WeekChart extends StatelessWidget {
     );
   }
 
-  List<_ChartBar> _buildBars() {
+  List<_ChartBar> _buildBars(AppLocalizations l10n) {
     final seed = <_ChartBar>[
-      const _ChartBar(label: 'M', value: 0),
-      const _ChartBar(label: 'T', value: 0),
-      const _ChartBar(label: 'W', value: 0),
-      const _ChartBar(label: 'T', value: 0),
-      const _ChartBar(label: 'F', value: 0),
-      const _ChartBar(label: 'S', value: 0),
-      const _ChartBar(label: 'S', value: 0),
+      _ChartBar(label: l10n.weekdayMon, value: 0),
+      _ChartBar(label: l10n.weekdayTue, value: 0),
+      _ChartBar(label: l10n.weekdayWed, value: 0),
+      _ChartBar(label: l10n.weekdayThu, value: 0),
+      _ChartBar(label: l10n.weekdayFri, value: 0),
+      _ChartBar(label: l10n.weekdaySat, value: 0),
+      _ChartBar(label: l10n.weekdaySun, value: 0),
     ];
     if (logs.isEmpty) return seed;
     final tail = logs.length <= 7 ? logs : logs.sublist(logs.length - 7);
@@ -343,7 +357,11 @@ class _WeekChart extends StatelessWidget {
 }
 
 class _ChartBar {
-  const _ChartBar({required this.label, required this.value, this.missed = false});
+  const _ChartBar({
+    required this.label,
+    required this.value,
+    this.missed = false,
+  });
   final String label;
   final double value;
   final bool missed;

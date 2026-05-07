@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/router/routes.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../l10n/app_localizations.dart';
 import 'app_scaffold.dart';
 import 'card_container.dart';
 import 'streak_freeze_modal.dart';
@@ -35,13 +36,16 @@ class DevScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
-        title: Text('Dev Menu', style: AppTextStyles.headlineMedium(context)),
+        title: Text(
+          AppLocalizations.of(context)!.devMenu,
+          style: AppTextStyles.headlineMedium(context),
+        ),
       ),
       body: ListView(
         padding: EdgeInsets.symmetric(vertical: 8.h),
         children: [
           Text(
-            'Tap a screen to jump to it (UI testing)',
+            AppLocalizations.of(context)!.tapScreenToJump,
             style: AppTextStyles.bodyMedium(context),
           ),
           SizedBox(height: AppSpacing.md.h),
@@ -63,10 +67,7 @@ class DevScreen extends StatelessWidget {
                   borderColor: AppColors.goldBorder,
                   onTap: () {
                     if (e.path == '__modal_freeze__') {
-                      StreakFreezeModal.show(
-                        context,
-                        preservedStreak: 23,
-                      );
+                      StreakFreezeModal.show(context, preservedStreak: 23);
                     } else {
                       context.go(e.path);
                     }
@@ -77,9 +78,9 @@ class DevScreen extends StatelessWidget {
                     children: [
                       Text(
                         e.id,
-                        style: AppTextStyles.label(context).copyWith(
-                          color: AppColors.gold,
-                        ),
+                        style: AppTextStyles.label(
+                          context,
+                        ).copyWith(color: AppColors.gold),
                       ),
                       SizedBox(height: 2.h),
                       Text(

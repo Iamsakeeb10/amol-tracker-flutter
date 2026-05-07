@@ -14,6 +14,7 @@ import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
 import '../../../../shared/widgets/streak_badge.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class LeaderboardScreen extends ConsumerStatefulWidget {
   const LeaderboardScreen({super.key});
@@ -24,17 +25,20 @@ class LeaderboardScreen extends ConsumerStatefulWidget {
 
 class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   int _periodIndex = 0;
-  static const _periods = ['Weekly', 'Daily', 'Streak'];
-
   bool get _isStreak => _periodIndex == 2;
 
-  String _displayName(LeaderboardEntry user) =>
-      user.isAnonymousDisplay ? '🕌 Anonymous' : user.displayName;
+  String _displayName(LeaderboardEntry user) => user.isAnonymousDisplay
+      ? '🕌 ${AppLocalizations.of(context)!.anonymous}'
+      : user.displayName;
 
-  String _statLabel() => _isStreak ? 'days' : 'pts';
+  String _statLabel() => _isStreak
+      ? AppLocalizations.of(context)!.historyDays
+      : AppLocalizations.of(context)!.pointsAbbr;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final periods = [l10n.weekly, l10n.daily, l10n.streak];
     final authUid = ref.watch(authStateProvider).asData?.value?.uid;
     final data = _periodIndex == 0
         ? ref.watch(weeklyLeaderboardProvider)
@@ -49,14 +53,17 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           onPressed: () =>
               context.canPop() ? context.pop() : context.go(AppRoutes.more),
         ),
-        title: Text('Leaderboard', style: AppTextStyles.headlineMedium(context)),
+        title: Text(
+          l10n.leaderboard,
+          style: AppTextStyles.headlineMedium(context),
+        ),
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
         children: [
           _Tabs(
             value: _periodIndex,
-            options: _periods,
+            options: periods,
             onChanged: (i) => setState(() => _periodIndex = i),
           ),
           SizedBox(height: 16.h),
@@ -65,7 +72,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               if (entries.isEmpty) {
                 return CardContainer(
                   child: Text(
-                    'Be the first to log today!',
+                    l10n.leaderboardBeFirstToday,
                     style: AppTextStyles.bodyLarge(context),
                   ),
                 );
@@ -93,7 +100,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         displayName: _displayName(user),
                         isYou: user.uid == authUid,
                         maxScore: entries.first.score,
-                        onTap: () => context.push('${AppRoutes.userProfile}/${user.uid}'),
+                        onTap: () => context.push(
+                          '${AppRoutes.userProfile}/${user.uid}',
+                        ),
                       ),
                     );
                   }),
@@ -106,7 +115,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                           SizedBox(width: 8.w),
                           Expanded(
                             child: Text(
-                              'Your rank: #${userIndex + 1} · ${pinnedUser.score} ${_statLabel()}',
+                              l10n.leaderboardYourRank(
+                                userIndex + 1,
+                                pinnedUser.score,
+                                _statLabel(),
+                              ),
                               style: AppTextStyles.bodyMedium(context),
                             ),
                           ),
@@ -127,9 +140,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                         Expanded(
                           child: Text(
                             nudge,
-                            style: AppTextStyles.bodyLarge(context).copyWith(
-                              fontSize: 13.sp,
-                            ),
+                            style: AppTextStyles.bodyLarge(
+                              context,
+                            ).copyWith(fontSize: 13.sp),
                           ),
                         ),
                       ],
@@ -141,7 +154,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             loading: _buildLoading,
             error: (error, _) => CardContainer(
               child: Text(
-                'Could not load leaderboard right now.',
+                l10n.leaderboardLoadFailed,
                 style: AppTextStyles.bodyMedium(context),
               ),
             ),
@@ -175,18 +188,20 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
 
   String _buildNudge(List<LeaderboardEntry> entries, String? authUid) {
     if (authUid == null || entries.length < 2) {
-      return 'Keep climbing - every amal counts.';
+      return AppLocalizations.of(context)!.leaderboardNudgeKeepClimbing;
     }
     final meIndex = entries.indexWhere((u) => u.uid == authUid);
     if (meIndex <= 0) {
-      return 'You are on top - stay consistent.';
+      return AppLocalizations.of(context)!.leaderboardNudgeTop;
     }
     final meScore = entries[meIndex].score;
-    final secondScore = entries.length > 1 ? entries[1].score : entries[0].score;
+    final secondScore = entries.length > 1
+        ? entries[1].score
+        : entries[0].score;
     final behind = (secondScore - meScore).clamp(0, 99999);
     return _isStreak
-        ? '$behind days behind 2nd place - keep your streak alive.'
-        : '$behind pts behind 2nd place - log today to close the gap.';
+        ? AppLocalizations.of(context)!.leaderboardNudgeBehindDays(behind)
+        : AppLocalizations.of(context)!.leaderboardNudgeBehindPoints(behind);
   }
 }
 
@@ -264,7 +279,9 @@ class _Podium extends StatelessWidget {
             children: List.generate(3, (i) {
               final user = order[i];
               final name = displayName(user);
-              final initial = name.isEmpty ? '?' : name.substring(0, 1).toUpperCase();
+              final initial = name.isEmpty
+                  ? '?'
+                  : name.substring(0, 1).toUpperCase();
               return Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -273,7 +290,9 @@ class _Podium extends StatelessWidget {
                     children: [
                       AvatarChip(
                         initial: user.isAnonymousDisplay ? '🕌' : initial,
-                        color: user.isAnonymousDisplay ? AppColors.cardBorder : AppColors.gold,
+                        color: user.isAnonymousDisplay
+                            ? AppColors.cardBorder
+                            : AppColors.gold,
                         size: ranks[i] == 1 ? 56 : 44,
                         ring: ranks[i] == 1,
                         fontSize: ranks[i] == 1 ? 22 : 18,
@@ -283,11 +302,15 @@ class _Podium extends StatelessWidget {
                         name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 12.sp),
+                        style: AppTextStyles.bodyLarge(
+                          context,
+                        ).copyWith(fontSize: 12.sp),
                       ),
                       Text(
                         '${user.score}',
-                        style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 16.sp),
+                        style: AppTextStyles.goldNumeric(
+                          context,
+                        ).copyWith(fontSize: 16.sp),
                       ),
                       SizedBox(height: 6.h),
                       Container(
@@ -353,57 +376,69 @@ class _RankRow extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         child: Row(
           children: [
-          SizedBox(
-            width: 28.w,
-            child: Text(
-              '$rank',
-              style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 18.sp),
+            SizedBox(
+              width: 28.w,
+              child: Text(
+                '$rank',
+                style: AppTextStyles.goldNumeric(
+                  context,
+                ).copyWith(fontSize: 18.sp),
+              ),
             ),
-          ),
-          AvatarChip(
-            initial: user.isAnonymousDisplay ? '🕌' : displayName.substring(0, 1).toUpperCase(),
-            color: user.isAnonymousDisplay ? AppColors.cardBorder : AppColors.gold,
-            size: 32,
-          ),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      displayName,
-                      style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 13.sp),
-                    ),
-                    if (isYou) ...[
-                      SizedBox(width: 6.w),
-                      const Pill(
-                        text: 'you',
-                        color: AppColors.goldCard,
-                        textColor: AppColors.gold,
+            AvatarChip(
+              initial: user.isAnonymousDisplay
+                  ? '🕌'
+                  : displayName.substring(0, 1).toUpperCase(),
+              color: user.isAnonymousDisplay
+                  ? AppColors.cardBorder
+                  : AppColors.gold,
+              size: 32,
+            ),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        displayName,
+                        style: AppTextStyles.bodyLarge(
+                          context,
+                        ).copyWith(fontSize: 13.sp),
                       ),
+                      if (isYou) ...[
+                        SizedBox(width: 6.w),
+                        Pill(
+                          text: AppLocalizations.of(context)!.you,
+                          color: AppColors.goldCard,
+                          textColor: AppColors.gold,
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                ScoreBar(
-                  value: maxScore == 0 ? 0 : (user.score / maxScore).clamp(0.0, 1.0),
-                  height: 4,
-                ),
-              ],
+                  ),
+                  SizedBox(height: 4.h),
+                  ScoreBar(
+                    value: maxScore == 0
+                        ? 0
+                        : (user.score / maxScore).clamp(0.0, 1.0),
+                    height: 4,
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(width: 8.w),
-          Text(
-            '${user.score}',
-            style: AppTextStyles.goldNumeric(context).copyWith(fontSize: 16.sp),
-          ),
-          SizedBox(width: 2.w),
-          Text(
-            statLabel,
-            style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
-          ),
+            SizedBox(width: 8.w),
+            Text(
+              '${user.score}',
+              style: AppTextStyles.goldNumeric(
+                context,
+              ).copyWith(fontSize: 16.sp),
+            ),
+            SizedBox(width: 2.w),
+            Text(
+              statLabel,
+              style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
+            ),
           ],
         ),
       ),

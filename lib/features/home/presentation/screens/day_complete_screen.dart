@@ -14,6 +14,7 @@ import '../../../../models/amal_log_model.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/streak_badge.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class DayCompleteScreen extends StatefulWidget {
   const DayCompleteScreen({super.key, required this.log});
@@ -41,14 +42,14 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
       final raw = await rootBundle.loadString(_hadithAsset);
       final decoded = jsonDecode(raw);
       if (decoded is! List || decoded.isEmpty) {
-        setState(() => _hadithError = 'No hadiths available.');
+        setState(() => _hadithError = null);
         return;
       }
       final strings = decoded.map((e) => e.toString()).toList();
       final i = Random().nextInt(strings.length);
       setState(() => _hadith = strings[i]);
     } catch (e) {
-      setState(() => _hadithError = 'Could not load hadith.');
+      setState(() => _hadithError = null);
     }
   }
 
@@ -58,6 +59,7 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final log = widget.log;
 
     return PopScope(
@@ -85,12 +87,14 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
             ),
             SizedBox(height: 4.h),
             Text(
-              "You completed today's amal.",
+              l10n.dayCompleteSubtitle,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium(context),
             ),
             SizedBox(height: 12.h),
-            Center(child: Pill(text: '+${log.score} pts earned', icon: Icons.bolt)),
+            Center(
+              child: Pill(text: l10n.pointsEarned(log.score), icon: Icons.bolt),
+            ),
             SizedBox(height: 22.h),
             CardContainer(
               color: AppColors.goldCard,
@@ -107,8 +111,10 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
                       ),
                       SizedBox(width: 6.w),
                       Text(
-                        'HADITH OF THE DAY',
-                        style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+                        l10n.hadithOfDay,
+                        style: AppTextStyles.label(
+                          context,
+                        ).copyWith(color: AppColors.gold),
                       ),
                     ],
                   ),
@@ -118,9 +124,9 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
                   else if (_hadithError != null)
                     Text(
                       _hadithError!,
-                      style: AppTextStyles.bodyMedium(context).copyWith(
-                        color: AppColors.textMuted,
-                      ),
+                      style: AppTextStyles.bodyMedium(
+                        context,
+                      ).copyWith(color: AppColors.textMuted),
                     )
                   else
                     SizedBox(
@@ -140,14 +146,21 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
               ),
             ),
             SizedBox(height: 16.h),
-            Text("Today's summary", style: AppTextStyles.headlineMedium(context)),
+            Text(
+              l10n.todaysSummary,
+              style: AppTextStyles.headlineMedium(context),
+            ),
             SizedBox(height: 8.h),
             ...kAmalFields.map((field) {
               final done = log.toggles[field.id] ?? false;
               final earned = done ? field.points : 0;
               return Padding(
                 padding: EdgeInsets.only(bottom: 8.h),
-                child: _SummaryRow(field: field, done: done, earnedPoints: earned),
+                child: _SummaryRow(
+                  field: field,
+                  done: done,
+                  earnedPoints: earned,
+                ),
               );
             }),
             SizedBox(height: 18.h),
@@ -164,7 +177,7 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
                   ),
                 ),
                 child: Text(
-                  'Back to home',
+                  l10n.backToHome,
                   style: AppTextStyles.button(context).copyWith(
                     color: AppColors.emeraldDeep,
                     fontWeight: FontWeight.w600,
@@ -213,14 +226,15 @@ class _ScoreRing extends StatelessWidget {
                 children: [
                   Text(
                     '$score',
-                    style: AppTextStyles.displayLarge(context).copyWith(
-                      color: AppColors.goldLight,
-                      fontSize: 56.sp,
-                    ),
+                    style: AppTextStyles.displayLarge(
+                      context,
+                    ).copyWith(color: AppColors.goldLight, fontSize: 56.sp),
                   ),
                   Text(
-                    'of 100',
-                    style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+                    AppLocalizations.of(context)!.outOf100,
+                    style: AppTextStyles.bodySmall(
+                      context,
+                    ).copyWith(fontSize: 11.sp),
                   ),
                 ],
               ),
@@ -261,7 +275,7 @@ class _SummaryRow extends StatelessWidget {
             ),
           ),
           Text(
-            '$earnedPoints pts',
+            AppLocalizations.of(context)!.pointsValue(earnedPoints),
             style: AppTextStyles.pill(context).copyWith(
               color: earnedPoints > 0 ? AppColors.gold : AppColors.textMuted,
             ),

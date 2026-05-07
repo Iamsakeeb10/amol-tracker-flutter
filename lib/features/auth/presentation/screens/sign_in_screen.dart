@@ -8,6 +8,7 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
@@ -33,9 +34,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       print('❌ [Google SignIn] Error message: $e');
       print('❌ [Google SignIn] Stack trace: $stackTrace');
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Google sign-in failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.googleSignInFailed('$e')),
+        ),
+      );
     } finally {
       print('🔐 [Google SignIn] Stopping loading state');
       if (mounted) {
@@ -58,9 +61,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       print('❌ [Guest SignIn] Error message: $e');
       print('❌ [Guest SignIn] Stack trace: $stackTrace');
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Guest sign-in failed: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.guestSignInFailed('$e')),
+        ),
+      );
     } finally {
       print('👤 [Guest SignIn] Stopping loading state');
       if (mounted) {
@@ -71,6 +76,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppScaffold(
       body: Stack(
         children: [
@@ -98,7 +104,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               ),
               SizedBox(height: 18.h),
               Text(
-                'Amol Tracker',
+                l10n.appTitle,
                 textAlign: TextAlign.center,
                 style: AppTextStyles.displayMedium(context),
               ),
@@ -106,7 +112,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32.w),
                 child: Text(
-                  'Daily devotion, with brothers',
+                  l10n.signInTagline,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium(context),
                 ),
@@ -135,7 +141,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                           size: 26.r,
                         ),
                         label: Text(
-                          'Continue with Google',
+                          l10n.continueWithGoogle,
                           style: AppTextStyles.button(context).copyWith(
                             color: AppColors.emeraldDeep,
                             fontWeight: FontWeight.w600,
@@ -163,7 +169,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                           ),
                         ),
                         child: Text(
-                          'Continue as guest',
+                          l10n.continueAsGuest,
                           style: AppTextStyles.button(
                             context,
                           ).copyWith(color: AppColors.textSecondary),
@@ -181,7 +187,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 32.w),
                 child: Text(
-                  'By continuing you agree to our Terms & Privacy.',
+                  l10n.continueTerms,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodySmall(
                     context,

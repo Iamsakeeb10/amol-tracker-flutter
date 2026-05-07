@@ -14,12 +14,14 @@ import '../../../../providers/auth_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = ref.watch(authStateProvider).asData?.value?.uid;
     final notifications = ref.watch(notificationsProvider);
     final items = notifications.asData?.value ?? const <NotificationModel>[];
@@ -34,7 +36,7 @@ class NotificationsScreen extends ConsumerWidget {
         ),
         title: Row(
           children: [
-            Text('Alerts', style: AppTextStyles.headlineMedium(context)),
+            Text(l10n.alerts, style: AppTextStyles.headlineMedium(context)),
             if (unread > 0) ...[
               SizedBox(width: 8.w),
               Container(
@@ -64,7 +66,7 @@ class NotificationsScreen extends ConsumerWidget {
                         .markAllNotificationsRead(uid);
                   },
             child: Text(
-              'Mark all read',
+              l10n.markAllRead,
               style: AppTextStyles.button(
                 context,
               ).copyWith(color: AppColors.gold),
@@ -76,7 +78,7 @@ class NotificationsScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => Center(
           child: Text(
-            'Failed to load notifications.',
+            l10n.failedLoadNotifications,
             style: AppTextStyles.bodyMedium(context),
           ),
         ),
@@ -84,7 +86,7 @@ class NotificationsScreen extends ConsumerWidget {
           if (rows.isEmpty) {
             return Center(
               child: Text(
-                'No notifications yet',
+                l10n.noNotificationsYet,
                 style: AppTextStyles.bodyMedium(context),
               ),
             );
@@ -105,13 +107,22 @@ class _NotificationRow extends StatelessWidget {
   final NotificationModel item;
   const _NotificationRow({required this.item});
 
-  String _timeLabel() {
+  String _resolvedMessage(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (item.type == 'dua' && (item.senderName?.trim().isNotEmpty ?? false)) {
+      return l10n.duaFromSender(item.senderName!.trim());
+    }
+    return item.message;
+  }
+
+  String _timeLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final diff = now.difference(item.createdAt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return l10n.justNow;
+    if (diff.inHours < 1) return l10n.minutesAgo(diff.inMinutes);
+    if (diff.inDays < 1) return l10n.hoursAgo(diff.inHours);
+    if (diff.inDays < 7) return l10n.daysAgo(diff.inDays);
     return DateFormat('d MMM').format(item.createdAt);
   }
 
@@ -206,14 +217,14 @@ class _NotificationRow extends StatelessWidget {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  item.message,
+                  _resolvedMessage(context),
                   style: AppTextStyles.bodySmall(
                     context,
                   ).copyWith(fontSize: 11.sp),
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  _timeLabel(),
+                  _timeLabel(context),
                   style: AppTextStyles.bodySmall(
                     context,
                   ).copyWith(fontSize: 10.sp, color: AppColors.textHint),

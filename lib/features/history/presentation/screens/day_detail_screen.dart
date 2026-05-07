@@ -14,18 +14,17 @@ import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class DayDetailScreen extends ConsumerWidget {
-  const DayDetailScreen({
-    super.key,
-    required this.hijriDate,
-  });
+  const DayDetailScreen({super.key, required this.hijriDate});
 
   /// Hijri storage key `YYYY-MM-DD`.
   final String hijriDate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final authUser = ref.watch(authStateProvider).asData?.value;
     if (authUser == null) {
       return AppScaffold(
@@ -44,7 +43,7 @@ class DayDetailScreen extends ConsumerWidget {
       error: (_, _) => AppScaffold(
         body: Center(
           child: Text(
-            'Could not load this day.',
+            l10n.dayDetailLoadFailed,
             style: AppTextStyles.bodyLarge(context),
           ),
         ),
@@ -52,7 +51,7 @@ class DayDetailScreen extends ConsumerWidget {
       data: (log) {
         final score = log?.score ?? 0;
         final title = hijriDate.isEmpty
-            ? 'Day detail'
+            ? l10n.dayDetailTitle
             : HijriHelper.displayFromStorage(hijriDate);
         final weekday = hijriDate.isEmpty
             ? ''
@@ -62,8 +61,9 @@ class DayDetailScreen extends ConsumerWidget {
           appBar: AppBar(
             leading: IconButton(
               icon: Icon(Icons.arrow_back, size: 22.r),
-              onPressed: () =>
-                  context.canPop() ? context.pop() : context.go(AppRoutes.history),
+              onPressed: () => context.canPop()
+                  ? context.pop()
+                  : context.go(AppRoutes.history),
             ),
             title: Text(title, style: AppTextStyles.headlineMedium(context)),
             actions: [
@@ -81,11 +81,10 @@ class DayDetailScreen extends ConsumerWidget {
                       border: Border.all(color: AppColors.cardBorder),
                     ),
                     child: Text(
-                      'READ-ONLY',
-                      style: AppTextStyles.label(context).copyWith(
-                        fontSize: 10.sp,
-                        color: AppColors.textMuted,
-                      ),
+                      l10n.readOnly,
+                      style: AppTextStyles.label(
+                        context,
+                      ).copyWith(fontSize: 10.sp, color: AppColors.textMuted),
                     ),
                   ),
                 ),
@@ -98,7 +97,9 @@ class DayDetailScreen extends ConsumerWidget {
               if (weekday.isNotEmpty) ...[
                 Text(
                   weekday,
-                  style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.gold),
+                  style: AppTextStyles.bodyMedium(
+                    context,
+                  ).copyWith(color: AppColors.gold),
                 ),
                 SizedBox(height: 12.h),
               ],
@@ -106,25 +107,25 @@ class DayDetailScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: StatCard(
-                      label: 'Score',
+                      label: l10n.score,
                       value: '$score',
-                      sublabel: 'of 100',
+                      sublabel: l10n.outOf100,
                       icon: Icons.workspace_premium_outlined,
                     ),
                   ),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: StatCard(
-                      label: 'Streak that day',
+                      label: l10n.dayDetailStreakThatDay,
                       value: '—',
-                      sublabel: 'not stored',
+                      sublabel: l10n.dayDetailNotStored,
                       icon: Icons.local_fire_department_outlined,
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 16.h),
-              Text('Amal', style: AppTextStyles.headlineMedium(context)),
+              Text(l10n.amal, style: AppTextStyles.headlineMedium(context)),
               SizedBox(height: 8.h),
               if (log == null)
                 Padding(
@@ -133,7 +134,7 @@ class DayDetailScreen extends ConsumerWidget {
                     color: AppColors.warningLight.withValues(alpha: 0.25),
                     borderColor: AppColors.warning.withValues(alpha: 0.35),
                     child: Text(
-                      'No log was submitted for this Hijri day.',
+                      l10n.dayDetailNoLogForDay,
                       style: AppTextStyles.bodyMedium(context),
                     ),
                   ),
@@ -142,11 +143,7 @@ class DayDetailScreen extends ConsumerWidget {
                 final done = log?.toggles[field.id] ?? false;
                 return Padding(
                   padding: EdgeInsets.only(bottom: 8.h),
-                  child: AmalRow(
-                    field: field,
-                    done: done,
-                    readOnly: true,
-                  ),
+                  child: AmalRow(field: field, done: done, readOnly: true),
                 );
               }),
               SizedBox(height: 14.h),
@@ -161,7 +158,7 @@ class DayDetailScreen extends ConsumerWidget {
                     SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
-                        'Locked — past days cannot be edited.',
+                        l10n.dayDetailLockedPastDays,
                         style: AppTextStyles.bodyMedium(context),
                       ),
                     ),

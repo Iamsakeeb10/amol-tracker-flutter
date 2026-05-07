@@ -15,6 +15,7 @@ import '../../../../models/user_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -44,24 +45,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  static const _slides = <_SlideData>[
+  List<_SlideData> _slides(AppLocalizations l10n) => <_SlideData>[
     _SlideData(
       icon: Icons.calendar_month_outlined,
-      title: 'Build a daily habit',
-      body:
-          'Track 9 daily amal — fard, sunnah, azkar, Quran. Tiny, consistent steps.',
+      title: l10n.buildDailyHabitTitle,
+      body: l10n.buildDailyHabitBody,
       kind: _SlideKind.simple,
     ),
     _SlideData(
       icon: Icons.local_fire_department_rounded,
-      title: 'Streaks keep you going',
-      body: "Don't break the chain. Hit 7, 30, 100 days — earn your khair.",
+      title: l10n.streaksKeepYouGoingTitle,
+      body: l10n.streaksKeepYouGoingBody,
       kind: _SlideKind.streaks,
     ),
     _SlideData(
       icon: Icons.group_outlined,
-      title: 'Set up your profile',
-      body: 'Set your name and privacy before joining the community.',
+      title: l10n.setupProfileTitle,
+      body: l10n.setupProfileBody,
       kind: _SlideKind.setup,
     ),
   ];
@@ -77,7 +77,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _next() async {
-    if (_index < _slides.length - 1) {
+    final slides = _slides(AppLocalizations.of(context)!);
+    if (_index < slides.length - 1) {
       await _controller.nextPage(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
@@ -117,7 +118,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final authUser = FirebaseAuth.instance.currentUser;
     if (authUser == null) return;
 
-    final fallbackName = authUser.isAnonymous ? 'Anonymous' : 'User';
+    final l10n = AppLocalizations.of(context)!;
+    final fallbackName = authUser.isAnonymous ? l10n.anonymous : l10n.user;
     final resolvedName = _displayName.trim().isNotEmpty
         ? _displayName.trim()
         : (authUser.displayName?.trim().isNotEmpty == true
@@ -152,7 +154,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _logOnboardingError(e, st);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not complete onboarding: $e')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.onboardingFailed('$e')),
+        ),
       );
     } finally {
       if (mounted) {
@@ -169,6 +173,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final slides = _slides(l10n);
     return AppScaffold(
       body: Column(
         children: [
@@ -177,7 +183,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: TextButton(
               onPressed: _isSubmitting ? null : _skip,
               child: Text(
-                'Skip',
+                l10n.skip,
                 style: AppTextStyles.button(
                   context,
                 ).copyWith(color: AppColors.textSecondary),
@@ -187,10 +193,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Expanded(
             child: PageView.builder(
               controller: _controller,
-              itemCount: _slides.length,
+              itemCount: slides.length,
               onPageChanged: (i) => setState(() => _index = i),
               itemBuilder: (_, i) => _SlideContent(
-                slide: _slides[i],
+                slide: slides[i],
                 displayName: _displayName,
                 isAnonymousDisplay: _isAnonymousDisplay,
                 notificationRequested: _notificationRequested,
@@ -204,7 +210,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(_slides.length, (i) {
+            children: List.generate(slides.length, (i) {
               final active = i == _index;
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -238,8 +244,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 child: Text(
                   _isSubmitting
-                      ? 'Please wait...'
-                      : (_index == _slides.length - 1 ? 'Get started' : 'Next'),
+                      ? l10n.pleaseWait
+                      : (_index == slides.length - 1
+                            ? l10n.getStarted
+                            : l10n.next),
                   style: AppTextStyles.button(context).copyWith(
                     color: AppColors.emeraldDeep,
                     fontWeight: FontWeight.w600,
@@ -392,11 +400,11 @@ class _StreakBadgesRow extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 8.w),
       child: Row(
         children: [
-          pill('Starter', '7'),
+          pill(AppLocalizations.of(context)!.starter, '7'),
           SizedBox(width: 10.w),
-          pill('Habit', '30'),
+          pill(AppLocalizations.of(context)!.habit, '30'),
           SizedBox(width: 10.w),
-          pill('Devoted', '100'),
+          pill(AppLocalizations.of(context)!.devoted, '100'),
         ],
       ),
     );
@@ -428,7 +436,7 @@ class _SetupSlide extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Display name',
+            AppLocalizations.of(context)!.displayName,
             style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
           ),
           SizedBox(height: 8.h),
@@ -439,7 +447,7 @@ class _SetupSlide extends StatelessWidget {
               context,
             ).copyWith(color: AppColors.textPrimary),
             decoration: InputDecoration(
-              hintText: 'Your name',
+              hintText: AppLocalizations.of(context)!.yourName,
               hintStyle: AppTextStyles.bodyMedium(
                 context,
               ).copyWith(color: AppColors.textHint),
@@ -449,7 +457,7 @@ class _SetupSlide extends StatelessWidget {
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: Text(
-              'Show as Anonymous in community',
+              AppLocalizations.of(context)!.showAnonymousCommunity,
               style: AppTextStyles.bodySmall(context),
             ),
             value: isAnonymousDisplay,
@@ -465,8 +473,8 @@ class _SetupSlide extends StatelessWidget {
               ),
               child: Text(
                 notificationRequested
-                    ? 'Notifications enabled'
-                    : 'Allow notifications',
+                    ? AppLocalizations.of(context)!.notificationsEnabled
+                    : AppLocalizations.of(context)!.allowNotifications,
                 style: AppTextStyles.button(
                   context,
                 ).copyWith(color: AppColors.goldLight),

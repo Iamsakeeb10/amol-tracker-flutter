@@ -10,26 +10,29 @@ import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
 import '../../../../shared/widgets/streak_badge.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class FriendProfileScreen extends StatelessWidget {
   final String friendId;
   const FriendProfileScreen({super.key, required this.friendId});
 
   MockUser get _user => kFriends.firstWhere(
-        (u) => u.id == friendId,
-        orElse: () => kFriends.first,
-      );
+    (u) => u.id == friendId,
+    orElse: () => kFriends.first,
+  );
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final user = _user;
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: 22.r),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/friends'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/friends'),
         ),
-        title: Text('Friend', style: AppTextStyles.headlineMedium(context)),
+        title: Text(l10n.friend, style: AppTextStyles.headlineMedium(context)),
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(0, 8.h, 0, 24.h),
@@ -55,7 +58,7 @@ class FriendProfileScreen extends StatelessWidget {
             spacing: 8.w,
             children: [
               StreakBadge(days: user.currentStreak),
-              const Pill(text: 'Top scorer', icon: Icons.emoji_events_outlined),
+              Pill(text: l10n.topScorer, icon: Icons.emoji_events_outlined),
             ],
           ),
           SizedBox(height: 18.h),
@@ -73,23 +76,23 @@ class FriendProfileScreen extends StatelessWidget {
                   childAspectRatio: compact ? 1.72 : 2.15,
                   children: [
                     StatCard(
-                      label: 'Streak',
+                      label: l10n.streak,
                       value: '${user.currentStreak}',
-                      sublabel: 'days',
+                      sublabel: l10n.historyDays,
                       icon: Icons.local_fire_department_rounded,
                       accentColor: AppColors.goldLight,
                       prominent: true,
                     ),
                     StatCard(
-                      label: 'Best',
+                      label: l10n.best,
                       value: '${user.bestStreak}',
-                      sublabel: 'days',
+                      sublabel: l10n.historyDays,
                       icon: Icons.workspace_premium_rounded,
                       accentColor: AppColors.goldPale,
                       prominent: true,
                     ),
                     StatCard(
-                      label: 'Today',
+                      label: l10n.today,
                       value: '${user.todayScore}',
                       sublabel: 'of 100',
                       icon: Icons.today_rounded,
@@ -97,9 +100,9 @@ class FriendProfileScreen extends StatelessWidget {
                       prominent: true,
                     ),
                     StatCard(
-                      label: 'This week',
+                      label: l10n.thisWeek,
                       value: '${user.weeklyScore}',
-                      sublabel: 'pts',
+                      sublabel: l10n.pointsAbbr,
                       icon: Icons.trending_up_rounded,
                       accentColor: AppColors.warning,
                       prominent: true,
@@ -110,11 +113,11 @@ class FriendProfileScreen extends StatelessWidget {
             },
           ),
           SizedBox(height: 18.h),
-          Text("Today's amal", style: AppTextStyles.headlineMedium(context)),
+          Text(l10n.todaysAmal, style: AppTextStyles.headlineMedium(context)),
           SizedBox(height: 8.h),
           _AmalGrid(user: user),
           SizedBox(height: 18.h),
-          Text('This week', style: AppTextStyles.headlineMedium(context)),
+          Text(l10n.thisWeek, style: AppTextStyles.headlineMedium(context)),
           SizedBox(height: 8.h),
           const _MiniWeekChart(),
           SizedBox(height: 18.h),
@@ -123,12 +126,12 @@ class FriendProfileScreen extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Dua sent (mock)')),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(l10n.duaSentMock)));
                   },
                   icon: Icon(Icons.favorite_outline, size: 16.r),
-                  label: const Text('Send Dua'),
+                  label: Text(l10n.sendDua),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.gold,
                     foregroundColor: AppColors.emeraldDeep,
@@ -145,7 +148,7 @@ class FriendProfileScreen extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () {},
                   icon: Icon(Icons.person_remove_outlined, size: 16.r),
-                  label: const Text('Remove'),
+                  label: Text(l10n.remove),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.danger,
                     side: BorderSide(
@@ -212,7 +215,9 @@ class _AmalGrid extends StatelessWidget {
               SizedBox(height: 2.h),
               Text(
                 kAmalShortLabels[field.id] ?? '',
-                style: AppTextStyles.bodySmall(context).copyWith(fontSize: 9.sp),
+                style: AppTextStyles.bodySmall(
+                  context,
+                ).copyWith(fontSize: 9.sp),
               ),
             ],
           ),
@@ -250,7 +255,9 @@ class _MiniWeekChart extends StatelessWidget {
                         SizedBox(height: 6.h),
                         Text(
                           b.label,
-                          style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
+                          style: AppTextStyles.bodySmall(
+                            context,
+                          ).copyWith(fontSize: 10.sp),
                         ),
                       ],
                     ),

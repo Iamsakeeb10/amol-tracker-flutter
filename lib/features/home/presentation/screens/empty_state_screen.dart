@@ -8,15 +8,17 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/mock/mock_data.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class EmptyStateScreen extends StatelessWidget {
   const EmptyStateScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppScaffold(
       appBar: AppBar(
-        title: Text('Welcome', style: AppTextStyles.headlineMedium(context)),
+        title: Text(l10n.welcome, style: AppTextStyles.headlineMedium(context)),
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(0, 0, 0, 24.h),
@@ -34,8 +36,10 @@ class EmptyStateScreen extends StatelessWidget {
                     ),
                     SizedBox(width: 6.w),
                     Text(
-                      'TODAY',
-                      style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+                      l10n.today,
+                      style: AppTextStyles.label(
+                        context,
+                      ).copyWith(color: AppColors.gold),
                     ),
                   ],
                 ),
@@ -47,10 +51,9 @@ class EmptyStateScreen extends StatelessWidget {
           SizedBox(height: 22.h),
           _EmptyBlock(
             icon: Icons.event_note_outlined,
-            title: 'No amal logged yet',
-            body:
-                "Today's a fresh start. Tick off your first amal — even one counts.",
-            ctaLabel: "Log today's amal",
+            title: l10n.noAmalLoggedYet,
+            body: l10n.freshStartMessage,
+            ctaLabel: l10n.logTodayAmal,
             onTap: () => context.go(AppRoutes.home),
           ),
           SizedBox(height: 18.h),
@@ -58,10 +61,9 @@ class EmptyStateScreen extends StatelessWidget {
           SizedBox(height: 18.h),
           _EmptyBlock(
             icon: Icons.public_rounded,
-            title: 'Join the community',
-            body:
-                'See today\'s community sheet and stay motivated with everyone\'s progress.',
-            ctaLabel: 'Open community',
+            title: l10n.joinCommunity,
+            body: l10n.joinCommunitySubtitle,
+            ctaLabel: l10n.openCommunity,
             onTap: () => context.go(AppRoutes.community),
           ),
         ],

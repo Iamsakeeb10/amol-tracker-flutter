@@ -12,12 +12,14 @@ import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/streak_badge.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class FriendsScreen extends StatelessWidget {
   const FriendsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
@@ -30,20 +32,23 @@ class FriendsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'FRIENDS',
-                      style: AppTextStyles.label(context).copyWith(
-                        color: AppColors.gold,
-                      ),
+                      l10n.friendsUpper,
+                      style: AppTextStyles.label(
+                        context,
+                      ).copyWith(color: AppColors.gold),
                     ),
                     SizedBox(height: 2.h),
-                    Text('Together', style: AppTextStyles.displayMedium(context)),
+                    Text(
+                      l10n.together,
+                      style: AppTextStyles.displayMedium(context),
+                    ),
                   ],
                 ),
               ),
               ElevatedButton.icon(
                 onPressed: () => context.push(AppRoutes.community),
                 icon: Icon(Icons.add, size: 16.r),
-                label: const Text('Invite'),
+                label: Text(l10n.invite),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.gold,
                   foregroundColor: AppColors.emeraldDeep,
@@ -56,7 +61,7 @@ class FriendsScreen extends StatelessWidget {
             ],
           ),
           SizedBox(height: 18.h),
-          const SectionHeader(title: 'ACTIVITY FEED'),
+          SectionHeader(title: l10n.activityFeed),
           ...kActivities.map(
             (a) => Padding(
               padding: EdgeInsets.only(bottom: 8.h),
@@ -65,13 +70,13 @@ class FriendsScreen extends StatelessWidget {
           ),
           SizedBox(height: 18.h),
           SectionHeader(
-            title: 'YOUR GROUP',
-            trailingText: 'MANAGE',
+            title: l10n.yourGroup,
+            trailingText: l10n.manage,
             onTrailingTap: () => context.push(AppRoutes.settings),
           ),
           _GroupCard(),
           SizedBox(height: 18.h),
-          const SectionHeader(title: 'FRIENDS'),
+          SectionHeader(title: l10n.friendsUpper),
           ...kFriends.map(
             (u) => Padding(
               padding: EdgeInsets.only(bottom: 8.h),
@@ -110,12 +115,16 @@ class _ActivityRow extends StatelessWidget {
               children: [
                 Text(
                   activity.text,
-                  style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 13.sp),
+                  style: AppTextStyles.bodyLarge(
+                    context,
+                  ).copyWith(fontSize: 13.sp),
                 ),
                 SizedBox(height: 2.h),
                 Text(
                   activity.time,
-                  style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
+                  style: AppTextStyles.bodySmall(
+                    context,
+                  ).copyWith(fontSize: 10.sp),
                 ),
               ],
             ),
@@ -126,10 +135,7 @@ class _ActivityRow extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.gold,
                 side: const BorderSide(color: AppColors.goldBorder),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 10.w,
-                  vertical: 6.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                 minimumSize: Size(0, 0),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 shape: RoundedRectangleBorder(
@@ -137,8 +143,10 @@ class _ActivityRow extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Send Dua',
-                style: AppTextStyles.pill(context).copyWith(color: AppColors.gold),
+                AppLocalizations.of(context)!.sendDua,
+                style: AppTextStyles.pill(
+                  context,
+                ).copyWith(color: AppColors.gold),
               ),
             ),
         ],
@@ -165,12 +173,19 @@ class _GroupCard extends StatelessWidget {
                   children: [
                     Text(
                       kGroup.name,
-                      style: AppTextStyles.headlineLarge(context).copyWith(fontSize: 18.sp),
+                      style: AppTextStyles.headlineLarge(
+                        context,
+                      ).copyWith(fontSize: 18.sp),
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      '${kGroup.memberCount} brothers · ${kGroup.description}',
-                      style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+                      AppLocalizations.of(context)!.groupMembersDesc(
+                        kGroup.memberCount,
+                        kGroup.description,
+                      ),
+                      style: AppTextStyles.bodySmall(
+                        context,
+                      ).copyWith(fontSize: 11.sp),
                     ),
                   ],
                 ),
@@ -189,8 +204,10 @@ class _GroupCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                'View sheet →',
-                style: AppTextStyles.button(context).copyWith(color: AppColors.gold),
+                AppLocalizations.of(context)!.viewSheetArrow,
+                style: AppTextStyles.button(
+                  context,
+                ).copyWith(color: AppColors.gold),
               ),
             ],
           ),
@@ -219,10 +236,9 @@ class _FriendCard extends StatelessWidget {
               children: [
                 Text(
                   user.name,
-                  style: AppTextStyles.bodyLarge(context).copyWith(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: AppTextStyles.bodyLarge(
+                    context,
+                  ).copyWith(fontSize: 14.sp, fontWeight: FontWeight.w500),
                 ),
                 SizedBox(height: 4.h),
                 ScoreBar(value: user.todayScore / 100, height: 4),
@@ -231,13 +247,13 @@ class _FriendCard extends StatelessWidget {
           ),
           SizedBox(width: 10.w),
           Pill(
-            text: user.doneToday ? 'done' : 'pending',
+            text: user.doneToday
+                ? AppLocalizations.of(context)!.done
+                : AppLocalizations.of(context)!.pending,
             color: user.doneToday
                 ? AppColors.successLight
                 : AppColors.cardBorder,
-            textColor: user.doneToday
-                ? AppColors.success
-                : AppColors.textMuted,
+            textColor: user.doneToday ? AppColors.success : AppColors.textMuted,
           ),
           SizedBox(width: 8.w),
           Text(

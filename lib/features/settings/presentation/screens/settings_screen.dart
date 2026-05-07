@@ -7,11 +7,13 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/locale_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/toggle_row.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -35,19 +37,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _confirmSignOut() async {
+    final l10n = AppLocalizations.of(context)!;
     final shouldSignOut = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sign out'),
-        content: const Text('Are you sure you want to sign out?'),
+        title: Text(l10n.signOutTitle),
+        content: Text(l10n.signOutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Sign out'),
+            child: Text(l10n.signOut),
           ),
         ],
       ),
@@ -60,9 +63,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final prefs = ref.watch(notificationPrefsProvider);
     final prefsNotifier = ref.read(notificationPrefsProvider.notifier);
     final me = ref.watch(currentUserProvider).asData?.value;
+    final locale = ref.watch(localeProvider);
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -70,51 +75,54 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           onPressed: () =>
               context.canPop() ? context.pop() : context.go('/more'),
         ),
-        title: Text('Settings', style: AppTextStyles.headlineMedium(context)),
+        title: Text(
+          l10n.settings,
+          style: AppTextStyles.headlineMedium(context),
+        ),
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
         children: [
-          const SectionHeader(title: 'NOTIFICATIONS'),
+          SectionHeader(title: l10n.notificationsSection),
           CardContainer(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
             child: Column(
               children: [
                 ToggleRow(
                   icon: Icons.notifications_active_outlined,
-                  title: 'Morning notification',
-                  subtitle: '06:00 each morning',
+                  title: l10n.morningNotification,
+                  subtitle: l10n.morningNotificationTime,
                   value: prefs.morningEnabled,
                   onChanged: (v) => prefsNotifier.setMorningEnabled(v),
                 ),
                 const Divider(),
                 ToggleRow(
                   icon: Icons.wb_twighlight,
-                  title: 'Evening notification',
-                  subtitle: '06:30 each evening',
+                  title: l10n.eveningNotification,
+                  subtitle: l10n.eveningNotificationTime,
                   value: prefs.eveningEnabled,
                   onChanged: (v) => prefsNotifier.setEveningEnabled(v),
                 ),
                 const Divider(),
                 ToggleRow(
                   icon: Icons.local_fire_department_outlined,
-                  title: 'Streak warning',
-                  subtitle: 'When you risk losing your streak',
+                  title: l10n.streakWarning,
+                  subtitle: l10n.streakWarningSubtitle,
                   value: prefs.streakEnabled,
                   onChanged: (v) => prefsNotifier.setStreakEnabled(v),
                 ),
                 const Divider(),
                 ToggleRow(
                   icon: Icons.group_outlined,
-                  title: 'Community activity',
-                  subtitle: 'Push updates from community',
+                  title: l10n.communityActivity,
+                  subtitle: l10n.communityActivitySubtitle,
                   value: prefs.communityEnabled,
                   onChanged: (v) => prefsNotifier.setCommunityEnabled(v),
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.do_not_disturb_on_outlined,
-                  title: 'Quiet hours',
+                  title: l10n.quietHours,
                   trailing: prefsNotifier.quietHoursLabel,
                   onTap: () => context.push(AppRoutes.quietHours),
                 ),
@@ -122,22 +130,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          const SectionHeader(title: 'PRIVACY'),
+          SectionHeader(title: l10n.privacySection),
           CardContainer(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
             child: Column(
               children: [
                 ToggleRow(
                   icon: Icons.leaderboard_outlined,
-                  title: 'Show me on leaderboard',
+                  title: l10n.showOnLeaderboard,
                   value: _showInLeaderboard,
                   onChanged: (v) => setState(() => _showInLeaderboard = v),
                 ),
                 const Divider(),
                 ToggleRow(
                   icon: Icons.visibility_outlined,
-                  title: 'Show as anonymous in community',
-                  subtitle: 'Hide your real name and photo',
+                  title: l10n.showAnonymous,
+                  subtitle: l10n.showAnonymousSubtitle,
                   value: me?.isAnonymousDisplay ?? _anonymousDisplay,
                   onChanged: _setAnonymous,
                 ),
@@ -145,29 +153,77 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          const SectionHeader(title: 'APP'),
+          SectionHeader(title: l10n.languageSection),
+          CardContainer(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+            child: Column(
+              children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.language_outlined, size: 20.r),
+                  title: Text(
+                    l10n.english,
+                    style: AppTextStyles.bodyLarge(context),
+                  ),
+                  trailing: Icon(
+                    locale.languageCode == 'en'
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                    color: locale.languageCode == 'en'
+                        ? AppColors.gold
+                        : AppColors.textMuted,
+                  ),
+                  onTap: () => ref
+                      .read(localeProvider.notifier)
+                      .setLocale(const Locale('en')),
+                ),
+                const Divider(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.language_outlined, size: 20.r),
+                  title: Text(
+                    l10n.bangla,
+                    style: AppTextStyles.bodyLarge(context),
+                  ),
+                  trailing: Icon(
+                    locale.languageCode == 'bn'
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                    color: locale.languageCode == 'bn'
+                        ? AppColors.gold
+                        : AppColors.textMuted,
+                  ),
+                  onTap: () => ref
+                      .read(localeProvider.notifier)
+                      .setLocale(const Locale('bn')),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16.h),
+          SectionHeader(title: l10n.appSection),
           CardContainer(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
             child: Column(
               children: [
                 NavRow(
                   icon: Icons.calendar_view_month_outlined,
-                  title: 'Calendar type',
-                  trailing: 'Hijri',
+                  title: l10n.calendarType,
+                  trailing: l10n.hijri,
                   onTap: () {},
                 ),
                 const Divider(),
                 ToggleRow(
                   icon: Icons.brightness_2_outlined,
-                  title: 'Ramadan mode',
-                  subtitle: 'Adjust schedule and notifications',
+                  title: l10n.ramadanMode,
+                  subtitle: l10n.ramadanModeSubtitle,
                   value: _ramadanMode,
                   onChanged: (v) => setState(() => _ramadanMode = v),
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.logout_rounded,
-                  title: 'Sign out',
+                  title: l10n.signOut,
                   destructiveColor: AppColors.danger,
                   onTap: _confirmSignOut,
                 ),

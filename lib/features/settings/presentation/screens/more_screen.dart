@@ -14,6 +14,7 @@ import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 import '../../../../shared/widgets/toggle_row.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
@@ -26,6 +27,7 @@ class MoreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final notifications = ref.watch(notificationsProvider).asData?.value;
     final user = ref.watch(currentUserProvider).asData?.value;
     final prefs = ref.watch(notificationPrefsProvider);
@@ -33,7 +35,7 @@ class MoreScreen extends ConsumerWidget {
     final quietHoursLabel =
         '${_formatTime(prefs.quietFrom)} — ${_formatTime(prefs.quietTo)}';
     final rawName = user?.name ?? '';
-    final displayName = rawName.trim().isEmpty ? 'Profile' : rawName.trim();
+    final displayName = rawName.trim().isEmpty ? l10n.profile : rawName.trim();
     final initial = displayName.substring(0, 1).toUpperCase();
     final streak = user?.currentStreak ?? 0;
     return AppScaffold(
@@ -48,14 +50,14 @@ class MoreScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'MORE',
+                      l10n.more,
                       style: AppTextStyles.label(
                         context,
                       ).copyWith(color: AppColors.gold),
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      'Account',
+                      l10n.account,
                       style: AppTextStyles.displayMedium(context),
                     ),
                   ],
@@ -65,7 +67,7 @@ class MoreScreen extends ConsumerWidget {
                 onPressed: () => context.push(AppRoutes.dev),
                 icon: Icon(Icons.bug_report_outlined, size: 22.r),
                 color: AppColors.textMuted,
-                tooltip: 'Dev menu',
+                tooltip: l10n.devMenu,
               ),
             ],
           ),
@@ -94,7 +96,7 @@ class MoreScreen extends ConsumerWidget {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        'View profile',
+                        l10n.viewProfile,
                         style: AppTextStyles.bodySmall(
                           context,
                         ).copyWith(fontSize: 11.sp),
@@ -107,48 +109,48 @@ class MoreScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(height: 18.h),
-          const SectionHeader(title: 'EXPLORE'),
+          SectionHeader(title: l10n.exploreSection),
           CardContainer(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             child: Column(
               children: [
                 NavRow(
                   icon: Icons.leaderboard_outlined,
-                  title: 'Leaderboard',
-                  trailing: 'Weekly',
+                  title: l10n.leaderboard,
+                  trailing: l10n.weekly,
                   onTap: () => context.push(AppRoutes.leaderboard),
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.notifications_outlined,
-                  title: 'Notifications',
+                  title: l10n.notifications,
                   trailing: unread == 0 ? null : '$unread',
                   onTap: () => context.push(AppRoutes.notifications),
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.person_outline,
-                  title: 'Profile & badges',
+                  title: l10n.profileAndBadges,
                   onTap: () => context.push(AppRoutes.profile),
                 ),
               ],
             ),
           ),
           SizedBox(height: 18.h),
-          const SectionHeader(title: 'PREFERENCES'),
+          SectionHeader(title: l10n.preferencesSection),
           CardContainer(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             child: Column(
               children: [
                 NavRow(
                   icon: Icons.tune_rounded,
-                  title: 'Settings',
+                  title: l10n.settings,
                   onTap: () => context.push(AppRoutes.settings),
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.do_not_disturb_on_outlined,
-                  title: 'Quiet hours',
+                  title: l10n.quietHours,
                   trailing: quietHoursLabel,
                   onTap: () => context.push(AppRoutes.quietHours),
                 ),
@@ -156,20 +158,20 @@ class MoreScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(height: 18.h),
-          const SectionHeader(title: 'EMPTY / DEV'),
+          SectionHeader(title: l10n.emptyDevSection),
           CardContainer(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             child: Column(
               children: [
                 NavRow(
                   icon: Icons.hourglass_empty,
-                  title: 'Empty state preview',
+                  title: l10n.emptyStatePreview,
                   onTap: () => context.push(AppRoutes.emptyState),
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.list_alt_rounded,
-                  title: 'Dev menu (all screens)',
+                  title: l10n.devMenuAllScreens,
                   onTap: () => context.push(AppRoutes.dev),
                 ),
               ],

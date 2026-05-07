@@ -20,6 +20,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/calendar_day_cell.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -70,7 +71,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final byDay = <int, AmalLogModel>{};
     for (final log in logs) {
       final segs = log.hijriDate.split('-');
-      if (segs.length == 3 && int.parse(segs[0]) == _hijriYear && int.parse(segs[1]) == _hijriMonth) {
+      if (segs.length == 3 &&
+          int.parse(segs[0]) == _hijriYear &&
+          int.parse(segs[1]) == _hijriMonth) {
         final d = int.parse(segs[2]);
         byDay[d] = log;
       }
@@ -89,7 +92,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       final log = byDay[d];
 
       if (key == todayStr) {
-        out.add(MockDay(day: d, score: log?.score ?? 0, state: DayCompletion.today));
+        out.add(
+          MockDay(day: d, score: log?.score ?? 0, state: DayCompletion.today),
+        );
         continue;
       }
 
@@ -112,9 +117,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     return out;
   }
 
-  ({String id, String label, int misses})? _weakestAmal(List<AmalLogModel> logs) {
+  ({String id, String label, int misses})? _weakestAmal(
+    List<AmalLogModel> logs,
+  ) {
     if (logs.isEmpty) return null;
-    final counts = <String, int>{for (final f in amal_const.kAmalFields) f.id: 0};
+    final counts = <String, int>{
+      for (final f in amal_const.kAmalFields) f.id: 0,
+    };
     for (final log in logs) {
       for (final f in amal_const.kAmalFields) {
         if (log.toggles[f.id] != true) {
@@ -137,6 +146,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authUser = ref.watch(authStateProvider).asData?.value;
     final userAsync = ref.watch(currentUserProvider);
     final user = userAsync.asData?.value;
@@ -171,15 +181,21 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           child: Padding(
             padding: EdgeInsets.all(24.r),
             child: Text(
-              'Could not load history.',
+              l10n.historyLoadFailed,
               style: AppTextStyles.bodyLarge(context),
             ),
           ),
         ),
         data: (logs) {
-          final days = _buildDays(logs: logs, todayStr: todayStr, daysInMonth: daysInMonth);
+          final days = _buildDays(
+            logs: logs,
+            todayStr: todayStr,
+            daysInMonth: daysInMonth,
+          );
           final logged50 = logs.where((l) => l.score >= 50).length;
-          final consistency = daysInMonth == 0 ? 0 : ((logged50 / daysInMonth) * 100).round();
+          final consistency = daysInMonth == 0
+              ? 0
+              : ((logged50 / daysInMonth) * 100).round();
           final avgScore = logs.isEmpty
               ? 0
               : logs.map((l) => l.score).reduce((a, b) => a + b) / logs.length;
@@ -195,10 +211,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'HISTORY',
-                          style: AppTextStyles.label(context).copyWith(
-                            color: AppColors.gold,
-                          ),
+                          l10n.history,
+                          style: AppTextStyles.label(
+                            context,
+                          ).copyWith(color: AppColors.gold),
                         ),
                         SizedBox(height: 2.h),
                         Text(
@@ -228,26 +244,30 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               ),
               SizedBox(height: 6.h),
               Text(
-                '$consistency% consistency',
-                style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.gold),
+                l10n.historyConsistency(consistency),
+                style: AppTextStyles.bodyMedium(
+                  context,
+                ).copyWith(color: AppColors.gold),
               ),
               SizedBox(height: 16.h),
               Row(
                 children: [
                   Expanded(
                     child: StatCard(
-                      label: 'Logged days',
+                      label: l10n.historyLoggedDays,
                       value: '${logs.length}',
-                      sublabel: 'of $daysInMonth days',
+                      sublabel: l10n.historyOfDays(daysInMonth),
                       icon: Icons.check_circle_outline,
                     ),
                   ),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: StatCard(
-                      label: 'Avg score',
+                      label: l10n.historyAvgScore,
                       value: logs.isEmpty ? '—' : avgScore.round().toString(),
-                      sublabel: logs.isEmpty ? 'no logs yet' : 'this month',
+                      sublabel: logs.isEmpty
+                          ? l10n.historyNoLogsYet
+                          : l10n.historyThisMonth,
                       icon: Icons.analytics_outlined,
                     ),
                   ),
@@ -255,9 +275,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               ),
               SizedBox(height: 12.h),
               StatCard(
-                label: 'Best streak',
+                label: l10n.historyBestStreak,
                 value: '${displayStreak.bestStreak}',
-                sublabel: 'days',
+                sublabel: l10n.historyDays,
                 icon: Icons.local_fire_department_outlined,
               ),
               SizedBox(height: 16.h),
@@ -267,11 +287,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   child: Text(
-                    'Start logging to build your history',
+                    l10n.historyStartLogging,
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.textMuted,
-                    ),
+                    style: AppTextStyles.bodyMedium(
+                      context,
+                    ).copyWith(color: AppColors.textMuted),
                   ),
                 ),
               GridView.builder(
@@ -323,7 +343,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Weakest amal',
+                              l10n.historyWeakestAmal,
                               style: AppTextStyles.bodyLarge(context).copyWith(
                                 fontSize: 13.sp,
                                 fontWeight: FontWeight.w500,
@@ -331,8 +351,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                             ),
                             SizedBox(height: 2.h),
                             Text(
-                              '${weakest.label} — missed ${weakest.misses} days this month',
-                              style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+                              l10n.historyWeakestAmalDetail(
+                                weakest.label,
+                                weakest.misses,
+                              ),
+                              style: AppTextStyles.bodySmall(
+                                context,
+                              ).copyWith(fontSize: 11.sp),
                             ),
                           ],
                         ),
@@ -361,9 +386,13 @@ class _HistorySkeleton extends StatelessWidget {
           SizedBox(height: 16.h),
           Row(
             children: [
-              Expanded(child: Container(height: 72.h, color: Colors.white)),
+              Expanded(
+                child: Container(height: 72.h, color: Colors.white),
+              ),
               SizedBox(width: 10.w),
-              Expanded(child: Container(height: 72.h, color: Colors.white)),
+              Expanded(
+                child: Container(height: 72.h, color: Colors.white),
+              ),
             ],
           ),
           SizedBox(height: 24.h),
@@ -402,9 +431,9 @@ class _DayLabels extends StatelessWidget {
               child: Text(
                 l,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.label(context).copyWith(
-                  color: AppColors.textMuted,
-                ),
+                style: AppTextStyles.label(
+                  context,
+                ).copyWith(color: AppColors.textMuted),
               ),
             ),
           )
@@ -417,10 +446,10 @@ class _Legend extends StatelessWidget {
   const _Legend();
 
   Widget _dot(Color color) => Container(
-        width: 10.r,
-        height: 10.r,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      );
+    width: 10.r,
+    height: 10.r,
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -428,15 +457,24 @@ class _Legend extends StatelessWidget {
       children: [
         _dot(AppColors.gold),
         SizedBox(width: 6.w),
-        Text('Full', style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp)),
+        Text(
+          AppLocalizations.of(context)!.historyFull,
+          style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+        ),
         SizedBox(width: 12.w),
         _dot(AppColors.warning),
         SizedBox(width: 6.w),
-        Text('Partial', style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp)),
+        Text(
+          AppLocalizations.of(context)!.historyPartial,
+          style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+        ),
         SizedBox(width: 12.w),
         _dot(AppColors.danger),
         SizedBox(width: 6.w),
-        Text('Miss', style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp)),
+        Text(
+          AppLocalizations.of(context)!.historyMiss,
+          style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+        ),
       ],
     );
   }

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../models/badge_model.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../l10n/app_localizations.dart';
 import 'card_container.dart';
 import 'score_bar.dart';
 
@@ -21,6 +22,9 @@ class BadgeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final localizedTitle = _titleFor(l10n);
+    final localizedDescription = _descriptionFor(l10n);
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact =
@@ -57,7 +61,7 @@ class BadgeTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      badge.title,
+                      localizedTitle,
                       style: AppTextStyles.bodyLarge(context).copyWith(
                         fontSize: (compact ? 12 : 13).sp,
                         fontWeight: FontWeight.w500,
@@ -71,10 +75,10 @@ class BadgeTile extends StatelessWidget {
                     SizedBox(height: 2.h),
                     Expanded(
                       child: Text(
-                        badge.description,
-                        style: AppTextStyles.bodySmall(context).copyWith(
-                          fontSize: (compact ? 10 : 11).sp,
-                        ),
+                        localizedDescription,
+                        style: AppTextStyles.bodySmall(
+                          context,
+                        ).copyWith(fontSize: (compact ? 10 : 11).sp),
                         maxLines: 4,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -85,10 +89,9 @@ class BadgeTile extends StatelessWidget {
                       SizedBox(height: (compact ? 3 : 4).h),
                       Text(
                         '${(progress * 100).toInt()}%',
-                        style: AppTextStyles.bodySmall(context).copyWith(
-                          fontSize: 10.sp,
-                          color: AppColors.gold,
-                        ),
+                        style: AppTextStyles.bodySmall(
+                          context,
+                        ).copyWith(fontSize: 10.sp, color: AppColors.gold),
                       ),
                     ],
                   ],
@@ -99,5 +102,51 @@ class BadgeTile extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _titleFor(AppLocalizations l10n) {
+    switch (badge.id) {
+      case 'threeDays':
+        return l10n.badgeThreeDaysTitle;
+      case 'sevenDays':
+        return l10n.badgeSevenDaysTitle;
+      case 'fourteenDays':
+        return l10n.badgeFourteenDaysTitle;
+      case 'thirtyDays':
+        return l10n.badgeThirtyDaysTitle;
+      case 'sixtyDays':
+        return l10n.badgeSixtyDaysTitle;
+      case 'hundredDays':
+        return l10n.badgeHundredDaysTitle;
+      case 'topOfCommunity':
+        return l10n.badgeTopCommunityTitle;
+      case 'perfectWeek':
+        return l10n.badgePerfectWeekTitle;
+      default:
+        return badge.title;
+    }
+  }
+
+  String _descriptionFor(AppLocalizations l10n) {
+    switch (badge.id) {
+      case 'threeDays':
+        return l10n.badgeThreeDaysDesc;
+      case 'sevenDays':
+        return l10n.badgeSevenDaysDesc;
+      case 'fourteenDays':
+        return l10n.badgeFourteenDaysDesc;
+      case 'thirtyDays':
+        return l10n.badgeThirtyDaysDesc;
+      case 'sixtyDays':
+        return l10n.badgeSixtyDaysDesc;
+      case 'hundredDays':
+        return l10n.badgeHundredDaysDesc;
+      case 'topOfCommunity':
+        return l10n.badgeTopCommunityDesc;
+      case 'perfectWeek':
+        return l10n.badgePerfectWeekDesc;
+      default:
+        return badge.description;
+    }
   }
 }

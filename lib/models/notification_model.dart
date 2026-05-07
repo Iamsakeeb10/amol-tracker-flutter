@@ -8,6 +8,7 @@ class NotificationModel {
     required this.isRead,
     required this.createdAt,
     this.senderUid,
+    this.senderName,
   });
 
   final String id;
@@ -16,6 +17,7 @@ class NotificationModel {
   final bool isRead;
   final DateTime createdAt;
   final String? senderUid;
+  final String? senderName;
 
   factory NotificationModel.fromDoc(
     DocumentSnapshot<Map<String, dynamic>> doc,
@@ -29,6 +31,7 @@ class NotificationModel {
       isRead: (data['isRead'] as bool?) ?? false,
       createdAt: createdAt is Timestamp ? createdAt.toDate() : DateTime.now(),
       senderUid: data['senderUid'] as String?,
+      senderName: data['senderName'] as String?,
     );
   }
 }

@@ -1,0 +1,835 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Bengali Bangla (`bn`).
+class AppLocalizationsBn extends AppLocalizations {
+  AppLocalizationsBn([String locale = 'bn']) : super(locale);
+
+  @override
+  String get appTitle => 'আমল ট্র্যাকার';
+
+  @override
+  String get settings => 'সেটিংস';
+
+  @override
+  String get notificationsSection => 'নোটিফিকেশন';
+
+  @override
+  String get privacySection => 'প্রাইভেসি';
+
+  @override
+  String get appSection => 'অ্যাপ';
+
+  @override
+  String get languageSection => 'ভাষা';
+
+  @override
+  String get language => 'ভাষা';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get bangla => 'বাংলা';
+
+  @override
+  String get morningNotification => 'সকালের নোটিফিকেশন';
+
+  @override
+  String get morningNotificationTime => 'প্রতি সকাল ০৬:০০';
+
+  @override
+  String get eveningNotification => 'সন্ধ্যার নোটিফিকেশন';
+
+  @override
+  String get eveningNotificationTime => 'প্রতি সন্ধ্যা ০৬:৩০';
+
+  @override
+  String get streakWarning => 'স্ট্রিক ওয়ার্নিং';
+
+  @override
+  String get streakWarningSubtitle => 'স্ট্রিক হারানোর আগে জানিয়ে দেবে';
+
+  @override
+  String get communityActivity => 'কমিউনিটি অ্যাক্টিভিটি';
+
+  @override
+  String get communityActivitySubtitle => 'কমিউনিটি থেকে আপডেট পাবেন';
+
+  @override
+  String get quietHours => 'কোয়ায়েট আওয়ার';
+
+  @override
+  String get showOnLeaderboard => 'আমাকে লিডারবোর্ডে দেখান';
+
+  @override
+  String get showAnonymous => 'কমিউনিটিতে অ্যানোনিমাস দেখান';
+
+  @override
+  String get showAnonymousSubtitle => 'আপনার নাম ও ছবি হাইড থাকবে';
+
+  @override
+  String get calendarType => 'ক্যালেন্ডারের ধরন';
+
+  @override
+  String get hijri => 'হিজরি';
+
+  @override
+  String get ramadanMode => 'রমাদান মোড';
+
+  @override
+  String get ramadanModeSubtitle => 'সিডিউল ও নোটিফিকেশন অ্যাডজাস্ট হবে';
+
+  @override
+  String get signOut => 'লগআউট';
+
+  @override
+  String get signOutTitle => 'লগআউট';
+
+  @override
+  String get signOutConfirm => 'আপনি কি নিশ্চিত লগআউট করতে চান?';
+
+  @override
+  String get cancel => 'ক্যানসেল';
+
+  @override
+  String get more => 'আরও';
+
+  @override
+  String get account => 'অ্যাকাউন্ট';
+
+  @override
+  String get devMenu => 'ডেভ মেনু';
+
+  @override
+  String get profile => 'প্রোফাইল';
+
+  @override
+  String get viewProfile => 'প্রোফাইল দেখুন';
+
+  @override
+  String get exploreSection => 'এক্সপ্লোর';
+
+  @override
+  String get leaderboard => 'লিডারবোর্ড';
+
+  @override
+  String get weekly => 'সাপ্তাহিক';
+
+  @override
+  String get notifications => 'নোটিফিকেশন';
+
+  @override
+  String get profileAndBadges => 'প্রোফাইল ও ব্যাজ';
+
+  @override
+  String get preferencesSection => 'প্রেফারেন্স';
+
+  @override
+  String get emptyDevSection => 'খালি / ডেভ';
+
+  @override
+  String get emptyStatePreview => 'এম্পটি স্টেট প্রিভিউ';
+
+  @override
+  String get devMenuAllScreens => 'ডেভ মেনু (সব স্ক্রিন)';
+
+  @override
+  String get quietHoursDescription =>
+      'এই সময়ে নোটিফিকেশন সাইলেন্ট থাকবে। তবে নোটিফিকেশন সিডিউল চলবে।';
+
+  @override
+  String get from => 'শুরু';
+
+  @override
+  String get to => 'শেষ';
+
+  @override
+  String silentFromTo(Object from, Object to) {
+    return '$from থেকে $to পর্যন্ত সাইলেন্ট';
+  }
+
+  @override
+  String hoursSilence(Object hours) {
+    return '$hours ঘণ্টা সাইলেন্ট';
+  }
+
+  @override
+  String hoursMinutesSilence(Object hours, Object minutes) {
+    return '$hours ঘন্টা $minutes মিনিট সাইলেন্ট';
+  }
+
+  @override
+  String get save => 'সেভ করুন';
+
+  @override
+  String get alerts => 'অ্যালার্ট';
+
+  @override
+  String get markAllRead => 'সবগুলো রিড';
+
+  @override
+  String get failedLoadNotifications => 'নোটিফিকেশন লোড করা যায়নি।';
+
+  @override
+  String get noNotificationsYet => 'এখনও কোনো নোটিফিকেশন নেই';
+
+  @override
+  String get justNow => 'এইমাত্র';
+
+  @override
+  String minutesAgo(Object minutes) {
+    return '$minutesমি আগে';
+  }
+
+  @override
+  String hoursAgo(Object hours) {
+    return '$hoursঘন্টা আগে';
+  }
+
+  @override
+  String daysAgo(Object days) {
+    return '$daysদিন আগে';
+  }
+
+  @override
+  String get welcome => 'স্বাগতম';
+
+  @override
+  String get today => 'আজ';
+
+  @override
+  String get noAmalLoggedYet => 'এখনও কোনো আমল লগ হয়নি';
+
+  @override
+  String get freshStartMessage =>
+      'আজ নতুন শুরু। প্রথম আমলটা টিক দিন - একটা হলেও হবে।';
+
+  @override
+  String get logTodayAmal => 'আজকের আমল লগ করুন';
+
+  @override
+  String get joinCommunity => 'কমিউনিটিতে যোগ দিন';
+
+  @override
+  String get joinCommunitySubtitle =>
+      'আজকের কমিউনিটি শিট দেখুন, সবার সাথে মোটিভেটেড থাকুন।';
+
+  @override
+  String get openCommunity => 'কমিউনিটি খুলুন';
+
+  @override
+  String get signInTagline => 'প্রতিদিনের আমল, একসাথে';
+
+  @override
+  String get continueWithGoogle => 'Google দিয়ে কন্টিনিউ';
+
+  @override
+  String get continueAsGuest => 'গেস্ট হিসেবে কন্টিনিউ';
+
+  @override
+  String get continueTerms =>
+      'কন্টিনিউ করলে আমাদের টার্মস ও প্রাইভেসিতে সম্মতি দিচ্ছেন।';
+
+  @override
+  String googleSignInFailed(Object error) {
+    return 'Google লগইন ব্যর্থ: $error';
+  }
+
+  @override
+  String guestSignInFailed(Object error) {
+    return 'গেস্ট লগইন ব্যর্থ: $error';
+  }
+
+  @override
+  String get skip => 'স্কিপ';
+
+  @override
+  String get pleaseWait => 'একটু অপেক্ষা করুন...';
+
+  @override
+  String get getStarted => 'শুরু করুন';
+
+  @override
+  String get next => 'পরেরটা';
+
+  @override
+  String get buildDailyHabitTitle => 'প্রতিদিনের অভ্যাস গড়ে তুলুন';
+
+  @override
+  String get buildDailyHabitBody =>
+      '৯টি দৈনিক আমল ট্র্যাক করুন - ফরজ, সুন্নাহ, আযকার, কুরআন। ছোট ছোট ধারাবাহিক স্টেপ।';
+
+  @override
+  String get streaksKeepYouGoingTitle => 'স্ট্রিক আপনাকে চালিয়ে রাখবে';
+
+  @override
+  String get streaksKeepYouGoingBody =>
+      'চেইন ভাঙবেন না। ৭, ৩০, ১০০ দিন পূর্ণ করুন - নেকি অর্জন করুন।';
+
+  @override
+  String get setupProfileTitle => 'প্রোফাইল সেটআপ করুন';
+
+  @override
+  String get setupProfileBody =>
+      'কমিউনিটিতে যোগ দেওয়ার আগে নাম আর প্রাইভেসি সেট করুন।';
+
+  @override
+  String get starter => 'স্টার্টার';
+
+  @override
+  String get habit => 'হ্যাবিট';
+
+  @override
+  String get devoted => 'ডিভোটেড';
+
+  @override
+  String get displayName => 'ডিসপ্লে নাম';
+
+  @override
+  String get yourName => 'আপনার নাম';
+
+  @override
+  String get showAnonymousCommunity => 'কমিউনিটিতে অ্যানোনিমাস দেখান';
+
+  @override
+  String get notificationsEnabled => 'নোটিফিকেশন চালু হয়েছে';
+
+  @override
+  String get allowNotifications => 'নোটিফিকেশন অ্যালাও করুন';
+
+  @override
+  String onboardingFailed(Object error) {
+    return 'অনবোর্ডিং সম্পন্ন করা যায়নি: $error';
+  }
+
+  @override
+  String get anonymous => 'Anonymous';
+
+  @override
+  String get user => 'User';
+
+  @override
+  String get daily => 'দৈনিক';
+
+  @override
+  String get streak => 'স্ট্রিক';
+
+  @override
+  String get historyDays => 'দিন';
+
+  @override
+  String get pointsAbbr => 'পয়েন্ট';
+
+  @override
+  String get you => 'আপনি';
+
+  @override
+  String get leaderboardBeFirstToday => 'আজ প্রথম লগটা আপনিই দিন!';
+
+  @override
+  String leaderboardYourRank(Object rank, Object score, Object stat) {
+    return 'আপনার র‍্যাঙ্ক: #$rank · $score $stat';
+  }
+
+  @override
+  String get leaderboardLoadFailed =>
+      'এই মুহূর্তে লিডারবোর্ড লোড করা যাচ্ছে না।';
+
+  @override
+  String get leaderboardNudgeKeepClimbing =>
+      'চালিয়ে যান - প্রতিটি আমল গুরুত্বপূর্ণ।';
+
+  @override
+  String get leaderboardNudgeTop => 'আপনি টপে আছেন - ধারাবাহিক থাকুন।';
+
+  @override
+  String leaderboardNudgeBehindDays(Object behind) {
+    return '২য় স্থানের থেকে $behind দিন পিছিয়ে - স্ট্রিক ধরে রাখুন।';
+  }
+
+  @override
+  String leaderboardNudgeBehindPoints(Object behind) {
+    return '২য় স্থানের থেকে $behind পয়েন্ট পিছিয়ে - আজ লগ করে গ্যাপ কমান।';
+  }
+
+  @override
+  String get history => 'হিস্টোরি';
+
+  @override
+  String get historyLoadFailed => 'হিস্টোরি লোড করা যায়নি।';
+
+  @override
+  String historyConsistency(Object value) {
+    return '$value% কনসিস্টেন্সি';
+  }
+
+  @override
+  String get historyLoggedDays => 'লগ করা দিন';
+
+  @override
+  String historyOfDays(Object days) {
+    return 'মোট $days দিনের মধ্যে';
+  }
+
+  @override
+  String get historyAvgScore => 'গড় স্কোর';
+
+  @override
+  String get historyNoLogsYet => 'এখনও লগ নেই';
+
+  @override
+  String get historyThisMonth => 'এই মাসে';
+
+  @override
+  String get historyBestStreak => 'সেরা স্ট্রিক';
+
+  @override
+  String get historyStartLogging => 'হিস্টোরি তৈরি করতে আজ থেকে লগ শুরু করুন';
+
+  @override
+  String get historyWeakestAmal => 'সবচেয়ে দুর্বল আমল';
+
+  @override
+  String historyWeakestAmalDetail(Object label, Object days) {
+    return '$label - এই মাসে $days দিন মিস হয়েছে';
+  }
+
+  @override
+  String get historyFull => 'পূর্ণ';
+
+  @override
+  String get historyPartial => 'আংশিক';
+
+  @override
+  String get historyMiss => 'মিস';
+
+  @override
+  String get dayDetailTitle => 'দিনের বিস্তারিত';
+
+  @override
+  String get dayDetailLoadFailed => 'এই দিনের তথ্য লোড করা যায়নি।';
+
+  @override
+  String get readOnly => 'শুধু দেখুন';
+
+  @override
+  String get score => 'স্কোর';
+
+  @override
+  String get outOf100 => '১০০ এর মধ্যে';
+
+  @override
+  String get dayDetailStreakThatDay => 'সেদিনের স্ট্রিক';
+
+  @override
+  String get dayDetailNotStored => 'সংরক্ষিত নেই';
+
+  @override
+  String get amal => 'আমল';
+
+  @override
+  String get dayDetailNoLogForDay => 'এই হিজরি দিনের জন্য কোনো লগ সাবমিট হয়নি।';
+
+  @override
+  String get dayDetailLockedPastDays => 'লকড - আগের দিনগুলো এডিট করা যাবে না।';
+
+  @override
+  String memberSince(Object year) {
+    return '$year সাল থেকে মেম্বার';
+  }
+
+  @override
+  String get best => 'সেরা';
+
+  @override
+  String get avg => 'গড়';
+
+  @override
+  String get thisWeek => 'এই সপ্তাহ';
+
+  @override
+  String get anonymousEnabled => 'অ্যানোনিমাস চালু';
+
+  @override
+  String get realNameVisible => 'আসল নাম দেখা যাচ্ছে';
+
+  @override
+  String get badges => 'ব্যাজ';
+
+  @override
+  String get communityUpper => 'কমিউনিটি';
+
+  @override
+  String get community => 'কমিউনিটি';
+
+  @override
+  String get sheet => 'শিট';
+
+  @override
+  String get feed => 'ফিড';
+
+  @override
+  String get offlineShowingLatest => 'অফলাইন - সর্বশেষ ডেটা দেখানো হচ্ছে।';
+
+  @override
+  String get date => 'তারিখ';
+
+  @override
+  String get searchByName => 'নাম দিয়ে সার্চ করুন';
+
+  @override
+  String get logTodayToAppear => 'এখানে দেখাতে আজ লগ করুন';
+
+  @override
+  String get noLogsForDay => 'এই দিনে কোনো লগ পাওয়া যায়নি';
+
+  @override
+  String get noMoreRows => 'আর কোনো রো নেই';
+
+  @override
+  String get unableLoadActivityFeed => 'অ্যাক্টিভিটি ফিড লোড করা যায়নি।';
+
+  @override
+  String get noActivityYet =>
+      'এখনও কোনো অ্যাক্টিভিটি নেই। কমিউনিটি আপডেট এখানে দেখাবে।';
+
+  @override
+  String get userProfile => 'ইউজার প্রোফাইল';
+
+  @override
+  String get profileUnavailable => 'এই প্রোফাইলটি পাওয়া যাচ্ছে না।';
+
+  @override
+  String get communityMember => 'কমিউনিটি মেম্বার';
+
+  @override
+  String get selected => 'সিলেক্টেড';
+
+  @override
+  String get todaysAmal => 'আজকের আমল';
+
+  @override
+  String amalOnDate(Object date) {
+    return '$date তারিখের আমল';
+  }
+
+  @override
+  String get last7Days => 'শেষ ৭ দিন';
+
+  @override
+  String get profileSettings => 'প্রোফাইল সেটিংস';
+
+  @override
+  String get saving => 'সেভ হচ্ছে...';
+
+  @override
+  String get saveProfile => 'প্রোফাইল সেভ করুন';
+
+  @override
+  String get sending => 'পাঠানো হচ্ছে...';
+
+  @override
+  String get sendDua => 'দোয়া পাঠান';
+
+  @override
+  String get alreadySentDuaToday => 'আজকে আপনি ইতিমধ্যে দোয়া পাঠিয়েছেন';
+
+  @override
+  String get communityMemberSentDua =>
+      'কমিউনিটি থেকে কেউ আপনাকে দোয়া পাঠিয়েছে 🤲';
+
+  @override
+  String duaFromSender(Object name) {
+    return '$name আপনাকে দোয়া পাঠিয়েছেন 🤲';
+  }
+
+  @override
+  String get duaSent => 'দোয়া পাঠানো হয়েছে ✓';
+
+  @override
+  String get noRecentLogs => 'সাম্প্রতিক কোনো লগ নেই।';
+
+  @override
+  String get friendsUpper => 'ফ্রেন্ডস';
+
+  @override
+  String get together => 'একসাথে';
+
+  @override
+  String get invite => 'ইনভাইট';
+
+  @override
+  String get activityFeed => 'অ্যাক্টিভিটি ফিড';
+
+  @override
+  String get yourGroup => 'আপনার গ্রুপ';
+
+  @override
+  String get manage => 'ম্যানেজ';
+
+  @override
+  String groupMembersDesc(Object count, Object desc) {
+    return '$count জন ভাই · $desc';
+  }
+
+  @override
+  String get viewSheetArrow => 'শিট দেখুন →';
+
+  @override
+  String get done => 'সম্পন্ন';
+
+  @override
+  String get pending => 'অপেক্ষমাণ';
+
+  @override
+  String get inviteAndJoin => 'ইনভাইট ও জয়েন';
+
+  @override
+  String get yourInviteCode => 'আপনার ইনভাইট কোড';
+
+  @override
+  String get inviteCodeValid => 'ভ্যালিড · ৫ জন ভাই জয়েন করতে পারবেন';
+
+  @override
+  String get inviteCodeCopied => 'ইনভাইট কোড কপি হয়েছে';
+
+  @override
+  String get copyCode => 'কোড কপি';
+
+  @override
+  String get shareLink => 'লিংক শেয়ার';
+
+  @override
+  String get joinGroupUpper => 'গ্রুপে জয়েন করুন';
+
+  @override
+  String get enterInviteCode => 'ইনভাইট কোড লিখুন';
+
+  @override
+  String get joinedMock => 'জয়েন হয়েছে (মক)';
+
+  @override
+  String get joinGroup => 'গ্রুপে জয়েন করুন';
+
+  @override
+  String get friend => 'ফ্রেন্ড';
+
+  @override
+  String get topScorer => 'টপ স্কোরার';
+
+  @override
+  String get duaSentMock => 'দোয়া পাঠানো হয়েছে (মক)';
+
+  @override
+  String get remove => 'রিমুভ';
+
+  @override
+  String get group => 'গ্রুপ';
+
+  @override
+  String get admin => 'অ্যাডমিন';
+
+  @override
+  String get inviteCodeUpper => 'ইনভাইট কোড';
+
+  @override
+  String get copy => 'কপি';
+
+  @override
+  String get share => 'শেয়ার';
+
+  @override
+  String get refresh => 'রিফ্রেশ';
+
+  @override
+  String get members => 'মেম্বারস';
+
+  @override
+  String get groupSettings => 'গ্রুপ সেটিংস';
+
+  @override
+  String get publicLeaderboard => 'পাবলিক লিডারবোর্ড';
+
+  @override
+  String get publicLeaderboardSubtitle => 'সব মেম্বার র‍্যাঙ্ক দেখতে পারবে';
+
+  @override
+  String get quietHoursActive => 'কোয়ায়েট আওয়ার চালু';
+
+  @override
+  String get quietHoursActiveSubtitle => 'রাতে নোটিফিকেশন মিউট থাকবে';
+
+  @override
+  String get deleteGroup => 'গ্রুপ ডিলিট';
+
+  @override
+  String get deleteThisGroup => 'এই গ্রুপ ডিলিট করবেন?';
+
+  @override
+  String get deleteGroupWarning =>
+      'সব মেম্বার অ্যাক্সেস হারাবে। এটা আর ফেরানো যাবে না।';
+
+  @override
+  String get delete => 'ডিলিট';
+
+  @override
+  String dayStreak(Object days) {
+    return '$days দিনের স্ট্রিক';
+  }
+
+  @override
+  String get groupSheet => 'গ্রুপ শিট';
+
+  @override
+  String allActiveToday(Object count) {
+    return 'আজ $count জন অ্যাক্টিভ';
+  }
+
+  @override
+  String get groupStreak => 'গ্রুপ স্ট্রিক';
+
+  @override
+  String get groupAvg => 'গ্রুপ গড়';
+
+  @override
+  String get memberUpper => 'মেম্বার';
+
+  @override
+  String get numericLegend => 'সংখ্যা (ফরজ, তাকবির)';
+
+  @override
+  String get homeOfflineSyncMessage =>
+      'অফলাইন - আপনার লগ এই ডিভাইসে সেভ থাকবে, ইন্টারনেট এলে অটো সিঙ্ক হবে।';
+
+  @override
+  String get loggedToday => 'আজ লগ করা হয়েছে ✓';
+
+  @override
+  String get markAllDone => 'সবগুলো সম্পন্ন';
+
+  @override
+  String get submitTodaysLog => 'আজকের লগ সাবমিট করুন';
+
+  @override
+  String get welcomeUpper => 'স্বাগতম';
+
+  @override
+  String get firstAmalStartsToday => 'আপনার প্রথম আমল আজ থেকেই শুরু।';
+
+  @override
+  String get onFire => 'দারুণ চলছে';
+
+  @override
+  String bestStreakKeepGoing(Object days) {
+    return 'সেরা: $days দিন · চালিয়ে যান';
+  }
+
+  @override
+  String get todaysProgress => 'আজকের প্রগ্রেস';
+
+  @override
+  String scoreOutOfPoints(Object score, Object max) {
+    return '$score / $max পয়েন্ট';
+  }
+
+  @override
+  String get outOf100Compact => '/১০০';
+
+  @override
+  String get weekdayMon => 'সো';
+
+  @override
+  String get weekdayTue => 'ম';
+
+  @override
+  String get weekdayWed => 'মং';
+
+  @override
+  String get weekdayThu => 'বু';
+
+  @override
+  String get weekdayFri => 'বৃ';
+
+  @override
+  String get weekdaySat => 'শু';
+
+  @override
+  String get weekdaySun => 'শ';
+
+  @override
+  String get dayCompleteSubtitle => 'আজকের আমল সফলভাবে সম্পন্ন করেছেন।';
+
+  @override
+  String pointsEarned(Object points) {
+    return '+$points পয়েন্ট অর্জন';
+  }
+
+  @override
+  String get hadithOfDay => 'আজকের হাদিস';
+
+  @override
+  String get todaysSummary => 'আজকের সারাংশ';
+
+  @override
+  String get backToHome => 'হোমে ফিরে যান';
+
+  @override
+  String pointsValue(Object points) {
+    return '$points পয়েন্ট';
+  }
+
+  @override
+  String get tapScreenToJump => 'স্ক্রিনে ট্যাপ করে দ্রুত যান (UI টেস্টিং)';
+
+  @override
+  String get badgeThreeDaysTitle => '৩ দিনের স্ট্রিক';
+
+  @override
+  String get badgeThreeDaysDesc => 'টানা ৩ দিন আমল সম্পন্ন করুন।';
+
+  @override
+  String get badgeSevenDaysTitle => '৭ দিনের স্ট্রিক';
+
+  @override
+  String get badgeSevenDaysDesc => 'টানা ৭ দিন আমল সম্পন্ন করুন।';
+
+  @override
+  String get badgeFourteenDaysTitle => '১৪ দিনের স্ট্রিক';
+
+  @override
+  String get badgeFourteenDaysDesc => 'টানা ১৪ দিন আমল সম্পন্ন করুন।';
+
+  @override
+  String get badgeThirtyDaysTitle => '৩০ দিনের স্ট্রিক';
+
+  @override
+  String get badgeThirtyDaysDesc => 'টানা ৩০ দিন আমল সম্পন্ন করুন।';
+
+  @override
+  String get badgeSixtyDaysTitle => '৬০ দিনের স্ট্রিক';
+
+  @override
+  String get badgeSixtyDaysDesc => 'টানা ৬০ দিন আমল সম্পন্ন করুন।';
+
+  @override
+  String get badgeHundredDaysTitle => '১০০ দিনের স্ট্রিক';
+
+  @override
+  String get badgeHundredDaysDesc => 'টানা ১০০ দিন আমল সম্পন্ন করুন।';
+
+  @override
+  String get badgeTopCommunityTitle => 'কমিউনিটির টপ';
+
+  @override
+  String get badgeTopCommunityDesc => 'গ্লোবাল সাপ্তাহিক লিডারবোর্ডে #১ হন।';
+
+  @override
+  String get badgePerfectWeekTitle => 'পারফেক্ট সপ্তাহ';
+
+  @override
+  String get badgePerfectWeekDesc => 'টানা ৭ দিন ৮০+ স্কোর করুন।';
+}

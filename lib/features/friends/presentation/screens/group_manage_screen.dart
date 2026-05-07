@@ -12,6 +12,7 @@ import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 import '../../../../shared/widgets/toggle_row.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class GroupManageScreen extends StatefulWidget {
   const GroupManageScreen({super.key});
@@ -26,18 +27,20 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: 22.r),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/friends'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/friends'),
         ),
         title: Row(
           children: [
-            Text('Group', style: AppTextStyles.headlineMedium(context)),
+            Text(l10n.group, style: AppTextStyles.headlineMedium(context)),
             SizedBox(width: 8.w),
-            const Pill(
-              text: 'admin',
+            Pill(
+              text: l10n.admin,
               color: AppColors.goldCard,
               textColor: AppColors.gold,
             ),
@@ -47,14 +50,11 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
       body: ListView(
         padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
         children: [
-          Text(
-            kGroup.name,
-            style: AppTextStyles.displayMedium(context),
-          ),
+          Text(kGroup.name, style: AppTextStyles.displayMedium(context)),
           SizedBox(height: 4.h),
           Text(kGroup.description, style: AppTextStyles.bodyMedium(context)),
           SizedBox(height: 18.h),
-          const SectionHeader(title: 'INVITE CODE'),
+          SectionHeader(title: l10n.inviteCodeUpper),
           CardContainer.gold(
             child: Column(
               children: [
@@ -72,7 +72,7 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
                   children: [
                     _IconAction(
                       icon: Icons.copy_rounded,
-                      label: 'Copy',
+                      label: l10n.copy,
                       onTap: () => Clipboard.setData(
                         ClipboardData(text: kGroup.inviteCode),
                       ),
@@ -80,13 +80,13 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
                     SizedBox(width: 12.w),
                     _IconAction(
                       icon: Icons.share_rounded,
-                      label: 'Share',
+                      label: l10n.share,
                       onTap: () {},
                     ),
                     SizedBox(width: 12.w),
                     _IconAction(
                       icon: Icons.refresh_rounded,
-                      label: 'Refresh',
+                      label: l10n.refresh,
                       onTap: () {},
                     ),
                   ],
@@ -95,29 +95,31 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          const SectionHeader(title: 'MEMBERS'),
-          ...kGroup.members.map((m) => Padding(
-                padding: EdgeInsets.only(bottom: 8.h),
-                child: _MemberRow(user: m),
-              )),
+          SectionHeader(title: l10n.members),
+          ...kGroup.members.map(
+            (m) => Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: _MemberRow(user: m),
+            ),
+          ),
           SizedBox(height: 16.h),
-          const SectionHeader(title: 'GROUP SETTINGS'),
+          SectionHeader(title: l10n.groupSettings),
           CardContainer(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
             child: Column(
               children: [
                 ToggleRow(
                   icon: Icons.leaderboard_outlined,
-                  title: 'Public leaderboard',
-                  subtitle: 'Show ranks to all members',
+                  title: l10n.publicLeaderboard,
+                  subtitle: l10n.publicLeaderboardSubtitle,
                   value: _publicLeaderboard,
                   onChanged: (v) => setState(() => _publicLeaderboard = v),
                 ),
                 const Divider(),
                 ToggleRow(
                   icon: Icons.do_not_disturb_on_outlined,
-                  title: 'Quiet hours active',
-                  subtitle: 'Mute notifications at night',
+                  title: l10n.quietHoursActive,
+                  subtitle: l10n.quietHoursActiveSubtitle,
                   value: _quietHoursActive,
                   onChanged: (v) => setState(() => _quietHoursActive = v),
                 ),
@@ -128,7 +130,7 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
           OutlinedButton.icon(
             onPressed: () => _confirmDelete(context),
             icon: Icon(Icons.delete_outline, size: 20.r),
-            label: const Text('Delete group'),
+            label: Text(l10n.deleteGroup),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.danger,
               side: BorderSide(color: AppColors.danger.withValues(alpha: 0.5)),
@@ -149,28 +151,30 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.emeraldMid,
         title: Text(
-          'Delete this group?',
+          AppLocalizations.of(context)!.deleteThisGroup,
           style: AppTextStyles.headlineMedium(context),
         ),
         content: Text(
-          'Members will lose access. This cannot be undone.',
+          AppLocalizations.of(context)!.deleteGroupWarning,
           style: AppTextStyles.bodyMedium(context),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Cancel',
-              style: AppTextStyles.button(context).copyWith(
-                color: AppColors.textSecondary,
-              ),
+              AppLocalizations.of(context)!.cancel,
+              style: AppTextStyles.button(
+                context,
+              ).copyWith(color: AppColors.textSecondary),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Delete',
-              style: AppTextStyles.button(context).copyWith(color: AppColors.danger),
+              AppLocalizations.of(context)!.delete,
+              style: AppTextStyles.button(
+                context,
+              ).copyWith(color: AppColors.danger),
             ),
           ),
         ],
@@ -203,10 +207,9 @@ class _IconAction extends StatelessWidget {
             SizedBox(height: 4.h),
             Text(
               label,
-              style: AppTextStyles.bodySmall(context).copyWith(
-                fontSize: 11.sp,
-                color: AppColors.gold,
-              ),
+              style: AppTextStyles.bodySmall(
+                context,
+              ).copyWith(fontSize: 11.sp, color: AppColors.gold),
             ),
           ],
         ),
@@ -236,12 +239,14 @@ class _MemberRow extends StatelessWidget {
                   children: [
                     Text(
                       user.name,
-                      style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 14.sp),
+                      style: AppTextStyles.bodyLarge(
+                        context,
+                      ).copyWith(fontSize: 14.sp),
                     ),
                     if (isYou) ...[
                       SizedBox(width: 6.w),
-                      const Pill(
-                        text: 'admin',
+                      Pill(
+                        text: AppLocalizations.of(context)!.admin,
                         color: AppColors.goldCard,
                         textColor: AppColors.gold,
                       ),
@@ -250,8 +255,10 @@ class _MemberRow extends StatelessWidget {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  '${user.currentStreak} day streak',
-                  style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+                  AppLocalizations.of(context)!.dayStreak(user.currentStreak),
+                  style: AppTextStyles.bodySmall(
+                    context,
+                  ).copyWith(fontSize: 11.sp),
                 ),
               ],
             ),
@@ -260,8 +267,10 @@ class _MemberRow extends StatelessWidget {
             TextButton(
               onPressed: () {},
               child: Text(
-                'Remove',
-                style: AppTextStyles.button(context).copyWith(color: AppColors.danger),
+                AppLocalizations.of(context)!.remove,
+                style: AppTextStyles.button(
+                  context,
+                ).copyWith(color: AppColors.danger),
               ),
             ),
         ],

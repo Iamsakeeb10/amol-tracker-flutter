@@ -297,7 +297,8 @@ class FirestoreService {
 
     final rows = grouped.values.toList()
       ..sort(
-        (a, b) => ((b['score'] as int?) ?? 0).compareTo((a['score'] as int?) ?? 0),
+        (a, b) =>
+            ((b['score'] as int?) ?? 0).compareTo((a['score'] as int?) ?? 0),
       );
     for (final row in rows) {
       row.remove('_latestSubmittedAt');
@@ -338,6 +339,7 @@ class FirestoreService {
 
   Future<void> sendDua({
     required String senderUid,
+    required String senderName,
     required String recipientUid,
     required String message,
     required String hijriDate,
@@ -348,7 +350,16 @@ class FirestoreService {
       'isRead': false,
       'createdAt': FieldValue.serverTimestamp(),
       'senderUid': senderUid,
+      'senderName': senderName,
       'hijriDate': hijriDate,
+    });
+
+    await _activityFeed.add(<String, dynamic>{
+      'type': 'dua',
+      'message': message,
+      'actorUid': senderUid,
+      'targetUid': recipientUid,
+      'createdAt': FieldValue.serverTimestamp(),
     });
   }
 

@@ -6,10 +6,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/time_display_helper.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class QuietHoursScreen extends ConsumerStatefulWidget {
   const QuietHoursScreen({super.key});
@@ -21,6 +21,28 @@ class QuietHoursScreen extends ConsumerStatefulWidget {
 class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
   TimeOfDay _from = const TimeOfDay(hour: 21, minute: 0);
   TimeOfDay _to = const TimeOfDay(hour: 6, minute: 0);
+
+  Widget _buildTimePicker(
+    BuildContext context,
+    Widget? child,
+  ) {
+    final mediaQueryWrapper = MediaQuery(
+      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+      child: child!,
+    );
+
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode == 'bn') {
+      // Force 12-hour dial for Bangla locale where 24-hour is default.
+      return Localizations.override(
+        context: context,
+        locale: const Locale('en', 'US'),
+        child: mediaQueryWrapper,
+      );
+    }
+
+    return mediaQueryWrapper;
+  }
 
   @override
   void initState() {
@@ -49,13 +71,7 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
     final selected = await showTimePicker(
       context: context,
       initialTime: start ? _from : _to,
-      builder: (context, child) {
-        final mediaQuery = MediaQuery.of(context);
-        return MediaQuery(
-          data: mediaQuery.copyWith(alwaysUse24HourFormat: false),
-          child: child!,
-        );
-      },
+      builder: _buildTimePicker,
     );
     if (selected == null) return;
     setState(() {

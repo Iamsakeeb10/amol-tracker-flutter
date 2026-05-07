@@ -11,9 +11,9 @@ class LocaleNotifier extends StateNotifier<Locale> {
   static Locale _resolveInitialLocale() {
     final savedCode = LocalStorageService.getPref<String>(_localeKey, 'bn');
     if (savedCode == 'bn') {
-      return const Locale('bn');
+      return const Locale('bn', 'BD');
     }
-    return const Locale('en');
+    return const Locale('en', 'US');
   }
 
   Future<void> setLocale(Locale locale) async {

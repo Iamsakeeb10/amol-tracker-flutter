@@ -149,10 +149,15 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     ),
                   ),
                   SizedBox(height: 12.h),
-                  Text(
-                    shownName,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.displayMedium(context),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Text(
+                      shownName,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.displayMedium(context),
+                    ),
                   ),
                   SizedBox(height: 6.h),
                   Center(child: StreakBadge(days: displayStreak.currentStreak)),

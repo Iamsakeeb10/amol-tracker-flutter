@@ -401,11 +401,15 @@ class _RankRow extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        displayName,
-                        style: AppTextStyles.bodyLarge(
-                          context,
-                        ).copyWith(fontSize: 13.sp),
+                      Flexible(
+                        child: Text(
+                          displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.bodyLarge(
+                            context,
+                          ).copyWith(fontSize: 13.sp),
+                        ),
                       ),
                       if (isYou) ...[
                         SizedBox(width: 6.w),

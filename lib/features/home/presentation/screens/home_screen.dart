@@ -8,7 +8,7 @@ import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../core/utils/hijri_helper.dart';
+import '../../../../core/services/islamic_date_service.dart';
 import '../../../../models/user_model.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
@@ -408,14 +408,14 @@ class _Header extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      HijriHelper.todayDisplayString(),
+                      IslamicDateService.getDisplayIslamicDate(),
                       style: AppTextStyles.label(
                         context,
                       ).copyWith(color: AppColors.gold),
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      HijriHelper.todayWeekdayEnglish(),
+                      IslamicDateService.weekdayEnglishToday(),
                       style: AppTextStyles.displayMedium(context),
                     ),
                   ],
@@ -568,11 +568,15 @@ class _ProgressCard extends StatelessWidget {
                 size: 14.r,
               ),
               SizedBox(width: 6.w),
-              Text(
-                l10n.scoreOutOfPoints(score, kMaxDailyScore),
-                style: AppTextStyles.bodyMedium(
-                  context,
-                ).copyWith(color: AppColors.textPrimary),
+              Flexible(
+                child: Text(
+                  l10n.scoreOutOfPoints(score, kMaxDailyScore),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyMedium(
+                    context,
+                  ).copyWith(color: AppColors.textPrimary),
+                ),
               ),
             ],
           ),

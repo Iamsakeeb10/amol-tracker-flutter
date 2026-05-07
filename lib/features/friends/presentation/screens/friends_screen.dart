@@ -115,6 +115,8 @@ class _ActivityRow extends StatelessWidget {
               children: [
                 Text(
                   activity.text,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodyLarge(
                     context,
                   ).copyWith(fontSize: 13.sp),
@@ -236,6 +238,8 @@ class _FriendCard extends StatelessWidget {
               children: [
                 Text(
                   user.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodyLarge(
                     context,
                   ).copyWith(fontSize: 14.sp, fontWeight: FontWeight.w500),

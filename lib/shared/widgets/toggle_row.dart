@@ -43,12 +43,16 @@ class ToggleRow extends StatelessWidget {
               children: [
                 Text(
                   title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 14.sp),
                 ),
                 if (subtitle != null) ...[
                   SizedBox(height: 2.h),
                   Text(
                     subtitle!,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
                   ),
                 ],
@@ -107,6 +111,8 @@ class NavRow extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodyLarge(context).copyWith(
                   fontSize: 14.sp,
                   color: destructiveColor ?? AppColors.textPrimary,
@@ -114,10 +120,17 @@ class NavRow extends StatelessWidget {
               ),
             ),
             if (trailing != null) ...[
-              Text(
-                trailing!,
-                style: AppTextStyles.bodyMedium(context).copyWith(
-                  color: AppColors.textMuted,
+              Flexible(
+                flex: 0,
+                fit: FlexFit.loose,
+                child: Text(
+                  trailing!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ),
               SizedBox(width: 6.w),

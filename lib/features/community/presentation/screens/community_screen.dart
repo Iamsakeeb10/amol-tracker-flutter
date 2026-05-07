@@ -537,6 +537,8 @@ class _FeedItemCard extends StatelessWidget {
             children: [
               Text(
                 item.message,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodyMedium(
                   context,
                 ).copyWith(color: AppColors.textPrimary),

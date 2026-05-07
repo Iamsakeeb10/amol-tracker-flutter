@@ -39,6 +39,8 @@ class StreakBadge extends StatelessWidget {
           SizedBox(width: 4.w),
           Text(
             '$days${label != null ? ' $label' : 'd'}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.pill(context).copyWith(
               fontSize: compact ? 10.sp : 11.sp,
               color: AppColors.goldPale,
@@ -85,6 +87,8 @@ class Pill extends StatelessWidget {
           ],
           Text(
             text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: AppTextStyles.pill(context).copyWith(
               color: fg,
               fontWeight: FontWeight.w500,

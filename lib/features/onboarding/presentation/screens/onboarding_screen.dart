@@ -388,6 +388,9 @@ class _StreakBadgesRow extends StatelessWidget {
               SizedBox(height: 2.h),
               Text(
                 label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodySmall(
                   context,
                 ).copyWith(fontSize: 10.sp),

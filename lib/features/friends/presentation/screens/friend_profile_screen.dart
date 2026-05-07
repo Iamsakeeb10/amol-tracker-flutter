@@ -47,10 +47,15 @@ class FriendProfileScreen extends StatelessWidget {
             ),
           ),
           SizedBox(height: 14.h),
-          Text(
-            user.name,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.displayMedium(context),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Text(
+              user.name,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.displayMedium(context),
+            ),
           ),
           SizedBox(height: 8.h),
           Wrap(

@@ -37,7 +37,14 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
         ),
         title: Row(
           children: [
-            Text(l10n.group, style: AppTextStyles.headlineMedium(context)),
+            Flexible(
+              child: Text(
+                l10n.group,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.headlineMedium(context),
+              ),
+            ),
             SizedBox(width: 8.w),
             Pill(
               text: l10n.admin,
@@ -237,11 +244,15 @@ class _MemberRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      user.name,
-                      style: AppTextStyles.bodyLarge(
-                        context,
-                      ).copyWith(fontSize: 14.sp),
+                    Flexible(
+                      child: Text(
+                        user.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodyLarge(
+                          context,
+                        ).copyWith(fontSize: 14.sp),
+                      ),
                     ),
                     if (isYou) ...[
                       SizedBox(width: 6.w),

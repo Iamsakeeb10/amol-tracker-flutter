@@ -90,6 +90,6 @@ class CardContainer extends StatelessWidget {
   BorderSide _resolveBorderSide() {
     final b = border;
     if (b is Border) return b.top;
-    return BorderSide(color: borderColor ?? AppColors.cardBorder, width: 1.0);
+    return BorderSide(color: borderColor ?? AppColors.cardBorder, width: 1.r);
   }
 }

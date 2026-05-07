@@ -10,7 +10,6 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../core/utils/hijri_helper.dart';
 import '../../../../core/utils/streak_helper.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../providers/amal_provider.dart';
@@ -37,9 +36,17 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   @override
   void initState() {
     super.initState();
-    final now = HijriCalendar.fromDate(HijriHelper.bangladeshNow());
-    _hijriYear = now.hYear;
-    _hijriMonth = now.hMonth;
+    final cur = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final parts = cur.split('-');
+    if (parts.length == 3) {
+      _hijriYear = int.parse(parts[0]);
+      _hijriMonth = int.parse(parts[1]);
+    } else {
+      final n = IslamicDateService.nowInBD();
+      final h = HijriCalendar.fromDate(DateTime(n.year, n.month, n.day));
+      _hijriYear = h.hYear;
+      _hijriMonth = h.hMonth;
+    }
   }
 
   void _prevMonth() {
@@ -82,7 +89,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
     final out = <MockDay>[];
     for (var d = 1; d <= daysInMonth; d++) {
-      final key = HijriHelper.storageFromParts(_hijriYear, _hijriMonth, d);
+      final key = IslamicDateService.storageFromParts(_hijriYear, _hijriMonth, d);
       final cmp = key.compareTo(todayStr);
 
       if (cmp > 0) {
@@ -145,7 +152,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     });
     if (maxId == null || maxC <= 0) return null;
     final field = amal_const.kAmalFields.firstWhere((f) => f.id == maxId);
-    return (id: maxId!, label: field.label, misses: maxC);
+    return (id: maxId!, label: field.labelBn, misses: maxC);
   }
 
   @override
@@ -173,7 +180,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       hasSubmittedToday: amal.isSubmitted,
     );
     final monthAsync = ref.watch(historyMonthProvider(key));
-    final todayStr = IslamicDateService.getCurrentIslamicDateString();
+    final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
     final cal = HijriCalendar();
     final daysInMonth = cal.getDaysInMonth(_hijriYear, _hijriMonth);
 
@@ -222,7 +229,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         ),
                         SizedBox(height: 2.h),
                         Text(
-                          HijriHelper.monthYearDisplay(_hijriYear, _hijriMonth),
+                          IslamicDateService.monthYearHeaderBn(
+                            _hijriYear,
+                            _hijriMonth,
+                          ),
                           style: AppTextStyles.displayMedium(context),
                         ),
                       ],
@@ -312,7 +322,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   return CalendarDayCell(
                     day: day,
                     onTap: () {
-                      final keyDate = HijriHelper.storageFromParts(
+                      final keyDate = IslamicDateService.storageFromParts(
                         _hijriYear,
                         _hijriMonth,
                         day.day,
@@ -457,27 +467,43 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 12.w,
+      runSpacing: 4.h,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        _dot(AppColors.gold),
-        SizedBox(width: 6.w),
-        Text(
-          AppLocalizations.of(context)!.historyFull,
-          style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _dot(AppColors.gold),
+            SizedBox(width: 6.w),
+            Text(
+              AppLocalizations.of(context)!.historyFull,
+              style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+            ),
+          ],
         ),
-        SizedBox(width: 12.w),
-        _dot(AppColors.warning),
-        SizedBox(width: 6.w),
-        Text(
-          AppLocalizations.of(context)!.historyPartial,
-          style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _dot(AppColors.warning),
+            SizedBox(width: 6.w),
+            Text(
+              AppLocalizations.of(context)!.historyPartial,
+              style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+            ),
+          ],
         ),
-        SizedBox(width: 12.w),
-        _dot(AppColors.danger),
-        SizedBox(width: 6.w),
-        Text(
-          AppLocalizations.of(context)!.historyMiss,
-          style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _dot(AppColors.danger),
+            SizedBox(width: 6.w),
+            Text(
+              AppLocalizations.of(context)!.historyMiss,
+              style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+            ),
+          ],
         ),
       ],
     );

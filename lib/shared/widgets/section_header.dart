@@ -29,19 +29,31 @@ class SectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppTextStyles.label(context).copyWith(
                 color: AppColors.textSecondary,
               ),
             ),
           ),
           if (trailingText != null)
-            GestureDetector(
-              onTap: onTrailingTap,
-              child: Text(
-                trailingText!,
-                style: AppTextStyles.label(context).copyWith(
-                  color: AppColors.gold,
-                  letterSpacing: 0.6,
+            Flexible(
+              flex: 0,
+              fit: FlexFit.loose,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: onTrailingTap,
+                  child: Text(
+                    trailingText!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: AppTextStyles.label(context).copyWith(
+                      color: AppColors.gold,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
                 ),
               ),
             ),

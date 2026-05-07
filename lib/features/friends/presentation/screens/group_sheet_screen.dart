@@ -35,9 +35,16 @@ class _GroupSheetScreenState extends State<GroupSheetScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.groupSheet, style: AppTextStyles.headlineMedium(context)),
+            Text(
+              l10n.groupSheet,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.headlineMedium(context),
+            ),
             Text(
               '${kGroup.name} · Shawwal',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
             ),
           ],

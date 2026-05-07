@@ -89,6 +89,8 @@ class AmalRow extends StatelessWidget {
               children: [
                 Text(
                   field.labelBn,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodyLarge(context).copyWith(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
@@ -97,10 +99,14 @@ class AmalRow extends StatelessWidget {
                 SizedBox(height: 2.h),
                 Row(
                   children: [
-                    Text(
-                      field.sublabel,
-                      style:
-                          AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+                    Flexible(
+                      child: Text(
+                        field.sublabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodySmall(context)
+                            .copyWith(fontSize: 11.sp),
+                      ),
                     ),
                     SizedBox(width: 8.w),
                     Container(

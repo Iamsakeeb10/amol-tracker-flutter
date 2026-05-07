@@ -7,7 +7,7 @@ import '../../../../core/constants/amal_fields.dart' as amal_const;
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../core/utils/hijri_helper.dart';
+import '../../../../core/services/islamic_date_service.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
@@ -52,10 +52,10 @@ class DayDetailScreen extends ConsumerWidget {
         final score = log?.score ?? 0;
         final title = hijriDate.isEmpty
             ? l10n.dayDetailTitle
-            : HijriHelper.displayFromStorage(hijriDate);
+            : IslamicDateService.displayFromStorageBn(hijriDate);
         final weekday = hijriDate.isEmpty
             ? ''
-            : HijriHelper.weekdayEnglishForHijriStorage(hijriDate);
+            : IslamicDateService.weekdayEnglishForStorage(hijriDate);
 
         return AppScaffold(
           appBar: AppBar(
@@ -65,7 +65,12 @@ class DayDetailScreen extends ConsumerWidget {
                   ? context.pop()
                   : context.go(AppRoutes.history),
             ),
-            title: Text(title, style: AppTextStyles.headlineMedium(context)),
+            title: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.headlineMedium(context),
+            ),
             actions: [
               Padding(
                 padding: EdgeInsets.only(right: 16.w),
@@ -109,7 +114,7 @@ class DayDetailScreen extends ConsumerWidget {
                     child: StatCard(
                       label: l10n.score,
                       value: '$score',
-                      sublabel: l10n.outOf100,
+                      sublabel: '/${amal_const.kMaxDailyScore}',
                       icon: Icons.workspace_premium_outlined,
                     ),
                   ),

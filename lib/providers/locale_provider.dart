@@ -9,7 +9,7 @@ class LocaleNotifier extends StateNotifier<Locale> {
   static const _localeKey = 'app_locale';
 
   static Locale _resolveInitialLocale() {
-    final savedCode = LocalStorageService.getPref<String>(_localeKey, 'en');
+    final savedCode = LocalStorageService.getPref<String>(_localeKey, 'bn');
     if (savedCode == 'bn') {
       return const Locale('bn');
     }

@@ -461,9 +461,9 @@ const List<MockWeeklyBar> kWeeklyBars = [
 ];
 
 const List<String> kHadiths = [
-  '"The most beloved deeds to Allah are those done consistently, even if small." — Bukhari',
-  '"Take advantage of five before five: your youth before your old age, your health before your sickness..." — Hakim',
-  '"Whoever prays Fajr in congregation is under the protection of Allah." — Muslim',
+  '"আল্লাহর কাছে সবচেয়ে প্রিয় আমল হলো যে আমল নিয়মিত করা হয়, যদিও তা অল্প হয়।" — সহিহ বুখারি',
+  '"পাঁচটি বিষয়ের আগে পাঁচটি বিষয়ের মূল্য দাও: বার্ধক্যের আগে যৌবন, অসুস্থতার আগে সুস্থতা..." — মুস্তাদরাক হাকিম',
+  '"যে ব্যক্তি জামাতে ফজর আদায় করে, সে আল্লাহর জিম্মায় থাকে।" — সহিহ মুসলিম',
 ];
 
 class MockAmalEntry {

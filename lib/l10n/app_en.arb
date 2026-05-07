@@ -230,8 +230,8 @@
   "sending": "Sending...",
   "sendDua": "Send Dua",
   "alreadySentDuaToday": "You already sent a dua today",
-  "communityMemberSentDua": "A community member sent you a dua 🤲",
-  "duaFromSender": "{name} sent you a dua 🤲",
+  "communityMemberSentDua": "কমিউনিটি থেকে কেউ আপনাকে দোয়া পাঠিয়েছে 🤲",
+  "duaFromSender": "{name} আপনাকে দোয়া পাঠিয়েছেন 🤲",
   "@duaFromSender": {
     "placeholders": {
       "name": {}

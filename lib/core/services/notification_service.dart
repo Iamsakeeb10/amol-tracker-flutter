@@ -281,16 +281,16 @@ class NotificationService {
     if (_isCurrentMinute(at)) {
       await _localNotifications.show(
         _morningId + 100000,
-        'Morning notification',
-        'Start your day with today\'s amal.',
+        'সকালের নোটিফিকেশন',
+        'আজকের আমল দিয়ে দিন শুরু করুন।',
         _notificationDetails(payload: AppRoutes.home),
         payload: AppRoutes.home,
       );
     }
     await _safeZonedSchedule(
       id: _morningId,
-      title: 'Morning notification',
-      body: 'Start your day with today\'s amal.',
+      title: 'সকালের নোটিফিকেশন',
+      body: 'আজকের আমল দিয়ে দিন শুরু করুন।',
       scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -302,8 +302,8 @@ class NotificationService {
     if (_isSuppressedByQuietHours(at)) return;
     await _safeZonedSchedule(
       id: _eveningId,
-      title: 'Evening notification',
-      body: 'Don\'t miss your evening azkar and Quran.',
+      title: 'সন্ধ্যার নোটিফিকেশন',
+      body: 'সন্ধ্যার আযকার ও কুরআন তিলাওয়াত মিস করবেন না।',
       scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -315,9 +315,9 @@ class NotificationService {
     if (_isSuppressedByQuietHours(at)) return;
     await _safeZonedSchedule(
       id: _streakId,
-      title: 'Streak warning',
+      title: 'স্ট্রিক সতর্কতা',
       body:
-          'If you have not logged today yet, submit now to keep your streak alive.',
+          'আজকের লগ এখনো না দিলে এখনই সাবমিট করুন, স্ট্রিক ধরে রাখুন।',
       scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -329,8 +329,8 @@ class NotificationService {
     if (_isSuppressedByQuietHours(at)) return;
     await _safeZonedSchedule(
       id: _jumuahId,
-      title: 'Jumu\'ah motivation',
-      body: 'Blessed Friday. Keep your amal strong today.',
+      title: 'জুমআর অনুপ্রেরণা',
+      body: 'মুবারক জুমআ। আজ আমলে দৃঢ় থাকুন।',
       scheduledDate: _nextWeeklyInstance(DateTime.friday, at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
@@ -412,8 +412,8 @@ class NotificationService {
     return NotificationDetails(
       android: const AndroidNotificationDetails(
         'amal_tracker_daily',
-        'Daily Notifications',
-        channelDescription: 'Daily and weekly notifications for amal logging',
+        'দৈনিক নোটিফিকেশন',
+        channelDescription: 'আমল লগ করার জন্য দৈনিক ও সাপ্তাহিক নোটিফিকেশন',
         importance: Importance.max,
         priority: Priority.max,
         icon: '@mipmap/ic_launcher',
@@ -514,7 +514,7 @@ class NotificationService {
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
     final notification = message.notification;
-    final title = notification?.title ?? 'New notification';
+    final title = notification?.title ?? 'নতুন নোটিফিকেশন';
     final body = notification?.body ?? '';
     final route = _routeFromMessage(message);
     final id =

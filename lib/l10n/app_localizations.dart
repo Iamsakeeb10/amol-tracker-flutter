@@ -1109,13 +1109,13 @@ abstract class AppLocalizations {
   /// No description provided for @communityMemberSentDua.
   ///
   /// In en, this message translates to:
-  /// **'A community member sent you a dua 🤲'**
+  /// **'কমিউনিটি থেকে কেউ আপনাকে দোয়া পাঠিয়েছে 🤲'**
   String get communityMemberSentDua;
 
   /// No description provided for @duaFromSender.
   ///
   /// In en, this message translates to:
-  /// **'{name} sent you a dua 🤲'**
+  /// **'{name} আপনাকে দোয়া পাঠিয়েছেন 🤲'**
   String duaFromSender(Object name);
 
   /// No description provided for @duaSent.

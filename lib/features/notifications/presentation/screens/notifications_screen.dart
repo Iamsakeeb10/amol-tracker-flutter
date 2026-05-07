@@ -222,6 +222,21 @@ class _NotificationRow extends StatelessWidget {
     }
   }
 
+  String _typeLabel() {
+    switch (item.type) {
+      case 'dua':
+        return 'দোয়া';
+      case 'streak':
+        return 'স্ট্রিক';
+      case 'badge':
+        return 'ব্যাজ';
+      case 'community':
+        return 'কমিউনিটি';
+      default:
+        return 'নোটিফিকেশন';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -265,7 +280,7 @@ class _NotificationRow extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        item.type.toUpperCase(),
+                        _typeLabel(),
                         style: AppTextStyles.bodyLarge(context).copyWith(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w500,

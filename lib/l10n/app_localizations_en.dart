@@ -558,11 +558,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alreadySentDuaToday => 'You already sent a dua today';
 
   @override
-  String get communityMemberSentDua => 'A community member sent you a dua 🤲';
+  String get communityMemberSentDua =>
+      'কমিউনিটি থেকে কেউ আপনাকে দোয়া পাঠিয়েছে 🤲';
 
   @override
   String duaFromSender(Object name) {
-    return '$name sent you a dua 🤲';
+    return '$name আপনাকে দোয়া পাঠিয়েছেন 🤲';
   }
 
   @override

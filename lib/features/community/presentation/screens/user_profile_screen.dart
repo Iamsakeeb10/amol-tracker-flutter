@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/firestore_service.dart';
+import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/hijri_helper.dart';
@@ -109,8 +110,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               final avgScore = profileData?.avgScore ?? 0;
               final selectedScore = selectedLog?.score ?? 0;
               final effectiveDate =
-                  profileData?.effectiveDate ?? HijriHelper.todayString();
-              final dateIsToday = effectiveDate == HijriHelper.todayString();
+                  profileData?.effectiveDate ??
+                  IslamicDateService.getCurrentIslamicDateString();
+              final dateIsToday =
+                  effectiveDate ==
+                  IslamicDateService.getCurrentIslamicDateString();
               final displayStreak = resolveDisplayedStreakValues(
                 currentStreak: user.currentStreak,
                 bestStreak: user.bestStreak,
@@ -202,9 +206,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         for (var i = 0; i < kAmalFields.length; i++) ...[
                           _AmalReadOnlyRow(
                             field: kAmalFields[i],
-                            done:
-                                (selectedLog?.toggles[kAmalFields[i].id] ??
-                                false),
+                            value: selectedLog?.toggles[kAmalFields[i].id],
                           ),
                           if (i != kAmalFields.length - 1)
                             SizedBox(height: 8.h),
@@ -330,7 +332,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 
   Future<_ProfileData> _loadProfileData(FirestoreService fs, String uid) async {
-    final today = HijriHelper.todayString();
+    final today = IslamicDateService.getCurrentIslamicDateString();
     final effectiveDate = widget.selectedHijriDate ?? today;
     final fallback =
         (widget.selectedLogFallback != null &&
@@ -381,7 +383,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     debugPrint('👆 Send Dua pressed sender=$senderUid recipient=$recipientUid');
     setState(() => _sendingDua = true);
     try {
-      final today = HijriHelper.todayString();
+      final today = IslamicDateService.getCurrentIslamicDateString();
       final exists = await fs.hasSentDuaToday(
         senderUid: senderUid,
         recipientUid: recipientUid,
@@ -414,13 +416,19 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 }
 
 class _AmalReadOnlyRow extends StatelessWidget {
-  const _AmalReadOnlyRow({required this.field, required this.done});
+  const _AmalReadOnlyRow({required this.field, required this.value});
 
   final AmalField field;
-  final bool done;
+  final dynamic value;
 
   @override
   Widget build(BuildContext context) {
+    final done = field.type == AmalType.numeric
+        ? getNumericValue(value, field.maxValue) > 0
+        : value == true;
+    final numericValue = field.type == AmalType.numeric
+        ? getNumericValue(value, field.maxValue)
+        : null;
     return Row(
       children: [
         Container(
@@ -443,20 +451,38 @@ class _AmalReadOnlyRow extends StatelessWidget {
         SizedBox(width: 10.w),
         Expanded(
           child: Text(
-            field.label,
+            field.labelBn,
             style: AppTextStyles.bodyMedium(
               context,
             ).copyWith(color: AppColors.textPrimary),
           ),
         ),
-        Icon(
-          done ? Icons.check_circle : Icons.cancel_outlined,
-          size: 18.r,
-          color: done ? AppColors.success : AppColors.danger,
-        ),
+        if (field.type == AmalType.numeric)
+          Text(
+            '${_toBengaliNumeral(numericValue!)}/${_toBengaliNumeral(field.maxValue)}',
+            style: AppTextStyles.pill(context).copyWith(
+              color: numericValue > 0 ? AppColors.gold : AppColors.textMuted,
+              fontWeight: FontWeight.w700,
+            ),
+          )
+        else
+          Icon(
+            done ? Icons.check_circle : Icons.cancel_outlined,
+            size: 18.r,
+            color: done ? AppColors.success : AppColors.danger,
+          ),
       ],
     );
   }
+}
+
+String _toBengaliNumeral(int number) {
+  const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  return number
+      .toString()
+      .split('')
+      .map((digit) => bnDigits[int.parse(digit)])
+      .join();
 }
 
 class _WeeklyBars extends StatelessWidget {
@@ -481,7 +507,7 @@ class _WeeklyBars extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: bars.map((log) {
-            final ratio = (log.score / 100).clamp(0.0, 1.0);
+            final ratio = (log.score / kMaxDailyScore).clamp(0.0, 1.0);
             final missed = log.score < 50;
             return Expanded(
               child: Padding(

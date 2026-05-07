@@ -152,13 +152,21 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
             ),
             SizedBox(height: 8.h),
             ...kAmalFields.map((field) {
-              final done = log.toggles[field.id] ?? false;
-              final earned = done ? field.points : 0;
+              final numericValue = field.type == AmalType.numeric
+                  ? getNumericValue(log.toggles[field.id], field.maxValue)
+                  : null;
+              final done = field.type == AmalType.numeric
+                  ? numericValue! > 0
+                  : (log.toggles[field.id] as bool? ?? false);
+              final earned = field.type == AmalType.numeric
+                  ? ((numericValue! / field.maxValue) * field.points).round()
+                  : (done ? field.points : 0);
               return Padding(
                 padding: EdgeInsets.only(bottom: 8.h),
                 child: _SummaryRow(
                   field: field,
                   done: done,
+                  numericValue: numericValue,
                   earnedPoints: earned,
                 ),
               );
@@ -249,11 +257,13 @@ class _ScoreRing extends StatelessWidget {
 class _SummaryRow extends StatelessWidget {
   final AmalField field;
   final bool done;
+  final int? numericValue;
   final int earnedPoints;
 
   const _SummaryRow({
     required this.field,
     required this.done,
+    this.numericValue,
     required this.earnedPoints,
   });
 
@@ -261,16 +271,27 @@ class _SummaryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final iconColor = done ? AppColors.success : AppColors.danger;
     final iconData = done ? Icons.check_circle : Icons.cancel_outlined;
+    final isNumeric = field.type == AmalType.numeric;
+    final value = numericValue ?? 0;
 
     return CardContainer(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       child: Row(
         children: [
-          Icon(iconData, color: iconColor, size: 20.r),
+          if (isNumeric)
+            Text(
+              '${_toBengaliNumeral(value)}/${_toBengaliNumeral(field.maxValue)}',
+              style: AppTextStyles.pill(context).copyWith(
+                color: value > 0 ? AppColors.gold : AppColors.textMuted,
+                fontWeight: FontWeight.w700,
+              ),
+            )
+          else
+            Icon(iconData, color: iconColor, size: 20.r),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
-              field.label,
+              field.labelBn,
               style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 14.sp),
             ),
           ),
@@ -284,4 +305,13 @@ class _SummaryRow extends StatelessWidget {
       ),
     );
   }
+}
+
+String _toBengaliNumeral(int number) {
+  const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  return number
+      .toString()
+      .split('')
+      .map((digit) => bnDigits[int.parse(digit)])
+      .join();
 }

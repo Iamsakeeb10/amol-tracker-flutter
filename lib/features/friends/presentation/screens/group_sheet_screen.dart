@@ -239,7 +239,7 @@ class _MemberSheetCard extends StatelessWidget {
               StreakBadge(days: user.currentStreak, compact: true),
               SizedBox(width: 8.w),
               Text(
-                '${user.todayScore}/100',
+                '${user.todayScore}/$kMaxDailyScore',
                 style: AppTextStyles.goldNumeric(
                   context,
                 ).copyWith(fontSize: 14.sp),
@@ -247,7 +247,7 @@ class _MemberSheetCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 8.h),
-          ScoreBar(value: user.todayScore / 100, height: 4),
+          ScoreBar(value: user.todayScore / kMaxDailyScore, height: 4),
           SizedBox(height: 10.h),
           Row(
             children: [
@@ -273,7 +273,7 @@ class _SheetCell extends StatelessWidget {
     final field = kAmalFields[index];
     final h = (user.id.hashCode + index) % 5;
     final done = h > 1;
-    final isNumeric = field.isNumeric;
+    final isNumeric = field.type == AmalType.numeric;
 
     return Padding(
       padding: EdgeInsets.all(2.r),

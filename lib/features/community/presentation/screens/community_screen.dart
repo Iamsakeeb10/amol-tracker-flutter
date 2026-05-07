@@ -7,6 +7,7 @@ import 'package:hijri/hijri_calendar.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/hijri_helper.dart';
@@ -595,7 +596,7 @@ class _DateTabsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today = HijriHelper.todayString();
+    final today = IslamicDateService.getCurrentIslamicDateString();
     return SizedBox(
       height: 34.h,
       child: ListView.separated(

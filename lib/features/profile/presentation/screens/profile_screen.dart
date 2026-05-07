@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -345,10 +346,10 @@ class _WeekChart extends StatelessWidget {
     final tail = logs.length <= 7 ? logs : logs.sublist(logs.length - 7);
     final bars = List<_ChartBar>.from(seed);
     for (var i = 0; i < tail.length; i++) {
-      final score = tail[i].score.clamp(0, 100);
+      final score = tail[i].score.clamp(0, kMaxDailyScore);
       bars[7 - tail.length + i] = _ChartBar(
         label: bars[7 - tail.length + i].label,
-        value: score / 100.0,
+        value: score / kMaxDailyScore,
         missed: score < 50,
       );
     }

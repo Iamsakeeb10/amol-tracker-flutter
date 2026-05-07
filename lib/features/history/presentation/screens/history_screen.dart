@@ -7,6 +7,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart' as amal_const;
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/hijri_helper.dart';
@@ -126,7 +127,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     };
     for (final log in logs) {
       for (final f in amal_const.kAmalFields) {
-        if (log.toggles[f.id] != true) {
+        final isDone = f.type == amal_const.AmalType.numeric
+            ? amal_const.getNumericValue(log.toggles[f.id], f.maxValue) > 0
+            : (log.toggles[f.id] == true);
+        if (!isDone) {
           counts[f.id] = (counts[f.id] ?? 0) + 1;
         }
       }
@@ -169,7 +173,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       hasSubmittedToday: amal.isSubmitted,
     );
     final monthAsync = ref.watch(historyMonthProvider(key));
-    final todayStr = HijriHelper.todayString();
+    final todayStr = IslamicDateService.getCurrentIslamicDateString();
     final cal = HijriCalendar();
     final daysInMonth = cal.getDaysInMonth(_hijriYear, _hijriMonth);
 

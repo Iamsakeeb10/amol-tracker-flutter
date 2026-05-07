@@ -198,7 +198,7 @@ class _AmalGrid extends StatelessWidget {
                 size: 18.r,
               ),
               SizedBox(height: 4.h),
-              field.isNumeric && done
+              field.type == AmalType.numeric && done
                   ? Text(
                       '${(user.id.hashCode + i) % 5 + 1}',
                       style: AppTextStyles.bodyLarge(context).copyWith(

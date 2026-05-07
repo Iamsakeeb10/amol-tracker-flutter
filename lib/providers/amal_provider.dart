@@ -5,6 +5,7 @@ import 'package:riverpod/legacy.dart';
 import '../core/constants/amal_fields.dart';
 import '../core/services/local_storage_service.dart';
 import '../core/services/firestore_service.dart';
+import '../core/services/islamic_date_service.dart';
 import '../core/utils/hijri_helper.dart';
 import '../core/utils/streak_helper.dart';
 import '../models/badge_model.dart';
@@ -30,29 +31,32 @@ class AmalState {
 
   factory AmalState.initial() {
     return AmalState(
-      toggles: {for (final f in kAmalFields) f.id: false},
+      toggles: <String, dynamic>{
+        for (final f in kAmalFields)
+          f.id: f.type == AmalType.numeric ? 0 : false,
+      },
       isSubmitted: false,
       isLoading: true,
     );
   }
 
-  final Map<String, bool> toggles;
+  final Map<String, dynamic> toggles;
   final bool isSubmitted;
   final bool isLoading;
   final String? error;
   final AmalLogModel? submittedLog;
 
-  int get doneCount => toggles.values.where((v) => v).length;
+  int get doneCount => toggles.values.where((v) => v == true || (v is int && v > 0)).length;
 
   int get totalScore {
     final m = <String, dynamic>{...toggles};
     return calculateScore(m);
   }
 
-  bool get hasAnyDone => toggles.values.any((v) => v);
+  bool get hasAnyDone => toggles.values.any((v) => v == true || (v is int && v > 0));
 
   AmalState copyWith({
-    Map<String, bool>? toggles,
+    Map<String, dynamic>? toggles,
     bool? isSubmitted,
     bool? isLoading,
     String? error,
@@ -111,14 +115,14 @@ class AmalNotifier extends StateNotifier<AmalState> {
   }
 
   Future<void> _load() async {
-    final hijri = HijriHelper.todayString();
+    final hijri = IslamicDateService.getCurrentIslamicDateString();
     final fs = _ref.read(firestoreServiceProvider);
 
     try {
       final fromFs = await fs.getTodayLog(_uid, hijri);
       if (fromFs != null) {
         state = AmalState(
-          toggles: Map<String, bool>.from(fromFs.toggles),
+          toggles: Map<String, dynamic>.from(fromFs.toggles),
           isSubmitted: true,
           isLoading: false,
           submittedLog: fromFs,
@@ -139,7 +143,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
         final model = AmalLogModel.fromHiveMap(cached);
         if (model.uid == _uid && model.hijriDate == hijri) {
           state = AmalState(
-            toggles: Map<String, bool>.from(model.toggles),
+            toggles: Map<String, dynamic>.from(model.toggles),
             isSubmitted: true,
             isLoading: false,
             submittedLog: model,
@@ -154,9 +158,11 @@ class AmalNotifier extends StateNotifier<AmalState> {
     if (draft != null && draft['uid'] == _uid) {
       final rawToggles = draft['toggles'];
       if (rawToggles is Map) {
-        final next = <String, bool>{
+        final next = <String, dynamic>{
           for (final f in kAmalFields)
-            f.id: rawToggles[f.id] as bool? ?? false,
+            f.id: f.type == AmalType.numeric
+                ? getNumericValue(rawToggles[f.id], f.maxValue)
+                : (rawToggles[f.id] as bool? ?? false),
         };
         state = AmalState(
           toggles: next,
@@ -172,26 +178,53 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   Future<void> _persistDraft() async {
     if (state.isSubmitted) return;
-    final hijri = HijriHelper.todayString();
+    final hijri = IslamicDateService.getCurrentIslamicDateString();
     await LocalStorageService.saveLog(_draftHiveKey(hijri), <String, dynamic>{
       'uid': _uid,
       'hijriDate': hijri,
-      'toggles': Map<String, bool>.from(state.toggles),
+      'toggles': Map<String, dynamic>.from(state.toggles),
     });
   }
 
   void toggle(String fieldId) {
     if (state.isSubmitted || state.isLoading) return;
-    if (!kAmalFields.any((f) => f.id == fieldId)) return;
-    final next = Map<String, bool>.from(state.toggles);
-    next[fieldId] = !(next[fieldId] ?? false);
+    final field = kAmalFields.where((f) => f.id == fieldId).firstOrNull;
+    if (field == null || field.type != AmalType.boolean) return;
+    final next = Map<String, dynamic>.from(state.toggles);
+    next[fieldId] = !((next[fieldId] as bool?) ?? false);
+    state = state.copyWith(toggles: next, clearError: true);
+    Future<void>.microtask(_persistDraft);
+  }
+
+  void setNumeric(String fieldId, int value) {
+    if (state.isSubmitted || state.isLoading) return;
+    final field = kAmalFields.where((f) => f.id == fieldId).firstOrNull;
+    if (field == null || field.type != AmalType.numeric) return;
+
+    var nextValue = value.clamp(0, field.maxValue);
+    if (fieldId == 'takbir') {
+      final fard = getNumericValue(state.toggles['fard'], 5);
+      nextValue = nextValue.clamp(0, fard);
+    }
+
+    final next = Map<String, dynamic>.from(state.toggles);
+    next[fieldId] = nextValue;
+    if (fieldId == 'fard') {
+      final currentTakbir = getNumericValue(next['takbir'], 5);
+      if (currentTakbir > nextValue) {
+        next['takbir'] = nextValue;
+      }
+    }
     state = state.copyWith(toggles: next, clearError: true);
     Future<void>.microtask(_persistDraft);
   }
 
   void markAllDone() {
     if (state.isSubmitted || state.isLoading) return;
-    final next = <String, bool>{for (final f in kAmalFields) f.id: true};
+    final next = <String, dynamic>{
+      for (final f in kAmalFields)
+        f.id: f.type == AmalType.numeric ? f.maxValue : true,
+    };
     state = state.copyWith(toggles: next, clearError: true);
     Future<void>.microtask(_persistDraft);
   }
@@ -220,8 +253,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
       return null;
     }
 
-    final hijri = HijriHelper.todayString();
-    final toggles = Map<String, bool>.from(state.toggles);
+    final hijri = IslamicDateService.getCurrentIslamicDateString();
+    final toggles = Map<String, dynamic>.from(state.toggles);
     final score = calculateScore(toggles);
     final now = DateTime.now().toUtc();
     final currentWeekKey = weekKeyFromDate(HijriHelper.bangladeshNow());

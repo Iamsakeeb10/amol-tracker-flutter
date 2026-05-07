@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/utils/hijri_helper.dart';
+import '../core/services/islamic_date_service.dart';
 import 'auth_provider.dart';
 
 class LeaderboardEntry {
@@ -20,7 +20,7 @@ class LeaderboardEntry {
 String _safeName(String value) => value.trim().isEmpty ? 'Anonymous' : value.trim();
 
 final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
-  final today = HijriHelper.todayString();
+  final today = IslamicDateService.getCurrentIslamicDateString();
   return ref.read(firestoreServiceProvider).communityDayStream(today).map(
     (rows) => rows
         .map(

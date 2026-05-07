@@ -140,10 +140,26 @@ class DayDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ...amal_const.kAmalFields.map((field) {
-                final done = log?.toggles[field.id] ?? false;
+                final done = field.type == amal_const.AmalType.numeric
+                    ? amal_const.getNumericValue(
+                        log?.toggles[field.id],
+                        field.maxValue,
+                      ) >
+                      0
+                    : (log?.toggles[field.id] as bool? ?? false);
                 return Padding(
                   padding: EdgeInsets.only(bottom: 8.h),
-                  child: AmalRow(field: field, done: done, readOnly: true),
+                  child: AmalRow(
+                    field: field,
+                    done: done,
+                    numericValue: field.type == amal_const.AmalType.numeric
+                        ? amal_const.getNumericValue(
+                            log?.toggles[field.id],
+                            field.maxValue,
+                          )
+                        : null,
+                    readOnly: true,
+                  ),
                 );
               }),
               SizedBox(height: 14.h),

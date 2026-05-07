@@ -181,11 +181,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ...kAmalFields.map(
               (f) => Padding(
                 padding: EdgeInsets.only(bottom: 8.h),
-                child: AmalRow(
-                  field: f,
-                  done: amal.toggles[f.id] ?? false,
-                  readOnly: true,
-                ),
+                child: f.type == AmalType.numeric
+                    ? AmalRow(
+                        field: f,
+                        done:
+                            getNumericValue(amal.toggles[f.id], f.maxValue) > 0,
+                        numericValue: getNumericValue(
+                          amal.toggles[f.id],
+                          f.maxValue,
+                        ),
+                        readOnly: true,
+                      )
+                    : AmalRow(
+                        field: f,
+                        done: amal.toggles[f.id] as bool? ?? false,
+                        readOnly: true,
+                      ),
               ),
             ),
           ] else ...[
@@ -220,11 +231,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ...kAmalFields.map(
                 (f) => Padding(
                   padding: EdgeInsets.only(bottom: 8.h),
-                  child: AmalRow(
-                    field: f,
-                    done: amal.toggles[f.id] ?? false,
-                    onChanged: (_) => amalNotifier.toggle(f.id),
-                  ),
+                  child: f.type == AmalType.numeric
+                      ? AmalRow(
+                          field: f,
+                          done:
+                              getNumericValue(amal.toggles[f.id], f.maxValue) >
+                              0,
+                          numericValue: getNumericValue(
+                            amal.toggles[f.id],
+                            f.maxValue,
+                          ),
+                          maxAllowed: f.id == 'takbir'
+                              ? getNumericValue(amal.toggles['fard'], 5)
+                              : f.maxValue,
+                          onNumericChanged: (v) =>
+                              amalNotifier.setNumeric(f.id, v),
+                        )
+                      : AmalRow(
+                          field: f,
+                          done: amal.toggles[f.id] as bool? ?? false,
+                          onChanged: (_) => amalNotifier.toggle(f.id),
+                        ),
                 ),
               ),
             SizedBox(height: 14.h),

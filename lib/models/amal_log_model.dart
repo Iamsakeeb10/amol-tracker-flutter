@@ -2,6 +2,32 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/constants/amal_fields.dart';
 
+/// Builds [toggles] from flat Firestore/Hive keys. Takbir is clamped to fard
+/// so old `takbir: true` with `fard: 3` does not become 5 > fard.
+Map<String, dynamic> _togglesFromSource(Map<String, dynamic> src) {
+  final fardField = kAmalFields.firstWhere((f) => f.id == 'fard');
+  final takbirField = kAmalFields.firstWhere((f) => f.id == 'takbir');
+  final fard = getNumericValue(src['fard'], fardField.maxValue);
+  final takbir = getNumericValue(
+    src['takbir'],
+    takbirField.maxValue,
+  ).clamp(0, fard);
+
+  final toggles = <String, dynamic>{};
+  for (final field in kAmalFields) {
+    if (field.id == 'fard') {
+      toggles[field.id] = fard;
+    } else if (field.id == 'takbir') {
+      toggles[field.id] = takbir;
+    } else if (field.type == AmalType.numeric) {
+      toggles[field.id] = getNumericValue(src[field.id], field.maxValue);
+    } else {
+      toggles[field.id] = src[field.id] as bool? ?? false;
+    }
+  }
+  return toggles;
+}
+
 /// One submitted daily log, stored at `amal_logs/{uid}_{hijriDate}`.
 class AmalLogModel {
   AmalLogModel({
@@ -20,7 +46,7 @@ class AmalLogModel {
   final String photoUrl;
   final bool isAnonymousDisplay;
   final String hijriDate;
-  final Map<String, bool> toggles;
+  final Map<String, dynamic> toggles;
   final int score;
   final DateTime submittedAt;
 
@@ -28,10 +54,7 @@ class AmalLogModel {
 
   factory AmalLogModel.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? <String, dynamic>{};
-    final toggles = <String, bool>{};
-    for (final field in kAmalFields) {
-      toggles[field.id] = data[field.id] as bool? ?? false;
-    }
+    final toggles = _togglesFromSource(data);
     final submitted = data['submittedAt'];
     return AmalLogModel(
       uid: (data['uid'] as String?) ?? '',
@@ -50,16 +73,9 @@ class AmalLogModel {
   factory AmalLogModel.fromHiveMap(Map<dynamic, dynamic> raw) {
     final map = Map<String, dynamic>.from(raw);
     final togglesRaw = map['toggles'];
-    final toggles = <String, bool>{};
-    if (togglesRaw is Map) {
-      for (final field in kAmalFields) {
-        toggles[field.id] = togglesRaw[field.id] as bool? ?? false;
-      }
-    } else {
-      for (final field in kAmalFields) {
-        toggles[field.id] = map[field.id] as bool? ?? false;
-      }
-    }
+    final toggles = togglesRaw is Map
+        ? _togglesFromSource(Map<String, dynamic>.from(togglesRaw))
+        : _togglesFromSource(map);
     final submittedMs = map['submittedAtMs'];
     return AmalLogModel(
       uid: map['uid'] as String? ?? '',
@@ -100,7 +116,7 @@ class AmalLogModel {
       'hijriDate': hijriDate,
       'score': score,
       'submittedAtMs': submittedAt.toUtc().millisecondsSinceEpoch,
-      'toggles': Map<String, bool>.from(toggles),
+      'toggles': Map<String, dynamic>.from(toggles),
     };
   }
 }

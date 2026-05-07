@@ -2,88 +2,105 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/colors.dart';
 
+enum AmalType { boolean, numeric }
+
 class AmalField {
   final String id;
   final String label;
+  final String labelBn;
   final String sublabel;
   final int points;
-  final bool isNumeric;
+  final int maxValue;
+  final AmalType type;
   final IconData icon;
 
   const AmalField({
     required this.id,
     required this.label,
+    this.labelBn = '',
     required this.sublabel,
     required this.points,
     required this.icon,
-    this.isNumeric = false,
+    this.maxValue = 1,
+    this.type = AmalType.boolean,
   });
 }
 
 const List<AmalField> kAmalFields = [
   AmalField(
     id: 'fard',
-    label: 'Fard prayers',
-    sublabel: 'All 5 in congregation',
-    points: 20,
+    label: 'Fard Salah',
+    labelBn: 'জামাতে ফরয নামাজ',
+    sublabel: 'জামাতে মোট ফরয নামাজ আদায়',
+    points: 30,
+    maxValue: 5,
     icon: Icons.circle_outlined,
-    isNumeric: true,
+    type: AmalType.numeric,
   ),
   AmalField(
     id: 'takbir',
     label: 'Takbir-e-Ula',
-    sublabel: 'With congregation',
-    points: 5,
+    labelBn: 'তাকবীরে উলা',
+    sublabel: 'তাকবীরে উলার সাথে জামাতে নামাজ',
+    points: 10,
+    maxValue: 5,
     icon: Icons.star_outline,
-    isNumeric: true,
+    type: AmalType.numeric,
   ),
   AmalField(
     id: 'morning_azkar',
     label: 'Morning Azkar',
-    sublabel: 'After Fajr',
-    points: 8,
+    labelBn: 'সকালের আযকার',
+    sublabel: 'সকালের আযকার সম্পন্ন',
+    points: 10,
     icon: Icons.wb_sunny_outlined,
   ),
   AmalField(
     id: 'evening_azkar',
     label: 'Evening Azkar',
-    sublabel: 'After Asr',
-    points: 8,
+    labelBn: 'সন্ধ্যার আযকার',
+    sublabel: 'সন্ধ্যার আযকার সম্পন্ন',
+    points: 10,
     icon: Icons.nightlight_outlined,
   ),
   AmalField(
     id: 'quran',
     label: 'Quran Tilawat',
-    sublabel: 'Any amount',
+    labelBn: 'কুরআন তিলাওয়াত',
+    sublabel: 'কমপক্ষে এক রুকু তিলাওয়াত',
     points: 10,
     icon: Icons.menu_book_outlined,
   ),
   AmalField(
     id: 'mulk',
     label: 'Surah Mulk',
-    sublabel: 'Full recitation',
+    labelBn: 'সূরা মূলক',
+    sublabel: 'রাতে ঘুমের আগে সূরা মূলক',
     points: 10,
     icon: Icons.bookmark_outline,
   ),
   AmalField(
     id: 'miswak',
     label: 'Miswak',
-    sublabel: 'Before prayer',
+    labelBn: 'মিসওয়াক',
+    sublabel: 'ওজুতে মিসওয়াক (কমপক্ষে একবার)',
     points: 5,
     icon: Icons.cleaning_services_outlined,
   ),
   AmalField(
     id: 'sunnah',
     label: 'Sunnah + Witr',
-    sublabel: 'All sunnah prayers',
+    labelBn: 'সুন্নাহ + বিতির',
+    sublabel: '১২ রাকাত সুন্নাহ ও বিতির নামাজ',
     points: 10,
     icon: Icons.brightness_low_outlined,
   ),
   AmalField(
     id: 'post_azkar',
     label: 'Post-prayer Azkar',
-    sublabel: 'After each fard',
-    points: 10,
+    labelBn: 'নামাজ পরবর্তী আযকার',
+    sublabel: 'ফরয নামাজ পরবর্তী আযকার',
+    points: 5,
     icon: Icons.access_time_outlined,
   ),
 ];
@@ -464,9 +481,9 @@ class MockAmalEntry {
 }
 
 const List<MockAmalEntry> kTodayAmalEntries = [
-  MockAmalEntry(fieldId: 'fard', done: true, value: 5, earnedPoints: 20),
-  MockAmalEntry(fieldId: 'takbir', done: true, value: 4, earnedPoints: 4),
-  MockAmalEntry(fieldId: 'morning_azkar', done: true, earnedPoints: 8),
+  MockAmalEntry(fieldId: 'fard', done: true, value: 5, earnedPoints: 30),
+  MockAmalEntry(fieldId: 'takbir', done: true, value: 4, earnedPoints: 8),
+  MockAmalEntry(fieldId: 'morning_azkar', done: true, earnedPoints: 10),
   MockAmalEntry(fieldId: 'evening_azkar', done: false, earnedPoints: 0),
   MockAmalEntry(fieldId: 'quran', done: true, earnedPoints: 10),
   MockAmalEntry(fieldId: 'mulk', done: true, earnedPoints: 10),

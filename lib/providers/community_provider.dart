@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
 
-import '../core/utils/hijri_helper.dart';
+import '../core/services/islamic_date_service.dart';
 import '../models/activity_feed_item_model.dart';
 import '../models/amal_log_model.dart';
 import 'auth_provider.dart';
@@ -41,7 +41,8 @@ class CommunitySheetState {
   final String? error;
   final DocumentSnapshot<Map<String, dynamic>>? lastDoc;
 
-  bool get isToday => selectedDate == HijriHelper.todayString();
+  bool get isToday =>
+      selectedDate == IslamicDateService.getCurrentIslamicDateString();
 
   List<AmalLogModel> filteredRowsExcludingUid(String? currentUid) {
     final lower = searchQuery.trim().toLowerCase();
@@ -98,7 +99,11 @@ final activityFeedProvider = StreamProvider.autoDispose<List<ActivityFeedItemMod
 
 class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
   CommunitySheetNotifier(this._ref)
-    : super(CommunitySheetState.initial(HijriHelper.todayString())) {
+    : super(
+        CommunitySheetState.initial(
+          IslamicDateService.getCurrentIslamicDateString(),
+        ),
+      ) {
     _subscribeToday();
   }
 
@@ -128,7 +133,7 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
       clearError: true,
       clearLastDoc: true,
     );
-    if (hijriDate == HijriHelper.todayString()) {
+    if (hijriDate == IslamicDateService.getCurrentIslamicDateString()) {
       _subscribeToday();
       return;
     }
@@ -179,7 +184,7 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
 
   void _subscribeToday() {
     _todaySub?.cancel();
-    final today = HijriHelper.todayString();
+    final today = IslamicDateService.getCurrentIslamicDateString();
     final fs = _ref.read(firestoreServiceProvider);
     _pagedRows = const <AmalLogModel>[];
     state = state.copyWith(

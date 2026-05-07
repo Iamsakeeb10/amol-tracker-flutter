@@ -1,19 +1,20 @@
 import 'package:hijri/hijri_calendar.dart';
 import 'package:intl/intl.dart';
 
+import '../services/islamic_date_service.dart';
+
 /// Hijri calendar helpers using Bangladesh local day (UTC+6).
 class HijriHelper {
   HijriHelper._();
 
-  /// "Now" in Bangladesh (UTC+6), used for consistent app-wide Hijri day.
+  /// "Now" in Bangladesh, used for consistent app-wide Hijri day.
   static DateTime bangladeshNow() {
-    return DateTime.now().toUtc().add(const Duration(hours: 6));
+    return IslamicDateService.nowInBD();
   }
 
   /// Hijri date string for storage and Firestore: `YYYY-MM-DD`.
   static String todayString() {
-    final h = HijriCalendar.fromDate(bangladeshNow());
-    return _formatStorage(h.hYear, h.hMonth, h.hDay);
+    return IslamicDateService.getCurrentIslamicDateString();
   }
 
   static String _formatStorage(int year, int month, int day) {
@@ -22,10 +23,9 @@ class HijriHelper {
     return '$year-$m-$d';
   }
 
-  /// Display line e.g. `24 Shawwal 1447`.
+  /// Display line using Bengali numerals/month names.
   static String todayDisplayString() {
-    final cal = HijriCalendar.fromDate(bangladeshNow());
-    return '${cal.hDay} ${cal.longMonthName} ${cal.hYear}';
+    return IslamicDateService.getDisplayIslamicDate();
   }
 
   /// English weekday for the Bangladesh calendar day (e.g. `Sunday`).
@@ -46,17 +46,9 @@ class HijriHelper {
     return '${cal.longMonthName} ${cal.hYear}';
   }
 
-  /// e.g. `14 Shawwal 1447` for a storage key.
+  /// Bengali display for a storage key.
   static String displayFromStorage(String hijriYyyyMmDd) {
-    final parts = hijriYyyyMmDd.split('-');
-    if (parts.length != 3) return hijriYyyyMmDd;
-    final y = int.parse(parts[0], radix: 10);
-    final m = int.parse(parts[1], radix: 10);
-    final d = int.parse(parts[2], radix: 10);
-    final base = HijriCalendar();
-    final gDate = base.hijriToGregorian(y, m, d);
-    final cal = HijriCalendar.fromDate(gDate);
-    return '${cal.hDay} ${cal.longMonthName} ${cal.hYear}';
+    return IslamicDateService.displayFromStorageBn(hijriYyyyMmDd);
   }
 
   /// English weekday name for a Hijri calendar date (Bangladesh-local Gregorian mapping).

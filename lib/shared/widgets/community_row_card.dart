@@ -132,11 +132,21 @@ class CommunityRowCard extends StatelessWidget {
                 isPinned: isPinned,
               ),
               for (final col in kCommunityColumns)
-                _StatusCell(
-                  width: kCommunityAmalColWidth,
-                  isDone: log.toggles[col.id] ?? false,
-                  pending: isPending && isToday,
-                ),
+                () {
+                  final field = kAmalFields.firstWhere((f) => f.id == col.id);
+                  if (field.type == AmalType.numeric) {
+                    return _NumericCell(
+                      width: kCommunityAmalColWidth,
+                      value: getNumericValue(log.toggles[col.id], field.maxValue),
+                      pending: isPending && isToday,
+                    );
+                  }
+                  return _StatusCell(
+                    width: kCommunityAmalColWidth,
+                    isDone: _toBool(log.toggles[col.id]),
+                    pending: isPending && isToday,
+                  );
+                }(),
               _ScoreCell(
                 width: kCommunityScoreColWidth,
                 scoreLabel: isPending ? '--' : '${log.score}',
@@ -148,6 +158,12 @@ class CommunityRowCard extends StatelessWidget {
       ),
     );
   }
+}
+
+bool _toBool(dynamic value) {
+  if (value is bool) return value;
+  if (value is int) return value > 0;
+  return false;
 }
 
 class _HeaderCell extends StatelessWidget {
@@ -275,6 +291,72 @@ class _StatusCell extends StatelessWidget {
       ),
     );
   }
+}
+
+class _NumericCell extends StatelessWidget {
+  const _NumericCell({
+    required this.width,
+    required this.value,
+    required this.pending,
+  });
+
+  final double width;
+  final int value;
+  final bool pending;
+
+  @override
+  Widget build(BuildContext context) {
+    if (pending) {
+      return Container(
+        width: width.w,
+        height: 46.h,
+        decoration: const BoxDecoration(
+          border: Border(
+            right: BorderSide(color: AppColors.cardBorder),
+          ),
+        ),
+        child: Center(
+          child: Icon(
+            Icons.hourglass_top_rounded,
+            color: AppColors.textMuted,
+            size: 17.sp,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: width.w,
+      height: 46.h,
+      decoration: const BoxDecoration(
+        border: Border(
+          right: BorderSide(color: AppColors.cardBorder),
+        ),
+      ),
+      child: Center(
+        child: Container(
+          constraints: BoxConstraints(minWidth: 32.w),
+          alignment: Alignment.center,
+          child: Text(
+            _toBengaliNumeral(value),
+            style: AppTextStyles.bodyMedium(context).copyWith(
+              color: value > 0 ? AppColors.gold : AppColors.textMuted,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _toBengaliNumeral(int number) {
+  const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  return number
+      .toString()
+      .split('')
+      .map((digit) => bnDigits[int.parse(digit)])
+      .join();
 }
 
 class _ScoreCell extends StatelessWidget {

@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:hijri/hijri_calendar.dart';
 
 import 'dua_push_gateway_service.dart';
+import 'islamic_date_service.dart';
+import '../constants/amal_fields.dart';
 import '../utils/hijri_helper.dart';
 import '../../models/activity_feed_item_model.dart';
 import '../../models/amal_log_model.dart';
@@ -70,7 +72,8 @@ class FirestoreService {
     }
     if (logFields.isEmpty) return;
 
-    final todayDocId = '${uid}_${HijriHelper.todayString()}';
+    final todayDocId =
+        '${uid}_${IslamicDateService.getCurrentIslamicDateString()}';
     final todayRef = _amalLogs.doc(todayDocId);
     final todaySnap = await todayRef.get();
     if (todaySnap.exists) {
@@ -161,7 +164,16 @@ class FirestoreService {
   }
 
   Future<void> saveAmalLog(AmalLogModel log) async {
-    await _amalLogs.doc(log.docId).set(log.toFirestoreMap());
+    final map = log.toFirestoreMap();
+    final fardField = kAmalFields.firstWhere((f) => f.id == 'fard');
+    final takbirField = kAmalFields.firstWhere((f) => f.id == 'takbir');
+    final fard = getNumericValue(map['fard'], fardField.maxValue);
+    map['fard'] = fard;
+    map['takbir'] = getNumericValue(
+      map['takbir'],
+      takbirField.maxValue,
+    ).clamp(0, fard);
+    await _amalLogs.doc(log.docId).set(map);
   }
 
   /// Updates [lastLogDate] (Hijri `YYYY-MM-DD`) after a successful submit.

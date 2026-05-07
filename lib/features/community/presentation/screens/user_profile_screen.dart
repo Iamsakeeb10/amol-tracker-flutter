@@ -23,6 +23,16 @@ import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 
+const _kDuaPhrases = [
+  'মাশা আল্লাহ',
+  'আলহামদুলিল্লাহ',
+  'সুবহানাল্লাহ',
+  'আল্লাহু আকবার',
+  'জাযাকাল্লাহু খায়রান',
+  'বারাকাল্লাহু ফিক',
+  'আমীন',
+];
+
 class UserProfileScreen extends ConsumerStatefulWidget {
   final String userId;
   final String? selectedHijriDate;
@@ -309,12 +319,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       child: ElevatedButton.icon(
                         onPressed: _sendingDua || me == null
                             ? null
-                            : () => _sendDua(
-                                context,
-                                fs,
-                                me.uid,
-                                widget.userId,
-                                me.isAnonymousDisplay
+                            : () => _showDuaSheet(
+                                context: context,
+                                fs: fs,
+                                senderUid: me.uid,
+                                recipientUid: widget.userId,
+                                senderName: me.isAnonymousDisplay
                                     ? l10n.anonymous
                                     : (me.name.trim().isEmpty
                                           ? l10n.communityMember
@@ -378,13 +388,46 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     );
   }
 
-  Future<void> _sendDua(
-    BuildContext context,
-    FirestoreService fs,
-    String senderUid,
-    String recipientUid,
-    String senderName,
-  ) async {
+  Future<void> _showDuaSheet({
+    required BuildContext context,
+    required FirestoreService fs,
+    required String senderUid,
+    required String recipientUid,
+    required String senderName,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.emeraldMid,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (_) {
+        return _DuaSheet(
+          onSend: (selectedPhrase) {
+            final message = '$senderName: $selectedPhrase 🤲';
+            return _sendDua(
+              context: context,
+              fs: fs,
+              senderUid: senderUid,
+              recipientUid: recipientUid,
+              senderName: senderName,
+              message: message,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<bool> _sendDua({
+    required BuildContext context,
+    required FirestoreService fs,
+    required String senderUid,
+    required String recipientUid,
+    required String senderName,
+    required String message,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
     debugPrint('👆 Send Dua pressed sender=$senderUid recipient=$recipientUid');
     setState(() => _sendingDua = true);
@@ -397,27 +440,128 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       );
       if (exists) {
         debugPrint('⛔ blocked_already_sent recipient=$recipientUid');
-        if (!context.mounted) return;
+        if (!context.mounted) return false;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.alreadySentDuaToday)));
-        return;
+        return false;
       }
       await fs.sendDua(
         senderUid: senderUid,
         senderName: senderName,
         recipientUid: recipientUid,
         hijriDate: today,
-        message: l10n.duaFromSender(senderName),
+        message: message,
       );
       debugPrint('🎉 Send Dua completed recipient=$recipientUid');
-      if (!context.mounted) return;
+      if (!context.mounted) return false;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.duaSent)));
+      return true;
     } finally {
       if (mounted) setState(() => _sendingDua = false);
     }
+  }
+}
+
+class _DuaSheet extends StatefulWidget {
+  const _DuaSheet({required this.onSend});
+
+  final Future<bool> Function(String selectedPhrase) onSend;
+
+  @override
+  State<_DuaSheet> createState() => _DuaSheetState();
+}
+
+class _DuaSheetState extends State<_DuaSheet> {
+  String? _selectedPhrase;
+  bool _isSending = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final isDisabled = _isSending || _selectedPhrase == null;
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h + bottomInset),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 44.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: AppColors.cardBorder,
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 14.h),
+            Text(
+              'দোয়া বেছে নিন',
+              style: AppTextStyles.headlineMedium(context),
+            ),
+            SizedBox(height: 12.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: _kDuaPhrases.map((phrase) {
+                final selected = _selectedPhrase == phrase;
+                return ChoiceChip(
+                  label: Text(
+                    phrase,
+                    style: AppTextStyles.bodyMedium(context).copyWith(
+                      color: selected ? AppColors.gold : AppColors.textMuted,
+                    ),
+                  ),
+                  selected: selected,
+                  backgroundColor: AppColors.cardDark,
+                  selectedColor: AppColors.goldCard,
+                  side: BorderSide(
+                    color: selected ? AppColors.goldBorder : AppColors.cardBorder,
+                  ),
+                  onSelected: (value) {
+                    setState(() => _selectedPhrase = value ? phrase : null);
+                  },
+                );
+              }).toList(),
+            ),
+            SizedBox(height: 14.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isDisabled
+                    ? null
+                    : () async {
+                        setState(() => _isSending = true);
+                        final didSend = await widget.onSend(_selectedPhrase!);
+                        if (!mounted) return;
+                        setState(() => _isSending = false);
+                        if (didSend) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                child: _isSending
+                    ? SizedBox(
+                        width: 16.r,
+                        height: 16.r,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.emeraldDeep,
+                          ),
+                        ),
+                      )
+                    : const Text('পাঠান'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

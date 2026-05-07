@@ -49,6 +49,13 @@ class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
     final selected = await showTimePicker(
       context: context,
       initialTime: start ? _from : _to,
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        return MediaQuery(
+          data: mediaQuery.copyWith(alwaysUse24HourFormat: false),
+          child: child!,
+        );
+      },
     );
     if (selected == null) return;
     setState(() {

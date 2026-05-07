@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-/// Formats notification times in Bangladesh-friendly 12-hour style.
+/// Formats notification times as 12-hour (h:mm a) in the app locale (en/bn).
 String formatBdTime(BuildContext context, TimeOfDay time) {
-  return MaterialLocalizations.of(context).formatTimeOfDay(
-    time,
-    alwaysUse24HourFormat: false,
-  );
+  final locale = Localizations.localeOf(context).toString();
+  final dt = DateTime(2000, 1, 1, time.hour, time.minute);
+  return DateFormat('h:mm a', locale).format(dt);
 }

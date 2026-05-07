@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'core/services/notification_service.dart';
 import 'core/router/router.dart';
+import 'core/services/notification_service.dart';
 import 'core/theme/theme.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/locale_provider.dart';
@@ -58,6 +58,14 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       theme: AppTheme.build(context),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQueryData.fromView(
+            View.of(context),
+          ).copyWith(alwaysUse24HourFormat: false),
+          child: child!,
+        );
+      },
       routerConfig: _router,
     );
   }

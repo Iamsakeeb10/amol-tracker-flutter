@@ -23,6 +23,13 @@ class ReminderTimesScreen extends ConsumerWidget {
     final selected = await showTimePicker(
       context: context,
       initialTime: prefs.morningTime,
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        return MediaQuery(
+          data: mediaQuery.copyWith(alwaysUse24HourFormat: false),
+          child: child!,
+        );
+      },
     );
     if (selected == null) return;
     await ref.read(notificationPrefsProvider.notifier).setMorningTime(selected);
@@ -36,6 +43,13 @@ class ReminderTimesScreen extends ConsumerWidget {
     final selected = await showTimePicker(
       context: context,
       initialTime: prefs.eveningTime,
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        return MediaQuery(
+          data: mediaQuery.copyWith(alwaysUse24HourFormat: false),
+          child: child!,
+        );
+      },
     );
     if (selected == null) return;
     await ref.read(notificationPrefsProvider.notifier).setEveningTime(selected);

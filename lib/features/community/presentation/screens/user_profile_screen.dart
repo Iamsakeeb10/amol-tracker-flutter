@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
@@ -79,7 +80,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         stream: fs.userStream(widget.userId),
         builder: (context, userSnap) {
           if (userSnap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const _UserProfileLoadingShimmer();
           }
           final user = userSnap.data;
           if (user == null) {
@@ -99,7 +100,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             builder: (context, dataSnap) {
               if (dataSnap.connectionState == ConnectionState.waiting &&
                   !dataSnap.hasData) {
-                return const Center(child: CircularProgressIndicator());
+                return const _UserProfileLoadingShimmer();
               }
               if (dataSnap.hasError) {
                 debugPrint('[UserProfileError] ${dataSnap.error}');
@@ -573,4 +574,109 @@ class _ProfileData {
   final List<AmalLogModel> weeklyLogs;
   final int avgScore;
   final String effectiveDate;
+}
+
+class _UserProfileLoadingShimmer extends StatelessWidget {
+  const _UserProfileLoadingShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.cardDark,
+      highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: ListView(
+        padding: EdgeInsets.fromLTRB(0, 6.h, 0, 24.h),
+        children: [
+          Center(
+            child: Container(
+              width: 76.r,
+              height: 76.r,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Center(
+            child: Container(
+              width: 160.w,
+              height: 18.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+          ),
+          SizedBox(height: 14.h),
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 8.h,
+            crossAxisSpacing: 8.w,
+            childAspectRatio: 1.2,
+            children: List.generate(
+              3,
+              (_) => Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Container(
+            width: 110.w,
+            height: 16.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Container(
+            padding: EdgeInsets.all(12.r),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: Column(
+              children: List.generate(
+                5,
+                (index) => Padding(
+                  padding: EdgeInsets.only(bottom: index == 4 ? 0 : 8.h),
+                  child: Container(
+                    height: 40.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Container(
+            width: 90.w,
+            height: 16.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Container(
+            height: 130.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/firestore_service.dart';
@@ -75,7 +76,7 @@ class NotificationsScreen extends ConsumerWidget {
         ],
       ),
       body: notifications.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const _NotificationsLoadingShimmer(),
         error: (_, _) => Center(
           child: Text(
             l10n.failedLoadNotifications,
@@ -98,6 +99,72 @@ class NotificationsScreen extends ConsumerWidget {
             itemBuilder: (_, i) => _NotificationRow(item: rows[i]),
           );
         },
+      ),
+    );
+  }
+}
+
+class _NotificationsLoadingShimmer extends StatelessWidget {
+  const _NotificationsLoadingShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.cardDark,
+      highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: ListView.separated(
+        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
+        itemCount: 6,
+        separatorBuilder: (_, _) => SizedBox(height: 8.h),
+        itemBuilder: (_, _) => CardContainer(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+          child: Row(
+            children: [
+              Container(
+                width: 36.r,
+                height: 36.r,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 90.w,
+                      height: 12.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Container(
+                      width: double.infinity,
+                      height: 10.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Container(
+                      width: 120.w,
+                      height: 10.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

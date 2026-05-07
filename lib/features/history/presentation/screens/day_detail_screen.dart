@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart' as amal_const;
 import '../../../../core/router/routes.dart';
@@ -38,7 +39,7 @@ class DayDetailScreen extends ConsumerWidget {
 
     return asyncLog.when(
       loading: () => AppScaffold(
-        body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
+        body: const _DayDetailLoadingShimmer(),
       ),
       error: (_, _) => AppScaffold(
         body: Center(
@@ -190,6 +191,78 @@ class DayDetailScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _DayDetailLoadingShimmer extends StatelessWidget {
+  const _DayDetailLoadingShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.cardDark,
+      highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: ListView(
+        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 24.h),
+        children: [
+          Container(
+            width: 110.w,
+            height: 14.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 92.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Container(
+                  height: 92.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Container(
+            width: 70.w,
+            height: 16.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          ...List.generate(
+            6,
+            (_) => Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: Container(
+                height: 56.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

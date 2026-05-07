@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
@@ -129,19 +130,7 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
                       ).copyWith(color: AppColors.textMuted),
                     )
                   else
-                    SizedBox(
-                      height: 48.h,
-                      child: Center(
-                        child: SizedBox(
-                          width: 22.r,
-                          height: 22.r,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.gold,
-                          ),
-                        ),
-                      ),
-                    ),
+                    const _HadithLoadingShimmer(),
                 ],
               ),
             ),
@@ -195,6 +184,50 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _HadithLoadingShimmer extends StatelessWidget {
+  const _HadithLoadingShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.cardDark,
+      highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 2.h),
+          Container(
+            width: double.infinity,
+            height: 11.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6.r),
+            ),
+          ),
+          SizedBox(height: 7.h),
+          Container(
+            width: double.infinity,
+            height: 11.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6.r),
+            ),
+          ),
+          SizedBox(height: 7.h),
+          Container(
+            width: 160.w,
+            height: 11.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6.r),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
@@ -221,12 +222,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             SizedBox(height: 6.h),
             if (amal.isLoading)
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 24.h),
-                child: Center(
-                  child: CircularProgressIndicator(color: AppColors.gold),
-                ),
-              )
+              const _HomeAmalLoadingShimmer()
             else
               ...kAmalFields.map(
                 (f) => Padding(
@@ -343,6 +339,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     } else {
       context.push(AppRoutes.dayComplete, extra: result.log);
     }
+  }
+}
+
+class _HomeAmalLoadingShimmer extends StatelessWidget {
+  const _HomeAmalLoadingShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 10.h),
+      child: Shimmer.fromColors(
+        baseColor: AppColors.cardDark,
+        highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+        child: Column(
+          children: List.generate(
+            kAmalFields.length,
+            (index) => Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: Container(
+                height: 56.h,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -1,5 +1,3 @@
-import 'dart:developer' as developer;
-
 import 'package:hijri/hijri_calendar.dart';
 
 /// What to do after submitting today's log, based on [lastLogDate] vs [todayHijri].
@@ -74,18 +72,8 @@ StreakResult computeStreakResult({
   required int bestStreak,
   required bool streakFreezeUsed,
 }) {
-  developer.log(
-    '[StreakHelper] computeStreakResult(lastLogDate=$lastLogDate, todayHijri=$todayHijri, '
-    'currentStreak=$currentStreak, bestStreak=$bestStreak, streakFreezeUsed=$streakFreezeUsed)',
-    name: 'StreakHelper',
-  );
-
   if (lastLogDate.isEmpty) {
     const newStreak = 1;
-    developer.log(
-      '[StreakHelper] No lastLogDate; starting new streak at $newStreak (best=${newStreak > bestStreak ? newStreak : bestStreak})',
-      name: 'StreakHelper',
-    );
     return StreakResult(
       action: StreakAction.increment,
       newCurrentStreak: newStreak,
@@ -99,11 +87,6 @@ StreakResult computeStreakResult({
     lastG = hijriStorageStringToGregorian(lastLogDate);
     todayG = hijriStorageStringToGregorian(todayHijri);
   } catch (_) {
-    developer.log(
-      '[StreakHelper] Failed to parse Hijri dates (lastLogDate=$lastLogDate, todayHijri=$todayHijri); '
-      'resetting streak to 1 and keeping bestStreak=$bestStreak',
-      name: 'StreakHelper',
-    );
     return StreakResult(
       action: StreakAction.reset,
       newCurrentStreak: 1,
@@ -112,17 +95,9 @@ StreakResult computeStreakResult({
   }
 
   final diffDays = _calendarDaysBetween(lastG, todayG);
-  developer.log(
-    '[StreakHelper] diffDays between lastG=$lastG and todayG=$todayG is $diffDays',
-    name: 'StreakHelper',
-  );
 
   if (diffDays <= 0) {
     final keep = currentStreak > 0 ? currentStreak : 1;
-    developer.log(
-      '[StreakHelper] diffDays<=0; keeping streak at $keep (best=${keep > bestStreak ? keep : bestStreak})',
-      name: 'StreakHelper',
-    );
     return StreakResult(
       action: StreakAction.increment,
       newCurrentStreak: keep,
@@ -137,11 +112,6 @@ StreakResult computeStreakResult({
     final baselineCurrent = currentStreak <= 0 ? 1 : currentStreak;
     final newCurrent = baselineCurrent + 1;
     final newBest = newCurrent > bestStreak ? newCurrent : bestStreak;
-    developer.log(
-      '[StreakHelper] Consecutive day; incrementing streak from baseline=$baselineCurrent '
-      'to $newCurrent (best=$newBest)',
-      name: 'StreakHelper',
-    );
     return StreakResult(
       action: StreakAction.increment,
       newCurrentStreak: newCurrent,
@@ -150,11 +120,6 @@ StreakResult computeStreakResult({
   }
 
   if (diffDays == 2 && !streakFreezeUsed) {
-    developer.log(
-      '[StreakHelper] Missed exactly one day and freeze not used; showing freeze modal, '
-      'keeping currentStreak=$currentStreak, bestStreak=$bestStreak',
-      name: 'StreakHelper',
-    );
     return StreakResult(
       action: StreakAction.showFreeze,
       newCurrentStreak: currentStreak,
@@ -162,10 +127,6 @@ StreakResult computeStreakResult({
     );
   }
 
-  developer.log(
-    '[StreakHelper] Gap too large or freeze already used; resetting streak to 1 (bestStreak=$bestStreak)',
-    name: 'StreakHelper',
-  );
   return StreakResult(
     action: StreakAction.reset,
     newCurrentStreak: 1,

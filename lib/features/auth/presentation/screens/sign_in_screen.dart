@@ -1,17 +1,13 @@
-import 'dart:developer' as developer;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../core/router/routes.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
@@ -24,24 +20,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   bool _isSigningIn = false;
 
   Future<void> _handleGoogleSignIn() async {
-    developer.log('Starting Google sign-in flow.', name: 'SignInScreen');
     setState(() => _isSigningIn = true);
     try {
-      developer.log(
-        'Calling authService.signInWithGoogle().',
-        name: 'SignInScreen',
-      );
       await ref.read(authServiceProvider).signInWithGoogle();
       await NotificationService.instance.syncFcmTokenNow();
-      developer.log('Google sign-in successful.', name: 'SignInScreen');
       if (!mounted) return;
-    } catch (e, stackTrace) {
-      developer.log(
-        'Error during Google sign-in.',
-        name: 'SignInScreen',
-        error: e,
-        stackTrace: stackTrace,
-      );
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -49,10 +33,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         ),
       );
     } finally {
-      developer.log(
-        'Stopping Google sign-in loading state.',
-        name: 'SignInScreen',
-      );
       if (mounted) {
         setState(() => _isSigningIn = false);
       }
@@ -60,24 +40,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   }
 
   Future<void> _handleGuestSignIn() async {
-    developer.log('Starting guest sign-in flow.', name: 'SignInScreen');
     setState(() => _isSigningIn = true);
     try {
-      developer.log(
-        'Calling authService.signInAnonymously().',
-        name: 'SignInScreen',
-      );
       await ref.read(authServiceProvider).signInAnonymously();
       await NotificationService.instance.syncFcmTokenNow();
-      developer.log('Guest sign-in successful.', name: 'SignInScreen');
       if (!mounted) return;
-    } catch (e, stackTrace) {
-      developer.log(
-        'Error during guest sign-in.',
-        name: 'SignInScreen',
-        error: e,
-        stackTrace: stackTrace,
-      );
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -85,10 +53,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         ),
       );
     } finally {
-      developer.log(
-        'Stopping guest sign-in loading state.',
-        name: 'SignInScreen',
-      );
       if (mounted) {
         setState(() => _isSigningIn = false);
       }
@@ -218,19 +182,19 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               SizedBox(height: 24.h),
             ],
           ),
-          Positioned(
-            top: 8.h,
-            right: 4.w,
-            child: TextButton(
-              onPressed: () => context.go(AppRoutes.dev),
-              child: Text(
-                'DEV',
-                style: AppTextStyles.label(
-                  context,
-                ).copyWith(color: AppColors.gold),
-              ),
-            ),
-          ),
+          // Positioned(
+          //   top: 8.h,
+          //   right: 4.w,
+          //   child: TextButton(
+          //     onPressed: () => context.go(AppRoutes.dev),
+          //     child: Text(
+          //       'DEV',
+          //       style: AppTextStyles.label(
+          //         context,
+          //       ).copyWith(color: AppColors.gold),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

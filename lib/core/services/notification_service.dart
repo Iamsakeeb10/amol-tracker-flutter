@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -130,42 +129,15 @@ class NotificationService {
 
   Future<void> _syncFcmToken() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      developer.log(
-        'FCM sync skipped: no logged in user',
-        name: 'NotificationService',
-      );
-      return;
-    }
+    if (user == null) return;
     final token = await _messaging.getToken();
-    if (token == null || token.isEmpty) {
-      developer.log(
-        'FCM sync failed: token is null/empty for uid=${user.uid}',
-        name: 'NotificationService',
-      );
-      return;
-    }
-    final preview = token.substring(0, token.length > 14 ? 14 : token.length);
-    developer.log(
-      'FCM token fetched uid=${user.uid} tokenPrefix=$preview',
-      name: 'NotificationService',
-    );
+    if (token == null || token.isEmpty) return;
     final userRef = FirebaseFirestore.instance
         .collection('users')
         .doc(user.uid);
     final userSnap = await userRef.get();
-    if (!userSnap.exists) {
-      developer.log(
-        'FCM sync deferred: user doc not created yet for uid=${user.uid}',
-        name: 'NotificationService',
-      );
-      return;
-    }
+    if (!userSnap.exists) return;
     await userRef.set({'fcmToken': token}, SetOptions(merge: true));
-    developer.log(
-      'FCM token saved to Firestore for uid=${user.uid}',
-      name: 'NotificationService',
-    );
   }
 
   Future<void> scheduleAll() async {
@@ -330,7 +302,8 @@ class NotificationService {
     await _safeZonedSchedule(
       id: _eveningId,
       title: 'আসরের পর — সন্ধ্যার প্রস্তুতি',
-      body: 'সন্ধ্যার আযকারের সময় হয়ে আসছে। মাগরিবের আগেই আমলনামা সাজিয়ে নিন।',
+      body:
+          'সন্ধ্যার আযকারের সময় হয়ে আসছে। মাগরিবের আগেই আমলনামা সাজিয়ে নিন।',
       scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -469,13 +442,7 @@ class NotificationService {
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));
       return;
-    } catch (e) {
-      developer.log(
-        'FlutterTimezone failed.',
-        name: 'NotificationService',
-        error: e,
-      );
-    }
+    } catch (_) {}
     try {
       tz.setLocalLocation(tz.getLocation(_offsetMapTimeZone()));
     } catch (_) {

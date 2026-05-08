@@ -1,5 +1,3 @@
-import 'dart:developer' as developer;
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
@@ -283,27 +281,12 @@ class AmalNotifier extends StateNotifier<AmalState> {
       submittedAt: now,
     );
 
-    developer.log(
-      '[AmalSubmit] uid=${user.uid} hijri=$hijri score=$score '
-      'currentStreak=${user.currentStreak} bestStreak=${user.bestStreak} '
-      'lastLogDate=${user.lastLogDate} streakFreezeUsed=${user.streakFreezeUsed}',
-      name: 'AmalProvider',
-    );
-
     final streakResult = computeStreakResult(
       lastLogDate: user.lastLogDate,
       todayHijri: hijri,
       currentStreak: user.currentStreak,
       bestStreak: user.bestStreak,
       streakFreezeUsed: !freezeAvailableThisWeek,
-    );
-
-    developer.log(
-      '[AmalSubmit] StreakResult for uid=${user.uid}: '
-      'action=${streakResult.action}, '
-      'newCurrentStreak=${streakResult.newCurrentStreak}, '
-      'newBestStreak=${streakResult.newBestStreak}',
-      name: 'AmalProvider',
     );
 
     state = state.copyWith(isLoading: true, clearError: true);
@@ -316,12 +299,6 @@ class AmalNotifier extends StateNotifier<AmalState> {
         switch (streakResult.action) {
           case StreakAction.increment:
           case StreakAction.reset:
-            developer.log(
-              '[AmalSubmit] Calling updateStreak for uid=${user.uid} with '
-              'currentStreak=${streakResult.newCurrentStreak}, '
-              'bestStreak=${streakResult.newBestStreak}, lastLogDate=$hijri',
-              name: 'AmalProvider',
-            );
             await fs.updateStreak(
               user.uid,
               currentStreak: streakResult.newCurrentStreak,
@@ -341,11 +318,6 @@ class AmalNotifier extends StateNotifier<AmalState> {
             );
             break;
           case StreakAction.showFreeze:
-            developer.log(
-              '[AmalSubmit] Calling updateStreak (freeze only) for uid=${user.uid} '
-              'with lastLogDate=$hijri',
-              name: 'AmalProvider',
-            );
             await fs.updateStreak(
               user.uid,
               streakFreezeUsed: user.streakFreezeWeekKey != currentWeekKey
@@ -365,19 +337,9 @@ class AmalNotifier extends StateNotifier<AmalState> {
         }
       } catch (e) {
         // Streak fields can sync later; log doc is saved.
-        developer.log(
-          '[AmalSubmit] Error while updating streak for uid=${user.uid}.',
-          name: 'AmalProvider',
-          error: e,
-        );
       }
-    } catch (e) {
+    } catch (_) {
       // Offline or write failure: cache locally; Firestore will sync when possible.
-      developer.log(
-        '[AmalSubmit] Error while saving amal log for uid=${user.uid}.',
-        name: 'AmalProvider',
-        error: e,
-      );
       submitWarning = 'Saved locally - will sync when back online.';
     } finally {
       await LocalStorageService.saveLog(

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -32,19 +31,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _isAnonymousDisplay = false;
   bool _notificationRequested = false;
   String _displayName = '';
-
-  void _logOnboardingEvent(String message) {
-    developer.log(message, name: 'Onboarding');
-  }
-
-  void _logOnboardingError(Object error, StackTrace stackTrace) {
-    developer.log(
-      'Failed to complete onboarding',
-      name: 'Onboarding',
-      error: error,
-      stackTrace: stackTrace,
-    );
-  }
 
   List<_SlideData> _slides(AppLocalizations l10n) => <_SlideData>[
     _SlideData(
@@ -86,12 +72,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
       return;
     }
-    _logOnboardingEvent('Get started button pressed');
     await _completeOnboarding();
   }
 
   Future<void> _skip() {
-    _logOnboardingEvent('Skip button pressed');
     return _completeOnboarding();
   }
 
@@ -160,14 +144,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<bool> _persistOnboardingData(UserModel user) async {
     try {
-      _logOnboardingEvent('Creating user doc for uid=${user.uid}');
       await ref.read(firestoreServiceProvider).createUser(user);
-      _logOnboardingEvent('User doc created successfully');
       await NotificationService.instance.syncFcmTokenNow();
-      _logOnboardingEvent('FCM token synced after onboarding');
       return true;
-    } catch (e, st) {
-      _logOnboardingError(e, st);
+    } catch (_, __) {
       return false;
     }
   }

@@ -1,5 +1,3 @@
-import 'dart:developer' as developer;
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hijri/hijri_calendar.dart';
 
@@ -381,10 +379,6 @@ class FirestoreService {
         .where('hijriDate', isEqualTo: hijriDate)
         .limit(1)
         .get();
-    developer.log(
-      '🧪 hasSentDuaToday sender=$senderUid recipient=$recipientUid hijriDate=$hijriDate found=${query.docs.isNotEmpty}',
-      name: 'FirestoreService',
-    );
     return query.docs.isNotEmpty;
   }
 
@@ -395,10 +389,6 @@ class FirestoreService {
     required String message,
     required String hijriDate,
   }) async {
-    developer.log(
-      '🕊️ sendDua start sender=$senderUid recipient=$recipientUid hijriDate=$hijriDate',
-      name: 'FirestoreService',
-    );
     final notificationRef = await _notificationItems(recipientUid)
         .add(<String, dynamic>{
           'type': 'dua',
@@ -423,10 +413,6 @@ class FirestoreService {
       final recipientToken = (recipientUser.data()?['fcmToken'] as String?)
           ?.trim();
       if (recipientToken != null && recipientToken.isNotEmpty) {
-        developer.log(
-          '🚀 gateway_call_start recipient=$recipientUid tokenPrefix=${recipientToken.substring(0, recipientToken.length > 12 ? 12 : recipientToken.length)}',
-          name: 'FirestoreService',
-        );
         await _duaPushGateway.sendDuaPush(
           recipientFcmToken: recipientToken,
           senderUid: senderUid,
@@ -435,23 +421,9 @@ class FirestoreService {
           message: message,
           notificationId: notificationRef.id,
         );
-        developer.log(
-          '✅ gateway_call_done recipient=$recipientUid notificationId=${notificationRef.id}',
-          name: 'FirestoreService',
-        );
-      } else {
-        developer.log(
-          '⚠️ skip_gateway_missing_token recipient=$recipientUid',
-          name: 'FirestoreService',
-        );
       }
-    } catch (e) {
+    } catch (_) {
       // Never block dua write flow if push gateway fails.
-      developer.log(
-        '❌ push gateway failed.',
-        name: 'FirestoreService',
-        error: e,
-      );
     }
   }
 

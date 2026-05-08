@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 
 import 'package:flutter/services.dart';
 
@@ -23,13 +22,7 @@ class HadithAssetService {
           .map(_formatHadith)
           .where((hadith) => hadith.isNotEmpty)
           .toList(growable: false);
-    } catch (error, stackTrace) {
-      developer.log(
-        'Failed to load hadith asset.',
-        name: 'HadithAssetService',
-        error: error,
-        stackTrace: stackTrace,
-      );
+    } catch (_, __) {
       return const [];
     }
   }

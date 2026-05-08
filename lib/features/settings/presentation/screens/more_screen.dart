@@ -7,6 +7,7 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/time_display_helper.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -15,7 +16,6 @@ import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 import '../../../../shared/widgets/toggle_row.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
@@ -58,12 +58,12 @@ class MoreScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () => context.push(AppRoutes.dev),
-                icon: Icon(Icons.bug_report_outlined, size: 22.r),
-                color: AppColors.textMuted,
-                tooltip: l10n.devMenu,
-              ),
+              // IconButton(
+              //   onPressed: () => context.push(AppRoutes.dev),
+              //   icon: Icon(Icons.bug_report_outlined, size: 22.r),
+              //   color: AppColors.textMuted,
+              //   tooltip: l10n.devMenu,
+              // ),
             ],
           ),
           SizedBox(height: 12.h),
@@ -153,25 +153,25 @@ class MoreScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(height: 18.h),
-          SectionHeader(title: l10n.emptyDevSection),
-          CardContainer(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-            child: Column(
-              children: [
-                NavRow(
-                  icon: Icons.hourglass_empty,
-                  title: l10n.emptyStatePreview,
-                  onTap: () => context.push(AppRoutes.emptyState),
-                ),
-                const Divider(),
-                NavRow(
-                  icon: Icons.list_alt_rounded,
-                  title: l10n.devMenuAllScreens,
-                  onTap: () => context.push(AppRoutes.dev),
-                ),
-              ],
-            ),
-          ),
+          // SectionHeader(title: l10n.emptyDevSection),
+          // CardContainer(
+          //   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+          //   child: Column(
+          //     children: [
+          //       NavRow(
+          //         icon: Icons.hourglass_empty,
+          //         title: l10n.emptyStatePreview,
+          //         onTap: () => context.push(AppRoutes.emptyState),
+          //       ),
+          //       const Divider(),
+          //       NavRow(
+          //         icon: Icons.list_alt_rounded,
+          //         title: l10n.devMenuAllScreens,
+          //         onTap: () => context.push(AppRoutes.dev),
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );

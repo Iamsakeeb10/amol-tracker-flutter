@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -45,7 +44,6 @@ class DuaPushGatewayService {
     final authUser = FirebaseAuth.instance.currentUser;
     final idToken = await authUser?.getIdToken();
     if (idToken == null || idToken.isEmpty) {
-      developer.log('Missing sender idToken.', name: 'DuaPushGatewayService');
       return;
     }
 
@@ -72,12 +70,7 @@ class DuaPushGatewayService {
 
     final response = await request.close().timeout(const Duration(seconds: 8));
     if (response.statusCode >= 400) {
-      final body = await utf8.decoder.bind(response).join();
-      developer.log(
-        'Gateway failed with status ${response.statusCode}.',
-        name: 'DuaPushGatewayService',
-        error: body,
-      );
+      await utf8.decoder.bind(response).join();
     }
   }
 }

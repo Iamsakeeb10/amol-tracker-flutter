@@ -1,5 +1,3 @@
-import 'dart:developer' as developer;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -114,13 +112,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   !dataSnap.hasData) {
                 return const _UserProfileLoadingShimmer();
               }
-              if (dataSnap.hasError) {
-                developer.log(
-                  '[UserProfileError]',
-                  name: 'UserProfileScreen',
-                  error: dataSnap.error,
-                );
-              }
               final profileData = dataSnap.data;
               final selectedLog = profileData?.selectedLog;
               final weekly = profileData?.weeklyLogs ?? const <AmalLogModel>[];
@@ -143,10 +134,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   : (user.name.trim().isEmpty
                         ? l10n.communityMember
                         : user.name.trim());
-              developer.log(
-                '[UserProfileBuild] uid=${user.uid} date=$effectiveDate selectedScore=$selectedScore selectedLogPresent=${selectedLog != null} displayStreakCurrent=${displayStreak.currentStreak} rawCurrent=${user.currentStreak}',
-                name: 'UserProfileScreen',
-              );
 
               return ListView(
                 padding: EdgeInsets.fromLTRB(0, 6.h, 0, 24.h),
@@ -364,32 +351,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         ? widget.selectedLogFallback
         : null;
     final selectedLog = await fs.getLog(uid, effectiveDate);
-    developer.log(
-      '[UserProfile] uid=$uid date=$effectiveDate fetched=${selectedLog != null} fallback=${fallback != null}',
-      name: 'UserProfileScreen',
-    );
-    if (fallback != null) {
-      developer.log(
-        '[UserProfileFallback] uid=${fallback.uid} date=${fallback.hijriDate} score=${fallback.score} toggles=${fallback.toggles}',
-        name: 'UserProfileScreen',
-      );
-    }
-    if (selectedLog != null) {
-      developer.log(
-        '[UserProfileFetched] uid=${selectedLog.uid} date=${selectedLog.hijriDate} score=${selectedLog.score} toggles=${selectedLog.toggles}',
-        name: 'UserProfileScreen',
-      );
-    }
     List<AmalLogModel> weekly = const <AmalLogModel>[];
     try {
       weekly = await fs.getRecentLogs(uid, limit: 7);
-    } catch (e) {
-      developer.log(
-        '[UserProfileWeeklyError] uid=$uid',
-        name: 'UserProfileScreen',
-        error: e,
-      );
-    }
+    } catch (_) {}
     final avgScore = weekly.isEmpty
         ? 0
         : (weekly.map((e) => e.score).reduce((a, b) => a + b) / weekly.length)
@@ -443,10 +408,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     required String message,
   }) async {
     final l10n = AppLocalizations.of(context)!;
-    developer.log(
-      '👆 Send Dua pressed sender=$senderUid recipient=$recipientUid',
-      name: 'UserProfileScreen',
-    );
     setState(() => _sendingDua = true);
     try {
       final today = IslamicDateService.getCurrentIslamicDateString();
@@ -456,10 +417,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         hijriDate: today,
       );
       if (exists) {
-        developer.log(
-          '⛔ blocked_already_sent recipient=$recipientUid',
-          name: 'UserProfileScreen',
-        );
         if (!context.mounted) return false;
         ScaffoldMessenger.of(
           context,
@@ -472,10 +429,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         recipientUid: recipientUid,
         hijriDate: today,
         message: message,
-      );
-      developer.log(
-        '🎉 Send Dua completed recipient=$recipientUid',
-        name: 'UserProfileScreen',
       );
       if (!context.mounted) return false;
       ScaffoldMessenger.of(

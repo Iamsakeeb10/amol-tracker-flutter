@@ -58,7 +58,7 @@ class NotificationsScreen extends ConsumerWidget {
           ],
         ),
         actions: [
-          TextButton(
+          TextButton.icon(
             onPressed: uid == null || unread == 0
                 ? null
                 : () async {
@@ -66,13 +66,15 @@ class NotificationsScreen extends ConsumerWidget {
                         .read(firestoreServiceProvider)
                         .markAllNotificationsRead(uid);
                   },
-            child: Text(
-              l10n.markAllRead,
-              style: AppTextStyles.button(
-                context,
-              ).copyWith(color: AppColors.gold),
+            icon: Icon(Icons.done_all_rounded, size: 18.r),
+            label: Text(l10n.markAllRead, style: AppTextStyles.button(context)),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.gold,
+              disabledForegroundColor: AppColors.textHint,
+              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
             ),
           ),
+          SizedBox(width: 4.w),
         ],
       ),
       body: notifications.when(
@@ -86,10 +88,7 @@ class NotificationsScreen extends ConsumerWidget {
         data: (rows) {
           if (rows.isEmpty) {
             return Center(
-              child: Text(
-                l10n.noNotificationsYet,
-                style: AppTextStyles.bodyMedium(context),
-              ),
+              child: _NotificationsEmptyState(text: l10n.noNotificationsYet),
             );
           }
           return ListView.separated(
@@ -99,6 +98,68 @@ class NotificationsScreen extends ConsumerWidget {
             itemBuilder: (_, i) => _NotificationRow(item: rows[i]),
           );
         },
+      ),
+    );
+  }
+}
+
+class _NotificationsEmptyState extends StatelessWidget {
+  const _NotificationsEmptyState({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return CardContainer(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 22.h),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 72.r,
+            height: 72.r,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.cardBorder.withValues(alpha: 0.55),
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.notifications_none_rounded,
+                  color: AppColors.textMuted,
+                  size: 36.r,
+                ),
+                Positioned(
+                  right: 17.w,
+                  top: 16.h,
+                  child: Container(
+                    width: 16.r,
+                    height: 16.r,
+                    decoration: BoxDecoration(
+                      color: AppColors.emeraldMid,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.cardDark, width: 2.w),
+                    ),
+                    child: Icon(
+                      Icons.check_rounded,
+                      size: 9.r,
+                      color: AppColors.emeraldDeep,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 14.h),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyLarge(
+              context,
+            ).copyWith(fontWeight: FontWeight.w600),
+          ),
+        ],
       ),
     );
   }

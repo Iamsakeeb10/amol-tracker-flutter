@@ -23,10 +23,9 @@ class MoreScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final notifications = ref.watch(notificationsProvider).asData?.value;
     final user = ref.watch(currentUserProvider).asData?.value;
     final prefs = ref.watch(notificationPrefsProvider);
-    final unread = (notifications ?? const []).where((n) => !n.isRead).length;
+    final unread = ref.watch(unreadNotificationsCountProvider);
     final quietHoursLabel =
         '${formatBdTime(context, prefs.quietFrom)} — ${formatBdTime(context, prefs.quietTo)}';
     final rawName = user?.name ?? '';

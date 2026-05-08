@@ -25,8 +25,7 @@ class NotificationsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final uid = ref.watch(authStateProvider).asData?.value?.uid;
     final notifications = ref.watch(notificationsProvider);
-    final items = notifications.asData?.value ?? const <NotificationModel>[];
-    final unread = items.where((n) => !n.isRead).length;
+    final unread = ref.watch(unreadNotificationsCountProvider);
 
     return AppScaffold(
       appBar: AppBar(

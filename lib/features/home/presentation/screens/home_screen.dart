@@ -16,6 +16,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../models/user_model.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -473,10 +474,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                   child: Text(
                     field.sublabel,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.textPrimary,
-                      height: 1.35,
-                    ),
+                    style: AppTextStyles.bodyMedium(
+                      context,
+                    ).copyWith(color: AppColors.textPrimary, height: 1.35),
                   ),
                 ),
                 SizedBox(height: 12.h),
@@ -647,6 +647,8 @@ class _Header extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final unread = ref.watch(unreadNotificationsCountProvider);
+    final unreadLabel = unread > 99 ? '99+' : '$unread';
 
     return GestureDetector(
       onTap: () => context.push(AppRoutes.history),
@@ -707,20 +709,54 @@ class _Header extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(12.r),
                 child: Tooltip(
                   message: l10n.notifications,
-                  child: Container(
-                    width: 34.r,
-                    height: 34.r,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.goldCard,
-                      border: Border.all(color: AppColors.goldBorder),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Icon(
-                      Icons.notifications_none_rounded,
-                      color: AppColors.gold,
-                      size: 20.r,
-                    ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 34.r,
+                        height: 34.r,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.goldCard,
+                          border: Border.all(color: AppColors.goldBorder),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Icon(
+                          Icons.notifications_none_rounded,
+                          color: AppColors.gold,
+                          size: 20.r,
+                        ),
+                      ),
+                      if (unread > 0)
+                        Positioned(
+                          right: -5.w,
+                          top: -5.h,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 5.w,
+                              vertical: 2.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.gold,
+                              borderRadius: BorderRadius.circular(99.r),
+                              border: Border.all(
+                                color: AppColors.emeraldDeep,
+                                width: 1.w,
+                              ),
+                            ),
+                            constraints: BoxConstraints(minWidth: 16.r),
+                            child: Text(
+                              unreadLabel,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.pill(context).copyWith(
+                                color: AppColors.emeraldDeep,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 9.sp,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),

@@ -17,6 +17,14 @@ final notificationsProvider = StreamProvider<List<NotificationModel>>((ref) {
   return fs.notificationStream(uid);
 });
 
+final unreadNotificationsCountProvider = Provider<int>((ref) {
+  final notificationsAsync = ref.watch(notificationsProvider);
+  return notificationsAsync.maybeWhen(
+    data: (rows) => rows.where((n) => !n.isRead).length,
+    orElse: () => 0,
+  );
+});
+
 class NotificationPrefsState {
   const NotificationPrefsState({
     required this.morningEnabled,

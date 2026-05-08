@@ -36,17 +36,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   @override
   void initState() {
     super.initState();
-    final cur = IslamicDateService.getCurrentIslamicDateStringSafe();
-    final parts = cur.split('-');
-    if (parts.length == 3) {
-      _hijriYear = int.parse(parts[0]);
-      _hijriMonth = int.parse(parts[1]);
-    } else {
-      final n = IslamicDateService.nowInBD();
-      final h = HijriCalendar.fromDate(DateTime(n.year, n.month, n.day));
-      _hijriYear = h.hYear;
-      _hijriMonth = h.hMonth;
-    }
+    final ym = IslamicDateService.currentHijriYearMonth();
+    _hijriYear = ym.year;
+    _hijriMonth = ym.month;
   }
 
   void _prevMonth() {
@@ -89,7 +81,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
     final out = <MockDay>[];
     for (var d = 1; d <= daysInMonth; d++) {
-      final key = IslamicDateService.storageFromParts(_hijriYear, _hijriMonth, d);
+      final key = IslamicDateService.storageFromParts(
+        _hijriYear,
+        _hijriMonth,
+        d,
+      );
       final cmp = key.compareTo(todayStr);
 
       if (cmp > 0) {
@@ -181,8 +177,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     );
     final monthAsync = ref.watch(historyMonthProvider(key));
     final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
-    final cal = HijriCalendar();
-    final daysInMonth = cal.getDaysInMonth(_hijriYear, _hijriMonth);
+    final daysInMonth = HijriCalendar().getDaysInMonth(_hijriYear, _hijriMonth);
 
     return AppScaffold(
       padding: EdgeInsets.zero,

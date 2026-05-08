@@ -6,7 +6,6 @@ import 'package:hijri/hijri_calendar.dart';
 import 'dua_push_gateway_service.dart';
 import 'islamic_date_service.dart';
 import '../constants/amal_fields.dart';
-import '../utils/hijri_helper.dart';
 import '../../models/activity_feed_item_model.dart';
 import '../../models/amal_log_model.dart';
 import '../../models/notification_model.dart';
@@ -269,14 +268,8 @@ class FirestoreService {
   }
 
   Future<List<Map<String, dynamic>>> weeklyLeaderboard() async {
-    final now = HijriCalendar.fromDate(HijriHelper.bangladeshNow());
-    final currentDate = HijriHelper.bangladeshNow();
-    final startDate = currentDate.subtract(const Duration(days: 6));
-    final startHijri = HijriCalendar.fromDate(startDate);
-    final start =
-        '${startHijri.hYear}-${startHijri.hMonth.toString().padLeft(2, '0')}-${startHijri.hDay.toString().padLeft(2, '0')}';
-    final end =
-        '${now.hYear}-${now.hMonth.toString().padLeft(2, '0')}-${now.hDay.toString().padLeft(2, '0')}';
+    final end = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final start = IslamicDateService.shiftStorageByDays(end, -6);
 
     final query = await _amalLogs
         .where('hijriDate', isGreaterThanOrEqualTo: start)

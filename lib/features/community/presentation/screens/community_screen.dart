@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hijri/hijri_calendar.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/router/routes.dart';
@@ -603,47 +602,87 @@ class _DateTabsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = IslamicDateService.getCurrentIslamicDateString();
-    return SizedBox(
-      height: 34.h,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: options.length,
-        separatorBuilder: (_, _) => SizedBox(width: 8.w),
-        itemBuilder: (context, index) {
-          final date = options[index];
-          final selected = date == selectedDate;
-          final isToday = date == today;
-          final label = isToday
-              ? AppLocalizations.of(context)!.today
-              : _shortHijriLabel(date);
-          return GestureDetector(
-            onTap: () => onTapDate(date),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+    final isViewingToday = selectedDate == today;
+    final visibleOptions = isViewingToday
+        ? options
+        : options.where((date) => date != today).toList();
+    return Row(
+      children: [
+        if (!isViewingToday) ...[
+          GestureDetector(
+            onTap: () => onTapDate(today),
+            child: Container(
+              height: 34.h,
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
               decoration: BoxDecoration(
-                color: selected ? AppColors.goldCard : AppColors.cardDark,
+                color: AppColors.emeraldMid.withValues(alpha: 0.22),
                 borderRadius: BorderRadius.circular(AppRadius.md.r),
-                border: Border.all(
-                  color: selected ? AppColors.goldBorder : AppColors.cardBorder,
-                ),
+                border: Border.all(color: AppColors.emeraldLight),
               ),
               child: Center(
                 child: Text(
-                  label,
+                  AppLocalizations.of(context)!.today,
                   style: AppTextStyles.bodySmall(context).copyWith(
-                    color: selected
-                        ? AppColors.goldLight
-                        : AppColors.textSecondary,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ),
-          );
-        },
-      ),
+          ),
+          SizedBox(width: 8.w),
+        ],
+        Expanded(
+          child: SizedBox(
+            height: 34.h,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: visibleOptions.length,
+              separatorBuilder: (_, _) => SizedBox(width: 8.w),
+              itemBuilder: (context, index) {
+                final date = visibleOptions[index];
+                final selected = date == selectedDate;
+                final label = date == today && isViewingToday
+                    ? AppLocalizations.of(context)!.today
+                    : _shortHijriLabel(date);
+                return GestureDetector(
+                  onTap: () => onTapDate(date),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOut,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 6.h,
+                    ),
+                    decoration: BoxDecoration(
+                      color: selected ? AppColors.goldCard : AppColors.cardDark,
+                      borderRadius: BorderRadius.circular(AppRadius.md.r),
+                      border: Border.all(
+                        color: selected
+                            ? AppColors.goldBorder
+                            : AppColors.cardBorder,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        label,
+                        style: AppTextStyles.bodySmall(context).copyWith(
+                          color: selected
+                              ? AppColors.goldLight
+                              : AppColors.textSecondary,
+                          fontWeight: selected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -736,12 +775,9 @@ class _SheetLoadingShimmer extends StatelessWidget {
 }
 
 List<String> _buildDateOptions({required int count}) {
-  final now = HijriHelper.bangladeshNow();
-  return List<String>.generate(count, (index) {
-    final day = now.subtract(Duration(days: index));
-    final h = HijriCalendar.fromDate(day);
-    return HijriHelper.storageFromParts(h.hYear, h.hMonth, h.hDay);
-  });
+  return IslamicDateService.recentHijriStoragesFromBangladeshCalendar(
+    count: count,
+  );
 }
 
 AmalLogModel _buildOwnPlaceholder(

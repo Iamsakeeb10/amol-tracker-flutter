@@ -65,18 +65,10 @@ class IslamicDateService {
   static String getCurrentIslamicDateString() {
     final now = nowInBD();
     final maghrib = getMaghribTimeSafe();
-    final gregorianForHijri =
-        _isPastMaghrib(now, maghrib) ? now.add(const Duration(days: 1)) : now;
-
-    final hijri = HijriCalendar.fromDate(
-      DateTime(
-        gregorianForHijri.year,
-        gregorianForHijri.month,
-        gregorianForHijri.day,
-      ),
+    return islamicDateStringForBangladeshMoment(
+      now,
+      maghribAtBdMoment: maghrib,
     );
-
-    return _formatStorage(hijri.hYear, hijri.hMonth, hijri.hDay);
   }
 
   static String getDisplayIslamicDate() {
@@ -132,6 +124,56 @@ class IslamicDateService {
     return _formatStorage(year, month, day);
   }
 
+  /// Canonical conversion for Bangladesh local moment.
+  /// Flow: BD now -> Maghrib boundary -> Hijri conversion -> global day adjustment.
+  static String islamicDateStringForBangladeshMoment(
+    DateTime bdNow, {
+    DateTime? maghribAtBdMoment,
+  }) {
+    final maghrib = maghribAtBdMoment ?? getMaghribTimeSafe();
+    final gregorianBase = _isPastMaghrib(bdNow, maghrib)
+        ? bdNow.add(const Duration(days: 1))
+        : bdNow;
+    return islamicDateStringForGregorianDate(gregorianBase);
+  }
+
+  /// Canonical conversion for a Gregorian date with global Hijri adjustment.
+  static String islamicDateStringForGregorianDate(DateTime gregorianDate) {
+    final gregorianOnly = DateTime(
+      gregorianDate.year,
+      gregorianDate.month,
+      gregorianDate.day,
+    );
+    final hijri = HijriCalendar.fromDate(gregorianOnly);
+    return _adjustHijriStorageByDays(
+      _formatStorage(hijri.hYear, hijri.hMonth, hijri.hDay),
+      AppConstants.hijriDayAdjustment,
+    );
+  }
+
+  /// Hijri year/month for the canonical "current" Islamic day.
+  static ({int year, int month}) currentHijriYearMonth() {
+    final cur = getCurrentIslamicDateStringSafe();
+    final parts = cur.split('-');
+    if (parts.length == 3) {
+      final y = int.tryParse(parts[0]);
+      final m = int.tryParse(parts[1]);
+      if (y != null && m != null && m >= 1 && m <= 12) {
+        return (year: y, month: m);
+      }
+    }
+    final now = nowInBD();
+    final fallback = islamicDateStringForGregorianDate(now);
+    final fParts = fallback.split('-');
+    if (fParts.length == 3) {
+      final y = int.tryParse(fParts[0]) ?? 1440;
+      final m = int.tryParse(fParts[1]) ?? 1;
+      final month = m < 1 ? 1 : (m > 12 ? 12 : m);
+      return (year: y, month: month);
+    }
+    return (year: 1440, month: 1);
+  }
+
   /// English weekday name for the current Bangladesh-local calendar day.
   static String weekdayEnglishToday() {
     return DateFormat('EEEE').format(nowInBD());
@@ -163,13 +205,36 @@ class IslamicDateService {
 
   /// Past [count] Hijri storage strings from successive Bangladesh calendar days
   /// (same intent as the legacy community date chips).
-  static List<String> recentHijriStoragesFromBangladeshCalendar({int count = 7}) {
-    final now = nowInBD();
-    return List<String>.generate(count, (index) {
-      final day = now.subtract(Duration(days: index));
-      final h = HijriCalendar.fromDate(DateTime(day.year, day.month, day.day));
-      return _formatStorage(h.hYear, h.hMonth, h.hDay);
-    });
+  static List<String> recentHijriStoragesFromBangladeshCalendar({
+    int count = 7,
+  }) {
+    final today = getCurrentIslamicDateStringSafe();
+    return List<String>.generate(
+      count,
+      (index) => shiftStorageByDays(today, -index),
+    );
+  }
+
+  /// Shift a Hijri storage key by [days] using Gregorian bridge.
+  static String shiftStorageByDays(String hijriYyyyMmDd, int days) {
+    final parts = hijriYyyyMmDd.split('-');
+    if (parts.length != 3) return hijriYyyyMmDd;
+    final y = int.tryParse(parts[0]);
+    final m = int.tryParse(parts[1]);
+    final d = int.tryParse(parts[2]);
+    if (y == null || m == null || d == null) return hijriYyyyMmDd;
+    try {
+      final g = HijriCalendar().hijriToGregorian(y, m, d);
+      final shifted = DateTime(
+        g.year,
+        g.month,
+        g.day,
+      ).add(Duration(days: days));
+      final hs = HijriCalendar.fromDate(shifted);
+      return _formatStorage(hs.hYear, hs.hMonth, hs.hDay);
+    } catch (_) {
+      return hijriYyyyMmDd;
+    }
   }
 
   /// Whether [later] is exactly one calendar day after [earlier] (Gregorian bridge).
@@ -202,12 +267,19 @@ class IslamicDateService {
     } catch (_) {
       try {
         final n = nowInBD();
-        final h = HijriCalendar.fromDate(DateTime(n.year, n.month, n.day));
-        return _formatStorage(h.hYear, h.hMonth, h.hDay);
+        return islamicDateStringForGregorianDate(n);
       } catch (_) {
         final h = HijriCalendar.now();
-        return _formatStorage(h.hYear, h.hMonth, h.hDay);
+        return _adjustHijriStorageByDays(
+          _formatStorage(h.hYear, h.hMonth, h.hDay),
+          AppConstants.hijriDayAdjustment,
+        );
       }
     }
+  }
+
+  static String _adjustHijriStorageByDays(String storage, int days) {
+    if (days == 0) return storage;
+    return shiftStorageByDays(storage, days);
   }
 }

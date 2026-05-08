@@ -121,9 +121,25 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     final dates = _buildDateOptions(count: 7);
     final accountCreatedHijri = currentUser == null
         ? null
-        : IslamicDateService.islamicDateStringForGregorianDate(
-            currentUser.createdAt.toLocal(),
-          );
+        : () {
+            final createdAtLocal = currentUser.createdAt.toLocal();
+            final nowBd = IslamicDateService.nowInBD();
+            final createdOnCurrentGregorianDay =
+                createdAtLocal.year == nowBd.year &&
+                createdAtLocal.month == nowBd.month &&
+                createdAtLocal.day == nowBd.day;
+
+            // New accounts created "today" should not be counted as misses for
+            // earlier dates because the global Hijri -1 correction can map
+            // today's Gregorian date to the previous Hijri day.
+            if (createdOnCurrentGregorianDay) {
+              return IslamicDateService.getCurrentIslamicDateStringSafe();
+            }
+
+            return IslamicDateService.islamicDateStringForGregorianDate(
+              createdAtLocal,
+            );
+          }();
     final isPreAccountDate =
         accountCreatedHijri != null &&
         state.selectedDate.compareTo(accountCreatedHijri) < 0;

@@ -55,11 +55,15 @@ class FirestoreService {
     String uid, {
     String? name,
     bool? isAnonymousDisplay,
+    bool? showOnLeaderboard,
   }) async {
     final userFields = <String, dynamic>{};
     if (name != null) userFields['name'] = name;
     if (isAnonymousDisplay != null) {
       userFields['isAnonymousDisplay'] = isAnonymousDisplay;
+    }
+    if (showOnLeaderboard != null) {
+      userFields['showOnLeaderboard'] = showOnLeaderboard;
     }
     if (userFields.isNotEmpty) {
       await _users.doc(uid).update(userFields);
@@ -86,6 +90,26 @@ class FirestoreService {
       if (!doc.exists) return null;
       return UserModel.fromDoc(doc);
     });
+  }
+
+  Future<Map<String, UserModel>> usersByIds(Iterable<String> ids) async {
+    final unique = ids.where((id) => id.trim().isNotEmpty).toSet().toList();
+    if (unique.isEmpty) return <String, UserModel>{};
+    final out = <String, UserModel>{};
+    const chunkSize = 10;
+    for (var i = 0; i < unique.length; i += chunkSize) {
+      final end = (i + chunkSize > unique.length)
+          ? unique.length
+          : i + chunkSize;
+      final chunk = unique.sublist(i, end);
+      final snap = await _users
+          .where(FieldPath.documentId, whereIn: chunk)
+          .get();
+      for (final doc in snap.docs) {
+        out[doc.id] = UserModel.fromDoc(doc);
+      }
+    }
+    return out;
   }
 
   /// Submitted log for [hijriDate] (`YYYY-MM-DD`), or null if none.

@@ -8,6 +8,7 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/time_display_helper.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/leaderboard_provider.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -27,14 +28,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _showInLeaderboard = true;
   bool _anonymousDisplay = false;
   bool _ramadanMode = false;
+  String? _lastSyncedUid;
 
   Future<void> _setAnonymous(bool value) async {
     final uid = ref.read(authStateProvider).asData?.value?.uid;
     if (uid == null) return;
     setState(() => _anonymousDisplay = value);
-    await ref.read(firestoreServiceProvider).updateUser(uid, <String, dynamic>{
-      'isAnonymousDisplay': value,
-    });
+    await ref
+        .read(firestoreServiceProvider)
+        .updateUserDisplayFields(uid, isAnonymousDisplay: value);
+    ref.invalidate(dailyLeaderboardProvider);
+    ref.invalidate(weeklyLeaderboardProvider);
+    ref.invalidate(streakLeaderboardProvider);
+  }
+
+  Future<void> _setShowOnLeaderboard(bool value) async {
+    final uid = ref.read(authStateProvider).asData?.value?.uid;
+    if (uid == null) return;
+    final previous = _showInLeaderboard;
+    setState(() => _showInLeaderboard = value);
+    try {
+      await ref
+          .read(firestoreServiceProvider)
+          .updateUserDisplayFields(uid, showOnLeaderboard: value);
+      ref.invalidate(dailyLeaderboardProvider);
+      ref.invalidate(weeklyLeaderboardProvider);
+      ref.invalidate(streakLeaderboardProvider);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _showInLeaderboard = previous);
+      }
+    }
   }
 
   Future<void> _confirmSignOut() async {
@@ -69,6 +93,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final prefsNotifier = ref.read(notificationPrefsProvider.notifier);
     final me = ref.watch(currentUserProvider).asData?.value;
     final locale = ref.watch(localeProvider);
+    final authUid = ref.watch(authStateProvider).asData?.value?.uid;
+    if (me != null && _lastSyncedUid != authUid) {
+      _showInLeaderboard = me.showOnLeaderboard;
+      _anonymousDisplay = me.isAnonymousDisplay;
+      _lastSyncedUid = authUid;
+    }
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -226,8 +256,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ToggleRow(
                   icon: Icons.leaderboard_outlined,
                   title: l10n.showOnLeaderboard,
-                  value: _showInLeaderboard,
-                  onChanged: (v) => setState(() => _showInLeaderboard = v),
+                  value: me?.showOnLeaderboard ?? _showInLeaderboard,
+                  onChanged: _setShowOnLeaderboard,
                 ),
                 const Divider(),
                 ToggleRow(

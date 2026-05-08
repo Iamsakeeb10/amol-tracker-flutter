@@ -140,6 +140,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       streakFreezeWeekKey: '',
       lastLogDate: '',
       isAnonymousDisplay: _isAnonymousDisplay,
+      showOnLeaderboard: true,
       badges: const <String>[],
     );
 

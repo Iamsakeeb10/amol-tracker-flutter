@@ -68,6 +68,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           ),
           SizedBox(height: 16.h),
           data.when(
+            skipLoadingOnRefresh: false,
+            skipLoadingOnReload: false,
             data: (entries) {
               if (entries.isEmpty) {
                 return CardContainer(

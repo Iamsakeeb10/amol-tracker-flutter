@@ -17,54 +17,91 @@ class LeaderboardEntry {
   final int score;
 }
 
-String _safeName(String value) => value.trim().isEmpty ? 'Anonymous' : value.trim();
+String _safeName(String value) =>
+    value.trim().isEmpty ? 'Anonymous' : value.trim();
 
 final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
   final today = IslamicDateService.getCurrentIslamicDateString();
-  return ref.read(firestoreServiceProvider).communityDayStream(today).map(
-    (rows) => rows
-        .map(
-          (row) => LeaderboardEntry(
-            uid: row.uid,
-            displayName: _safeName(row.displayName),
-            isAnonymousDisplay: row.isAnonymousDisplay,
-            score: row.score,
-          ),
-        )
-        .toList(),
-  );
+  final fs = ref.read(firestoreServiceProvider);
+  return fs.communityDayStream(today).asyncMap((rows) async {
+    final users = await fs.usersByIds(rows.map((r) => r.uid));
+    final entries = <LeaderboardEntry>[];
+    for (final row in rows) {
+      final user = users[row.uid];
+      final showOnLeaderboard = user?.showOnLeaderboard ?? true;
+      if (!showOnLeaderboard) continue;
+      entries.add(
+        LeaderboardEntry(
+          uid: row.uid,
+          displayName: _safeName(user?.name ?? row.displayName),
+          isAnonymousDisplay:
+              user?.isAnonymousDisplay ?? row.isAnonymousDisplay,
+          score: row.score,
+        ),
+      );
+    }
+    return entries;
+  });
 });
 
 final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   ref,
 ) async {
-  final rows = await ref.read(firestoreServiceProvider).weeklyLeaderboard();
-  return rows
-      .map(
-        (row) => LeaderboardEntry(
-          uid: row['uid'] as String? ?? '',
-          displayName: _safeName(row['displayName'] as String? ?? ''),
-          isAnonymousDisplay: row['isAnonymousDisplay'] as bool? ?? false,
-          score: row['score'] as int? ?? 0,
+  final fs = ref.read(firestoreServiceProvider);
+  final rows = await fs.weeklyLeaderboard();
+  final users = await fs.usersByIds(
+    rows.map((row) => (row['uid'] as String?) ?? ''),
+  );
+  final entries = <LeaderboardEntry>[];
+  for (final row in rows) {
+    final uid = (row['uid'] as String?) ?? '';
+    if (uid.isEmpty) continue;
+    final user = users[uid];
+    final showOnLeaderboard = user?.showOnLeaderboard ?? true;
+    if (!showOnLeaderboard) continue;
+    entries.add(
+      LeaderboardEntry(
+        uid: uid,
+        displayName: _safeName(
+          user?.name ?? (row['displayName'] as String? ?? ''),
         ),
-      )
-      .where((row) => row.uid.isNotEmpty)
-      .toList();
+        isAnonymousDisplay:
+            user?.isAnonymousDisplay ??
+            (row['isAnonymousDisplay'] as bool? ?? false),
+        score: row['score'] as int? ?? 0,
+      ),
+    );
+  }
+  return entries;
 });
 
 final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   ref,
 ) async {
-  final rows = await ref.read(firestoreServiceProvider).streakLeaderboard();
-  return rows
-      .map(
-        (row) => LeaderboardEntry(
-          uid: row['uid'] as String? ?? '',
-          displayName: _safeName(row['displayName'] as String? ?? ''),
-          isAnonymousDisplay: row['isAnonymousDisplay'] as bool? ?? false,
-          score: row['score'] as int? ?? 0,
+  final fs = ref.read(firestoreServiceProvider);
+  final rows = await fs.streakLeaderboard();
+  final users = await fs.usersByIds(
+    rows.map((row) => (row['uid'] as String?) ?? ''),
+  );
+  final entries = <LeaderboardEntry>[];
+  for (final row in rows) {
+    final uid = (row['uid'] as String?) ?? '';
+    if (uid.isEmpty) continue;
+    final user = users[uid];
+    final showOnLeaderboard = user?.showOnLeaderboard ?? true;
+    if (!showOnLeaderboard) continue;
+    entries.add(
+      LeaderboardEntry(
+        uid: uid,
+        displayName: _safeName(
+          user?.name ?? (row['displayName'] as String? ?? ''),
         ),
-      )
-      .where((row) => row.uid.isNotEmpty)
-      .toList();
+        isAnonymousDisplay:
+            user?.isAnonymousDisplay ??
+            (row['isAnonymousDisplay'] as bool? ?? false),
+        score: row['score'] as int? ?? 0,
+      ),
+    );
+  }
+  return entries;
 });

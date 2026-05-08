@@ -66,6 +66,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   List<MockDay> _buildDays({
     required List<AmalLogModel> logs,
     required String todayStr,
+    required String accountCreatedHijri,
     required int daysInMonth,
   }) {
     final byDay = <int, AmalLogModel>{};
@@ -86,6 +87,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         _hijriMonth,
         d,
       );
+      if (key.compareTo(accountCreatedHijri) < 0) {
+        out.add(MockDay(day: d, score: 0, state: DayCompletion.preAccount));
+        continue;
+      }
       final cmp = key.compareTo(todayStr);
 
       if (cmp > 0) {
@@ -177,6 +182,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     );
     final monthAsync = ref.watch(historyMonthProvider(key));
     final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final accountCreatedHijri =
+        IslamicDateService.islamicDateStringForGregorianDate(
+          user.createdAt.toLocal(),
+        );
     final daysInMonth = HijriCalendar().getDaysInMonth(_hijriYear, _hijriMonth);
 
     return AppScaffold(
@@ -196,12 +205,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           final days = _buildDays(
             logs: logs,
             todayStr: todayStr,
+            accountCreatedHijri: accountCreatedHijri,
             daysInMonth: daysInMonth,
           );
+          final activeDaysInMonth = days
+              .where((d) => d.state != DayCompletion.preAccount)
+              .length;
           final logged50 = logs.where((l) => l.score >= 50).length;
-          final consistency = daysInMonth == 0
+          final consistency = activeDaysInMonth == 0
               ? 0
-              : ((logged50 / daysInMonth) * 100).round();
+              : ((logged50 / activeDaysInMonth) * 100).round();
           final avgScore = logs.isEmpty
               ? 0
               : logs.map((l) => l.score).reduce((a, b) => a + b) / logs.length;
@@ -323,6 +336,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         day.day,
                       );
                       if (day.state == DayCompletion.future) return;
+                      if (day.state == DayCompletion.preAccount) return;
                       if (keyDate == todayStr) {
                         context.go(AppRoutes.home);
                         return;
@@ -333,6 +347,32 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 },
               ),
               SizedBox(height: 12.h),
+              if (days.any((d) => d.state == DayCompletion.preAccount))
+                Padding(
+                  padding: EdgeInsets.only(bottom: 12.h),
+                  child: CardContainer(
+                    color: AppColors.cardDark,
+                    borderColor: AppColors.cardBorder,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 16.r,
+                          color: AppColors.textMuted,
+                        ),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            'Dim dates are from before your account was created.',
+                            style: AppTextStyles.bodySmall(
+                              context,
+                            ).copyWith(color: AppColors.textMuted),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               const _Legend(),
               SizedBox(height: 16.h),
               if (weakest != null)

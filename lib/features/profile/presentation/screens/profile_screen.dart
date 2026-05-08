@@ -177,7 +177,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           SizedBox(height: 18.h),
           Text(l10n.thisWeek, style: AppTextStyles.headlineMedium(context)),
           SizedBox(height: 8.h),
-          _WeekChart(logs: weekLogs),
+          _WeekChart(logs: weekLogs, createdAt: user.createdAt),
           SizedBox(height: 18.h),
           CardContainer(
             child: SwitchListTile.adaptive(
@@ -268,9 +268,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 }
 
 class _WeekChart extends StatelessWidget {
-  const _WeekChart({required this.logs});
+  const _WeekChart({required this.logs, required this.createdAt});
 
   final List<AmalLogModel> logs;
+  final DateTime createdAt;
 
   @override
   Widget build(BuildContext context) {
@@ -289,10 +290,14 @@ class _WeekChart extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          '${(b.value * 100).round()}',
+                          b.notJoined ? '--' : '${(b.value * 100).round()}',
                           style: AppTextStyles.bodySmall(context).copyWith(
                             fontSize: 9.sp,
-                            color: b.missed ? AppColors.danger : AppColors.gold,
+                            color: b.notJoined
+                                ? AppColors.textMuted
+                                : (b.missed
+                                      ? AppColors.danger
+                                      : AppColors.gold),
                           ),
                         ),
                         SizedBox(height: 4.h),
@@ -302,12 +307,20 @@ class _WeekChart extends StatelessWidget {
                             gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
-                              colors: b.missed
+                              colors: b.notJoined
                                   ? const [
-                                      AppColors.danger,
-                                      AppColors.dangerLight,
+                                      AppColors.cardBorder,
+                                      AppColors.cardBorder,
                                     ]
-                                  : const [AppColors.gold, AppColors.goldLight],
+                                  : (b.missed
+                                        ? const [
+                                            AppColors.danger,
+                                            AppColors.dangerLight,
+                                          ]
+                                        : const [
+                                            AppColors.gold,
+                                            AppColors.goldLight,
+                                          ]),
                             ),
                             borderRadius: BorderRadius.vertical(
                               top: Radius.circular(4.r),
@@ -342,13 +355,32 @@ class _WeekChart extends StatelessWidget {
       _ChartBar(label: l10n.weekdaySat, value: 0),
       _ChartBar(label: l10n.weekdaySun, value: 0),
     ];
-    if (logs.isEmpty) return seed;
-    final tail = logs.length <= 7 ? logs : logs.sublist(logs.length - 7);
+    final createdDate = DateTime(
+      createdAt.toLocal().year,
+      createdAt.toLocal().month,
+      createdAt.toLocal().day,
+    );
+    final now = DateTime.now().toLocal();
+    final weekStart = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(const Duration(days: 6));
     final bars = List<_ChartBar>.from(seed);
+    for (var i = 0; i < 7; i++) {
+      final day = DateTime(weekStart.year, weekStart.month, weekStart.day + i);
+      if (day.isBefore(createdDate)) {
+        bars[i] = _ChartBar(label: bars[i].label, value: 0, notJoined: true);
+      }
+    }
+    if (logs.isEmpty) return bars;
+    final tail = logs.length <= 7 ? logs : logs.sublist(logs.length - 7);
     for (var i = 0; i < tail.length; i++) {
       final score = tail[i].score.clamp(0, kMaxDailyScore);
-      bars[7 - tail.length + i] = _ChartBar(
-        label: bars[7 - tail.length + i].label,
+      final index = 7 - tail.length + i;
+      if (bars[index].notJoined) continue;
+      bars[index] = _ChartBar(
+        label: bars[index].label,
         value: score / kMaxDailyScore,
         missed: score < 50,
       );
@@ -362,8 +394,10 @@ class _ChartBar {
     required this.label,
     required this.value,
     this.missed = false,
+    this.notJoined = false,
   });
   final String label;
   final double value;
   final bool missed;
+  final bool notJoined;
 }

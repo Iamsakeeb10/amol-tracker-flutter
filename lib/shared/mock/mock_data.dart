@@ -399,7 +399,7 @@ const List<MockBadge> kBadges = [
   ),
 ];
 
-enum DayCompletion { full, partial, miss, today, future }
+enum DayCompletion { full, partial, miss, today, future, preAccount }
 
 class MockDay {
   final int day;

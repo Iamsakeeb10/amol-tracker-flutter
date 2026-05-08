@@ -13,8 +13,9 @@ const double kCommunityNameColWidth = 132;
 const double kCommunityAmalColWidth = 82;
 const double kCommunityScoreColWidth = 60;
 
-final List<({String id, String label})> kCommunityColumns =
-    kAmalFields.map((field) => (id: field.id, label: field.labelBn)).toList();
+final List<({String id, String label})> kCommunityColumns = kAmalFields
+    .map((field) => (id: field.id, label: field.labelBn))
+    .toList();
 
 double get kCommunityScrollableGridWidth =>
     kCommunityNameColWidth +
@@ -56,10 +57,7 @@ class CommunityHeaderRow extends StatelessWidget {
                   align: TextAlign.left,
                 ),
                 for (final col in kCommunityColumns)
-                  _HeaderCell(
-                    text: col.label,
-                    width: kCommunityAmalColWidth,
-                  ),
+                  _HeaderCell(text: col.label, width: kCommunityAmalColWidth),
                 _HeaderCell(text: 'Score', width: kCommunityScoreColWidth),
               ],
             ),
@@ -78,6 +76,7 @@ class CommunityRowCard extends StatelessWidget {
     required this.isToday,
     this.isPinned = false,
     this.isPending = false,
+    this.isPreAccount = false,
     this.onTap,
   });
 
@@ -86,6 +85,7 @@ class CommunityRowCard extends StatelessWidget {
   final bool isToday;
   final bool isPinned;
   final bool isPending;
+  final bool isPreAccount;
   final VoidCallback? onTap;
 
   @override
@@ -131,19 +131,24 @@ class CommunityRowCard extends StatelessWidget {
                   if (field.type == AmalType.numeric) {
                     return _NumericCell(
                       width: kCommunityAmalColWidth,
-                      value: getNumericValue(log.toggles[col.id], field.maxValue),
+                      value: getNumericValue(
+                        log.toggles[col.id],
+                        field.maxValue,
+                      ),
                       pending: isPending && isToday,
+                      preAccount: isPreAccount,
                     );
                   }
                   return _StatusCell(
                     width: kCommunityAmalColWidth,
                     isDone: _toBool(log.toggles[col.id]),
                     pending: isPending && isToday,
+                    preAccount: isPreAccount,
                   );
                 }(),
               _ScoreCell(
                 width: kCommunityScoreColWidth,
-                scoreLabel: isPending ? '--' : '${log.score}',
+                scoreLabel: (isPending || isPreAccount) ? '--' : '${log.score}',
                 isPinned: isPinned,
               ),
             ],
@@ -177,20 +182,18 @@ class _HeaderCell extends StatelessWidget {
       width: width.w,
       height: kCommunityHeaderRowHeight.h,
       padding: EdgeInsets.symmetric(horizontal: 8.w),
-      alignment: align == TextAlign.left ? Alignment.centerLeft : Alignment.center,
+      alignment: align == TextAlign.left
+          ? Alignment.centerLeft
+          : Alignment.center,
       decoration: const BoxDecoration(
-        border: Border(
-          right: BorderSide(color: AppColors.cardBorder),
-        ),
+        border: Border(right: BorderSide(color: AppColors.cardBorder)),
       ),
       child: Text(
         text,
         textAlign: align,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
-        style: AppTextStyles.bodySmall(
-          context,
-        ).copyWith(
+        style: AppTextStyles.bodySmall(context).copyWith(
           color: AppColors.textSecondary,
           fontWeight: FontWeight.w700,
           fontSize: 10.sp,
@@ -223,15 +226,15 @@ class _NameCell extends StatelessWidget {
       height: 46.h,
       padding: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: const BoxDecoration(
-        border: Border(
-          right: BorderSide(color: AppColors.cardBorder),
-        ),
+        border: Border(right: BorderSide(color: AppColors.cardBorder)),
       ),
       child: Row(
         children: [
           AvatarChip(
             initial: initial,
-            color: isAnonymousDisplay ? AppColors.emeraldLight : AppColors.emeraldMid,
+            color: isAnonymousDisplay
+                ? AppColors.emeraldLight
+                : AppColors.emeraldMid,
             size: 24,
           ),
           SizedBox(width: 6.w),
@@ -257,36 +260,36 @@ class _StatusCell extends StatelessWidget {
     required this.width,
     required this.isDone,
     required this.pending,
+    required this.preAccount,
   });
 
   final double width;
   final bool isDone;
   final bool pending;
+  final bool preAccount;
 
   @override
   Widget build(BuildContext context) {
-    final color = pending
+    final color = preAccount
+        ? AppColors.textMuted
+        : pending
         ? AppColors.textMuted
         : isDone
         ? AppColors.success
         : AppColors.danger;
-    final icon = pending
+    final icon = preAccount
+        ? Icons.remove_rounded
+        : pending
         ? Icons.hourglass_top_rounded
         : (isDone ? Icons.check_circle_rounded : Icons.cancel_rounded);
     return Container(
       width: width.w,
       height: 46.h,
       decoration: const BoxDecoration(
-        border: Border(
-          right: BorderSide(color: AppColors.cardBorder),
-        ),
+        border: Border(right: BorderSide(color: AppColors.cardBorder)),
       ),
       child: Center(
-        child: Icon(
-          icon,
-          color: color,
-          size: 17.sp,
-        ),
+        child: Icon(icon, color: color, size: 17.sp),
       ),
     );
   }
@@ -297,29 +300,37 @@ class _NumericCell extends StatelessWidget {
     required this.width,
     required this.value,
     required this.pending,
+    required this.preAccount,
   });
 
   final double width;
   final int value;
   final bool pending;
+  final bool preAccount;
 
   @override
   Widget build(BuildContext context) {
-    if (pending) {
+    if (pending || preAccount) {
       return Container(
         width: width.w,
         height: 46.h,
         decoration: const BoxDecoration(
-          border: Border(
-            right: BorderSide(color: AppColors.cardBorder),
-          ),
+          border: Border(right: BorderSide(color: AppColors.cardBorder)),
         ),
         child: Center(
-          child: Icon(
-            Icons.hourglass_top_rounded,
-            color: AppColors.textMuted,
-            size: 17.sp,
-          ),
+          child: pending
+              ? Icon(
+                  Icons.hourglass_top_rounded,
+                  color: AppColors.textMuted,
+                  size: 17.sp,
+                )
+              : Text(
+                  '--',
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    color: AppColors.textMuted,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
         ),
       );
     }
@@ -328,9 +339,7 @@ class _NumericCell extends StatelessWidget {
       width: width.w,
       height: 46.h,
       decoration: const BoxDecoration(
-        border: Border(
-          right: BorderSide(color: AppColors.cardBorder),
-        ),
+        border: Border(right: BorderSide(color: AppColors.cardBorder)),
       ),
       child: Center(
         child: Container(
@@ -375,9 +384,7 @@ class _ScoreCell extends StatelessWidget {
       width: width.w,
       height: 46.h,
       decoration: const BoxDecoration(
-        border: Border(
-          right: BorderSide(color: AppColors.cardBorder),
-        ),
+        border: Border(right: BorderSide(color: AppColors.cardBorder)),
       ),
       child: Center(
         child: Text(

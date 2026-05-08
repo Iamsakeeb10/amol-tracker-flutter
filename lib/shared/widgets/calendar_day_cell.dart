@@ -41,6 +41,11 @@ class CalendarDayCell extends StatelessWidget {
         border = AppColors.cardBorder;
         textColor = AppColors.textHint;
         break;
+      case DayCompletion.preAccount:
+        bg = AppColors.cardDark.withValues(alpha: 0.55);
+        border = AppColors.cardBorder;
+        textColor = AppColors.textMuted;
+        break;
     }
 
     final borderW = day.state == DayCompletion.today ? 1.5.r : 1.r;
@@ -53,10 +58,7 @@ class CalendarDayCell extends StatelessWidget {
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(10.r),
-            border: Border.all(
-              color: border,
-              width: borderW,
-            ),
+            border: Border.all(color: border, width: borderW),
           ),
           alignment: Alignment.center,
           child: Text(

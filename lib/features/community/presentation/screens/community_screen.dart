@@ -119,6 +119,14 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     final currentUser = ref.watch(currentUserProvider).asData?.value;
     final connectivity = ref.watch(connectivityListProvider);
     final dates = _buildDateOptions(count: 7);
+    final accountCreatedHijri = currentUser == null
+        ? null
+        : IslamicDateService.islamicDateStringForGregorianDate(
+            currentUser.createdAt.toLocal(),
+          );
+    final isPreAccountDate =
+        accountCreatedHijri != null &&
+        state.selectedDate.compareTo(accountCreatedHijri) < 0;
 
     final ownRow = state.ownRow(currentUser?.uid);
     final otherRows = state.filteredRowsExcludingUid(currentUser?.uid);
@@ -323,6 +331,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                               isPending:
                                                   ownRow == null &&
                                                   state.isToday,
+                                              isPreAccount:
+                                                  ownRow == null &&
+                                                  isPreAccountDate,
                                               onTap: ownRow == null
                                                   ? null
                                                   : () {
@@ -336,7 +347,45 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                                       );
                                                     },
                                             ),
-                                            if (ownRow == null && state.isToday)
+                                            if (ownRow == null &&
+                                                isPreAccountDate)
+                                              Padding(
+                                                padding: EdgeInsets.only(
+                                                  top: 8.h,
+                                                ),
+                                                child: CardContainer(
+                                                  color: AppColors.cardDark,
+                                                  borderColor:
+                                                      AppColors.cardBorder,
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .info_outline_rounded,
+                                                        color:
+                                                            AppColors.textMuted,
+                                                        size: 16.r,
+                                                      ),
+                                                      SizedBox(width: 10.w),
+                                                      Expanded(
+                                                        child: Text(
+                                                          'You had not created your account on this date.',
+                                                          style:
+                                                              AppTextStyles.bodySmall(
+                                                                context,
+                                                              ).copyWith(
+                                                                color: AppColors
+                                                                    .textMuted,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            if (ownRow == null &&
+                                                state.isToday &&
+                                                !isPreAccountDate)
                                               Padding(
                                                 padding: EdgeInsets.only(
                                                   top: 8.h,

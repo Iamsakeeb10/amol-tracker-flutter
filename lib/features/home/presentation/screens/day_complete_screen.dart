@@ -1,14 +1,13 @@
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/hadith_asset_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../models/amal_log_model.dart';
@@ -27,8 +26,6 @@ class DayCompleteScreen extends StatefulWidget {
 }
 
 class _DayCompleteScreenState extends State<DayCompleteScreen> {
-  static const _hadithAsset = 'assets/hadiths/hadiths.json';
-
   String? _hadith;
   String? _hadithError;
 
@@ -40,15 +37,13 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
 
   Future<void> _pickHadith() async {
     try {
-      final raw = await rootBundle.loadString(_hadithAsset);
-      final decoded = jsonDecode(raw);
-      if (decoded is! List || decoded.isEmpty) {
+      final hadiths = await HadithAssetService.loadHadithTexts();
+      if (hadiths.isEmpty) {
         setState(() => _hadithError = null);
         return;
       }
-      final strings = decoded.map((e) => e.toString()).toList();
-      final i = Random().nextInt(strings.length);
-      setState(() => _hadith = strings[i]);
+      final i = Random().nextInt(hadiths.length);
+      setState(() => _hadith = hadiths[i]);
     } catch (e) {
       setState(() => _hadithError = null);
     }

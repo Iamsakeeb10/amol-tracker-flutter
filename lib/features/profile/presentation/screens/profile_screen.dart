@@ -7,6 +7,7 @@ import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../models/badge_model.dart';
 import '../../../../providers/auth_provider.dart';
@@ -16,7 +17,6 @@ import '../../../../shared/widgets/badge_tile.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
 import '../../../../shared/widgets/streak_badge.dart';
-import '../../../../l10n/app_localizations.dart';
 
 final profileRecentLogsProvider =
     FutureProvider.family<List<AmalLogModel>, int>((ref, limit) async {
@@ -35,15 +35,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  bool _isSavingName = false;
   bool _isSavingPrivacy = false;
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,13 +50,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (authUser == null || user == null) {
       return AppScaffold(
         body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
-      );
-    }
-
-    if (_nameController.text != user.name) {
-      _nameController.text = user.name;
-      _nameController.selection = TextSelection.collapsed(
-        offset: _nameController.text.length,
       );
     }
 
@@ -101,33 +86,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           SizedBox(height: 12.h),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 12.w),
-            child: Row(
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _nameController,
-                    style: AppTextStyles.displayMedium(context),
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: l10n.displayName,
+                Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40.w),
+                    child: Text(
+                      user.name.trim().isEmpty ? l10n.displayName : user.name,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.displayMedium(context),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ),
-                IconButton(
-                  onPressed: _isSavingName
-                      ? null
-                      : () => _saveName(authUser.uid, _nameController.text),
-                  icon: _isSavingName
-                      ? SizedBox(
-                          width: 16.r,
-                          height: 16.r,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.gold,
-                          ),
-                        )
-                      : Icon(Icons.check_circle_outline, color: AppColors.gold),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    onPressed: () =>
+                        _showEditNameDialog(authUser.uid, user.name),
+                    tooltip: l10n.displayName,
+                    icon: Icon(Icons.edit_rounded, color: AppColors.gold),
+                  ),
                 ),
               ],
             ),
@@ -242,17 +224,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return (currentStreak / badge.streakThreshold!).clamp(0.0, 1.0);
   }
 
-  Future<void> _saveName(String uid, String rawName) async {
-    final name = rawName.trim();
-    if (name.isEmpty) return;
-    setState(() => _isSavingName = true);
-    try {
-      await ref
-          .read(firestoreServiceProvider)
-          .updateUserDisplayFields(uid, name: name);
-    } finally {
-      if (mounted) setState(() => _isSavingName = false);
-    }
+  Future<void> _showEditNameDialog(String uid, String currentName) async {
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (context) => _EditNameDialog(uid: uid, currentName: currentName),
+    );
   }
 
   Future<void> _saveAnonymous(String uid, bool value) async {
@@ -264,6 +241,192 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } finally {
       if (mounted) setState(() => _isSavingPrivacy = false);
     }
+  }
+}
+
+class _EditNameDialog extends ConsumerStatefulWidget {
+  const _EditNameDialog({required this.uid, required this.currentName});
+
+  final String uid;
+  final String currentName;
+
+  @override
+  ConsumerState<_EditNameDialog> createState() => _EditNameDialogState();
+}
+
+class _EditNameDialogState extends ConsumerState<_EditNameDialog> {
+  late final TextEditingController _controller;
+  bool _isSaving = false;
+  String _errorText = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.currentName);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
+    final name = _controller.text.trim();
+    if (name.isEmpty) {
+      setState(() => _errorText = l10n.displayName);
+      return;
+    }
+    if (name == widget.currentName.trim()) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+      _errorText = '';
+    });
+
+    try {
+      await ref
+          .read(firestoreServiceProvider)
+          .updateUserDisplayFields(widget.uid, name: name);
+      if (mounted) Navigator.of(context).pop();
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: CardContainer(
+        padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 14.h),
+        borderColor: AppColors.goldBorder.withValues(alpha: 0.8),
+        color: AppColors.emeraldMid.withValues(alpha: 0.98),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 24.r,
+            offset: Offset(0, 10.h),
+          ),
+        ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 42.r,
+                  height: 42.r,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.goldCard,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: AppColors.goldBorder),
+                  ),
+                  child: Icon(
+                    Icons.edit_rounded,
+                    color: AppColors.gold,
+                    size: 22.r,
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    l10n.displayName,
+                    style: AppTextStyles.bodyLarge(
+                      context,
+                    ).copyWith(fontWeight: FontWeight.w700, fontSize: 15.sp),
+                  ),
+                ),
+                IconButton(
+                  onPressed: _isSaving
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: AppColors.textMuted,
+                    size: 20.r,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10.h),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 12.r),
+              decoration: BoxDecoration(
+                color: AppColors.emeraldDeep.withValues(alpha: 0.88),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: AppColors.goldBorder.withValues(alpha: 0.45),
+                ),
+              ),
+              child: TextField(
+                controller: _controller,
+                autofocus: true,
+                maxLength: 30,
+                enabled: !_isSaving,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _submit(),
+                style: AppTextStyles.bodyLarge(context),
+                decoration: InputDecoration(
+                  counterText: '',
+                  hintText: l10n.displayName,
+                  errorText: _errorText.isEmpty ? null : _errorText,
+                  hintStyle: AppTextStyles.bodyMedium(
+                    context,
+                  ).copyWith(color: AppColors.textMuted),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: _isSaving
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  child: Text(
+                    MaterialLocalizations.of(context).cancelButtonLabel,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                FilledButton.icon(
+                  onPressed: _isSaving ? null : _submit,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: AppColors.emeraldDeep,
+                  ),
+                  icon: _isSaving
+                      ? SizedBox(
+                          width: 14.r,
+                          height: 14.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.emeraldDeep,
+                          ),
+                        )
+                      : Icon(Icons.check_rounded, size: 16.r),
+                  label: Text(
+                    MaterialLocalizations.of(context).saveButtonLabel,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

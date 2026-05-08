@@ -73,11 +73,6 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
       vsync: this,
       duration: const Duration(milliseconds: 2200),
     )..forward();
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _finish();
-      }
-    });
   }
 
   @override
@@ -116,7 +111,14 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
             return Stack(
               fit: StackFit.expand,
               children: [
-                CustomPaint(painter: _BurstPainter(progress: t)),
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    height: MediaQuery.sizeOf(context).height * 0.62,
+                    width: double.infinity,
+                    child: CustomPaint(painter: _BurstPainter(progress: t)),
+                  ),
+                ),
                 Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -128,6 +130,8 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
                           style: AppTextStyles.headlineLarge(context).copyWith(
                             color: AppColors.goldPale,
                             letterSpacing: 0.8,
+                            shadows: const [],
+                            decoration: TextDecoration.none,
                           ),
                         ),
                         SizedBox(height: 24.h),
@@ -169,6 +173,8 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
                           style: AppTextStyles.displayMedium(context).copyWith(
                             color: AppColors.textPrimary,
                             height: 1.05,
+                            shadows: const [],
+                            decoration: TextDecoration.none,
                           ),
                         ),
                         SizedBox(height: 8.h),
@@ -177,14 +183,22 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
                           textAlign: TextAlign.center,
                           style: AppTextStyles.bodyLarge(
                             context,
-                          ).copyWith(color: AppColors.textSecondary),
+                          ).copyWith(
+                            color: AppColors.textSecondary,
+                            shadows: const [],
+                            decoration: TextDecoration.none,
+                          ),
                         ),
                         SizedBox(height: 20.h),
                         Text(
                           'Tap to continue',
                           style: AppTextStyles.bodySmall(
                             context,
-                          ).copyWith(color: AppColors.goldPale),
+                          ).copyWith(
+                            color: AppColors.goldPale,
+                            shadows: const [],
+                            decoration: TextDecoration.none,
+                          ),
                         ),
                       ],
                     ),

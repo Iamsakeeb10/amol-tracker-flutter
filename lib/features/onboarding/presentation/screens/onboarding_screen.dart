@@ -145,22 +145,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       seenBadgeCelebrations: const <String>[],
     );
 
+    final success = await _persistOnboardingData(userModel);
     if (!mounted) return;
-    context.go(AppRoutes.home);
+    if (success) {
+      context.go(AppRoutes.home);
+      return;
+    }
 
-    // Keep navigation snappy by moving network setup off the tap path.
-    unawaited(_persistOnboardingData(userModel));
+    setState(() => _isSubmitting = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.onboardingFailed('Please try again.'))),
+    );
   }
 
-  Future<void> _persistOnboardingData(UserModel user) async {
+  Future<bool> _persistOnboardingData(UserModel user) async {
     try {
       _logOnboardingEvent('Creating user doc for uid=${user.uid}');
       await ref.read(firestoreServiceProvider).createUser(user);
       _logOnboardingEvent('User doc created successfully');
       await NotificationService.instance.syncFcmTokenNow();
       _logOnboardingEvent('FCM token synced after onboarding');
+      return true;
     } catch (e, st) {
       _logOnboardingError(e, st);
+      return false;
     }
   }
 

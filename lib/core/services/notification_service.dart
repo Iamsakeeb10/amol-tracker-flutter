@@ -40,8 +40,8 @@ class NotificationService {
   static const int _hadithMorningBaseId = 710;
   static const int _hadithEveningBaseId = 740;
   static const int _hadithDaysAhead = 7;
-  static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 7, minute: 0);
-  static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 20, minute: 0);
+  static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 8, minute: 0);
+  static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 21, minute: 0);
 
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
@@ -259,13 +259,13 @@ class NotificationService {
       LocalStorageService.getPref<bool>(notifMorningKey, true);
   TimeOfDay get morningTime => TimeOfDay(
     hour: LocalStorageService.getPref<int>(notifMorningHourKey, 6),
-    minute: LocalStorageService.getPref<int>(notifMorningMinuteKey, 0),
+    minute: LocalStorageService.getPref<int>(notifMorningMinuteKey, 30),
   );
   bool get isEveningEnabled =>
       LocalStorageService.getPref<bool>(notifEveningKey, true);
   TimeOfDay get eveningTime => TimeOfDay(
-    hour: LocalStorageService.getPref<int>(notifEveningHourKey, 18),
-    minute: LocalStorageService.getPref<int>(notifEveningMinuteKey, 30),
+    hour: LocalStorageService.getPref<int>(notifEveningHourKey, 17),
+    minute: LocalStorageService.getPref<int>(notifEveningMinuteKey, 0),
   );
   bool get isStreakEnabled =>
       LocalStorageService.getPref<bool>(notifStreakKey, true);
@@ -273,12 +273,12 @@ class NotificationService {
       LocalStorageService.getPref<bool>(notifCommunityKey, true);
 
   TimeOfDay get quietFrom => TimeOfDay(
-    hour: LocalStorageService.getPref<int>(quietFromHourKey, 21),
-    minute: LocalStorageService.getPref<int>(quietFromMinuteKey, 0),
+    hour: LocalStorageService.getPref<int>(quietFromHourKey, 22),
+    minute: LocalStorageService.getPref<int>(quietFromMinuteKey, 30),
   );
 
   TimeOfDay get quietTo => TimeOfDay(
-    hour: LocalStorageService.getPref<int>(quietToHourKey, 6),
+    hour: LocalStorageService.getPref<int>(quietToHourKey, 5),
     minute: LocalStorageService.getPref<int>(quietToMinuteKey, 0),
   );
 
@@ -308,16 +308,16 @@ class NotificationService {
     if (_isCurrentMinute(at)) {
       await _localNotifications.show(
         _morningId + 100000,
-        'সকালের নোটিফিকেশন',
-        'আজকের আমল দিয়ে দিন শুরু করুন।',
+        'ফজরের পর — আমলের শুরু',
+        'সকালের আযকার পড়েছেন? দিনের প্রথম আমলটি এখনই শুরু করুন।',
         _notificationDetails(payload: AppRoutes.home),
         payload: AppRoutes.home,
       );
     }
     await _safeZonedSchedule(
       id: _morningId,
-      title: 'সকালের নোটিফিকেশন',
-      body: 'আজকের আমল দিয়ে দিন শুরু করুন।',
+      title: 'ফজরের পর — আমলের শুরু',
+      body: 'সকালের আযকার পড়েছেন? দিনের প্রথম আমলটি এখনই শুরু করুন।',
       scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -329,8 +329,8 @@ class NotificationService {
     if (_isSuppressedByQuietHours(at)) return;
     await _safeZonedSchedule(
       id: _eveningId,
-      title: 'সন্ধ্যার নোটিফিকেশন',
-      body: 'সন্ধ্যার আযকার ও কুরআন তিলাওয়াত মিস করবেন না।',
+      title: 'আসরের পর — সন্ধ্যার প্রস্তুতি',
+      body: 'সন্ধ্যার আযকারের সময় হয়ে আসছে। মাগরিবের আগেই আমলনামা সাজিয়ে নিন।',
       scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -338,12 +338,13 @@ class NotificationService {
   }
 
   Future<void> _scheduleStreakWarning() async {
-    const at = TimeOfDay(hour: 22, minute: 0);
+    const at = TimeOfDay(hour: 22, minute: 15);
     if (_isSuppressedByQuietHours(at)) return;
     await _safeZonedSchedule(
       id: _streakId,
-      title: 'স্ট্রিক সতর্কতা',
-      body: 'আজকের লগ এখনো না দিলে এখনই সাবমিট করুন, স্ট্রিক ধরে রাখুন।',
+      title: 'আজকের আমল বাকি আছে!',
+      body:
+          'রাত শেষ হওয়ার আগেই লগ দিন — একটি দিন মিস করলে স্ট্রিক শেষ। আল্লাহ ছোট হলেও নিয়মিত আমল বেশি পছন্দ করেন।',
       scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -351,12 +352,13 @@ class NotificationService {
   }
 
   Future<void> _scheduleJumuah() async {
-    const at = TimeOfDay(hour: 8, minute: 0);
+    const at = TimeOfDay(hour: 9, minute: 30);
     if (_isSuppressedByQuietHours(at)) return;
     await _safeZonedSchedule(
       id: _jumuahId,
-      title: 'জুমআর অনুপ্রেরণা',
-      body: 'মুবারক জুমআ। আজ আমলে দৃঢ় থাকুন।',
+      title: 'জুমআর দিন — সেরা আমলের দিন',
+      body:
+          'জুমআর দিনে সূরা কাহফ তিলাওয়াত করুন, দরূদ বেশি বেশি পড়ুন। আজকের আমলনামা পূর্ণ করুন।',
       scheduledDate: _nextWeeklyInstance(DateTime.friday, at),
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
@@ -380,15 +382,17 @@ class NotificationService {
         id: _hadithMorningBaseId + i,
         date: day,
         at: _hadithMorningTime,
-        title: 'আজকের হাদীস (সকাল)',
+        title: 'আজকের হাদীস ☀️',
         hadith: hadith,
+        suffix: '— সকালের অনুপ্রেরণা নিন এবং আমলে লেগে থাকুন।',
       );
       await _scheduleHadithForTime(
         id: _hadithEveningBaseId + i,
         date: day,
         at: _hadithEveningTime,
-        title: 'আজকের হাদীস (রাত)',
+        title: 'রাতের হাদীস 🌙',
         hadith: hadith,
+        suffix: '— ঘুমানোর আগে হাদীসের কথা মনে নিয়ে শুন।',
       );
     }
   }
@@ -399,6 +403,7 @@ class NotificationService {
     required TimeOfDay at,
     required String title,
     required String hadith,
+    required String suffix,
   }) async {
     if (_isSuppressedByQuietHours(at)) return;
     final scheduledDate = tz.TZDateTime(
@@ -413,7 +418,7 @@ class NotificationService {
     await _safeZonedSchedule(
       id: id,
       title: title,
-      body: hadith,
+      body: '$hadith\n$suffix',
       scheduledDate: scheduledDate,
       payload: AppRoutes.notifications,
       matchDateTimeComponents: null,

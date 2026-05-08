@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- Explicit opaque base layer -->
-    <item>
-        <color android:color="#FF0D3D2E"/>
-    </item>
-
-    <!-- Splash background color on top -->
     <item android:drawable="@color/splash_background"/>
-
 </layer-list>

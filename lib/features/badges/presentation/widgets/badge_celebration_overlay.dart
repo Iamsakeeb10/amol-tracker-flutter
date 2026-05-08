@@ -64,6 +64,11 @@ class _BadgeCelebrationOverlay extends StatefulWidget {
 class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+
+  // Pre-computed animations to avoid per-frame curve calculations
+  late final Animation<double> _scaleAnim;
+  late final Animation<double> _glowAnim;
+
   bool _completed = false;
 
   @override
@@ -73,6 +78,18 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
       vsync: this,
       duration: const Duration(milliseconds: 2200),
     )..forward();
+
+    // Bake the curve into a tween so Curves.transform is called once per frame
+    // at the Animation level, not inside build()
+    _scaleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.77, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // sin-based glow: approximate with a repeating curved animation
+    _glowAnim = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
   }
 
   @override
@@ -93,49 +110,97 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
     final title = _badgeTitle(l10n, widget.badge);
     final desc = _badgeDescription(l10n, widget.badge);
 
+    // Static widgets are built once, outside AnimatedBuilder
+    final titleText = Text(
+      'Badge Unlocked',
+      style: AppTextStyles.headlineLarge(context).copyWith(
+        color: AppColors.goldPale,
+        letterSpacing: 0.8,
+        shadows: const [],
+        decoration: TextDecoration.none,
+      ),
+    );
+
+    final badgeTitleText = Text(
+      title,
+      textAlign: TextAlign.center,
+      style: AppTextStyles.displayMedium(context).copyWith(
+        color: AppColors.textPrimary,
+        height: 1.05,
+        shadows: const [],
+        decoration: TextDecoration.none,
+      ),
+    );
+
+    final descText = Text(
+      desc,
+      textAlign: TextAlign.center,
+      style: AppTextStyles.bodyLarge(context).copyWith(
+        color: AppColors.textSecondary,
+        shadows: const [],
+        decoration: TextDecoration.none,
+      ),
+    );
+
+    final tapHint = Text(
+      'Tap to continue',
+      style: AppTextStyles.bodySmall(context).copyWith(
+        color: AppColors.goldPale,
+        shadows: const [],
+        decoration: TextDecoration.none,
+      ),
+    );
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: _finish,
       child: ColoredBox(
         color: AppColors.emeraldDeep.withValues(alpha: 0.94),
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) {
-            final t = _controller.value;
-            final easeOut = Curves.easeOutCubic.transform(
-              (t * 1.3).clamp(0.0, 1.0),
-            );
-            final iconScale = 0.7 + (easeOut * 0.45);
-            final glow = (math.sin(t * math.pi * 6) * 0.5 + 0.5) * 0.8;
-
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: SizedBox(
-                    height: MediaQuery.sizeOf(context).height * 0.62,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Burst painter — only repaints itself
+            Align(
+              alignment: Alignment.topCenter,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final height = MediaQuery.sizeOf(context).height * 0.62;
+                  return SizedBox(
+                    height: height,
                     width: double.infinity,
-                    child: CustomPaint(painter: _BurstPainter(progress: t)),
-                  ),
-                ),
-                Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Badge Unlocked',
-                          style: AppTextStyles.headlineLarge(context).copyWith(
-                            color: AppColors.goldPale,
-                            letterSpacing: 0.8,
-                            shadows: const [],
-                            decoration: TextDecoration.none,
-                          ),
+                    child: RepaintBoundary(
+                      child: AnimatedBuilder(
+                        animation: _controller,
+                        builder: (context, _) => CustomPaint(
+                          painter: _BurstPainter(progress: _controller.value),
                         ),
-                        SizedBox(height: 24.h),
-                        Transform.scale(
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Static text + animated icon — icon animates, text does not
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    titleText,
+                    SizedBox(height: 24.h),
+
+                    // Only the icon scale + glow rebuilds
+                    AnimatedBuilder(
+                      animation: _scaleAnim,
+                      builder: (context, child) {
+                        final iconScale = 0.7 + (_scaleAnim.value * 0.45);
+                        final t = _glowAnim.value;
+                        final glow =
+                            (math.sin(t * math.pi * 6) * 0.5 + 0.5) * 0.8;
+
+                        return Transform.scale(
                           scale: iconScale,
                           child: Container(
                             width: 132.r,
@@ -159,54 +224,29 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              widget.badge.icon,
-                              size: 64.r,
-                              color: AppColors.emeraldDeep,
-                            ),
+                            child: child,
                           ),
-                        ),
-                        SizedBox(height: 24.h),
-                        Text(
-                          title,
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.displayMedium(context).copyWith(
-                            color: AppColors.textPrimary,
-                            height: 1.05,
-                            shadows: const [],
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Text(
-                          desc,
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.bodyLarge(
-                            context,
-                          ).copyWith(
-                            color: AppColors.textSecondary,
-                            shadows: const [],
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                        SizedBox(height: 20.h),
-                        Text(
-                          'Tap to continue',
-                          style: AppTextStyles.bodySmall(
-                            context,
-                          ).copyWith(
-                            color: AppColors.goldPale,
-                            shadows: const [],
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ],
+                        );
+                      },
+                      // Icon is constant — passed as child so it isn't rebuilt
+                      child: Icon(
+                        widget.badge.icon,
+                        size: 64.r,
+                        color: AppColors.emeraldDeep,
+                      ),
                     ),
-                  ),
+
+                    SizedBox(height: 24.h),
+                    badgeTitleText,
+                    SizedBox(height: 8.h),
+                    descText,
+                    SizedBox(height: 20.h),
+                    tapHint,
+                  ],
                 ),
-              ],
-            );
-          },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -259,60 +299,72 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
   }
 }
 
+// Dot positions are pre-computed once, not regenerated every frame
+final List<(double, double, bool)> _burstDots = () {
+  final rng = math.Random(37);
+  return List.generate(28, (i) {
+    final angle = rng.nextDouble() * math.pi * 2;
+    return (math.cos(angle), math.sin(angle), i % 3 == 0);
+  });
+}();
+
 class _BurstPainter extends CustomPainter {
   const _BurstPainter({required this.progress});
 
   final double progress;
+
+  // Reusable Paint objects — avoids allocation inside paint()
+  static final _ringPaint = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2.2;
+  static final _rayPaint = Paint()
+    ..strokeCap = StrokeCap.round
+    ..strokeWidth = 2;
+  static final _dotPaint = Paint()..style = PaintingStyle.fill;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height * 0.38);
     final maxRadius = size.shortestSide * 0.48;
 
-    final ringPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..color = AppColors.goldPale.withValues(alpha: (1 - progress) * 0.55);
-    canvas.drawCircle(center, maxRadius * (0.35 + progress * 0.65), ringPaint);
+    _ringPaint.color = AppColors.goldPale.withValues(
+      alpha: (1 - progress) * 0.55,
+    );
+    canvas.drawCircle(center, maxRadius * (0.35 + progress * 0.65), _ringPaint);
 
     const rays = 18;
+    final innerR = maxRadius * 0.16;
+    final fadeAlpha = (1 - progress) * 0.7;
+
     for (var i = 0; i < rays; i++) {
       final angle = (math.pi * 2 * i) / rays;
       final length = maxRadius * (0.25 + 0.65 * progress);
+      final cosA = math.cos(angle);
+      final sinA = math.sin(angle);
       final start = Offset(
-        center.dx + math.cos(angle) * maxRadius * 0.16,
-        center.dy + math.sin(angle) * maxRadius * 0.16,
+        center.dx + cosA * innerR,
+        center.dy + sinA * innerR,
       );
-      final end = Offset(
-        center.dx + math.cos(angle) * length,
-        center.dy + math.sin(angle) * length,
-      );
-      final rayPaint = Paint()
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = 2
-        ..color = (i.isEven ? AppColors.goldLight : AppColors.cream).withValues(
-          alpha: (1 - progress) * 0.7,
-        );
-      canvas.drawLine(start, end, rayPaint);
+      final end = Offset(center.dx + cosA * length, center.dy + sinA * length);
+      _rayPaint.color = (i.isEven ? AppColors.goldLight : AppColors.cream)
+          .withValues(alpha: fadeAlpha);
+      canvas.drawLine(start, end, _rayPaint);
     }
 
-    final rng = math.Random(37);
-    for (var i = 0; i < 28; i++) {
-      final angle = rng.nextDouble() * math.pi * 2;
-      final spread = maxRadius * (0.35 + progress * 0.85);
-      final dx = math.cos(angle) * spread;
-      final dy = math.sin(angle) * spread;
-      final p = Offset(center.dx + dx, center.dy + dy);
-      final dot = Paint()
-        ..style = PaintingStyle.fill
-        ..color = (i % 3 == 0 ? AppColors.goldPale : AppColors.goldLight)
-            .withValues(alpha: (1 - progress).clamp(0.0, 1.0));
-      canvas.drawCircle(p, 2.2 + (1 - progress) * 1.6, dot);
+    final spread = maxRadius * (0.35 + progress * 0.85);
+    final dotAlpha = (1 - progress).clamp(0.0, 1.0);
+    final dotRadius = 2.2 + (1 - progress) * 1.6;
+
+    for (var i = 0; i < _burstDots.length; i++) {
+      final (cosA, sinA, isPale) = _burstDots[i];
+      final p = Offset(center.dx + cosA * spread, center.dy + sinA * spread);
+      _dotPaint.color = (isPale ? AppColors.goldPale : AppColors.goldLight)
+          .withValues(alpha: dotAlpha);
+      canvas.drawCircle(p, dotRadius, _dotPaint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _BurstPainter oldDelegate) {
-    return oldDelegate.progress != progress;
-  }
+  bool shouldRepaint(covariant _BurstPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }

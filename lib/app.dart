@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'core/router/router.dart';
 import 'core/services/notification_service.dart';
 import 'core/theme/theme.dart';
+import 'features/badges/presentation/widgets/badge_celebration_overlay.dart';
 import 'l10n/app_localizations.dart';
+import 'providers/badge_celebration_provider.dart';
 import 'providers/locale_provider.dart';
 
 class AmolTrackerApp extends ConsumerStatefulWidget {
@@ -37,6 +39,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       NotificationService.instance.rescheduleAll();
+      ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
     }
   }
 
@@ -63,7 +66,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
           data: MediaQueryData.fromView(
             View.of(context),
           ).copyWith(alwaysUse24HourFormat: false),
-          child: child!,
+          child: BadgeCelebrationHost(child: child!),
         );
       },
       routerConfig: _router,

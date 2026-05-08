@@ -142,6 +142,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       isAnonymousDisplay: _isAnonymousDisplay,
       showOnLeaderboard: true,
       badges: const <String>[],
+      seenBadgeCelebrations: const <String>[],
     );
 
     if (!mounted) return;

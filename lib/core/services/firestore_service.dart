@@ -51,6 +51,16 @@ class FirestoreService {
     await _users.doc(uid).update(fields);
   }
 
+  Future<void> markBadgeCelebrationsSeen(
+    String uid,
+    List<String> badgeIds,
+  ) async {
+    if (badgeIds.isEmpty) return;
+    await _users.doc(uid).update(<String, dynamic>{
+      'seenBadgeCelebrations': FieldValue.arrayUnion(badgeIds),
+    });
+  }
+
   Future<void> updateUserDisplayFields(
     String uid, {
     String? name,

@@ -236,10 +236,12 @@ class _NotificationRow extends StatelessWidget {
 
   String _resolvedMessage(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final storedMessage = item.message.trim();
+    if (storedMessage.isNotEmpty) return storedMessage;
     if (item.type == 'dua' && (item.senderName?.trim().isNotEmpty ?? false)) {
       return l10n.duaFromSender(item.senderName!.trim());
     }
-    return item.message;
+    return '';
   }
 
   String _timeLabel(BuildContext context) {

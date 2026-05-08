@@ -377,7 +377,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.emeraldMid,
+      backgroundColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
@@ -460,83 +460,147 @@ class _DuaSheetState extends State<_DuaSheet> {
     final isDisabled = _isSending || _selectedPhrase == null;
     return SafeArea(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h + bottomInset),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 44.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AppColors.cardBorder,
-                  borderRadius: BorderRadius.circular(999.r),
+        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h + bottomInset),
+        child: CardContainer(
+          color: AppColors.emeraldMid,
+          borderColor: AppColors.goldBorder,
+          radius: 24,
+          padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBorder,
+                    borderRadius: BorderRadius.circular(999.r),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 14.h),
-            Text(
-              'দোয়া বেছে নিন',
-              style: AppTextStyles.headlineMedium(context),
-            ),
-            SizedBox(height: 12.h),
-            Wrap(
-              spacing: 8.w,
-              runSpacing: 8.h,
-              children: _kDuaPhrases.map((phrase) {
-                final selected = _selectedPhrase == phrase;
-                return ChoiceChip(
-                  label: Text(
-                    phrase,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: selected ? AppColors.gold : AppColors.textMuted,
+              SizedBox(height: 14.h),
+              Text(
+                'দোয়া বেছে নিন',
+                style: AppTextStyles.headlineMedium(context),
+              ),
+              SizedBox(height: 12.h),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _kDuaPhrases.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 8.h,
+                  crossAxisSpacing: 8.w,
+                  childAspectRatio: 3.4,
+                ),
+                itemBuilder: (context, index) {
+                  final phrase = _kDuaPhrases[index];
+                  final selected = _selectedPhrase == phrase;
+                  return _DuaPhraseButton(
+                    phrase: phrase,
+                    selected: selected,
+                    onTap: () {
+                      setState(
+                        () => _selectedPhrase = selected ? null : phrase,
+                      );
+                    },
+                  );
+                },
+              ),
+              SizedBox(height: 14.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isDisabled
+                      ? null
+                      : () async {
+                          setState(() => _isSending = true);
+                          final didSend = await widget.onSend(_selectedPhrase!);
+                          if (!context.mounted) return;
+                          setState(() => _isSending = false);
+                          if (didSend) {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: AppColors.emeraldDeep,
+                    disabledBackgroundColor: AppColors.gold.withValues(
+                      alpha: 0.45,
+                    ),
+                    disabledForegroundColor: AppColors.emeraldDeep.withValues(
+                      alpha: 0.75,
                     ),
                   ),
-                  selected: selected,
-                  backgroundColor: AppColors.cardDark,
-                  selectedColor: AppColors.goldCard,
-                  side: BorderSide(
-                    color: selected
-                        ? AppColors.goldBorder
-                        : AppColors.cardBorder,
-                  ),
-                  onSelected: (value) {
-                    setState(() => _selectedPhrase = value ? phrase : null);
-                  },
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 14.h),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: isDisabled
-                    ? null
-                    : () async {
-                        setState(() => _isSending = true);
-                        final didSend = await widget.onSend(_selectedPhrase!);
-                        if (!context.mounted) return;
-                        setState(() => _isSending = false);
-                        if (didSend) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                child: _isSending
-                    ? SizedBox(
-                        width: 16.r,
-                        height: 16.r,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.emeraldDeep,
+                  child: _isSending
+                      ? SizedBox(
+                          width: 16.r,
+                          height: 16.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.emeraldDeep,
+                            ),
                           ),
+                        )
+                      : Text(
+                          'পাঠান',
+                          style: AppTextStyles.button(
+                            context,
+                          ).copyWith(color: AppColors.emeraldDeep),
                         ),
-                      )
-                    : const Text('পাঠান'),
+                ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DuaPhraseButton extends StatelessWidget {
+  const _DuaPhraseButton({
+    required this.phrase,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String phrase;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.r),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOut,
+          alignment: Alignment.center,
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.goldCard : AppColors.cardDark,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: selected ? AppColors.goldBorder : AppColors.cardBorder,
             ),
-          ],
+          ),
+          child: Text(
+            phrase,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium(context).copyWith(
+              color: selected ? AppColors.gold : AppColors.textSecondary,
+            ),
+          ),
         ),
       ),
     );

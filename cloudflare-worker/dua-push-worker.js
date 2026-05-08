@@ -222,9 +222,11 @@ export default {
     const senderUid = String(body.senderUid || '');
     const recipientUid = String(body.recipientUid || '');
     const recipientFcmToken = String(body.recipientFcmToken || '');
-    const senderName = String(body.senderName || 'কেউ একজন');
-    const message = String(body.message || 'আপনি একটি দোয়া পেয়েছেন');
+    const senderName = String(body.senderName || 'কেউ একজন').trim();
+    const message = String(body.message || '').trim();
     const notificationId = String(body.notificationId || '');
+    const resolvedBody =
+      message || `${senderName || 'কেউ একজন'}: আল্লাহ আপনার নেক আমল কবুল করুন 🤲`;
 
     if (!senderUid || !recipientUid || !recipientFcmToken) {
       return jsonResponse({ error: 'missing_required_fields' }, 400);
@@ -245,15 +247,16 @@ export default {
       token: recipientFcmToken,
       notification: {
         title: 'নতুন দোয়া পেয়েছেন',
-        body: `${senderName} আপনাকে দোয়া পাঠিয়েছেন`,
+        body: resolvedBody,
       },
       data: {
         type: 'dua',
         notificationType: 'dua',
         senderUid,
+        senderName,
         recipientUid,
         notificationId,
-        message,
+        message: resolvedBody,
         click_action: 'FLUTTER_NOTIFICATION_CLICK',
       },
       android: {

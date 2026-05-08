@@ -573,8 +573,17 @@ class NotificationService {
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
     final notification = message.notification;
-    final title = notification?.title ?? 'নতুন নোটিফিকেশন';
-    final body = notification?.body ?? '';
+    final rawType =
+        (message.data['type'] ?? message.data['notificationType'] ?? '')
+            .toString();
+    final isDua = rawType == 'dua';
+    final duaMessage = (message.data['message'] ?? '').toString().trim();
+    final title = isDua
+        ? 'নতুন দোয়া পেয়েছেন'
+        : (notification?.title ?? 'নতুন নোটিফিকেশন');
+    final body = isDua
+        ? (duaMessage.isNotEmpty ? duaMessage : (notification?.body ?? ''))
+        : (notification?.body ?? '');
     final route = _routeFromMessage(message);
     final id =
         message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch;

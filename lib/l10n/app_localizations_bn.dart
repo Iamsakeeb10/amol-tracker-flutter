@@ -733,7 +733,21 @@ class AppLocalizationsBn extends AppLocalizations {
   String get markAllDone => 'সবগুলো সম্পন্ন';
 
   @override
+  String get deselectAll => 'সবগুলো বাতিল';
+
+  @override
   String get submitTodaysLog => 'আজকের লগ সাবমিট করুন';
+
+  @override
+  String get saveTodaysAmal => 'আজকের আমল সংরক্ষণ করুন';
+
+  @override
+  String get draftSavedTapSaveToFinish =>
+      'খসড়া সংরক্ষিত। আজকের হিসাব শেষ করতে \"সংরক্ষণ করুন\" চাপুন।';
+
+  @override
+  String get progressAutosavedHint =>
+      'আপনার অগ্রগতি খসড়া হিসেবে অটো সেভ হচ্ছে।';
 
   @override
   String get welcomeUpper => 'স্বাগতম';

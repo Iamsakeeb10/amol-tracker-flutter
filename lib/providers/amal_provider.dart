@@ -228,6 +228,15 @@ class AmalNotifier extends StateNotifier<AmalState> {
     Future<void>.microtask(_persistDraft);
   }
 
+  void clearAll() {
+    if (state.isSubmitted || state.isLoading) return;
+    final next = <String, dynamic>{
+      for (final f in kAmalFields) f.id: f.type == AmalType.numeric ? 0 : false,
+    };
+    state = state.copyWith(toggles: next, clearError: true);
+    Future<void>.microtask(_persistDraft);
+  }
+
   /// Persists freeze choice after S-16 — keeps streak, marks freeze used for the week.
   Future<void> applyFreeze(UserModel user) async {
     final fs = _ref.read(firestoreServiceProvider);

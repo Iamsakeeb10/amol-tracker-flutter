@@ -1430,11 +1430,35 @@ abstract class AppLocalizations {
   /// **'Mark all done'**
   String get markAllDone;
 
+  /// No description provided for @deselectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect all'**
+  String get deselectAll;
+
   /// No description provided for @submitTodaysLog.
   ///
   /// In en, this message translates to:
   /// **'Submit today\'s log'**
   String get submitTodaysLog;
+
+  /// No description provided for @saveTodaysAmal.
+  ///
+  /// In en, this message translates to:
+  /// **'Save today\'s amal'**
+  String get saveTodaysAmal;
+
+  /// No description provided for @draftSavedTapSaveToFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft saved. Tap Save to finish today.'**
+  String get draftSavedTapSaveToFinish;
+
+  /// No description provided for @progressAutosavedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress is auto-saved as draft.'**
+  String get progressAutosavedHint;
 
   /// No description provided for @welcomeUpper.
   ///

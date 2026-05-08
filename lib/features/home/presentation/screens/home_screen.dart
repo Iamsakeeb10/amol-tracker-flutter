@@ -209,13 +209,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     style: AppTextStyles.headlineMedium(context),
                   ),
                 ),
-                TextButton(
-                  onPressed: amal.isLoading ? null : amalNotifier.markAllDone,
-                  child: Text(
-                    l10n.markAllDone,
-                    style: AppTextStyles.button(
-                      context,
-                    ).copyWith(color: AppColors.gold),
+                OutlinedButton.icon(
+                  onPressed: amal.isLoading
+                      ? null
+                      : amal.hasAnyDone
+                      ? amalNotifier.clearAll
+                      : amalNotifier.markAllDone,
+                  icon: Icon(
+                    amal.hasAnyDone ? Icons.restart_alt : Icons.done_all,
+                    size: 17.r,
+                    color: amal.hasAnyDone
+                        ? AppColors.warning
+                        : AppColors.gold,
+                  ),
+                  label: Text(
+                    amal.hasAnyDone ? l10n.deselectAll : l10n.markAllDone,
+                    style: AppTextStyles.button(context).copyWith(
+                      color: amal.hasAnyDone
+                          ? AppColors.warning
+                          : AppColors.gold,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: amal.hasAnyDone
+                          ? AppColors.warning.withValues(alpha: 0.65)
+                          : AppColors.goldBorder,
+                    ),
+                    backgroundColor: amal.hasAnyDone
+                        ? AppColors.warningLight
+                        : AppColors.goldCard,
+                    foregroundColor: AppColors.gold,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 10.h,
+                    ),
+                    minimumSize: Size(0, 40.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
                   ),
                 ),
               ],
@@ -277,7 +311,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               ),
                             )
                           : Text(
-                              l10n.submitTodaysLog,
+                              l10n.saveTodaysAmal,
                               style: AppTextStyles.button(context).copyWith(
                                 color: AppColors.emeraldDeep,
                                 fontWeight: FontWeight.w600,
@@ -304,6 +338,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                       ),
                     ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              amal.hasAnyDone
+                  ? l10n.draftSavedTapSaveToFinish
+                  : l10n.progressAutosavedHint,
+              style: AppTextStyles.bodySmall(
+                context,
+              ).copyWith(color: AppColors.textSecondary, fontSize: 12.sp),
             ),
           ],
         ],

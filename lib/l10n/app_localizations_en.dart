@@ -731,7 +731,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get markAllDone => 'Mark all done';
 
   @override
+  String get deselectAll => 'Deselect all';
+
+  @override
   String get submitTodaysLog => 'Submit today\'s log';
+
+  @override
+  String get saveTodaysAmal => 'Save today\'s amal';
+
+  @override
+  String get draftSavedTapSaveToFinish =>
+      'Draft saved. Tap Save to finish today.';
+
+  @override
+  String get progressAutosavedHint => 'Your progress is auto-saved as draft.';
 
   @override
   String get welcomeUpper => 'WELCOME';

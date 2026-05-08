@@ -7,21 +7,20 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
-import '../../../../core/theme/colors.dart';
-import '../../../../core/theme/text_styles.dart';
 import '../../../../core/services/hadith_asset_service.dart';
 import '../../../../core/services/islamic_date_service.dart';
+import '../../../../core/theme/colors.dart';
+import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/streak_helper.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../models/user_model.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
-import '../../../../core/utils/streak_helper.dart';
-import '../../../../shared/widgets/streak_freeze_modal.dart';
-import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
-import '../../../../l10n/app_localizations.dart';
+import '../../../../shared/widgets/streak_freeze_modal.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -130,13 +129,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
               ),
             ),
-          _Header(displayName: user.name),
-          SizedBox(height: 18.h),
-          _StreakBanner(
-            streak: displayStreak.currentStreak,
-            bestStreak: displayStreak.bestStreak,
-            onTap: () => context.push(AppRoutes.history),
-          ),
+          _Header(displayName: user.name, streak: displayStreak.currentStreak),
+          // SizedBox(height: 18.h),
           SizedBox(height: 14.h),
           if (amal.error != null) ...[
             Text(
@@ -191,11 +185,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           amal.toggles[f.id],
                           f.maxValue,
                         ),
+                        onTapDetails: () => _showAmalDetailsDialog(context, f),
                         readOnly: true,
                       )
                     : AmalRow(
                         field: f,
                         done: amal.toggles[f.id] as bool? ?? false,
+                        onTapDetails: () => _showAmalDetailsDialog(context, f),
                         readOnly: true,
                       ),
               ),
@@ -218,9 +214,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   icon: Icon(
                     amal.hasAnyDone ? Icons.restart_alt : Icons.done_all,
                     size: 17.r,
-                    color: amal.hasAnyDone
-                        ? AppColors.warning
-                        : AppColors.gold,
+                    color: amal.hasAnyDone ? AppColors.warning : AppColors.gold,
                   ),
                   label: Text(
                     amal.hasAnyDone ? l10n.deselectAll : l10n.markAllDone,
@@ -276,11 +270,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               : f.maxValue,
                           onNumericChanged: (v) =>
                               amalNotifier.setNumeric(f.id, v),
+                          onTapDetails: () =>
+                              _showAmalDetailsDialog(context, f),
                         )
                       : AmalRow(
                           field: f,
                           done: amal.toggles[f.id] as bool? ?? false,
                           onChanged: (_) => amalNotifier.toggle(f.id),
+                          onTapDetails: () =>
+                              _showAmalDetailsDialog(context, f),
                         ),
                 ),
               ),
@@ -383,6 +381,186 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       context.push(AppRoutes.dayComplete, extra: result.log);
     }
   }
+
+  Future<void> _showAmalDetailsDialog(
+    BuildContext context,
+    AmalField field,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: CardContainer(
+            padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 14.h),
+            borderColor: AppColors.goldBorder.withValues(alpha: 0.8),
+            color: AppColors.emeraldMid.withValues(alpha: 0.98),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 24.r,
+                offset: Offset(0, 10.h),
+              ),
+            ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 42.r,
+                      height: 42.r,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.goldCard,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.goldBorder),
+                      ),
+                      child: Icon(
+                        amalFieldIcon(field.id),
+                        color: AppColors.gold,
+                        size: 22.r,
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            field.labelBn,
+                            style: AppTextStyles.bodyLarge(context).copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15.sp,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            field.label,
+                            style: AppTextStyles.bodySmall(context).copyWith(
+                              color: AppColors.textSecondary,
+                              fontSize: 11.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      visualDensity: VisualDensity.compact,
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: AppColors.textMuted,
+                        size: 20.r,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10.h),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(12.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.emeraldDeep.withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: AppColors.goldBorder.withValues(alpha: 0.45),
+                    ),
+                  ),
+                  child: Text(
+                    field.sublabel,
+                    style: AppTextStyles.bodyMedium(context).copyWith(
+                      color: AppColors.textPrimary,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 8.h,
+                  children: [
+                    _DetailChip(
+                      icon: Icons.workspace_premium_outlined,
+                      text: '+${field.points} pts',
+                    ),
+                    _DetailChip(
+                      icon: field.type == AmalType.numeric
+                          ? Icons.pin_outlined
+                          : Icons.toggle_on_outlined,
+                      text: field.type == AmalType.numeric
+                          ? 'Target: ${field.maxValue}'
+                          : 'Type: Toggle',
+                    ),
+                  ],
+                ),
+                SizedBox(height: 14.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.gold,
+                      side: const BorderSide(color: AppColors.goldBorder),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 11.h),
+                    ),
+                    child: Text(
+                      l10n.cancel,
+                      style: AppTextStyles.button(context).copyWith(
+                        color: AppColors.gold,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DetailChip extends StatelessWidget {
+  const _DetailChip({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: AppColors.goldCard,
+        borderRadius: BorderRadius.circular(99.r),
+        border: Border.all(color: AppColors.goldBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.gold, size: 14.r),
+          SizedBox(width: 6.w),
+          Text(
+            text,
+            style: AppTextStyles.bodySmall(context).copyWith(
+              color: AppColors.gold,
+              fontWeight: FontWeight.w600,
+              fontSize: 11.sp,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _HomeAmalLoadingShimmer extends StatelessWidget {
@@ -461,139 +639,94 @@ class _WelcomeCard extends StatelessWidget {
 }
 
 class _Header extends ConsumerWidget {
-  const _Header({required this.displayName});
+  const _Header({required this.displayName, required this.streak});
 
   final String displayName;
+  final int streak;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final trimmed = displayName.trim();
-    final initial = trimmed.isEmpty
-        ? '?'
-        : trimmed.substring(0, 1).toUpperCase();
+    final l10n = AppLocalizations.of(context)!;
 
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.history),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            IslamicDateService.getDisplayIslamicDate(),
+            style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+          ),
+          SizedBox(height: 2.h),
+          Row(
             children: [
-              GestureDetector(
-                onTap: () => context.push(AppRoutes.history),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      IslamicDateService.getDisplayIslamicDate(),
-                      style: AppTextStyles.label(
-                        context,
-                      ).copyWith(color: AppColors.gold),
+              Expanded(
+                child: Text(
+                  IslamicDateService.weekdayEnglishToday(),
+                  style: AppTextStyles.displayMedium(context),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              SizedBox(width: 8.w),
+              InkWell(
+                onTap: () => context.push(AppRoutes.profile),
+                borderRadius: BorderRadius.circular(99.r),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 6.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.goldCard,
+                    border: Border.all(color: AppColors.goldBorder),
+                    borderRadius: BorderRadius.circular(99.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.local_fire_department,
+                        color: AppColors.warning,
+                        size: 15.r,
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        l10n.dayStreak(streak),
+                        style: AppTextStyles.pill(
+                          context,
+                        ).copyWith(color: AppColors.gold, fontSize: 11.sp),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(width: 8.w),
+              InkWell(
+                onTap: () => context.push(AppRoutes.notifications),
+                borderRadius: BorderRadius.circular(12.r),
+                child: Tooltip(
+                  message: l10n.notifications,
+                  child: Container(
+                    width: 34.r,
+                    height: 34.r,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.goldCard,
+                      border: Border.all(color: AppColors.goldBorder),
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      IslamicDateService.weekdayEnglishToday(),
-                      style: AppTextStyles.displayMedium(context),
+                    child: Icon(
+                      Icons.notifications_none_rounded,
+                      color: AppColors.gold,
+                      size: 20.r,
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-        AvatarChip(
-          initial: initial,
-          color: AppColors.gold,
-          ring: true,
-          size: 38,
-          fontSize: 16,
-        ),
-      ],
-    );
-  }
-}
-
-class _StreakBanner extends StatelessWidget {
-  final int streak;
-  final int bestStreak;
-  final VoidCallback onTap;
-
-  const _StreakBanner({
-    required this.streak,
-    required this.bestStreak,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return GestureDetector(
-      onTap: onTap,
-      child: CardContainer.gold(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
-        child: Row(
-          children: [
-            Container(
-              width: 44.r,
-              height: 44.r,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.warningLight,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Icon(
-                Icons.local_fire_department,
-                color: AppColors.warning,
-                size: 22.r,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          l10n.dayStreak(streak),
-                          style: AppTextStyles.bodyLarge(
-                            context,
-                          ).copyWith(fontWeight: FontWeight.w600),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 8.w,
-                          vertical: 2.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.warningLight,
-                          borderRadius: BorderRadius.circular(99.r),
-                        ),
-                        child: Text(
-                          l10n.onFire,
-                          style: AppTextStyles.pill(
-                            context,
-                          ).copyWith(color: AppColors.warning, fontSize: 10.sp),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    l10n.bestStreakKeepGoing(bestStreak),
-                    style: AppTextStyles.bodySmall(
-                      context,
-                    ).copyWith(fontSize: 11.sp),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

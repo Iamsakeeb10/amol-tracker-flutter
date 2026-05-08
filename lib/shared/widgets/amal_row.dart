@@ -37,6 +37,7 @@ class AmalRow extends StatelessWidget {
   final int? numericValue;
   final ValueChanged<bool>? onChanged;
   final ValueChanged<int>? onNumericChanged;
+  final VoidCallback? onTapDetails;
   final int? maxAllowed;
   final bool readOnly;
 
@@ -47,6 +48,7 @@ class AmalRow extends StatelessWidget {
     this.numericValue,
     this.onChanged,
     this.onNumericChanged,
+    this.onTapDetails,
     this.maxAllowed,
     this.readOnly = false,
   });
@@ -63,6 +65,7 @@ class AmalRow extends StatelessWidget {
         : (done ? field.points : 0);
 
     return CardContainer(
+      onTap: onTapDetails,
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       color: done ? AppColors.goldCard : AppColors.cardDark,
       borderColor: done ? AppColors.goldBorder : AppColors.cardBorder,

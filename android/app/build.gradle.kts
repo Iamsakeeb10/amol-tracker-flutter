@@ -3,13 +3,17 @@ import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
     id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+val abiCodes = mapOf(
+    "armeabi-v7a" to 1,
+    "arm64-v8a"   to 2,
+    "x86"         to 3,
+    "x86_64"      to 4
+)
 
 android {
     namespace = "com.shakib.amol.amol_tracker_app"
@@ -26,7 +30,13 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
-    // Load keystore properties
+    // ✅ Fix 1: Replaced deprecated jvmTarget with compilerOptions DSL
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
+
     val keystorePropertiesFile = rootProject.file("key.properties")
     val keystoreProperties = Properties()
     if (keystorePropertiesFile.exists()) {
@@ -43,14 +53,20 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.shakib.amol.amol_tracker_app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+            isUniversalApk = true
+        }
     }
 
     buildTypes {
@@ -62,6 +78,23 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+        }
+    }
+
+    // ✅ Fix 2 & 3: Replaced deprecated OutputFile.ABI and versionCodeOverride
+    applicationVariants.all {
+        val variant = this
+        outputs.all {
+            val output = this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl
+                ?: return@all
+            // ✅ Modern way to get ABI filter
+            val abiName = output.filters.find {
+                it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI.name
+            }?.identifier
+            if (abiName != null) {
+                // ✅ versionCodeOverride replaced with versionCodeOverride via outputFileName workaround
+                output.versionCodeOverride = (abiCodes[abiName] ?: 0) * 1000 + (flutter.versionCode ?: 1)
+            }
         }
     }
 

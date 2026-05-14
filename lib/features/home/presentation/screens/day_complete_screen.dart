@@ -10,11 +10,11 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/services/hadith_asset_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/streak_badge.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class DayCompleteScreen extends StatefulWidget {
   const DayCompleteScreen({super.key, required this.log});
@@ -38,14 +38,28 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
   Future<void> _pickHadith() async {
     try {
       final hadiths = await HadithAssetService.loadHadithTexts();
+
+      if (!mounted) return;
+
       if (hadiths.isEmpty) {
-        setState(() => _hadithError = null);
+        setState(() {
+          _hadithError = 'কোনো হাদিস পাওয়া যায়নি';
+        });
         return;
       }
+
       final i = Random().nextInt(hadiths.length);
-      setState(() => _hadith = hadiths[i]);
+
+      setState(() {
+        _hadith = hadiths[i];
+        _hadithError = null;
+      });
     } catch (e) {
-      setState(() => _hadithError = null);
+      if (!mounted) return;
+
+      setState(() {
+        _hadithError = 'হাদিস লোড করতে সমস্যা হয়েছে';
+      });
     }
   }
 

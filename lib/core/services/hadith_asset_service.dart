@@ -22,7 +22,8 @@ class HadithAssetService {
           .map(_formatHadith)
           .where((hadith) => hadith.isNotEmpty)
           .toList(growable: false);
-    } catch (_, __) {
+    } catch (e, st) {
+      print('HadithAssetService error: $e\n$st'); // ← add this
       return const [];
     }
   }

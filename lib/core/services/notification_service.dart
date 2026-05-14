@@ -12,6 +12,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../router/routes.dart';
 import 'hadith_asset_service.dart';
+import 'islamic_date_service.dart';
 import 'local_storage_service.dart';
 
 class NotificationService {
@@ -184,6 +185,10 @@ class NotificationService {
     await _localNotifications.cancel(_morningId);
     await _localNotifications.cancel(_eveningId);
     await _localNotifications.cancel(_streakId);
+    // Cancel additional streak warning IDs for 7-day window
+    for (var i = 1; i < 7; i++) {
+      await _localNotifications.cancel(_streakId + i);
+    }
     await _localNotifications.cancel(_jumuahId);
     for (var i = 0; i < _hadithDaysAhead; i++) {
       await _localNotifications.cancel(_hadithMorningBaseId + i);
@@ -235,10 +240,27 @@ class NotificationService {
   );
   bool get isEveningEnabled =>
       LocalStorageService.getPref<bool>(notifEveningKey, true);
-  TimeOfDay get eveningTime => TimeOfDay(
-    hour: LocalStorageService.getPref<int>(notifEveningHourKey, 17),
-    minute: LocalStorageService.getPref<int>(notifEveningMinuteKey, 0),
-  );
+  TimeOfDay get eveningTime {
+    final storedHour = LocalStorageService.getPref<int?>(notifEveningHourKey);
+    final storedMinute = LocalStorageService.getPref<int?>(
+      notifEveningMinuteKey,
+    );
+
+    // If user has customized the time, use their preference
+    if (storedHour != null && storedMinute != null) {
+      return TimeOfDay(hour: storedHour, minute: storedMinute);
+    }
+
+    // Default: Use Maghrib prayer time
+    try {
+      final maghribTime = IslamicDateService.getMaghribTime();
+      return TimeOfDay(hour: maghribTime.hour, minute: maghribTime.minute);
+    } catch (_) {
+      // Fallback to 5 PM if Maghrib calculation fails
+      return const TimeOfDay(hour: 17, minute: 0);
+    }
+  }
+
   bool get isStreakEnabled =>
       LocalStorageService.getPref<bool>(notifStreakKey, true);
   bool get isCommunityEnabled =>
@@ -311,17 +333,82 @@ class NotificationService {
   }
 
   Future<void> _scheduleStreakWarning() async {
-    const at = TimeOfDay(hour: 22, minute: 15);
-    if (_isSuppressedByQuietHours(at)) return;
-    await _safeZonedSchedule(
-      id: _streakId,
-      title: 'আজকের আমল বাকি আছে!',
-      body:
-          'রাত শেষ হওয়ার আগেই লগ দিন — একটি দিন মিস করলে স্ট্রিক শেষ। আল্লাহ ছোট হলেও নিয়মিত আমল বেশি পছন্দ করেন।',
-      scheduledDate: _nextInstanceForRecurring(at),
-      payload: AppRoutes.home,
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
+    try {
+      // Check if user has already logged today
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final hijriDate = IslamicDateService.getCurrentIslamicDateString();
+      final fs = FirebaseFirestore.instance;
+      final todayLogDoc = await fs
+          .collection('users')
+          .doc(user.uid)
+          .collection('amalLogs')
+          .doc(hijriDate)
+          .get();
+
+      // If user has already logged today, don't show the notification
+      if (todayLogDoc.exists) return;
+
+      final now = tz.TZDateTime.now(tz.local);
+
+      // Schedule for today and next 7 days to ensure continuous scheduling
+      for (int dayOffset = 0; dayOffset < 7; dayOffset++) {
+        final targetDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).add(Duration(days: dayOffset));
+
+        final prayerTime = IslamicDateService.getMaghribTime();
+        // Get Maghrib time for the target date (approximate by using current logic)
+        final notificationTime = prayerTime.subtract(
+          const Duration(minutes: 15),
+        );
+
+        final notificationTimeOfDay = TimeOfDay(
+          hour: notificationTime.hour,
+          minute: notificationTime.minute,
+        );
+
+        if (_isSuppressedByQuietHours(notificationTimeOfDay)) continue;
+
+        final scheduledDate = tz.TZDateTime(
+          tz.local,
+          targetDate.year,
+          targetDate.month,
+          targetDate.day,
+          notificationTime.hour,
+          notificationTime.minute,
+        );
+
+        // Skip if time has passed
+        if (!scheduledDate.isAfter(now)) continue;
+
+        await _safeZonedSchedule(
+          id: _streakId + dayOffset,
+          title: 'আজকের আমল বাকি আছে!',
+          body:
+              'মাগরিবের আগেই আজকের আমল লগ করে দিন — একটি দিন মিস করলে স্ট্রিক শেষ। আল্লাহ ছোট হলেও নিয়মিত আমল বেশি পছন্দ করেন।',
+          scheduledDate: scheduledDate,
+          payload: AppRoutes.home,
+          matchDateTimeComponents: null,
+        );
+      }
+    } catch (_) {
+      // Fallback to default time (6 PM) if Maghrib calculation fails
+      const at = TimeOfDay(hour: 18, minute: 0);
+      if (_isSuppressedByQuietHours(at)) return;
+      await _safeZonedSchedule(
+        id: _streakId,
+        title: 'আজকের আমল বাকি আছে!',
+        body:
+            'মাগরিবের আগেই আজকের আমল লগ করে দিন — একটি দিন মিস করলে স্ট্রিক শেষ। আল্লাহ ছোট হলেও নিয়মিত আমল বেশি পছন্দ করেন।',
+        scheduledDate: _nextInstanceForRecurring(at),
+        payload: AppRoutes.home,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+    }
   }
 
   Future<void> _scheduleJumuah() async {

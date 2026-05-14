@@ -11,6 +11,7 @@ import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/streak_helper.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
@@ -20,7 +21,6 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/calendar_day_cell.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -70,6 +70,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     required int daysInMonth,
   }) {
     final byDay = <int, AmalLogModel>{};
+
     for (final log in logs) {
       final segs = log.hijriDate.split('-');
       if (segs.length == 3 &&
@@ -87,12 +88,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         _hijriMonth,
         d,
       );
+
+      // Before account creation — show as blank, no interaction
       if (key.compareTo(accountCreatedHijri) < 0) {
         out.add(MockDay(day: d, score: 0, state: DayCompletion.preAccount));
         continue;
       }
+
       final cmp = key.compareTo(todayStr);
 
+      // Future days — locked
       if (cmp > 0) {
         out.add(MockDay(day: d, score: 0, state: DayCompletion.future));
         continue;
@@ -100,30 +105,68 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
       final log = byDay[d];
 
+      // Today
       if (key == todayStr) {
-        out.add(
-          MockDay(day: d, score: log?.score ?? 0, state: DayCompletion.today),
-        );
+        final score = log?.score ?? 0;
+        DayCompletion todayState = DayCompletion.today;
+        if (log != null) {
+          todayState = _scoreToState(score, hasLog: true);
+        }
+        out.add(MockDay(day: d, score: score, state: todayState));
         continue;
       }
 
+      // Past day — no log means noData (not a failure)
       if (log == null) {
-        out.add(MockDay(day: d, score: 0, state: DayCompletion.miss));
+        out.add(MockDay(day: d, score: 0, state: DayCompletion.noData));
         continue;
       }
 
+      // Past day with a log — classify by score
       final sc = log.score;
-      DayCompletion st;
-      if (sc >= 80) {
-        st = DayCompletion.full;
-      } else if (sc >= 50) {
-        st = DayCompletion.partial;
-      } else {
-        st = DayCompletion.miss;
-      }
-      out.add(MockDay(day: d, score: sc, state: st));
+      out.add(
+        MockDay(day: d, score: sc, state: _scoreToState(sc, hasLog: true)),
+      );
     }
+
     return out;
+  }
+
+  /// Maps a score to the appropriate [DayCompletion] tier.
+  /// Never returns [DayCompletion.miss] for logged days — we use
+  /// [DayCompletion.minimal] at worst so users are never shamed with red.
+  DayCompletion _scoreToState(int score, {required bool hasLog}) {
+    if (!hasLog) return DayCompletion.noData;
+    if (score >= 80) return DayCompletion.full; // ✅ Alhamdulillah
+    if (score >= 50) return DayCompletion.partial; // 🌙 Ma sha Allah
+    if (score >= 20) return DayCompletion.light; // 🟠 Keep Going
+    if (score >= 1) return DayCompletion.minimal; // 💧 A Start
+    return DayCompletion
+        .miss; // score == 0 but log exists (opened app, no amal)
+  }
+
+  /// Consistency = days with score >= 50 / active days since account creation.
+  /// Only counts days with a log — noData days don't count against the user.
+  int _calcConsistency({
+    required List<MockDay> days,
+    required List<AmalLogModel> logs,
+  }) {
+    // Active days = days that are not preAccount, future, or today (today is in progress)
+    final activePastDays = days
+        .where(
+          (d) =>
+              d.state != DayCompletion.preAccount &&
+              d.state != DayCompletion.future &&
+              d.state != DayCompletion.today &&
+              d.state !=
+                  DayCompletion.noData, // noData days don't count against user
+        )
+        .length;
+
+    if (activePastDays == 0) return 0;
+
+    final logged50Plus = logs.where((l) => l.score >= 50).length;
+    return ((logged50Plus / activePastDays) * 100).round().clamp(0, 100);
   }
 
   ({String id, String label, int misses})? _weakestAmal(
@@ -208,21 +251,22 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             accountCreatedHijri: accountCreatedHijri,
             daysInMonth: daysInMonth,
           );
-          final activeDaysInMonth = days
-              .where((d) => d.state != DayCompletion.preAccount)
-              .length;
-          final logged50 = logs.where((l) => l.score >= 50).length;
-          final consistency = activeDaysInMonth == 0
-              ? 0
-              : ((logged50 / activeDaysInMonth) * 100).round();
-          final avgScore = logs.isEmpty
-              ? 0
-              : logs.map((l) => l.score).reduce((a, b) => a + b) / logs.length;
+
+          final consistency = _calcConsistency(days: days, logs: logs);
+
+          // Average score counts only days where a log exists
+          final logsWithScore = logs.where((l) => l.score > 0).toList();
+          final avgScore = logsWithScore.isEmpty
+              ? 0.0
+              : logsWithScore.map((l) => l.score).reduce((a, b) => a + b) /
+                    logsWithScore.length;
+
           final weakest = _weakestAmal(logs);
 
           return ListView(
             padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 100.h),
             children: [
+              // ── Header ──────────────────────────────────────────────
               Row(
                 children: [
                   Expanded(
@@ -265,6 +309,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 ],
               ),
               SizedBox(height: 6.h),
+
+              // ── Consistency subtitle ─────────────────────────────────
               Text(
                 l10n.historyConsistency(consistency),
                 style: AppTextStyles.bodyMedium(
@@ -272,6 +318,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 ).copyWith(color: AppColors.gold),
               ),
               SizedBox(height: 16.h),
+
+              // ── Stat cards ───────────────────────────────────────────
               Row(
                 children: [
                   Expanded(
@@ -286,8 +334,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   Expanded(
                     child: StatCard(
                       label: l10n.historyAvgScore,
-                      value: logs.isEmpty ? '—' : avgScore.round().toString(),
-                      sublabel: logs.isEmpty
+                      value: logsWithScore.isEmpty
+                          ? '—'
+                          : avgScore.round().toString(),
+                      sublabel: logsWithScore.isEmpty
                           ? l10n.historyNoLogsYet
                           : l10n.historyThisMonth,
                       icon: Icons.analytics_outlined,
@@ -303,6 +353,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 icon: Icons.local_fire_department_outlined,
               ),
               SizedBox(height: 16.h),
+
+              // ── Calendar ─────────────────────────────────────────────
               const _DayLabels(),
               SizedBox(height: 8.h),
               if (logs.isEmpty)
@@ -321,8 +373,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 7,
-                  mainAxisSpacing: 6.h,
-                  crossAxisSpacing: 6.w,
+                  mainAxisSpacing: 8.h,
+                  crossAxisSpacing: 8.w,
                 ),
                 itemCount: days.length,
                 itemBuilder: (_, i) {
@@ -347,6 +399,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 },
               ),
               SizedBox(height: 12.h),
+
+              // ── Pre-account notice ───────────────────────────────────
               if (days.any((d) => d.state == DayCompletion.preAccount))
                 Padding(
                   padding: EdgeInsets.only(bottom: 12.h),
@@ -373,17 +427,25 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     ),
                   ),
                 ),
+
+              // ── Legend ───────────────────────────────────────────────
               const _Legend(),
               SizedBox(height: 16.h),
-              if (weakest != null)
+
+              // ── Motivational tip ─────────────────────────────────────
+              if (logs.isNotEmpty) _buildMotivationalTip(context, days, logs),
+
+              // ── Weakest amal ─────────────────────────────────────────
+              if (weakest != null) ...[
+                SizedBox(height: 12.h),
                 CardContainer(
-                  color: AppColors.dangerLight,
-                  borderColor: AppColors.danger.withValues(alpha: 0.3),
+                  color: AppColors.warningLight,
+                  borderColor: AppColors.warning.withValues(alpha: 0.3),
                   child: Row(
                     children: [
                       Icon(
-                        Icons.warning_amber_outlined,
-                        color: AppColors.danger,
+                        Icons.tips_and_updates_outlined,
+                        color: AppColors.warning,
                         size: 18.r,
                       ),
                       SizedBox(width: 10.w),
@@ -414,13 +476,97 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     ],
                   ),
                 ),
+              ],
             ],
           );
         },
       ),
     );
   }
+
+  /// Shows a gentle, encouraging card based on the month's activity.
+  Widget _buildMotivationalTip(
+    BuildContext context,
+    List<MockDay> days,
+    List<AmalLogModel> logs,
+  ) {
+    final fullDays = days.where((d) => d.state == DayCompletion.full).length;
+    final partialDays = days
+        .where((d) => d.state == DayCompletion.partial)
+        .length;
+    final lightDays = days.where((d) => d.state == DayCompletion.light).length;
+    final minimalDays = days
+        .where((d) => d.state == DayCompletion.minimal)
+        .length;
+    final noDataDays = days
+        .where(
+          (d) =>
+              d.state != DayCompletion.preAccount &&
+              d.state != DayCompletion.future &&
+              d.state != DayCompletion.today &&
+              d.state == DayCompletion.noData,
+        )
+        .length;
+
+    String message;
+    Color cardColor;
+    Color borderColor;
+    IconData icon;
+
+    if (fullDays >= 5) {
+      message =
+          'মাশাআল্লাহ! আপনি এই মাসে $fullDays দিন পূর্ণ আমল করেছেন। আল্লাহ কবুল করুন।';
+      cardColor = AppColors.successLight;
+      borderColor = AppColors.success.withValues(alpha: 0.3);
+      icon = Icons.favorite_outline_rounded;
+    } else if (partialDays + lightDays >= 3) {
+      message =
+          'আপনি নিয়মিত চেষ্টা করছেন — এটাই সবচেয়ে গুরুত্বপূর্ণ। ধীরে ধীরে আরও বাড়বে ইনশাআল্লাহ।';
+      cardColor = AppColors.goldCard;
+      borderColor = AppColors.goldBorder;
+      icon = Icons.emoji_events_outlined;
+    } else if (minimalDays >= 2) {
+      message =
+          'প্রতিটি ছোট আমলও আল্লাহর কাছে মূল্যবান। আজকে একটু বেশি করার চেষ্টা করুন।';
+      cardColor = AppColors.cardDark;
+      borderColor = AppColors.cardBorder;
+      icon = Icons.water_drop_outlined;
+    } else if (noDataDays > 5) {
+      message =
+          'কিছু দিন লগ করা হয়নি — কোনো সমস্যা নেই। আজ থেকে আবার শুরু করুন, আল্লাহ ক্ষমাশীল।';
+      cardColor = AppColors.cardDark;
+      borderColor = AppColors.cardBorder;
+      icon = Icons.refresh_rounded;
+    } else {
+      message = 'প্রতিদিন আমল লগ করুন — ছোট হলেও নিয়মিত আমলই সর্বোত্তম।';
+      cardColor = AppColors.cardDark;
+      borderColor = AppColors.cardBorder;
+      icon = Icons.auto_awesome_outlined;
+    }
+
+    return CardContainer(
+      color: cardColor,
+      borderColor: borderColor,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: AppColors.gold, size: 18.r),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTextStyles.bodySmall(
+                context,
+              ).copyWith(fontSize: 12.sp, height: 1.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+// ── Skeleton ──────────────────────────────────────────────────────────────────
 
 class _HistorySkeleton extends StatelessWidget {
   @override
@@ -450,8 +596,8 @@ class _HistorySkeleton extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7,
-              mainAxisSpacing: 6.h,
-              crossAxisSpacing: 6.w,
+              mainAxisSpacing: 10.h,
+              crossAxisSpacing: 10.w,
             ),
             itemCount: 35,
             itemBuilder: (context, _) => Container(
@@ -467,10 +613,13 @@ class _HistorySkeleton extends StatelessWidget {
   }
 }
 
+// ── Day Labels ────────────────────────────────────────────────────────────────
+
 class _DayLabels extends StatelessWidget {
   const _DayLabels();
 
   static const _labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -491,6 +640,8 @@ class _DayLabels extends StatelessWidget {
   }
 }
 
+// ── Legend ────────────────────────────────────────────────────────────────────
+
 class _Legend extends StatelessWidget {
   const _Legend();
 
@@ -502,45 +653,67 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 12.w,
-      runSpacing: 4.h,
+      runSpacing: 6.h,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _dot(AppColors.gold),
-            SizedBox(width: 6.w),
-            Text(
-              AppLocalizations.of(context)!.historyFull,
-              style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+        _legendItem(_dot(AppColors.gold), l10n.historyFull), // ≥ 80
+        _legendItem(_dot(AppColors.warning), l10n.historyPartial), // 50–79
+        _legendItem(
+          // 20–49
+          Container(
+            width: 10.r,
+            height: 10.r,
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.5),
+              shape: BoxShape.circle,
             ),
-          ],
+          ),
+          'হালকা', // "Light"
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _dot(AppColors.warning),
-            SizedBox(width: 6.w),
-            Text(
-              AppLocalizations.of(context)!.historyPartial,
-              style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+        _legendItem(
+          // 1–19
+          Container(
+            width: 10.r,
+            height: 10.r,
+            decoration: BoxDecoration(
+              color: AppColors.textMuted,
+              shape: BoxShape.circle,
             ),
-          ],
+          ),
+          'সামান্য', // "Minimal"
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _dot(AppColors.danger),
-            SizedBox(width: 6.w),
-            Text(
-              AppLocalizations.of(context)!.historyMiss,
-              style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+        _legendItem(
+          // 0 logged
+          Container(
+            width: 10.r,
+            height: 10.r,
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.textMuted, width: 1),
+              shape: BoxShape.circle,
             ),
-          ],
+          ),
+          l10n.historyMiss,
         ),
       ],
+    );
+  }
+
+  Widget _legendItem(Widget dot, String label) {
+    return Builder(
+      builder: (context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          dot,
+          SizedBox(width: 6.w),
+          Text(
+            label,
+            style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+          ),
+        ],
+      ),
     );
   }
 }

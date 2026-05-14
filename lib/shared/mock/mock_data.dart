@@ -399,7 +399,19 @@ const List<MockBadge> kBadges = [
   ),
 ];
 
-enum DayCompletion { full, partial, miss, today, future, preAccount }
+// ── Only this enum and the buildMockMonth() function change ──
+
+enum DayCompletion {
+  full, // score >= 80  ✅ Alhamdulillah
+  partial, // score >= 50  🌙 Ma sha Allah
+  light, // score >= 20  🟠 Keep Going
+  minimal, // score >= 1   💧 A Start
+  miss, // score == 0 but log exists (opened app, no amal)
+  noData, // no log found for past day (neutral, not a failure)
+  today, // today's date
+  future, // after today
+  preAccount, // before account creation
+}
 
 class MockDay {
   final int day;
@@ -420,21 +432,35 @@ List<MockDay> buildMockMonth() {
       );
     }
     final pattern = (day * 13) % 10;
-    if (pattern < 6) {
+    if (pattern < 4) {
       return MockDay(
         day: day,
         score: 80 + (pattern * 3),
         state: DayCompletion.full,
       );
     }
-    if (pattern < 8) {
+    if (pattern < 6) {
       return MockDay(
         day: day,
         score: 50 + (pattern * 2),
         state: DayCompletion.partial,
       );
     }
-    return MockDay(day: day, score: 0, state: DayCompletion.miss);
+    if (pattern < 7) {
+      return MockDay(day: day, score: 25 + pattern, state: DayCompletion.light);
+    }
+    if (pattern < 8) {
+      return MockDay(
+        day: day,
+        score: 5 + pattern,
+        state: DayCompletion.minimal,
+      );
+    }
+    // pattern 8-9: alternate between miss (logged zero) and noData (never opened)
+    if (pattern == 8) {
+      return MockDay(day: day, score: 0, state: DayCompletion.miss);
+    }
+    return MockDay(day: day, score: 0, state: DayCompletion.noData);
   });
 }
 

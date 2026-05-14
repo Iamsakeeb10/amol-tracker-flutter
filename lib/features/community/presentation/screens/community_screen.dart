@@ -10,6 +10,7 @@ import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/hijri_helper.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../models/activity_feed_item_model.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../providers/amal_provider.dart';
@@ -19,7 +20,6 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/community_row_card.dart';
 import '../../../../shared/widgets/section_header.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class CommunityScreen extends ConsumerStatefulWidget {
   const CommunityScreen({super.key});
@@ -656,14 +656,29 @@ class _DateTabsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today = IslamicDateService.getCurrentIslamicDateString();
-    final isViewingToday = selectedDate == today;
-    final visibleOptions = isViewingToday
+    // Use the same source-of-truth as options — Bangladesh calendar.
+    // Grab the first entry of a 1-item list; that is always "today" by the
+    // same Hijri logic used to build the full 7-day options list.
+    final today = IslamicDateService.recentHijriStoragesFromBangladeshCalendar(
+      count: 1,
+    ).first;
+
+    final isSelectedToday = selectedDate == today;
+
+    // When the user is on today, show all options (today tab is just the
+    // first chip in the row, labelled "Today").
+    // When the user is on a past date that IS in options, remove today from
+    // the scrollable row (we show a dedicated "Today" button instead).
+    // When the user is on a date NOT in options at all, keep the full list
+    // visible so they can navigate back.
+    final visibleOptions = isSelectedToday
         ? options
-        : options.where((date) => date != today).toList();
+        : options.where((d) => d != today).toList();
+
     return Row(
       children: [
-        if (!isViewingToday) ...[
+        // Dedicated "Today" pill — shown only when not currently on today.
+        if (!isSelectedToday) ...[
           GestureDetector(
             onTap: () => onTapDate(today),
             child: Container(
@@ -690,51 +705,59 @@ class _DateTabsRow extends StatelessWidget {
         Expanded(
           child: SizedBox(
             height: 34.h,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: visibleOptions.length,
-              separatorBuilder: (_, _) => SizedBox(width: 8.w),
-              itemBuilder: (context, index) {
-                final date = visibleOptions[index];
-                final selected = date == selectedDate;
-                final label = date == today && isViewingToday
-                    ? AppLocalizations.of(context)!.today
-                    : _shortHijriLabel(date);
-                return GestureDetector(
-                  onTap: () => onTapDate(date),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.easeOut,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.w,
-                      vertical: 6.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: selected ? AppColors.goldCard : AppColors.cardDark,
-                      borderRadius: BorderRadius.circular(AppRadius.md.r),
-                      border: Border.all(
-                        color: selected
-                            ? AppColors.goldBorder
-                            : AppColors.cardBorder,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        label,
-                        style: AppTextStyles.bodySmall(context).copyWith(
-                          color: selected
-                              ? AppColors.goldLight
-                              : AppColors.textSecondary,
-                          fontWeight: selected
-                              ? FontWeight.w600
-                              : FontWeight.w400,
+            child: visibleOptions.isEmpty
+                ? const SizedBox.shrink()
+                : ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: visibleOptions.length,
+                    separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                    itemBuilder: (context, index) {
+                      final date = visibleOptions[index];
+                      final isToday = date == today;
+                      final selected = date == selectedDate;
+
+                      // First chip when viewing today gets the "Today" label.
+                      final label = (isToday && isSelectedToday)
+                          ? AppLocalizations.of(context)!.today
+                          : _shortHijriLabel(date);
+
+                      return GestureDetector(
+                        onTap: () => onTapDate(date),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOut,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 6.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? AppColors.goldCard
+                                : AppColors.cardDark,
+                            borderRadius: BorderRadius.circular(AppRadius.md.r),
+                            border: Border.all(
+                              color: selected
+                                  ? AppColors.goldBorder
+                                  : AppColors.cardBorder,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              label,
+                              style: AppTextStyles.bodySmall(context).copyWith(
+                                color: selected
+                                    ? AppColors.goldLight
+                                    : AppColors.textSecondary,
+                                fontWeight: selected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ),
       ],

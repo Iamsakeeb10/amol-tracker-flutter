@@ -241,9 +241,13 @@ class NotificationService {
   bool get isEveningEnabled =>
       LocalStorageService.getPref<bool>(notifEveningKey, true);
   TimeOfDay get eveningTime {
-    final storedHour = LocalStorageService.getPref<int?>(notifEveningHourKey);
+    final storedHour = LocalStorageService.getPref<int?>(
+      notifEveningHourKey,
+      null,
+    );
     final storedMinute = LocalStorageService.getPref<int?>(
       notifEveningMinuteKey,
+      null,
     );
 
     // If user has customized the time, use their preference

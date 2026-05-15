@@ -198,20 +198,10 @@ class AmalNotifier extends StateNotifier<AmalState> {
     final field = kAmalFields.where((f) => f.id == fieldId).firstOrNull;
     if (field == null || field.type != AmalType.numeric) return;
 
-    var nextValue = value.clamp(0, field.maxValue);
-    if (fieldId == 'takbir') {
-      final fard = getNumericValue(state.toggles['fard'], 5);
-      nextValue = nextValue.clamp(0, fard);
-    }
+    final nextValue = value.clamp(0, field.maxValue);
 
     final next = Map<String, dynamic>.from(state.toggles);
     next[fieldId] = nextValue;
-    if (fieldId == 'fard') {
-      final currentTakbir = getNumericValue(next['takbir'], 5);
-      if (currentTakbir > nextValue) {
-        next['takbir'] = nextValue;
-      }
-    }
     state = state.copyWith(toggles: next, clearError: true);
     Future<void>.microtask(_persistDraft);
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
+import '../../core/utils/tap_target.dart';
 
 class CardContainer extends StatelessWidget {
   final Widget child;
@@ -11,6 +12,7 @@ class CardContainer extends StatelessWidget {
   final Color? borderColor;
   final double radius;
   final VoidCallback? onTap;
+  final EdgeInsets? hitSlop;
   final BoxBorder? border;
   final List<BoxShadow>? boxShadow;
 
@@ -23,6 +25,7 @@ class CardContainer extends StatelessWidget {
     this.borderColor,
     double? radius,
     this.onTap,
+    this.hitSlop,
     this.border,
     this.boxShadow,
   }) : padding = padding ?? EdgeInsets.all(AppSpacing.lg.r),
@@ -69,6 +72,14 @@ class CardContainer extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: onTap != null ? InkWell(onTap: onTap, child: content) : content,
     );
+
+    if (onTap != null && hitSlop != null) {
+      card = HitSlopWrapper(
+        hitSlop: hitSlop,
+        onTap: onTap!,
+        child: card,
+      );
+    }
 
     if (boxShadow != null && boxShadow!.isNotEmpty) {
       card = DecoratedBox(

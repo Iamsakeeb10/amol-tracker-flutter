@@ -197,14 +197,9 @@ class FirestoreService {
 
   Future<void> saveAmalLog(AmalLogModel log) async {
     final map = log.toFirestoreMap();
-    final fardField = kAmalFields.firstWhere((f) => f.id == 'fard');
-    final takbirField = kAmalFields.firstWhere((f) => f.id == 'takbir');
-    final fard = getNumericValue(map['fard'], fardField.maxValue);
-    map['fard'] = fard;
-    map['takbir'] = getNumericValue(
-      map['takbir'],
-      takbirField.maxValue,
-    ).clamp(0, fard);
+    for (final field in kAmalFields.where((f) => f.type == AmalType.numeric)) {
+      map[field.id] = getNumericValue(map[field.id], field.maxValue);
+    }
     await _amalLogs.doc(log.docId).set(map);
   }
 

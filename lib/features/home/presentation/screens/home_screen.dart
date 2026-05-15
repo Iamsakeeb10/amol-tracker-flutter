@@ -266,9 +266,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             amal.toggles[f.id],
                             f.maxValue,
                           ),
-                          maxAllowed: f.id == 'takbir'
-                              ? getNumericValue(amal.toggles['fard'], 5)
-                              : f.maxValue,
                           onNumericChanged: (v) =>
                               amalNotifier.setNumeric(f.id, v),
                           onTapDetails: () =>

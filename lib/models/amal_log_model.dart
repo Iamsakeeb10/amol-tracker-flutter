@@ -2,24 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/constants/amal_fields.dart';
 
-/// Builds [toggles] from flat Firestore/Hive keys. Takbir is clamped to fard
-/// so old `takbir: true` with `fard: 3` does not become 5 > fard.
 Map<String, dynamic> _togglesFromSource(Map<String, dynamic> src) {
-  final fardField = kAmalFields.firstWhere((f) => f.id == 'fard');
-  final takbirField = kAmalFields.firstWhere((f) => f.id == 'takbir');
-  final fard = getNumericValue(src['fard'], fardField.maxValue);
-  final takbir = getNumericValue(
-    src['takbir'],
-    takbirField.maxValue,
-  ).clamp(0, fard);
-
   final toggles = <String, dynamic>{};
   for (final field in kAmalFields) {
-    if (field.id == 'fard') {
-      toggles[field.id] = fard;
-    } else if (field.id == 'takbir') {
-      toggles[field.id] = takbir;
-    } else if (field.type == AmalType.numeric) {
+    if (field.type == AmalType.numeric) {
       toggles[field.id] = getNumericValue(src[field.id], field.maxValue);
     } else {
       toggles[field.id] = src[field.id] as bool? ?? false;

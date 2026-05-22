@@ -7,12 +7,15 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart' as amal_const;
 import '../../../../core/router/routes.dart';
+import '../../../../core/constants/default_amal_fields.dart';
+import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
+import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
@@ -68,6 +71,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     required String todayStr,
     required String accountCreatedHijri,
     required int daysInMonth,
+    required int maxScore,
   }) {
     final byDay = <int, AmalLogModel>{};
 
@@ -110,7 +114,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         final score = log?.score ?? 0;
         DayCompletion todayState = DayCompletion.today;
         if (log != null) {
-          todayState = _scoreToState(score, hasLog: true);
+          todayState = _scoreToState(score, hasLog: true, maxScore: maxScore);
         }
         out.add(MockDay(day: d, score: score, state: todayState));
         continue;
@@ -125,7 +129,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       // Past day with a log — classify by score
       final sc = log.score;
       out.add(
-        MockDay(day: d, score: sc, state: _scoreToState(sc, hasLog: true)),
+        MockDay(
+          day: d,
+          score: sc,
+          state: _scoreToState(sc, hasLog: true, maxScore: maxScore),
+        ),
       );
     }
 
@@ -135,21 +143,27 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   /// Maps a score to the appropriate [DayCompletion] tier.
   /// Never returns [DayCompletion.miss] for logged days — we use
   /// [DayCompletion.minimal] at worst so users are never shamed with red.
-  DayCompletion _scoreToState(int score, {required bool hasLog}) {
+  DayCompletion _scoreToState(
+    int score, {
+    required bool hasLog,
+    required int maxScore,
+  }) {
     if (!hasLog) return DayCompletion.noData;
-    if (score >= 80) return DayCompletion.full; // ✅ Alhamdulillah
-    if (score >= 50) return DayCompletion.partial; // 🌙 Ma sha Allah
-    if (score >= 20) return DayCompletion.light; // 🟠 Keep Going
-    if (score >= 1) return DayCompletion.minimal; // 💧 A Start
-    return DayCompletion
-        .miss; // score == 0 but log exists (opened app, no amal)
+    final full = (maxScore * 0.8).round();
+    final partial = (maxScore * 0.5).round();
+    final light = (maxScore * 0.2).round();
+    if (score >= full) return DayCompletion.full;
+    if (score >= partial) return DayCompletion.partial;
+    if (score >= light) return DayCompletion.light;
+    if (score >= 1) return DayCompletion.minimal;
+    return DayCompletion.miss;
   }
 
-  /// Consistency = days with score >= 50 / active days since account creation.
-  /// Only counts days with a log — noData days don't count against the user.
+  /// Consistency = days at or above 50% of max score / active past days.
   int _calcConsistency({
     required List<MockDay> days,
     required List<AmalLogModel> logs,
+    required int maxScore,
   }) {
     // Active days = days that are not preAccount, future, or today (today is in progress)
     final activePastDays = days
@@ -165,21 +179,22 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
     if (activePastDays == 0) return 0;
 
-    final logged50Plus = logs.where((l) => l.score >= 50).length;
+    final halfScore = (maxScore * 0.5).round();
+    final logged50Plus = logs.where((l) => l.score >= halfScore).length;
     return ((logged50Plus / activePastDays) * 100).round().clamp(0, 100);
   }
 
   ({String id, String label, int misses})? _weakestAmal(
     List<AmalLogModel> logs,
+    List<amal_const.AmalField> fields,
+    String locale,
   ) {
-    if (logs.isEmpty) return null;
-    final counts = <String, int>{
-      for (final f in amal_const.kAmalFields) f.id: 0,
-    };
+    if (logs.isEmpty || fields.isEmpty) return null;
+    final counts = <String, int>{for (final f in fields) f.id: 0};
     for (final log in logs) {
-      for (final f in amal_const.kAmalFields) {
+      for (final f in fields) {
         final isDone = f.type == amal_const.AmalType.numeric
-            ? amal_const.getNumericValue(log.toggles[f.id], f.maxValue) > 0
+            ? getNumericValue(log.toggles[f.id], f.maxValue) > 0
             : (log.toggles[f.id] == true);
         if (!isDone) {
           counts[f.id] = (counts[f.id] ?? 0) + 1;
@@ -195,8 +210,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       }
     });
     if (maxId == null || maxC <= 0) return null;
-    final field = amal_const.kAmalFields.firstWhere((f) => f.id == maxId);
-    return (id: maxId!, label: field.labelBn, misses: maxC);
+    final field = fields.firstWhere((f) => f.id == maxId);
+    return (id: maxId!, label: field.getLabel(locale), misses: maxC);
   }
 
   @override
@@ -224,6 +239,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       hasSubmittedToday: amal.isSubmitted,
     );
     final monthAsync = ref.watch(historyMonthProvider(key));
+    final fields = ref.watch(amalFieldsListProvider);
+    final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+    final locale = Localizations.localeOf(context).languageCode;
     final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
     final accountCreatedHijri =
         IslamicDateService.islamicDateStringForGregorianDate(
@@ -250,9 +268,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             todayStr: todayStr,
             accountCreatedHijri: accountCreatedHijri,
             daysInMonth: daysInMonth,
+            maxScore: maxScore,
           );
 
-          final consistency = _calcConsistency(days: days, logs: logs);
+          final consistency = _calcConsistency(
+            days: days,
+            logs: logs,
+            maxScore: maxScore,
+          );
 
           // Average score counts only days where a log exists
           final logsWithScore = logs.where((l) => l.score > 0).toList();
@@ -261,7 +284,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               : logsWithScore.map((l) => l.score).reduce((a, b) => a + b) /
                     logsWithScore.length;
 
-          final weakest = _weakestAmal(logs);
+          final weakest = _weakestAmal(logs, fields, locale);
 
           return ListView(
             padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 100.h),

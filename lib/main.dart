@@ -9,6 +9,7 @@ import 'package:timezone/data/latest.dart' as tz;
 
 import 'app.dart';
 import 'core/services/local_storage_service.dart';
+import 'core/theme/colors.dart';
 import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
@@ -28,7 +29,6 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await LocalStorageService.initialize();
 
-  FlutterNativeSplash.remove(); // ADD THIS — splash dismissed, Flutter paints immediately
   runApp(const ProviderScope(child: _RootApp()));
 }
 
@@ -41,7 +41,10 @@ class _RootApp extends StatelessWidget {
       designSize: const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
-      builder: (_, _) => const AmolTrackerApp(),
+      builder: (_, _) => const ColoredBox(
+        color: AppColors.emeraldDeep,
+        child: AmolTrackerApp(),
+      ),
     );
   }
 }

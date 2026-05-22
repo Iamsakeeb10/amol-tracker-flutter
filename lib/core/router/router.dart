@@ -21,42 +21,31 @@ import '../../features/settings/presentation/screens/more_screen.dart';
 import '../../features/settings/presentation/screens/quiet_hours_screen.dart';
 import '../../features/settings/presentation/screens/reminder_times_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../shared/widgets/app_launch_route.dart';
 import '../../shared/widgets/bottom_nav.dart';
 import '../../shared/widgets/dev_screen.dart';
 import '../services/firestore_service.dart';
+import '../theme/colors.dart';
+import 'app_redirect.dart';
 import 'routes.dart';
 
 GoRouter buildAppRouter() {
   final firestoreService = FirestoreService();
   return GoRouter(
-    initialLocation: AppRoutes.signIn,
+    initialLocation: AppRoutes.launch,
     debugLogDiagnostics: false,
     refreshListenable: GoRouterRefreshStream(
       FirebaseAuth.instance.authStateChanges(),
     ),
-    redirect: (_, state) async {
-      final location = state.matchedLocation;
-      final authUser = FirebaseAuth.instance.currentUser;
-      final isSigningIn = location == AppRoutes.signIn;
-      final isOnboarding = location == AppRoutes.onboarding;
-      final isDev = location == AppRoutes.dev;
-
-      if (isDev) return null;
-      if (authUser == null) {
-        return isSigningIn ? null : AppRoutes.signIn;
-      }
-
-      final userExists = await firestoreService.userExists(authUser.uid);
-      if (!userExists) {
-        return isOnboarding ? null : AppRoutes.onboarding;
-      }
-
-      if (isSigningIn || isOnboarding) {
-        return AppRoutes.home;
-      }
-      return null;
-    },
+    redirect: (_, state) =>
+        redirectForLocation(firestoreService, state.matchedLocation),
     routes: [
+      GoRoute(
+        path: AppRoutes.launch,
+        name: 'launch',
+        builder: (_, _) =>
+            AppLaunchRoute(firestoreService: firestoreService),
+      ),
       GoRoute(
         path: AppRoutes.signIn,
         name: 'signIn',
@@ -169,10 +158,11 @@ GoRouter buildAppRouter() {
       ),
     ],
     errorBuilder: (_, state) => Scaffold(
+      backgroundColor: AppColors.emeraldDeep,
       body: Center(
         child: Text(
           'Route not found: ${state.uri.path}',
-          style: const TextStyle(color: Colors.white70),
+          style: const TextStyle(color: AppColors.textSecondary),
         ),
       ),
     ),

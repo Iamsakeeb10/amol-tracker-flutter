@@ -195,11 +195,11 @@ class FirestoreService {
     await _users.doc(uid).update(fields);
   }
 
-  Future<void> saveAmalLog(AmalLogModel log) async {
-    final map = log.toFirestoreMap();
-    for (final field in kAmalFields.where((f) => f.type == AmalType.numeric)) {
-      map[field.id] = getNumericValue(map[field.id], field.maxValue);
-    }
+  Future<void> saveAmalLog(
+    AmalLogModel log,
+    List<AmalField> fields,
+  ) async {
+    final map = log.toFirestoreMap(fields);
     await _amalLogs.doc(log.docId).set(map);
   }
 

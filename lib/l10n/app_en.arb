@@ -297,6 +297,8 @@
   "submitTodaysLog": "Submit today's log",
   "saveTodaysAmal": "Save today's amal",
   "draftSavedTapSaveToFinish": "Draft saved. Tap Save to finish today.",
+  "completeAllAmalAutoSave": "Complete every amal above to save today.",
+  "amalAutoSaving": "Saving today's amal…",
   "progressAutosavedHint": "Your progress is auto-saved as draft.",
   "welcomeUpper": "WELCOME",
   "firstAmalStartsToday": "Your first amal starts today.",

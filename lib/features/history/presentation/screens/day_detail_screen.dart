@@ -6,9 +6,12 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart' as amal_const;
 import '../../../../core/router/routes.dart';
+import '../../../../core/constants/default_amal_fields.dart';
+import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/services/islamic_date_service.dart';
+import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
@@ -36,6 +39,7 @@ class DayDetailScreen extends ConsumerWidget {
     final asyncLog = ref.watch(
       dayDetailLogProvider(DayLogKey(uid: authUser.uid, hijriDate: hijriDate)),
     );
+    final locale = Localizations.localeOf(context).languageCode;
 
     return asyncLog.when(
       loading: () => AppScaffold(
@@ -50,6 +54,8 @@ class DayDetailScreen extends ConsumerWidget {
         ),
       ),
       data: (log) {
+        final fields = ref.watch(amalFieldsListProvider);
+        final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
         final score = log?.score ?? 0;
         final title = hijriDate.isEmpty
             ? l10n.dayDetailTitle
@@ -115,7 +121,7 @@ class DayDetailScreen extends ConsumerWidget {
                     child: StatCard(
                       label: l10n.score,
                       value: '$score',
-                      sublabel: '/${amal_const.kMaxDailyScore}',
+                      sublabel: '/$maxScore',
                       icon: Icons.workspace_premium_outlined,
                     ),
                   ),
@@ -145,9 +151,9 @@ class DayDetailScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-              ...amal_const.kAmalFields.map((field) {
+              ...fields.map((field) {
                 final done = field.type == amal_const.AmalType.numeric
-                    ? amal_const.getNumericValue(
+                    ? getNumericValue(
                         log?.toggles[field.id],
                         field.maxValue,
                       ) >
@@ -157,9 +163,10 @@ class DayDetailScreen extends ConsumerWidget {
                   padding: EdgeInsets.only(bottom: 8.h),
                   child: AmalRow(
                     field: field,
+                    locale: locale,
                     done: done,
                     numericValue: field.type == amal_const.AmalType.numeric
-                        ? amal_const.getNumericValue(
+                        ? getNumericValue(
                             log?.toggles[field.id],
                             field.maxValue,
                           )

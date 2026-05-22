@@ -744,6 +744,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Draft saved. Tap Save to finish today.';
 
   @override
+  String get completeAllAmalAutoSave =>
+      'Complete every amal above to save today.';
+
+  @override
+  String get amalAutoSaving => 'Saving today\'s amal…';
+
+  @override
   String get progressAutosavedHint => 'Your progress is auto-saved as draft.';
 
   @override

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart';
+import '../../../../core/constants/default_amal_fields.dart';
+import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/firestore_service.dart';
 import '../../../../core/services/islamic_date_service.dart';
@@ -15,6 +17,7 @@ import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../models/user_model.dart';
+import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -69,6 +72,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).languageCode;
+    final fields = ref.watch(amalFieldsListProvider);
+    final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
     final fs = ref.read(firestoreServiceProvider);
     final me = ref.watch(currentUserProvider).asData?.value;
     final isOwn = me?.uid == widget.userId;
@@ -181,7 +187,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                           StatCard(
                             label: dateIsToday ? l10n.today : l10n.selected,
                             value: '$selectedScore',
-                            sublabel: l10n.outOf100Compact,
+                            sublabel: '/$maxScore',
                             prominent: true,
                           ),
                           StatCard(
@@ -193,7 +199,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                           StatCard(
                             label: l10n.avg,
                             value: '$avgScore',
-                            sublabel: l10n.outOf100Compact,
+                            sublabel: '/$maxScore',
                             prominent: true,
                           ),
                         ],
@@ -213,13 +219,13 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   CardContainer(
                     child: Column(
                       children: [
-                        for (var i = 0; i < kAmalFields.length; i++) ...[
+                        for (var i = 0; i < fields.length; i++) ...[
                           _AmalReadOnlyRow(
-                            field: kAmalFields[i],
-                            value: selectedLog?.toggles[kAmalFields[i].id],
+                            field: fields[i],
+                            locale: locale,
+                            value: selectedLog?.toggles[fields[i].id],
                           ),
-                          if (i != kAmalFields.length - 1)
-                            SizedBox(height: 8.h),
+                          if (i != fields.length - 1) SizedBox(height: 8.h),
                         ],
                       ],
                     ),
@@ -230,7 +236,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     style: AppTextStyles.headlineMedium(context),
                   ),
                   SizedBox(height: 8.h),
-                  _WeeklyBars(logs: weekly),
+                  _WeeklyBars(logs: weekly, maxScore: maxScore),
                   SizedBox(height: 16.h),
                   if (isOwn) ...[
                     Text(
@@ -608,9 +614,14 @@ class _DuaPhraseButton extends StatelessWidget {
 }
 
 class _AmalReadOnlyRow extends StatelessWidget {
-  const _AmalReadOnlyRow({required this.field, required this.value});
+  const _AmalReadOnlyRow({
+    required this.field,
+    required this.locale,
+    required this.value,
+  });
 
   final AmalField field;
+  final String locale;
   final dynamic value;
 
   @override
@@ -643,7 +654,7 @@ class _AmalReadOnlyRow extends StatelessWidget {
         SizedBox(width: 10.w),
         Expanded(
           child: Text(
-            field.labelBn,
+            field.getLabel(locale),
             style: AppTextStyles.bodyMedium(
               context,
             ).copyWith(color: AppColors.textPrimary),
@@ -678,9 +689,10 @@ String _toBengaliNumeral(int number) {
 }
 
 class _WeeklyBars extends StatelessWidget {
-  const _WeeklyBars({required this.logs});
+  const _WeeklyBars({required this.logs, required this.maxScore});
 
   final List<AmalLogModel> logs;
+  final int maxScore;
 
   @override
   Widget build(BuildContext context) {
@@ -699,8 +711,8 @@ class _WeeklyBars extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: bars.map((log) {
-            final ratio = (log.score / kMaxDailyScore).clamp(0.0, 1.0);
-            final missed = log.score < 50;
+            final ratio = (log.score / maxScore).clamp(0.0, 1.0);
+            final missed = log.score < (maxScore * 0.5).round();
             return Expanded(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),

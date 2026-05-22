@@ -6,17 +6,21 @@ import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart';
+import '../../../../core/constants/default_amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/hadith_asset_service.dart';
 import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/user_model.dart';
+import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/notification_provider.dart';
+import '../../../../shared/widgets/amal_fields_list_section.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -30,30 +34,14 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with WidgetsBindingObserver {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   ProviderSubscription<AmalState>? _amalErrorSubscription;
   String? _listeningUid;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
   void dispose() {
     _amalErrorSubscription?.close();
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state != AppLifecycleState.resumed) return;
-    final uid = ref.read(authStateProvider).asData?.value?.uid;
-    if (uid == null) return;
-    ref.invalidate(amalProvider(uid));
   }
 
   void _ensureAmalErrorListener(String uid) {
@@ -87,9 +75,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       );
     }
 
-    final amal = ref.watch(amalProvider(authUser.uid));
-    final amalNotifier = ref.read(amalProvider(authUser.uid).notifier);
-    _ensureAmalErrorListener(authUser.uid);
+    final uid = authUser.uid;
+    final amalNotifier = ref.read(amalProvider(uid).notifier);
+    final fieldsAsync = ref.watch(amalFieldsProvider);
+    final fields = ref.watch(amalFieldsListProvider);
+    final locale = Localizations.localeOf(context).languageCode;
+    final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+    final doneCount = ref.watch(amalProvider(uid).select((s) => s.doneCount));
+    final totalScore = ref.watch(
+      amalProvider(uid).select((s) => s.totalScore),
+    );
+    final isSubmitted = ref.watch(
+      amalProvider(uid).select((s) => s.isSubmitted),
+    );
+    final isAmalLoading = ref.watch(
+      amalProvider(uid).select((s) => s.isLoading),
+    );
+    final hasAnyDone = ref.watch(
+      amalProvider(uid).select((s) => s.hasAnyDone),
+    );
+    final amalError = ref.watch(amalProvider(uid).select((s) => s.error));
+    _ensureAmalErrorListener(uid);
 
     // Only show banner once we know status; [none] means offline per connectivity_plus.
     final offline =
@@ -98,9 +104,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final displayStreak = resolveDisplayedStreakValues(
       currentStreak: user.currentStreak,
       bestStreak: user.bestStreak,
-      hasSubmittedToday: amal.isSubmitted,
+      hasSubmittedToday: isSubmitted,
     );
-    final isNewUser = user.lastLogDate.trim().isEmpty && !amal.isSubmitted;
+    final isNewUser = user.lastLogDate.trim().isEmpty && !isSubmitted;
 
     return AppScaffold(
       padding: EdgeInsets.zero,
@@ -133,9 +139,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           _Header(displayName: user.name, streak: displayStreak.currentStreak),
           // SizedBox(height: 18.h),
           SizedBox(height: 14.h),
-          if (amal.error != null) ...[
+          if (amalError != null) ...[
             Text(
-              amal.error!,
+              amalError,
               style: AppTextStyles.bodySmall(
                 context,
               ).copyWith(color: AppColors.danger, fontSize: 12.sp),
@@ -143,13 +149,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             SizedBox(height: 8.h),
           ],
           _ProgressCard(
-            done: amal.doneCount,
-            total: kAmalFields.length,
-            score: amal.totalScore,
+            done: doneCount,
+            total: fields.length,
+            score: totalScore,
+            maxScore: maxScore,
           ),
           if (isNewUser) ...[SizedBox(height: 14.h), _WelcomeCard(l10n: l10n)],
           SizedBox(height: 14.h),
-          if (amal.isSubmitted) ...[
+          if (isSubmitted) ...[
             CardContainer.gold(
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
               child: Row(
@@ -174,28 +181,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             SizedBox(height: 14.h),
             Text(l10n.todaysAmal, style: AppTextStyles.headlineMedium(context)),
             SizedBox(height: 6.h),
-            ...kAmalFields.map(
-              (f) => Padding(
-                padding: EdgeInsets.only(bottom: 8.h),
-                child: f.type == AmalType.numeric
-                    ? AmalRow(
-                        field: f,
-                        done:
-                            getNumericValue(amal.toggles[f.id], f.maxValue) > 0,
-                        numericValue: getNumericValue(
-                          amal.toggles[f.id],
-                          f.maxValue,
-                        ),
-                        onTapDetails: () => _showAmalDetailsDialog(context, f),
-                        readOnly: true,
-                      )
-                    : AmalRow(
-                        field: f,
-                        done: amal.toggles[f.id] as bool? ?? false,
-                        onTapDetails: () => _showAmalDetailsDialog(context, f),
-                        readOnly: true,
-                      ),
-              ),
+            ..._buildAmalFieldSection(
+              uid: uid,
+              fieldsAsync: fieldsAsync,
+              fields: fields,
+              locale: locale,
+              readOnly: true,
             ),
           ] else ...[
             Row(
@@ -207,20 +198,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                 ),
                 OutlinedButton.icon(
-                  onPressed: amal.isLoading
+                  onPressed: isAmalLoading
                       ? null
-                      : amal.hasAnyDone
+                      : hasAnyDone
                       ? amalNotifier.clearAll
                       : amalNotifier.markAllDone,
                   icon: Icon(
-                    amal.hasAnyDone ? Icons.restart_alt : Icons.done_all,
+                    hasAnyDone ? Icons.restart_alt : Icons.done_all,
                     size: 17.r,
-                    color: amal.hasAnyDone ? AppColors.warning : AppColors.gold,
+                    color: hasAnyDone ? AppColors.warning : AppColors.gold,
                   ),
                   label: Text(
-                    amal.hasAnyDone ? l10n.deselectAll : l10n.markAllDone,
+                    hasAnyDone ? l10n.deselectAll : l10n.markAllDone,
                     style: AppTextStyles.button(context).copyWith(
-                      color: amal.hasAnyDone
+                      color: hasAnyDone
                           ? AppColors.warning
                           : AppColors.gold,
                       fontWeight: FontWeight.w600,
@@ -229,11 +220,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(
-                      color: amal.hasAnyDone
+                      color: hasAnyDone
                           ? AppColors.warning.withValues(alpha: 0.65)
                           : AppColors.goldBorder,
                     ),
-                    backgroundColor: amal.hasAnyDone
+                    backgroundColor: hasAnyDone
                         ? AppColors.warningLight
                         : AppColors.goldCard,
                     foregroundColor: AppColors.gold,
@@ -250,45 +241,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ],
             ),
             SizedBox(height: 6.h),
-            if (amal.isLoading)
+            if (isAmalLoading || fieldsAsync.isLoading)
               const _HomeAmalLoadingShimmer()
             else
-              ...kAmalFields.map(
-                (f) => Padding(
-                  padding: EdgeInsets.only(bottom: 8.h),
-                  child: f.type == AmalType.numeric
-                      ? AmalRow(
-                          field: f,
-                          done:
-                              getNumericValue(amal.toggles[f.id], f.maxValue) >
-                              0,
-                          numericValue: getNumericValue(
-                            amal.toggles[f.id],
-                            f.maxValue,
-                          ),
-                          onNumericChanged: (v) =>
-                              amalNotifier.setNumeric(f.id, v),
-                          onTapDetails: () =>
-                              _showAmalDetailsDialog(context, f),
-                        )
-                      : AmalRow(
-                          field: f,
-                          done: amal.toggles[f.id] as bool? ?? false,
-                          onChanged: (_) => amalNotifier.toggle(f.id),
-                          onTapDetails: () =>
-                              _showAmalDetailsDialog(context, f),
-                        ),
-                ),
+              ..._buildAmalFieldSection(
+                uid: uid,
+                fieldsAsync: fieldsAsync,
+                fields: fields,
+                locale: locale,
               ),
             SizedBox(height: 14.h),
             SizedBox(
               width: double.infinity,
               height: 50.h,
-              child: amal.hasAnyDone
+              child: hasAnyDone
                   ? ElevatedButton(
-                      onPressed: amal.isLoading
+                      onPressed: isAmalLoading
                           ? null
-                          : () => _onSubmit(context, authUser.uid, user),
+                          : () => _onSubmit(context, uid, user),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.gold,
                         foregroundColor: AppColors.emeraldDeep,
@@ -297,7 +267,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           borderRadius: BorderRadius.circular(14.r),
                         ),
                       ),
-                      child: amal.isLoading
+                      child: isAmalLoading
                           ? SizedBox(
                               width: 22.r,
                               height: 22.r,
@@ -315,7 +285,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             ),
                     )
                   : OutlinedButton(
-                      onPressed: amal.isLoading
+                      onPressed: isAmalLoading
                           ? null
                           : amalNotifier.markAllDone,
                       style: OutlinedButton.styleFrom(
@@ -337,7 +307,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
             SizedBox(height: 8.h),
             Text(
-              amal.hasAnyDone
+              hasAnyDone
                   ? l10n.draftSavedTapSaveToFinish
                   : l10n.progressAutosavedHint,
               style: AppTextStyles.bodySmall(
@@ -380,9 +350,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
+  List<Widget> _buildAmalFieldSection({
+    required String uid,
+    required AsyncValue<List<AmalField>> fieldsAsync,
+    required List<AmalField> fields,
+    required String locale,
+    bool readOnly = false,
+  }) {
+    return fieldsAsync.when(
+      loading: () => [const _HomeAmalLoadingShimmer()],
+      error: (_, __) => [
+        _AmalFieldsStatusCard(
+          message: locale == 'bn'
+              ? 'আমল লোড করতে সমস্যা হয়েছে'
+              : 'Failed to load amal fields',
+          showRetry: true,
+          onRetry: () async {
+            await ref.read(amalFieldsProvider.notifier).forceRefresh();
+            if (!mounted) return;
+            await ref.read(amalProvider(uid).notifier).refreshFromFields();
+          },
+        ),
+      ],
+      data: (loadedFields) => [
+        AmalFieldsListSection(
+          uid: uid,
+          fields: loadedFields,
+          locale: locale,
+          readOnly: readOnly,
+          onTapDetails: (f) => _showAmalDetailsDialog(context, f, locale),
+        ),
+      ],
+    );
+  }
+
   Future<void> _showAmalDetailsDialog(
     BuildContext context,
     AmalField field,
+    String locale,
   ) async {
     final l10n = AppLocalizations.of(context)!;
     await showDialog<void>(
@@ -430,7 +435,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            field.labelBn,
+                            field.getLabel(locale),
                             style: AppTextStyles.bodyLarge(context).copyWith(
                               fontWeight: FontWeight.w700,
                               fontSize: 15.sp,
@@ -438,7 +443,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            field.label,
+                            field.getLabel(locale == 'bn' ? 'en' : 'bn'),
                             style: AppTextStyles.bodySmall(context).copyWith(
                               color: AppColors.textSecondary,
                               fontSize: 11.sp,
@@ -470,7 +475,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                   ),
                   child: Text(
-                    field.sublabel,
+                    field.getSublabel(locale),
                     style: AppTextStyles.bodyMedium(
                       context,
                     ).copyWith(color: AppColors.textPrimary, height: 1.35),
@@ -560,8 +565,40 @@ class _DetailChip extends StatelessWidget {
   }
 }
 
+class _AmalFieldsStatusCard extends StatelessWidget {
+  const _AmalFieldsStatusCard({
+    required this.message,
+    this.showRetry = false,
+    this.onRetry,
+  });
+
+  final String message;
+  final bool showRetry;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return CardContainer(
+      color: AppColors.warningLight.withValues(alpha: 0.25),
+      borderColor: AppColors.warning.withValues(alpha: 0.35),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(message, style: AppTextStyles.bodyMedium(context)),
+          if (showRetry && onRetry != null) ...[
+            SizedBox(height: 10.h),
+            OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class _HomeAmalLoadingShimmer extends StatelessWidget {
-  const _HomeAmalLoadingShimmer();
+  const _HomeAmalLoadingShimmer({this.rowCount = 9});
+
+  final int rowCount;
 
   @override
   Widget build(BuildContext context) {
@@ -572,7 +609,7 @@ class _HomeAmalLoadingShimmer extends StatelessWidget {
         highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
         child: Column(
           children: List.generate(
-            kAmalFields.length,
+            rowCount,
             (index) => Padding(
               padding: EdgeInsets.only(bottom: 8.h),
               child: Container(
@@ -769,11 +806,13 @@ class _ProgressCard extends StatelessWidget {
   final int done;
   final int total;
   final int score;
+  final int maxScore;
 
   const _ProgressCard({
     required this.done,
     required this.total,
     required this.score,
+    required this.maxScore,
   });
 
   @override
@@ -812,7 +851,7 @@ class _ProgressCard extends StatelessWidget {
               SizedBox(width: 6.w),
               Flexible(
                 child: Text(
-                  l10n.scoreOutOfPoints(score, kMaxDailyScore),
+                  l10n.scoreOutOfPoints(score, maxScore),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodyMedium(

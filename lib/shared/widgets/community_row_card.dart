@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/constants/amal_fields.dart';
+import '../../core/utils/score_calculator.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../models/amal_log_model.dart';
@@ -13,19 +14,22 @@ const double kCommunityNameColWidth = 132;
 const double kCommunityAmalColWidth = 82;
 const double kCommunityScoreColWidth = 60;
 
-final List<({String id, String label})> kCommunityColumns = kAmalFields
-    .map((field) => (id: field.id, label: field.labelBn))
-    .toList();
-
-double get kCommunityScrollableGridWidth =>
+double communityScrollableGridWidth(int fieldCount) =>
     kCommunityNameColWidth +
-    (kCommunityAmalColWidth * kAmalFields.length) +
+    (kCommunityAmalColWidth * fieldCount) +
     kCommunityScoreColWidth;
 
 class CommunityHeaderRow extends StatelessWidget {
-  const CommunityHeaderRow({super.key, required this.horizontalController});
+  const CommunityHeaderRow({
+    super.key,
+    required this.horizontalController,
+    required this.fields,
+    this.locale = 'bn',
+  });
 
   final ScrollController horizontalController;
+  final List<AmalField> fields;
+  final String locale;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +52,7 @@ class CommunityHeaderRow extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           clipBehavior: Clip.hardEdge,
           child: SizedBox(
-            width: kCommunityScrollableGridWidth.w,
+            width: communityScrollableGridWidth(fields.length).w,
             child: Row(
               children: [
                 _HeaderCell(
@@ -56,8 +60,11 @@ class CommunityHeaderRow extends StatelessWidget {
                   width: kCommunityNameColWidth,
                   align: TextAlign.left,
                 ),
-                for (final col in kCommunityColumns)
-                  _HeaderCell(text: col.label, width: kCommunityAmalColWidth),
+                for (final field in fields)
+                  _HeaderCell(
+                    text: field.getLabel(locale),
+                    width: kCommunityAmalColWidth,
+                  ),
                 _HeaderCell(text: 'Score', width: kCommunityScoreColWidth),
               ],
             ),
@@ -73,7 +80,9 @@ class CommunityRowCard extends StatelessWidget {
     super.key,
     required this.log,
     required this.horizontalController,
+    required this.fields,
     required this.isToday,
+    this.locale = 'bn',
     this.isPinned = false,
     this.isPending = false,
     this.isPreAccount = false,
@@ -82,7 +91,9 @@ class CommunityRowCard extends StatelessWidget {
 
   final AmalLogModel log;
   final ScrollController horizontalController;
+  final List<AmalField> fields;
   final bool isToday;
+  final String locale;
   final bool isPinned;
   final bool isPending;
   final bool isPreAccount;
@@ -115,7 +126,7 @@ class CommunityRowCard extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         clipBehavior: Clip.hardEdge,
         child: SizedBox(
-          width: kCommunityScrollableGridWidth.w,
+          width: communityScrollableGridWidth(fields.length).w,
           child: Row(
             children: [
               _NameCell(
@@ -125,27 +136,23 @@ class CommunityRowCard extends StatelessWidget {
                 isAnonymousDisplay: log.isAnonymousDisplay,
                 isPinned: isPinned,
               ),
-              for (final col in kCommunityColumns)
-                () {
-                  final field = kAmalFields.firstWhere((f) => f.id == col.id);
-                  if (field.type == AmalType.numeric) {
-                    return _NumericCell(
-                      width: kCommunityAmalColWidth,
-                      value: getNumericValue(
-                        log.toggles[col.id],
-                        field.maxValue,
+              for (final field in fields)
+                field.type == AmalType.numeric
+                    ? _NumericCell(
+                        width: kCommunityAmalColWidth,
+                        value: getNumericValue(
+                          log.toggles[field.id],
+                          field.maxValue,
+                        ),
+                        pending: isPending && isToday,
+                        preAccount: isPreAccount,
+                      )
+                    : _StatusCell(
+                        width: kCommunityAmalColWidth,
+                        isDone: _toBool(log.toggles[field.id]),
+                        pending: isPending && isToday,
+                        preAccount: isPreAccount,
                       ),
-                      pending: isPending && isToday,
-                      preAccount: isPreAccount,
-                    );
-                  }
-                  return _StatusCell(
-                    width: kCommunityAmalColWidth,
-                    isDone: _toBool(log.toggles[col.id]),
-                    pending: isPending && isToday,
-                    preAccount: isPreAccount,
-                  );
-                }(),
               _ScoreCell(
                 width: kCommunityScoreColWidth,
                 scoreLabel: (isPending || isPreAccount) ? '--' : '${log.score}',

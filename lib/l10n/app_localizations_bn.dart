@@ -746,6 +746,13 @@ class AppLocalizationsBn extends AppLocalizations {
       'খসড়া সংরক্ষিত। আজকের হিসাব শেষ করতে \"সংরক্ষণ করুন\" চাপুন।';
 
   @override
+  String get completeAllAmalAutoSave =>
+      'আজকের আমল সংরক্ষণ করতে উপরের সব আমল সম্পন্ন করুন।';
+
+  @override
+  String get amalAutoSaving => 'আজকের আমল সংরক্ষণ হচ্ছে…';
+
+  @override
   String get progressAutosavedHint =>
       'আপনার অগ্রগতি খসড়া হিসেবে অটো সেভ হচ্ছে।';
 

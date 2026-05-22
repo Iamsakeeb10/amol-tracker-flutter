@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
@@ -13,6 +14,7 @@ import '../../../../core/utils/hijri_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/activity_feed_item_model.dart';
 import '../../../../models/amal_log_model.dart';
+import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/community_provider.dart';
@@ -112,6 +114,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).languageCode;
+    final fieldsAsync = ref.watch(amalFieldsProvider);
+    final fields = ref.watch(amalFieldsListProvider);
     final state = ref.watch(communitySheetProvider);
     final notifier = ref.read(communitySheetProvider.notifier);
     final currentUser = ref.watch(currentUserProvider).asData?.value;
@@ -150,6 +155,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             currentUser.uid,
             currentUser.name,
             state.selectedDate,
+            fields,
           );
 
     if (_searchController.text != state.searchQuery) {
@@ -304,7 +310,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                           ),
                         ),
                       Expanded(
-                        child: state.isLoading
+                        child: fieldsAsync.isLoading
+                            ? const _SheetLoadingShimmer()
+                            : state.isLoading
                             ? const _SheetLoadingShimmer()
                             : CustomScrollView(
                                 key: const PageStorageKey<String>(
@@ -324,6 +332,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                         child: CommunityHeaderRow(
                                           horizontalController:
                                               _headerHorizontalController,
+                                          fields: fields,
+                                          locale: locale,
                                         ),
                                       ),
                                     ),
@@ -336,6 +346,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                           children: [
                                             CommunityRowCard(
                                               log: ownRow ?? ownPlaceholder!,
+                                              fields: fields,
+                                              locale: locale,
                                               horizontalController:
                                                   _controllerForRow(
                                                     'own-${currentUser?.uid ?? 'me'}',
@@ -463,6 +475,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                                             key: ValueKey(row.uid),
                                             child: CommunityRowCard(
                                               log: row,
+                                              fields: fields,
+                                              locale: locale,
                                               horizontalController:
                                                   _controllerForRow(
                                                     'row-${row.uid}',
@@ -862,6 +876,7 @@ AmalLogModel _buildOwnPlaceholder(
   String uid,
   String name,
   String selectedDate,
+  List<AmalField> fields,
 ) {
   return AmalLogModel(
     uid: uid,
@@ -869,16 +884,9 @@ AmalLogModel _buildOwnPlaceholder(
     photoUrl: '',
     isAnonymousDisplay: false,
     hijriDate: selectedDate,
-    toggles: const <String, bool>{
-      'fard': false,
-      'takbir': false,
-      'morning_azkar': false,
-      'evening_azkar': false,
-      'quran': false,
-      'mulk': false,
-      'miswak': false,
-      'sunnah': false,
-      'post_azkar': false,
+    toggles: <String, dynamic>{
+      for (final f in fields)
+        f.id: f.type == AmalType.numeric ? 0 : false,
     },
     score: 0,
     submittedAt: DateTime.now().toUtc(),

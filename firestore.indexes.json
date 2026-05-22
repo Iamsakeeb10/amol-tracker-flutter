@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "amal_fields",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isActive", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

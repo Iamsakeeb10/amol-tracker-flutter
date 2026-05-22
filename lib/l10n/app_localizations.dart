@@ -1454,6 +1454,18 @@ abstract class AppLocalizations {
   /// **'Draft saved. Tap Save to finish today.'**
   String get draftSavedTapSaveToFinish;
 
+  /// No description provided for @completeAllAmalAutoSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete every amal above to save today.'**
+  String get completeAllAmalAutoSave;
+
+  /// No description provided for @amalAutoSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving today\'s amal…'**
+  String get amalAutoSaving;
+
   /// No description provided for @progressAutosavedHint.
   ///
   /// In en, this message translates to:

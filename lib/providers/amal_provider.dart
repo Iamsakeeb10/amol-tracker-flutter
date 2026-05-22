@@ -1,16 +1,20 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
 
 import '../core/constants/amal_fields.dart';
+import '../core/constants/default_amal_fields.dart';
 import '../core/services/local_storage_service.dart';
 import '../core/services/firestore_service.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/utils/hijri_helper.dart';
+import '../core/utils/score_calculator.dart';
 import '../core/utils/streak_helper.dart';
 import '../models/badge_model.dart';
 import '../models/amal_log_model.dart';
 import '../models/user_model.dart';
+import 'amal_fields_provider.dart';
 import 'auth_provider.dart';
 import 'history_provider.dart';
 
@@ -22,27 +26,34 @@ final connectivityListProvider = StreamProvider<List<ConnectivityResult>>((
   yield* Connectivity().onConnectivityChanged;
 });
 
+Map<String, dynamic> _emptyTogglesForFields(List<AmalField> fields) {
+  return <String, dynamic>{
+    for (final f in fields)
+      f.id: f.type == AmalType.numeric ? 0 : false,
+  };
+}
+
 class AmalState {
   const AmalState({
     required this.toggles,
+    required this.fields,
     required this.isSubmitted,
     required this.isLoading,
     this.error,
     this.submittedLog,
   });
 
-  factory AmalState.initial() {
+  factory AmalState.initial({List<AmalField> fields = const []}) {
     return AmalState(
-      toggles: <String, dynamic>{
-        for (final f in kAmalFields)
-          f.id: f.type == AmalType.numeric ? 0 : false,
-      },
+      toggles: _emptyTogglesForFields(fields),
+      fields: fields,
       isSubmitted: false,
       isLoading: true,
     );
   }
 
   final Map<String, dynamic> toggles;
+  final List<AmalField> fields;
   final bool isSubmitted;
   final bool isLoading;
   final String? error;
@@ -51,16 +62,16 @@ class AmalState {
   int get doneCount =>
       toggles.values.where((v) => v == true || (v is int && v > 0)).length;
 
-  int get totalScore {
-    final m = <String, dynamic>{...toggles};
-    return calculateScore(m);
-  }
+  int get totalScore => calculateScore(toggles, fields);
+
+  int get maxScore => getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
 
   bool get hasAnyDone =>
       toggles.values.any((v) => v == true || (v is int && v > 0));
 
   AmalState copyWith({
     Map<String, dynamic>? toggles,
+    List<AmalField>? fields,
     bool? isSubmitted,
     bool? isLoading,
     String? error,
@@ -70,6 +81,7 @@ class AmalState {
   }) {
     return AmalState(
       toggles: toggles ?? this.toggles,
+      fields: fields ?? this.fields,
       isSubmitted: isSubmitted ?? this.isSubmitted,
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
@@ -80,7 +92,7 @@ class AmalState {
   }
 }
 
-/// Returned from [AmalNotifier.submit] after a successful local submit (includes streak decision).
+/// Returned from [AmalNotifier.submit] after a successful local submit.
 class SubmitResult {
   const SubmitResult({required this.log, required this.streakResult});
 
@@ -96,10 +108,28 @@ final amalProvider =
 class AmalNotifier extends StateNotifier<AmalState> {
   AmalNotifier(this._ref, this._uid) : super(AmalState.initial()) {
     Future<void>.microtask(_load);
+    _ref.listen<AsyncValue<List<AmalField>>>(amalFieldsProvider, (prev, next) {
+      next.whenData((fields) {
+        if (fields.isEmpty) return;
+        if (listEquals(state.fields, fields)) return;
+        _applyFields(fields);
+      });
+    });
   }
 
   final Ref _ref;
   final String _uid;
+
+  /// Re-sync today's log after a manual fields refresh (Retry).
+  Future<void> refreshFromFields() => _load();
+
+  void _applyFields(List<AmalField> fields) {
+    state = state.copyWith(
+      toggles: normalizeTogglesForFields(state.toggles, fields),
+      fields: fields,
+      clearError: true,
+    );
+  }
 
   String _submittedHiveKey(String hijri) => 'log_${_uid}_$hijri';
 
@@ -108,7 +138,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
   Future<void> _trySyncSubmittedLog(AmalLogModel log) async {
     try {
       final fs = _ref.read(firestoreServiceProvider);
-      await fs.saveAmalLog(log);
+      await fs.saveAmalLog(log, state.fields);
       await fs.updateUserLastLogDate(log.uid, log.hijriDate);
     } catch (_) {
       // Keep local cache as source until sync succeeds.
@@ -116,6 +146,16 @@ class AmalNotifier extends StateNotifier<AmalState> {
   }
 
   Future<void> _load() async {
+    List<AmalField> fields;
+    try {
+      fields = await _ref.read(amalFieldsProvider.future);
+    } catch (_) {
+      fields = kDefaultAmalFields;
+    }
+    if (fields.isEmpty) {
+      fields = kDefaultAmalFields;
+    }
+
     final hijri = IslamicDateService.getCurrentIslamicDateString();
     final fs = _ref.read(firestoreServiceProvider);
 
@@ -123,7 +163,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
       final fromFs = await fs.getTodayLog(_uid, hijri);
       if (fromFs != null) {
         state = AmalState(
-          toggles: Map<String, dynamic>.from(fromFs.toggles),
+          toggles: normalizeTogglesForFields(fromFs.toggles, fields),
+          fields: fields,
           isSubmitted: true,
           isLoading: false,
           submittedLog: fromFs,
@@ -144,7 +185,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
         final model = AmalLogModel.fromHiveMap(cached);
         if (model.uid == _uid && model.hijriDate == hijri) {
           state = AmalState(
-            toggles: Map<String, dynamic>.from(model.toggles),
+            toggles: normalizeTogglesForFields(model.toggles, fields),
+            fields: fields,
             isSubmitted: true,
             isLoading: false,
             submittedLog: model,
@@ -159,18 +201,26 @@ class AmalNotifier extends StateNotifier<AmalState> {
     if (draft != null && draft['uid'] == _uid) {
       final rawToggles = draft['toggles'];
       if (rawToggles is Map) {
-        final next = <String, dynamic>{
-          for (final f in kAmalFields)
-            f.id: f.type == AmalType.numeric
-                ? getNumericValue(rawToggles[f.id], f.maxValue)
-                : (rawToggles[f.id] as bool? ?? false),
-        };
-        state = AmalState(toggles: next, isSubmitted: false, isLoading: false);
+        final next = normalizeTogglesForFields(
+          Map<String, dynamic>.from(rawToggles),
+          fields,
+        );
+        state = AmalState(
+          toggles: next,
+          fields: fields,
+          isSubmitted: false,
+          isLoading: false,
+        );
         return;
       }
     }
 
-    state = AmalState.initial().copyWith(isLoading: false);
+    state = AmalState(
+      toggles: _emptyTogglesForFields(fields),
+      fields: fields,
+      isSubmitted: false,
+      isLoading: false,
+    );
   }
 
   Future<void> _persistDraft() async {
@@ -185,7 +235,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   void toggle(String fieldId) {
     if (state.isSubmitted || state.isLoading) return;
-    final field = kAmalFields.where((f) => f.id == fieldId).firstOrNull;
+    final field = state.fields.where((f) => f.id == fieldId).firstOrNull;
     if (field == null || field.type != AmalType.boolean) return;
     final next = Map<String, dynamic>.from(state.toggles);
     next[fieldId] = !((next[fieldId] as bool?) ?? false);
@@ -195,7 +245,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   void setNumeric(String fieldId, int value) {
     if (state.isSubmitted || state.isLoading) return;
-    final field = kAmalFields.where((f) => f.id == fieldId).firstOrNull;
+    final field = state.fields.where((f) => f.id == fieldId).firstOrNull;
     if (field == null || field.type != AmalType.numeric) return;
 
     final nextValue = value.clamp(0, field.maxValue);
@@ -209,7 +259,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
   void markAllDone() {
     if (state.isSubmitted || state.isLoading) return;
     final next = <String, dynamic>{
-      for (final f in kAmalFields)
+      for (final f in state.fields)
         f.id: f.type == AmalType.numeric ? f.maxValue : true,
     };
     state = state.copyWith(toggles: next, clearError: true);
@@ -218,14 +268,13 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   void clearAll() {
     if (state.isSubmitted || state.isLoading) return;
-    final next = <String, dynamic>{
-      for (final f in kAmalFields) f.id: f.type == AmalType.numeric ? 0 : false,
-    };
-    state = state.copyWith(toggles: next, clearError: true);
+    state = state.copyWith(
+      toggles: _emptyTogglesForFields(state.fields),
+      clearError: true,
+    );
     Future<void>.microtask(_persistDraft);
   }
 
-  /// Persists freeze choice after S-16 — keeps streak, marks freeze used for the week.
   Future<void> applyFreeze(UserModel user) async {
     final fs = _ref.read(firestoreServiceProvider);
     await fs.updateStreak(
@@ -235,13 +284,11 @@ class AmalNotifier extends StateNotifier<AmalState> {
     );
   }
 
-  /// User declined freeze — streak restarts at 1 ([lastLogDate] already set on submit).
   Future<void> resetStreak(String uid) async {
     final fs = _ref.read(firestoreServiceProvider);
     await fs.updateStreak(uid, currentStreak: 1);
   }
 
-  /// Returns the saved log + streak outcome for navigation / S-16, or null on validation / failure.
   Future<SubmitResult?> submit(UserModel user) async {
     if (state.isSubmitted || state.isLoading) return null;
     if (!state.hasAnyDone) {
@@ -252,8 +299,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
     }
 
     final hijri = IslamicDateService.getCurrentIslamicDateString();
-    final toggles = Map<String, dynamic>.from(state.toggles);
-    final score = calculateScore(toggles);
+    final toggles = normalizeTogglesForFields(state.toggles, state.fields);
+    final score = calculateScore(toggles, state.fields);
     final now = DateTime.now().toUtc();
     final currentWeekKey = weekKeyFromDate(HijriHelper.bangladeshNow());
     final freezeAvailableThisWeek = user.streakFreezeWeekKey != currentWeekKey
@@ -284,7 +331,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
     try {
       final fs = _ref.read(firestoreServiceProvider);
-      await fs.saveAmalLog(log);
+      await fs.saveAmalLog(log, state.fields);
       try {
         switch (streakResult.action) {
           case StreakAction.increment:
@@ -329,7 +376,6 @@ class AmalNotifier extends StateNotifier<AmalState> {
         // Streak fields can sync later; log doc is saved.
       }
     } catch (_) {
-      // Offline or write failure: cache locally; Firestore will sync when possible.
       submitWarning = 'Saved locally - will sync when back online.';
     } finally {
       await LocalStorageService.saveLog(
@@ -340,6 +386,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
       state = AmalState(
         toggles: toggles,
+        fields: state.fields,
         isSubmitted: true,
         isLoading: false,
         error: submitWarning,
@@ -359,6 +406,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
     required String currentWeekKey,
   }) async {
     final nextBadges = <String>{...user.badges};
+    final maxScore = getMaxScore(state.fields).clamp(1, kDefaultMaxDailyScore);
 
     for (final badge in kBadgeDefinitions) {
       if (badge.streakThreshold != null &&
@@ -368,8 +416,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
     }
 
     final recent = await fs.getRecentLogs(user.uid, limit: 7);
-    final perfectWeek =
-        recent.length >= 7 && recent.every((log) => log.score >= 80);
+    final perfectWeek = recent.length >= 7 &&
+        recent.every((log) => log.score >= (maxScore * 0.8).round());
     if (perfectWeek) nextBadges.add('perfectWeek');
 
     final weeklyRows = await fs.weeklyLeaderboard();

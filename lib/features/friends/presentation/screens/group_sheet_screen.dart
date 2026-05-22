@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/mock/mock_data.dart';
@@ -194,7 +195,7 @@ class _ColumnHeaders extends StatelessWidget {
           ),
           Expanded(
             child: Row(
-              children: kAmalFields
+              children: kMockAmalFields
                   .map(
                     (f) => Expanded(
                       child: Center(
@@ -258,7 +259,7 @@ class _MemberSheetCard extends StatelessWidget {
           SizedBox(height: 10.h),
           Row(
             children: [
-              for (int i = 0; i < kAmalFields.length; i++)
+              for (int i = 0; i < kMockAmalFields.length; i++)
                 Expanded(
                   child: _SheetCell(index: i, user: user),
                 ),
@@ -277,7 +278,7 @@ class _SheetCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final field = kAmalFields[index];
+    final field = kMockAmalFields[index];
     final h = (user.id.hashCode + index) % 5;
     final done = h > 1;
     final isNumeric = field.type == AmalType.numeric;

@@ -37,6 +37,7 @@ class AmalRow extends StatelessWidget {
   final AmalField field;
   final bool done;
   final int? numericValue;
+  final String locale;
   final ValueChanged<bool>? onChanged;
   final ValueChanged<int>? onNumericChanged;
   final VoidCallback? onTapDetails;
@@ -46,6 +47,7 @@ class AmalRow extends StatelessWidget {
     super.key,
     required this.field,
     required this.done,
+    this.locale = 'bn',
     this.numericValue,
     this.onChanged,
     this.onNumericChanged,
@@ -83,7 +85,7 @@ class AmalRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                field.labelBn,
+                field.getLabel(locale),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodyLarge(
@@ -95,7 +97,7 @@ class AmalRow extends StatelessWidget {
                 children: [
                   Flexible(
                     child: Text(
-                      field.sublabel,
+                      field.getSublabel(locale),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall(

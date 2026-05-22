@@ -3,13 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/router/routes.dart';
+import '../../../../core/constants/default_amal_fields.dart';
+import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../models/badge_model.dart';
+import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
@@ -61,6 +63,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         : (monthLogs.map((e) => e.score).reduce((a, b) => a + b) /
                   monthLogs.length)
               .round();
+    final fields = ref.watch(amalFieldsListProvider);
+    final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
 
     return AppScaffold(
       appBar: AppBar(
@@ -149,7 +153,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   StatCard(
                     label: l10n.avg,
                     value: '$averageScore',
-                    sublabel: l10n.outOf100Compact,
+                    sublabel: '/$maxScore',
                     prominent: true,
                   ),
                 ],
@@ -159,7 +163,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           SizedBox(height: 18.h),
           Text(l10n.thisWeek, style: AppTextStyles.headlineMedium(context)),
           SizedBox(height: 8.h),
-          _WeekChart(logs: weekLogs, createdAt: user.createdAt),
+          _WeekChart(
+            logs: weekLogs,
+            createdAt: user.createdAt,
+            maxScore: maxScore,
+          ),
           SizedBox(height: 18.h),
           CardContainer(
             child: SwitchListTile.adaptive(
@@ -431,10 +439,15 @@ class _EditNameDialogState extends ConsumerState<_EditNameDialog> {
 }
 
 class _WeekChart extends StatelessWidget {
-  const _WeekChart({required this.logs, required this.createdAt});
+  const _WeekChart({
+    required this.logs,
+    required this.createdAt,
+    required this.maxScore,
+  });
 
   final List<AmalLogModel> logs;
   final DateTime createdAt;
+  final int maxScore;
 
   @override
   Widget build(BuildContext context) {
@@ -453,7 +466,9 @@ class _WeekChart extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          b.notJoined ? '--' : '${(b.value * 100).round()}',
+                          b.notJoined
+                              ? '--'
+                              : '${(b.value * maxScore).round()}',
                           style: AppTextStyles.bodySmall(context).copyWith(
                             fontSize: 9.sp,
                             color: b.notJoined
@@ -539,13 +554,13 @@ class _WeekChart extends StatelessWidget {
     if (logs.isEmpty) return bars;
     final tail = logs.length <= 7 ? logs : logs.sublist(logs.length - 7);
     for (var i = 0; i < tail.length; i++) {
-      final score = tail[i].score.clamp(0, kMaxDailyScore);
+      final score = tail[i].score.clamp(0, maxScore);
       final index = 7 - tail.length + i;
       if (bars[index].notJoined) continue;
       bars[index] = _ChartBar(
         label: bars[index].label,
-        value: score / kMaxDailyScore,
-        missed: score < 50,
+        value: score / maxScore,
+        missed: score < (maxScore * 0.5).round(),
       );
     }
     return bars;

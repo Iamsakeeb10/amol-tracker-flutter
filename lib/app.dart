@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import 'core/services/notification_service.dart';
 import 'core/theme/theme.dart';
 import 'features/badges/presentation/widgets/badge_celebration_overlay.dart';
 import 'l10n/app_localizations.dart';
+import 'providers/amal_fields_provider.dart';
 import 'providers/badge_celebration_provider.dart';
 import 'providers/locale_provider.dart';
 
@@ -32,6 +35,10 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
         _router.go(route);
       },
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(ref.read(appBootstrapProvider.future));
+    });
   }
 
   @override
@@ -40,6 +47,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     if (state == AppLifecycleState.resumed) {
       NotificationService.instance.rescheduleAll();
       ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
+      ref.read(amalFieldsProvider.notifier).refreshIfStale();
     }
   }
 

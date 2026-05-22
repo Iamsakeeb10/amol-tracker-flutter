@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
@@ -10,22 +11,25 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/services/hadith_asset_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/constants/default_amal_fields.dart';
+import '../../../../core/utils/score_calculator.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
+import '../../../../providers/amal_fields_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 
-class DayCompleteScreen extends StatefulWidget {
+class DayCompleteScreen extends ConsumerStatefulWidget {
   const DayCompleteScreen({super.key, required this.log});
 
   final AmalLogModel log;
 
   @override
-  State<DayCompleteScreen> createState() => _DayCompleteScreenState();
+  ConsumerState<DayCompleteScreen> createState() => _DayCompleteScreenState();
 }
 
-class _DayCompleteScreenState extends State<DayCompleteScreen> {
+class _DayCompleteScreenState extends ConsumerState<DayCompleteScreen> {
   String? _hadith;
   String? _hadithError;
 
@@ -71,6 +75,8 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final log = widget.log;
+    final locale = Localizations.localeOf(context).languageCode;
+    final fieldsAsync = ref.watch(amalFieldsProvider);
 
     return PopScope(
       canPop: false,
@@ -84,114 +90,132 @@ class _DayCompleteScreenState extends State<DayCompleteScreen> {
             onPressed: () => _goHome(context),
           ),
         ),
-        body: ListView(
-          padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 28.h),
-          children: [
-            SizedBox(height: 8.h),
-            Center(child: _ScoreRing(score: log.score)),
-            SizedBox(height: 18.h),
-            Text(
-              'Alhamdulillah',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.displayMedium(context),
-            ),
-            SizedBox(height: 4.h),
-            Text(
-              l10n.dayCompleteSubtitle,
-              textAlign: TextAlign.center,
+        body: fieldsAsync.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.gold),
+          ),
+          error: (_, __) => Center(
+            child: Text(
+              l10n.dayDetailLoadFailed,
               style: AppTextStyles.bodyMedium(context),
             ),
-            SizedBox(height: 12.h),
-            Center(
-              child: Pill(text: l10n.pointsEarned(log.score), icon: Icons.bolt),
-            ),
-            SizedBox(height: 22.h),
-            CardContainer(
-              color: AppColors.goldCard,
-              borderColor: AppColors.goldBorder,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+          ),
+          data: (fields) {
+            final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+            return ListView(
+              padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 28.h),
+              children: [
+                SizedBox(height: 8.h),
+                Center(child: _ScoreRing(score: log.score, maxScore: maxScore)),
+                SizedBox(height: 18.h),
+                Text(
+                  'Alhamdulillah',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.displayMedium(context),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  l10n.dayCompleteSubtitle,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium(context),
+                ),
+                SizedBox(height: 12.h),
+                Center(
+                  child: Pill(
+                    text: l10n.pointsEarned(log.score),
+                    icon: Icons.bolt,
+                  ),
+                ),
+                SizedBox(height: 22.h),
+                CardContainer(
+                  color: AppColors.goldCard,
+                  borderColor: AppColors.goldBorder,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.format_quote,
-                        color: AppColors.goldLight,
-                        size: 16.r,
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.format_quote,
+                            color: AppColors.goldLight,
+                            size: 16.r,
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            l10n.hadithOfDay,
+                            style: AppTextStyles.label(
+                              context,
+                            ).copyWith(color: AppColors.gold),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 6.w),
-                      Text(
-                        l10n.hadithOfDay,
-                        style: AppTextStyles.label(
-                          context,
-                        ).copyWith(color: AppColors.gold),
-                      ),
+                      SizedBox(height: 8.h),
+                      if (_hadith != null)
+                        Text(_hadith!, style: AppTextStyles.bodyLarge(context))
+                      else if (_hadithError != null)
+                        Text(
+                          _hadithError!,
+                          style: AppTextStyles.bodyMedium(
+                            context,
+                          ).copyWith(color: AppColors.textMuted),
+                        )
+                      else
+                        const _HadithLoadingShimmer(),
                     ],
                   ),
-                  SizedBox(height: 8.h),
-                  if (_hadith != null)
-                    Text(_hadith!, style: AppTextStyles.bodyLarge(context))
-                  else if (_hadithError != null)
-                    Text(
-                      _hadithError!,
-                      style: AppTextStyles.bodyMedium(
-                        context,
-                      ).copyWith(color: AppColors.textMuted),
-                    )
-                  else
-                    const _HadithLoadingShimmer(),
-                ],
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              l10n.todaysSummary,
-              style: AppTextStyles.headlineMedium(context),
-            ),
-            SizedBox(height: 8.h),
-            ...kAmalFields.map((field) {
-              final numericValue = field.type == AmalType.numeric
-                  ? getNumericValue(log.toggles[field.id], field.maxValue)
-                  : null;
-              final done = field.type == AmalType.numeric
-                  ? numericValue! > 0
-                  : (log.toggles[field.id] as bool? ?? false);
-              final earned = field.type == AmalType.numeric
-                  ? ((numericValue! / field.maxValue) * field.points).round()
-                  : (done ? field.points : 0);
-              return Padding(
-                padding: EdgeInsets.only(bottom: 8.h),
-                child: _SummaryRow(
-                  field: field,
-                  done: done,
-                  numericValue: numericValue,
-                  earnedPoints: earned,
                 ),
-              );
-            }),
-            SizedBox(height: 18.h),
-            SizedBox(
-              height: 50.h,
-              child: ElevatedButton(
-                onPressed: () => _goHome(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.gold,
-                  foregroundColor: AppColors.emeraldDeep,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r),
+                SizedBox(height: 16.h),
+                Text(
+                  l10n.todaysSummary,
+                  style: AppTextStyles.headlineMedium(context),
+                ),
+                SizedBox(height: 8.h),
+                ...fields.map((field) {
+                  final numericValue = field.type == AmalType.numeric
+                      ? getNumericValue(log.toggles[field.id], field.maxValue)
+                      : null;
+                  final done = field.type == AmalType.numeric
+                      ? numericValue! > 0
+                      : (log.toggles[field.id] as bool? ?? false);
+                  final earned = field.type == AmalType.numeric
+                      ? ((numericValue! / field.maxValue) * field.points).round()
+                      : (done ? field.points : 0);
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: _SummaryRow(
+                      field: field,
+                      locale: locale,
+                      done: done,
+                      numericValue: numericValue,
+                      earnedPoints: earned,
+                    ),
+                  );
+                }),
+                SizedBox(height: 18.h),
+                SizedBox(
+                  height: 50.h,
+                  child: ElevatedButton(
+                    onPressed: () => _goHome(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.gold,
+                      foregroundColor: AppColors.emeraldDeep,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                    ),
+                    child: Text(
+                      l10n.backToHome,
+                      style: AppTextStyles.button(context).copyWith(
+                        color: AppColors.emeraldDeep,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
-                child: Text(
-                  l10n.backToHome,
-                  style: AppTextStyles.button(context).copyWith(
-                    color: AppColors.emeraldDeep,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -244,12 +268,14 @@ class _HadithLoadingShimmer extends StatelessWidget {
 
 class _ScoreRing extends StatelessWidget {
   final int score;
-  const _ScoreRing({required this.score});
+  final int maxScore;
+
+  const _ScoreRing({required this.score, required this.maxScore});
 
   @override
   Widget build(BuildContext context) {
     final dim = 180.r;
-    final target = (score / kMaxDailyScore).clamp(0.0, 1.0);
+    final target = (score / maxScore).clamp(0.0, 1.0);
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: target),
       duration: const Duration(milliseconds: 1200),
@@ -281,7 +307,7 @@ class _ScoreRing extends StatelessWidget {
                     ).copyWith(color: AppColors.goldLight, fontSize: 56.sp),
                   ),
                   Text(
-                    AppLocalizations.of(context)!.outOf100,
+                    '/$maxScore',
                     style: AppTextStyles.bodySmall(
                       context,
                     ).copyWith(fontSize: 11.sp),
@@ -298,12 +324,14 @@ class _ScoreRing extends StatelessWidget {
 
 class _SummaryRow extends StatelessWidget {
   final AmalField field;
+  final String locale;
   final bool done;
   final int? numericValue;
   final int earnedPoints;
 
   const _SummaryRow({
     required this.field,
+    required this.locale,
     required this.done,
     this.numericValue,
     required this.earnedPoints,
@@ -333,7 +361,7 @@ class _SummaryRow extends StatelessWidget {
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
-              field.labelBn,
+              field.getLabel(locale),
               style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 14.sp),
             ),
           ),

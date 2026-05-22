@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/mock/mock_data.dart';
+import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -186,7 +188,7 @@ class _AmalGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 8.h,
       crossAxisSpacing: 8.w,
-      children: List.generate(9, (i) {
+      children: List.generate(kAmalFields.length, (i) {
         final field = kAmalFields[i];
         final h = (user.id.hashCode + i) % 4;
         final done = h > 0;
@@ -198,7 +200,7 @@ class _AmalGrid extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                field.icon,
+                amalFieldIcon(field.id),
                 color: done ? AppColors.gold : AppColors.textMuted,
                 size: 18.r,
               ),

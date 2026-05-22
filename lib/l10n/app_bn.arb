@@ -297,6 +297,8 @@
   "submitTodaysLog": "আজকের লগ সাবমিট করুন",
   "saveTodaysAmal": "আজকের আমল সংরক্ষণ করুন",
   "draftSavedTapSaveToFinish": "খসড়া সংরক্ষিত। আজকের হিসাব শেষ করতে \"সংরক্ষণ করুন\" চাপুন।",
+  "completeAllAmalAutoSave": "আজকের আমল সংরক্ষণ করতে উপরের সব আমল সম্পন্ন করুন।",
+  "amalAutoSaving": "আজকের আমল সংরক্ষণ হচ্ছে…",
   "progressAutosavedHint": "আপনার অগ্রগতি খসড়া হিসেবে অটো সেভ হচ্ছে।",
   "welcomeUpper": "স্বাগতম",
   "firstAmalStartsToday": "আপনার প্রথম আমল আজ থেকেই শুরু।",

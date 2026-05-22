@@ -203,6 +203,17 @@ class FirestoreService {
     await _amalLogs.doc(log.docId).set(map);
   }
 
+  /// Patches an existing submitted log (amal field values + score + edit metadata).
+  /// Uses [DocumentReference.update] — does not overwrite submit metadata or streak fields.
+  Future<void> editAmalLog({
+    required AmalLogModel updatedLog,
+    required List<AmalField> fields,
+  }) async {
+    await _amalLogs
+        .doc(updatedLog.docId)
+        .update(updatedLog.toEditFirestoreMap(fields));
+  }
+
   /// Updates [lastLogDate] (Hijri `YYYY-MM-DD`) after a successful submit.
   Future<void> updateUserLastLogDate(String uid, String hijriDate) async {
     await _users.doc(uid).update(<String, dynamic>{'lastLogDate': hijriDate});

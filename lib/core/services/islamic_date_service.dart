@@ -282,4 +282,65 @@ class IslamicDateService {
     if (days == 0) return storage;
     return shiftStorageByDays(storage, days);
   }
+
+  /// Bangladesh-local moment for any [source] instant (UTC-safe).
+  static DateTime bangladeshDateTimeFrom(DateTime source) {
+    final bdLocation = tz.getLocation(AppConstants.bdTimezone);
+    final utc = source.toUtc();
+    final bd = tz.TZDateTime.fromMillisecondsSinceEpoch(
+      bdLocation,
+      utc.millisecondsSinceEpoch,
+    );
+    return DateTime(
+      bd.year,
+      bd.month,
+      bd.day,
+      bd.hour,
+      bd.minute,
+      bd.second,
+      bd.millisecond,
+      bd.microsecond,
+    );
+  }
+
+  /// Calendar date in Asia/Dhaka (no Maghrib rollover).
+  static DateTime bangladeshCalendarDateOnly(DateTime source) {
+    final bd = bangladeshDateTimeFrom(source);
+    return DateTime(bd.year, bd.month, bd.day);
+  }
+
+  /// Hijri storage for account-creation floor (BD calendar, not device local).
+  static String hijriStorageForAccountCreated(DateTime createdAt) {
+    return islamicDateStringForGregorianDate(
+      bangladeshCalendarDateOnly(createdAt),
+    );
+  }
+
+  /// Returns true if [targetDate] is one of the past [windowDays] Hijri days
+  /// before [todayDate] (same chain as [shiftStorageByDays] / history calendar).
+  /// Does not include today.
+  static bool isWithinEditWindow(
+    String targetDate,
+    String todayDate,
+    int windowDays,
+  ) {
+    if (targetDate == todayDate) return false;
+    for (var i = 1; i <= windowDays; i++) {
+      if (shiftStorageByDays(todayDate, -i) == targetDate) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Past [windowDays] editable Hijri keys (excludes today).
+  static List<String> editableHijriStoragesBeforeToday(
+    String todayDate, {
+    int windowDays = 6,
+  }) {
+    return List<String>.generate(
+      windowDays,
+      (i) => shiftStorageByDays(todayDate, -(i + 1)),
+    );
+  }
 }

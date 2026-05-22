@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,20 +6,22 @@ import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart' as amal_const;
-import '../../../../core/router/routes.dart';
 import '../../../../core/constants/default_amal_fields.dart';
-import '../../../../core/utils/score_calculator.dart';
+import '../../../../core/router/routes.dart';
+import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../core/services/islamic_date_service.dart';
+import '../../../../core/utils/amal_edit_debug.dart';
+import '../../../../core/utils/score_calculator.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
+import '../../../../shared/widgets/edited_badge.dart';
 import '../../../../shared/widgets/stat_card.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class DayDetailScreen extends ConsumerWidget {
   const DayDetailScreen({super.key, required this.hijriDate});
@@ -39,12 +42,11 @@ class DayDetailScreen extends ConsumerWidget {
     final asyncLog = ref.watch(
       dayDetailLogProvider(DayLogKey(uid: authUser.uid, hijriDate: hijriDate)),
     );
+    final editableAsync = ref.watch(editableDayProvider(hijriDate));
     final locale = Localizations.localeOf(context).languageCode;
 
     return asyncLog.when(
-      loading: () => AppScaffold(
-        body: const _DayDetailLoadingShimmer(),
-      ),
+      loading: () => AppScaffold(body: const _DayDetailLoadingShimmer()),
       error: (_, _) => AppScaffold(
         body: Center(
           child: Text(
@@ -57,6 +59,16 @@ class DayDetailScreen extends ConsumerWidget {
         final fields = ref.watch(amalFieldsListProvider);
         final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
         final score = log?.score ?? 0;
+        final editableDay = editableAsync.asData?.value;
+        final showEditFab = editableDay?.canEdit ?? false;
+        final logForEdit = editableDay?.existingLog;
+        if (kDebugMode) {
+          logAmalEditDebug(
+            'DayDetail hijriDate=$hijriDate hasLog=${log != null} '
+            'showEditFab=$showEditFab backfill=${showEditFab && log == null} '
+            'editableLoading=${editableAsync.isLoading}',
+          );
+        }
         final title = hijriDate.isEmpty
             ? l10n.dayDetailTitle
             : IslamicDateService.displayFromStorageBn(hijriDate);
@@ -65,6 +77,21 @@ class DayDetailScreen extends ConsumerWidget {
             : IslamicDateService.weekdayEnglishForStorage(hijriDate);
 
         return AppScaffold(
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          floatingActionButton: showEditFab
+              ? Tooltip(
+                  message: 'এই দিনের আমল সম্পাদনা করুন',
+                  child: FloatingActionButton(
+                    onPressed: () => context.push(
+                      AppRoutes.editAmalPath(hijriDate),
+                      extra: logForEdit,
+                    ),
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: AppColors.emeraldDeep,
+                    child: Icon(Icons.edit_outlined, size: 22.r),
+                  ),
+                )
+              : null,
           appBar: AppBar(
             leading: IconButton(
               icon: Icon(Icons.arrow_back, size: 22.r),
@@ -104,7 +131,12 @@ class DayDetailScreen extends ConsumerWidget {
             ],
           ),
           body: ListView(
-            padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 24.h),
+            padding: EdgeInsets.fromLTRB(
+              0.w,
+              4.h,
+              0.w,
+              showEditFab ? 88.h : 24.h,
+            ),
             children: [
               if (weekday.isNotEmpty) ...[
                 Text(
@@ -136,6 +168,13 @@ class DayDetailScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+              if (log?.editedAt != null) ...[
+                SizedBox(height: 8.h),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: EditedBadge(),
+                ),
+              ],
               SizedBox(height: 16.h),
               Text(l10n.amal, style: AppTextStyles.headlineMedium(context)),
               SizedBox(height: 8.h),
@@ -153,11 +192,8 @@ class DayDetailScreen extends ConsumerWidget {
                 ),
               ...fields.map((field) {
                 final done = field.type == amal_const.AmalType.numeric
-                    ? getNumericValue(
-                        log?.toggles[field.id],
-                        field.maxValue,
-                      ) >
-                      0
+                    ? getNumericValue(log?.toggles[field.id], field.maxValue) >
+                          0
                     : (log?.toggles[field.id] as bool? ?? false);
                 return Padding(
                   padding: EdgeInsets.only(bottom: 8.h),
@@ -175,25 +211,27 @@ class DayDetailScreen extends ConsumerWidget {
                   ),
                 );
               }),
-              SizedBox(height: 14.h),
-              CardContainer(
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.lock_outline,
-                      color: AppColors.textMuted,
-                      size: 16.r,
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: Text(
-                        l10n.dayDetailLockedPastDays,
-                        style: AppTextStyles.bodyMedium(context),
+              if (!showEditFab) ...[
+                SizedBox(height: 14.h),
+                CardContainer(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.lock_outline,
+                        color: AppColors.textMuted,
+                        size: 16.r,
                       ),
-                    ),
-                  ],
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: Text(
+                          l10n.dayDetailLockedPastDays,
+                          style: AppTextStyles.bodyMedium(context),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         );

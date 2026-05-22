@@ -320,8 +320,14 @@ class MockDay {
   final int day;
   final int score;
   final DayCompletion state;
+  final bool isEdited;
 
-  const MockDay({required this.day, required this.score, required this.state});
+  const MockDay({
+    required this.day,
+    required this.score,
+    required this.state,
+    this.isEdited = false,
+  });
 }
 
 List<MockDay> buildMockMonth() {

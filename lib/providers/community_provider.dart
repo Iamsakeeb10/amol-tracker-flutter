@@ -144,6 +144,21 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
     await _fetchFirstPage();
   }
 
+  /// Refetch the sheet when [hijriDate] is the selected tab (past days use fetch).
+  Future<void> reloadSelectedDateIfNeeded(String hijriDate) async {
+    if (state.selectedDate != hijriDate) return;
+    if (state.isToday) return;
+    state = state.copyWith(
+      rows: const <AmalLogModel>[],
+      isLoading: true,
+      isLoadingMore: false,
+      hasMore: true,
+      clearError: true,
+      clearLastDoc: true,
+    );
+    await _fetchFirstPage();
+  }
+
   Future<void> loadMore() async {
     if (state.isLoading || state.isLoadingMore || !state.hasMore) return;
     if (state.lastDoc == null) return;

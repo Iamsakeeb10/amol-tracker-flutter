@@ -8,6 +8,7 @@ import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/community/presentation/screens/community_screen.dart';
 import '../../features/community/presentation/screens/user_profile_screen.dart';
 import '../../features/history/presentation/screens/day_detail_screen.dart';
+import '../../features/history/presentation/screens/edit_amal_screen.dart';
 import '../../features/history/presentation/screens/history_screen.dart';
 import '../../features/home/presentation/screens/day_complete_screen.dart';
 import '../../models/amal_log_model.dart';
@@ -110,6 +111,19 @@ GoRouter buildAppRouter() {
         builder: (_, state) {
           final date = state.pathParameters['date'] ?? '';
           return DayDetailScreen(hijriDate: date);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.editAmalPattern,
+        name: AppRoutes.editAmal,
+        builder: (_, state) {
+          final hijriDate = state.pathParameters['date'] ?? '';
+          final existingLog =
+              state.extra is AmalLogModel ? state.extra as AmalLogModel : null;
+          return EditAmalScreen(
+            hijriDate: hijriDate,
+            existingLog: existingLog,
+          );
         },
       ),
       GoRoute(

@@ -764,6 +764,18 @@ abstract class AppLocalizations {
   /// **'{behind} pts behind 2nd place - log today to close the gap.'**
   String leaderboardNudgeBehindPoints(Object behind);
 
+  /// No description provided for @leaderboardNudgeBehindFirstDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{behind} days behind 1st place - keep your streak alive.'**
+  String leaderboardNudgeBehindFirstDays(Object behind);
+
+  /// No description provided for @leaderboardNudgeBehindFirstPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{behind} pts behind 1st place - log today to take the lead.'**
+  String leaderboardNudgeBehindFirstPoints(Object behind);
+
   /// No description provided for @history.
   ///
   /// In en, this message translates to:

@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/services/islamic_date_service.dart';
 import '../core/services/local_storage_service.dart';
+import '../core/utils/amal_edit_debug.dart';
 import '../models/amal_log_model.dart';
+import '../models/user_model.dart';
 import 'auth_provider.dart';
 
 class HistoryMonthKey {
@@ -27,6 +30,17 @@ class HistoryMonthKey {
   @override
   int get hashCode => Object.hash(uid, hijriYear, hijriMonth);
 }
+
+class AmalLogRefreshNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
+/// Bumped after amal edit/backfill so dependent providers and screens refetch.
+final amalLogRefreshProvider =
+    NotifierProvider<AmalLogRefreshNotifier, int>(AmalLogRefreshNotifier.new);
 
 /// Monthly amal logs for the history calendar (S-04).
 final historyMonthProvider =
@@ -75,4 +89,93 @@ final dayDetailLogProvider =
     } catch (_) {}
   }
   return null;
+});
+
+/// Whether a past Hijri day can be opened in the editor (with or without a log).
+class EditableDayState {
+  const EditableDayState({required this.canEdit, this.existingLog});
+
+  final bool canEdit;
+  final AmalLogModel? existingLog;
+}
+
+AmalLogModel? _logFromHive(String uid, String hijriDate) {
+  final cached = LocalStorageService.getLog('log_${uid}_$hijriDate');
+  if (cached == null) return null;
+  try {
+    final model = AmalLogModel.fromHiveMap(cached);
+    if (model.uid == uid && model.hijriDate == hijriDate) return model;
+  } catch (_) {}
+  return null;
+}
+
+/// Past Hijri day within 6-day BD window (excludes today). Log optional (backfill).
+final editableDayProvider =
+    FutureProvider.autoDispose.family<EditableDayState, String>((
+  ref,
+  hijriDate,
+) async {
+  const denied = EditableDayState(canEdit: false);
+
+  final auth = ref.watch(authStateProvider).asData?.value;
+  if (auth == null) {
+    logAmalEditDebug('hijriDate=$hijriDate deny=not_signed_in');
+    return denied;
+  }
+
+  UserModel? user;
+  try {
+    user = await ref.watch(currentUserProvider.future);
+  } catch (e) {
+    logAmalEditDebug('hijriDate=$hijriDate deny=user_load_error $e');
+    return denied;
+  }
+  if (user == null) {
+    logAmalEditDebug('hijriDate=$hijriDate deny=no_user_profile');
+    return denied;
+  }
+
+  final bdNow = IslamicDateService.nowInBD();
+  final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+  final editableDays =
+      IslamicDateService.editableHijriStoragesBeforeToday(today);
+
+  logAmalEditDebug(
+    'hijriDate=$hijriDate today=$today bdNow=$bdNow '
+    'editableWindow=$editableDays',
+  );
+
+  if (hijriDate == today) {
+    logAmalEditDebug('hijriDate=$hijriDate deny=is_today_use_home');
+    return denied;
+  }
+  if (!IslamicDateService.isWithinEditWindow(hijriDate, today, 6)) {
+    logAmalEditDebug('hijriDate=$hijriDate deny=outside_6_hijri_days');
+    return denied;
+  }
+
+  final accountCreatedHijri =
+      IslamicDateService.hijriStorageForAccountCreated(user.createdAt);
+  if (hijriDate.compareTo(accountCreatedHijri) < 0) {
+    logAmalEditDebug(
+      'hijriDate=$hijriDate deny=before_account '
+      'accountHijri=$accountCreatedHijri',
+    );
+    return denied;
+  }
+
+  final fs = ref.read(firestoreServiceProvider);
+  AmalLogModel? log;
+  try {
+    log = await fs.getLog(user.uid, hijriDate);
+  } catch (e) {
+    logAmalEditDebug('hijriDate=$hijriDate firestore_error=$e');
+  }
+  log ??= _logFromHive(user.uid, hijriDate);
+
+  logAmalEditDebug(
+    'hijriDate=$hijriDate allow_edit hasLog=${log != null} '
+    'score=${log?.score ?? 0}',
+  );
+  return EditableDayState(canEdit: true, existingLog: log);
 });

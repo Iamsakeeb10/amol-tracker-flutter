@@ -376,6 +376,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String leaderboardNudgeBehindFirstDays(Object behind) {
+    return '$behind days behind 1st place - keep your streak alive.';
+  }
+
+  @override
+  String leaderboardNudgeBehindFirstPoints(Object behind) {
+    return '$behind pts behind 1st place - log today to take the lead.';
+  }
+
+  @override
   String get history => 'HISTORY';
 
   @override

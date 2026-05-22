@@ -150,6 +150,26 @@ class CalendarDayCell extends StatelessWidget {
                   ),
                 ),
               ),
+
+            // ── Edited indicator — bottom-right, away from "আজ" ─
+            if (day.isEdited)
+              Positioned(
+                bottom: -2.r,
+                right: -2.r,
+                child: Container(
+                  padding: EdgeInsets.all(2.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.emeraldDeep,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.gold, width: 0.8.r),
+                  ),
+                  child: Icon(
+                    Icons.edit,
+                    size: 8.r,
+                    color: AppColors.gold,
+                  ),
+                ),
+              ),
           ],
         ),
       ),

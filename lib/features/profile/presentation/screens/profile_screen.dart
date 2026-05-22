@@ -13,6 +13,7 @@ import '../../../../models/amal_log_model.dart';
 import '../../../../models/badge_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/badge_tile.dart';
@@ -22,6 +23,7 @@ import '../../../../shared/widgets/streak_badge.dart';
 
 final profileRecentLogsProvider =
     FutureProvider.family<List<AmalLogModel>, int>((ref, limit) async {
+      ref.watch(amalLogRefreshProvider);
       final user = ref.watch(authStateProvider).asData?.value;
       if (user == null) return <AmalLogModel>[];
       return ref

@@ -42,6 +42,8 @@ class AmalRow extends StatelessWidget {
   final ValueChanged<int>? onNumericChanged;
   final VoidCallback? onTapDetails;
   final bool readOnly;
+  /// When set, caps numeric picker options (e.g. takbir max = fard).
+  final int? numericPickerMax;
 
   const AmalRow({
     super.key,
@@ -53,12 +55,14 @@ class AmalRow extends StatelessWidget {
     this.onNumericChanged,
     this.onTapDetails,
     this.readOnly = false,
+    this.numericPickerMax,
   });
 
   @override
   Widget build(BuildContext context) {
     final isNumeric = field.type == AmalType.numeric;
-    final currentNumeric = (numericValue ?? 0).clamp(0, field.maxValue);
+    final pickerMax = numericPickerMax ?? field.maxValue;
+    final currentNumeric = (numericValue ?? 0).clamp(0, pickerMax);
     final earnedPoints = isNumeric
         ? ((currentNumeric / field.maxValue) * field.points).round()
         : (done ? field.points : 0);
@@ -150,7 +154,7 @@ class AmalRow extends StatelessWidget {
           if (isNumeric)
             AmalNumericPicker(
               currentValue: currentNumeric,
-              maxValue: field.maxValue,
+              maxValue: pickerMax,
               fieldMaxValue: field.maxValue,
               readOnly: readOnly,
               onChanged: onNumericChanged,

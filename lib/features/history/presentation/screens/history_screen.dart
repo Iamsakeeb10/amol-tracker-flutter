@@ -116,7 +116,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         if (log != null) {
           todayState = _scoreToState(score, hasLog: true, maxScore: maxScore);
         }
-        out.add(MockDay(day: d, score: score, state: todayState));
+        out.add(
+          MockDay(
+            day: d,
+            score: score,
+            state: todayState,
+            isEdited: log?.editedAt != null,
+          ),
+        );
         continue;
       }
 
@@ -133,6 +140,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           day: d,
           score: sc,
           state: _scoreToState(sc, hasLog: true, maxScore: maxScore),
+          isEdited: log.editedAt != null,
         ),
       );
     }

@@ -19,6 +19,7 @@ import '../../../../models/amal_log_model.dart';
 import '../../../../models/user_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
@@ -78,6 +79,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     final fs = ref.read(firestoreServiceProvider);
     final me = ref.watch(currentUserProvider).asData?.value;
     final isOwn = me?.uid == widget.userId;
+    final logRefresh = ref.watch(amalLogRefreshProvider);
 
     return AppScaffold(
       appBar: AppBar(
@@ -112,6 +114,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           }
 
           return FutureBuilder<_ProfileData>(
+            key: ValueKey(
+              'profile-$logRefresh-${widget.userId}-${widget.selectedHijriDate}',
+            ),
             future: _loadProfileData(fs, user.uid),
             builder: (context, dataSnap) {
               if (dataSnap.connectionState == ConnectionState.waiting &&

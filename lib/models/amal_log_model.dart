@@ -13,6 +13,8 @@ const _logMetadataKeys = <String>{
   'submittedAt',
   'submittedAtMs',
   'toggles',
+  'editedAt',
+  'editCount',
 };
 
 Map<String, dynamic> _togglesFromSource(Map<String, dynamic> src) {
@@ -62,6 +64,8 @@ class AmalLogModel {
     required this.toggles,
     required this.score,
     required this.submittedAt,
+    this.editedAt,
+    this.editCount = 0,
   });
 
   final String uid;
@@ -72,6 +76,8 @@ class AmalLogModel {
   final Map<String, dynamic> toggles;
   final int score;
   final DateTime submittedAt;
+  final DateTime? editedAt;
+  final int editCount;
 
   String get docId => '${uid}_$hijriDate';
 
@@ -90,6 +96,10 @@ class AmalLogModel {
       submittedAt: submitted is Timestamp
           ? submitted.toDate()
           : DateTime.now(),
+      editedAt: data['editedAt'] is Timestamp
+          ? (data['editedAt'] as Timestamp).toDate()
+          : null,
+      editCount: (data['editCount'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -111,6 +121,10 @@ class AmalLogModel {
       submittedAt: submittedMs is int
           ? DateTime.fromMillisecondsSinceEpoch(submittedMs, isUtc: true)
           : DateTime.now(),
+      editedAt: map['editedAt'] is int
+          ? DateTime.fromMillisecondsSinceEpoch(map['editedAt'] as int, isUtc: true)
+          : null,
+      editCount: (map['editCount'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -134,6 +148,22 @@ class AmalLogModel {
     return out;
   }
 
+  Map<String, dynamic> toEditFirestoreMap(List<AmalField> fields) {
+    final out = <String, dynamic>{
+      'score': score,
+      'editedAt': Timestamp.fromDate(DateTime.now().toUtc()),
+      'editCount': FieldValue.increment(1),
+    };
+    for (final field in fields) {
+      if (field.type == AmalType.numeric) {
+        out[field.id] = getNumericValue(toggles[field.id], field.maxValue);
+      } else {
+        out[field.id] = toggles[field.id] == true;
+      }
+    }
+    return out;
+  }
+
   Map<String, dynamic> toHiveMap() {
     return <String, dynamic>{
       'uid': uid,
@@ -144,6 +174,9 @@ class AmalLogModel {
       'score': score,
       'submittedAtMs': submittedAt.toUtc().millisecondsSinceEpoch,
       'toggles': Map<String, dynamic>.from(toggles),
+      if (editedAt != null)
+        'editedAt': editedAt!.toUtc().millisecondsSinceEpoch,
+      'editCount': editCount,
     };
   }
 }

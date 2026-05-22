@@ -378,6 +378,16 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String leaderboardNudgeBehindFirstDays(Object behind) {
+    return '১ম স্থানের থেকে $behind দিন পিছিয়ে - স্ট্রিক ধরে রাখুন।';
+  }
+
+  @override
+  String leaderboardNudgeBehindFirstPoints(Object behind) {
+    return '১ম স্থানের থেকে $behind পয়েন্ট পিছিয়ে - আজ লগ করে এগিয়ে যান।';
+  }
+
+  @override
   String get history => 'হিস্টোরি';
 
   @override

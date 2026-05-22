@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,6 +8,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/leaderboard_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -14,7 +16,6 @@ import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
 import '../../../../shared/widgets/streak_badge.dart';
-import '../../../../l10n/app_localizations.dart';
 
 class LeaderboardScreen extends ConsumerStatefulWidget {
   const LeaderboardScreen({super.key});
@@ -26,6 +27,12 @@ class LeaderboardScreen extends ConsumerStatefulWidget {
 class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   int _periodIndex = 0;
   bool get _isStreak => _periodIndex == 2;
+
+  void _logDebug(String message) {
+    if (kDebugMode) {
+      debugPrint('[Leaderboard] $message');
+    }
+  }
 
   String _displayName(LeaderboardEntry user) => user.isAnonymousDisplay
       ? '🕌 ${AppLocalizations.of(context)!.anonymous}'
@@ -190,20 +197,45 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
 
   String _buildNudge(List<LeaderboardEntry> entries, String? authUid) {
     if (authUid == null || entries.length < 2) {
-      return AppLocalizations.of(context)!.leaderboardNudgeKeepClimbing;
+      final message = AppLocalizations.of(
+        context,
+      )!.leaderboardNudgeKeepClimbing;
+      _logDebug(
+        'nudge=keep-climbing periodIndex=$_periodIndex isStreak=$_isStreak '
+        'authUid=$authUid entries=${entries.length} message="$message"',
+      );
+      return message;
     }
     final meIndex = entries.indexWhere((u) => u.uid == authUid);
     if (meIndex <= 0) {
-      return AppLocalizations.of(context)!.leaderboardNudgeTop;
+      final message = AppLocalizations.of(context)!.leaderboardNudgeTop;
+      _logDebug(
+        'nudge=top periodIndex=$_periodIndex isStreak=$_isStreak '
+        'authUid=$authUid meIndex=$meIndex entries=${entries.length} '
+        'message="$message"',
+      );
+      return message;
     }
     final meScore = entries[meIndex].score;
-    final secondScore = entries.length > 1
-        ? entries[1].score
-        : entries[0].score;
-    final behind = (secondScore - meScore).clamp(0, 99999);
-    return _isStreak
-        ? AppLocalizations.of(context)!.leaderboardNudgeBehindDays(behind)
-        : AppLocalizations.of(context)!.leaderboardNudgeBehindPoints(behind);
+    final isSecondPlace = meIndex == 1;
+    final targetIndex = isSecondPlace ? 0 : 1;
+    final targetScore = entries[targetIndex].score;
+    final behind = (targetScore - meScore).clamp(0, 99999);
+    final l10n = AppLocalizations.of(context)!;
+    final message = _isStreak
+        ? (isSecondPlace
+              ? l10n.leaderboardNudgeBehindFirstDays(behind)
+              : l10n.leaderboardNudgeBehindDays(behind))
+        : (isSecondPlace
+              ? l10n.leaderboardNudgeBehindFirstPoints(behind)
+              : l10n.leaderboardNudgeBehindPoints(behind));
+    _logDebug(
+      'nudge=behind periodIndex=$_periodIndex isStreak=$_isStreak '
+      'authUid=$authUid meIndex=$meIndex meScore=$meScore '
+      'targetIndex=$targetIndex targetScore=$targetScore behind=$behind '
+      'entries=${entries.length} message="$message"',
+    );
+    return message;
   }
 }
 

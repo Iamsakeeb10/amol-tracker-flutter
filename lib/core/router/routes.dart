@@ -16,6 +16,12 @@ class AppRoutes {
   static String dayDetailPath(String hijriYyyyMmDd) =>
       '/history/day-detail/$hijriYyyyMmDd';
 
+  static const editAmal = 'editAmal';
+  static const editAmalPattern = '/history/edit-amal/:date';
+
+  static String editAmalPath(String hijriDate) =>
+      '/history/edit-amal/$hijriDate';
+
   static const community = '/community';
   static const userProfile = '/community/user-profile';
 

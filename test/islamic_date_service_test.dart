@@ -57,5 +57,24 @@ void main() {
       expect(recent.first, today);
       expect(recent[1], yesterday);
     });
+
+    test('isWithinEditWindow uses shiftStorageByDays not raw Gregorian diff', () {
+      final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+      final yesterday = IslamicDateService.shiftStorageByDays(today, -1);
+      final day7Ago = IslamicDateService.shiftStorageByDays(today, -7);
+
+      expect(
+        IslamicDateService.isWithinEditWindow(yesterday, today, 6),
+        isTrue,
+      );
+      expect(
+        IslamicDateService.isWithinEditWindow(today, today, 6),
+        isFalse,
+      );
+      expect(
+        IslamicDateService.isWithinEditWindow(day7Ago, today, 6),
+        isFalse,
+      );
+    });
   });
 }

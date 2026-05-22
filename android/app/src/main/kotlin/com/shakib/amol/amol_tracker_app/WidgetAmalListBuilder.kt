@@ -77,7 +77,11 @@ internal object WidgetAmalListBuilder {
         widgetData: SharedPreferences,
         isSubmitted: Boolean,
     ) {
+        views.removeAllViews(R.id.widget_amal_col1)
+        views.removeAllViews(R.id.widget_amal_col2)
+
         val meta = resolveFields(widgetData)
+            .distinctBy { it.id }
         if (meta.isEmpty()) {
             views.setViewVisibility(R.id.widget_amal_section, View.GONE)
             return

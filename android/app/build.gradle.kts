@@ -3,22 +3,16 @@ import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
-    id("com.google.gms.google-services")
     id("kotlin-android")
+    id("com.google.gms.google-services")
+    // Flutter Gradle Plugin must be applied after Android and Kotlin plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-val abiCodes = mapOf(
-    "armeabi-v7a" to 1,
-    "arm64-v8a"   to 2,
-    "x86"         to 3,
-    "x86_64"      to 4
-)
-
 android {
     namespace = "com.shakib.amol.amol_tracker_app"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 36
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -28,13 +22,6 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
-    // ✅ Fix 1: Replaced deprecated jvmTarget with compilerOptions DSL
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
     }
 
     val keystorePropertiesFile = rootProject.file("key.properties")
@@ -60,15 +47,6 @@ android {
         versionName = flutter.versionName
     }
 
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
-            isUniversalApk = true
-        }
-    }
-
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
@@ -78,23 +56,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-        }
-    }
-
-    // ✅ Fix 2 & 3: Replaced deprecated OutputFile.ABI and versionCodeOverride
-    applicationVariants.all {
-        val variant = this
-        outputs.all {
-            val output = this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl
-                ?: return@all
-            // ✅ Modern way to get ABI filter
-            val abiName = output.filters.find {
-                it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI.name
-            }?.identifier
-            if (abiName != null) {
-                // ✅ versionCodeOverride replaced with versionCodeOverride via outputFileName workaround
-                output.versionCodeOverride = (abiCodes[abiName] ?: 0) * 1000 + (flutter.versionCode ?: 1)
-            }
         }
     }
 

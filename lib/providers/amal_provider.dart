@@ -5,14 +5,15 @@ import 'package:riverpod/legacy.dart';
 
 import '../core/constants/amal_fields.dart';
 import '../core/constants/default_amal_fields.dart';
-import '../core/services/local_storage_service.dart';
 import '../core/services/firestore_service.dart';
 import '../core/services/islamic_date_service.dart';
+import '../core/services/local_storage_service.dart';
 import '../core/utils/hijri_helper.dart';
 import '../core/utils/score_calculator.dart';
 import '../core/utils/streak_helper.dart';
-import '../models/badge_model.dart';
+import '../features/widget/home_widget_service.dart';
 import '../models/amal_log_model.dart';
+import '../models/badge_model.dart';
 import '../models/user_model.dart';
 import 'amal_fields_provider.dart';
 import 'auth_provider.dart';
@@ -28,8 +29,7 @@ final connectivityListProvider = StreamProvider<List<ConnectivityResult>>((
 
 Map<String, dynamic> _emptyTogglesForFields(List<AmalField> fields) {
   return <String, dynamic>{
-    for (final f in fields)
-      f.id: f.type == AmalType.numeric ? 0 : false,
+    for (final f in fields) f.id: f.type == AmalType.numeric ? 0 : false,
   };
 }
 
@@ -173,6 +173,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
           _submittedHiveKey(hijri),
           fromFs.toHiveMap(),
         );
+        // Update home widget when loading from Firestore
+        await _updateHomeWidget();
         return;
       }
     } catch (_) {
@@ -191,6 +193,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
             isLoading: false,
             submittedLog: model,
           );
+          // Update home widget when loading from Hive cache
+          await _updateHomeWidget();
           Future<void>.microtask(() => _trySyncSubmittedLog(model));
           return;
         }
@@ -211,6 +215,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
           isSubmitted: false,
           isLoading: false,
         );
+        // Update home widget when loading from draft
+        await _updateHomeWidget();
         return;
       }
     }
@@ -221,6 +227,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
       isSubmitted: false,
       isLoading: false,
     );
+    // Update home widget on initial load
+    await _updateHomeWidget();
   }
 
   Future<void> _persistDraft() async {
@@ -231,6 +239,42 @@ class AmalNotifier extends StateNotifier<AmalState> {
       'hijriDate': hijri,
       'toggles': Map<String, dynamic>.from(state.toggles),
     });
+    await _updateHomeWidget();
+  }
+
+  Future<void> _updateHomeWidget({int? streakOverride}) async {
+    try {
+      final hijriDisplay = IslamicDateService.getDisplayIslamicDate();
+      final score = state.totalScore;
+      final maxScore = state.maxScore;
+      final completedCount = state.doneCount;
+      final activeFields = HomeWidgetService.getActiveFields(state.fields);
+      final totalCount = activeFields.length;
+
+      final user = _ref.read(currentUserProvider).asData?.value;
+      var streak = streakOverride ?? user?.currentStreak ?? 0;
+      if (streakOverride == null && state.isSubmitted) {
+        streak = resolveDisplayedStreakValues(
+          currentStreak: streak,
+          bestStreak: user?.bestStreak ?? streak,
+          hasSubmittedToday: true,
+        ).currentStreak;
+      }
+
+      await HomeWidgetService.updateWidget(
+        hijriDateDisplay: hijriDisplay,
+        score: score,
+        maxScore: maxScore,
+        completedCount: completedCount,
+        totalCount: totalCount,
+        isSubmitted: state.isSubmitted,
+        toggles: state.toggles,
+        fields: state.fields,
+        currentStreak: streak,
+      );
+    } catch (e) {
+      debugPrint('Error updating home widget: $e');
+    }
   }
 
   void toggle(String fieldId) {
@@ -392,6 +436,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
         error: submitWarning,
         submittedLog: log,
       );
+      await _updateHomeWidget(streakOverride: streakResult.newCurrentStreak);
     }
     _ref.invalidate(historyMonthProvider);
     Future<void>.microtask(() => _trySyncSubmittedLog(log));
@@ -416,7 +461,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
     }
 
     final recent = await fs.getRecentLogs(user.uid, limit: 7);
-    final perfectWeek = recent.length >= 7 &&
+    final perfectWeek =
+        recent.length >= 7 &&
         recent.every((log) => log.score >= (maxScore * 0.8).round());
     if (perfectWeek) nextBadges.add('perfectWeek');
 

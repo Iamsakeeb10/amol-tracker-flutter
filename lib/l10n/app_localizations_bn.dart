@@ -100,6 +100,42 @@ class AppLocalizationsBn extends AppLocalizations {
   String get ramadanModeSubtitle => 'সিডিউল ও নোটিফিকেশন অ্যাডজাস্ট হবে';
 
   @override
+  String get homeWidgetSettingsTitle => 'হোম স্ক্রিন উইজেট';
+
+  @override
+  String get homeWidgetSettingsSubtitle => 'যোগ করুন';
+
+  @override
+  String get homeWidgetSetupTitle => 'হোম স্ক্রিনে উইজেট যোগ করুন';
+
+  @override
+  String get homeWidgetSetupBody =>
+      'হোম স্ক্রিন থেকেই আজকের আমল প্রগ্রেস চোখে রাখুন।';
+
+  @override
+  String get homeWidgetAddButton => 'উইজেট যোগ করুন';
+
+  @override
+  String get homeWidgetUnsupportedMessage =>
+      'এই লঞ্চারে সরাসরি যোগ করা সাপোর্টেড নয়।';
+
+  @override
+  String get homeWidgetPinRequested =>
+      'উইজেট যোগ করার অনুরোধ পাঠানো হয়েছে। হোম স্ক্রিনে কনফার্ম করুন।';
+
+  @override
+  String get homeWidgetPinFailed =>
+      'এখনই উইজেট যোগ করা গেল না। নিচের ম্যানুয়াল ধাপগুলো অনুসরণ করুন।';
+
+  @override
+  String get homeWidgetIosGuide =>
+      'iPhone-এ: হোম স্ক্রিনে দীর্ঘক্ষণ চাপ দিন, + চাপুন, তারপর \"Amol Tracker\" উইজেট সার্চ করুন।';
+
+  @override
+  String get homeWidgetFallbackSteps =>
+      'ম্যানুয়াল ধাপ: হোম স্ক্রিনে দীর্ঘক্ষণ চাপ দিন -> Widgets -> Amol Tracker -> Add.';
+
+  @override
   String get signOut => 'লগআউট';
 
   @override

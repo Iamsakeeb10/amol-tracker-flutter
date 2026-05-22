@@ -11,6 +11,7 @@ import '../../../../providers/auth_provider.dart';
 import '../../../../providers/leaderboard_provider.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../../../providers/notification_provider.dart';
+import '../../../widget/widget_pin_service.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
@@ -84,6 +85,133 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await ref.read(authServiceProvider).signOut();
     if (!mounted) return;
     context.go(AppRoutes.signIn);
+  }
+
+  Future<void> _showHomeWidgetSheet() async {
+    final l10n = AppLocalizations.of(context)!;
+    var isSubmitting = false;
+    var showFallback = false;
+    var statusMessage = '';
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.emeraldMid,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18.r)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            final isAndroid = Theme.of(ctx).platform == TargetPlatform.android;
+            return Padding(
+              padding: EdgeInsets.fromLTRB(18.w, 16.h, 18.w, 22.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.homeWidgetSetupTitle,
+                    style: AppTextStyles.headlineMedium(ctx),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    l10n.homeWidgetSetupBody,
+                    style: AppTextStyles.bodyMedium(
+                      ctx,
+                    ).copyWith(color: AppColors.textSecondary),
+                  ),
+                  SizedBox(height: 14.h),
+                  if (isAndroid)
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: isSubmitting
+                            ? null
+                            : () async {
+                                setModalState(() {
+                                  isSubmitting = true;
+                                  statusMessage = '';
+                                });
+                                final supported =
+                                    await WidgetPinService.isPinSupported();
+                                if (!supported) {
+                                  setModalState(() {
+                                    showFallback = true;
+                                    statusMessage =
+                                        l10n.homeWidgetUnsupportedMessage;
+                                    isSubmitting = false;
+                                  });
+                                  return;
+                                }
+
+                                final requested =
+                                    await WidgetPinService.requestPin();
+                                setModalState(() {
+                                  showFallback = !requested;
+                                  statusMessage = requested
+                                      ? l10n.homeWidgetPinRequested
+                                      : l10n.homeWidgetPinFailed;
+                                  isSubmitting = false;
+                                });
+                              },
+                        icon: Icon(Icons.add_box_outlined, size: 18.r),
+                        label: Text(l10n.homeWidgetAddButton),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          foregroundColor: AppColors.emeraldDeep,
+                          textStyle: AppTextStyles.button(
+                            ctx,
+                          ).copyWith(color: AppColors.emeraldDeep),
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(12.r),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardDark,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.cardBorder),
+                      ),
+                      child: Text(
+                        l10n.homeWidgetIosGuide,
+                        style: AppTextStyles.bodyMedium(ctx),
+                      ),
+                    ),
+                  if (statusMessage.isNotEmpty) ...[
+                    SizedBox(height: 10.h),
+                    Text(
+                      statusMessage,
+                      style: AppTextStyles.bodySmall(
+                        ctx,
+                      ).copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                  if (showFallback || !isAndroid) ...[
+                    SizedBox(height: 12.h),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(12.r),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardDark,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: AppColors.goldBorder),
+                      ),
+                      child: Text(
+                        l10n.homeWidgetFallbackSteps,
+                        style: AppTextStyles.bodySmall(ctx),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -329,6 +457,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: l10n.calendarType,
                   trailing: l10n.hijri,
                   onTap: () {},
+                ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.widgets_outlined,
+                  title: l10n.homeWidgetSettingsTitle,
+                  trailing: l10n.homeWidgetSettingsSubtitle,
+                  onTap: _showHomeWidgetSheet,
                 ),
                 const Divider(),
                 ToggleRow(

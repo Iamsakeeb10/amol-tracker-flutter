@@ -100,6 +100,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ramadanModeSubtitle => 'Adjust schedule and notifications';
 
   @override
+  String get homeWidgetSettingsTitle => 'Home screen widget';
+
+  @override
+  String get homeWidgetSettingsSubtitle => 'Add';
+
+  @override
+  String get homeWidgetSetupTitle => 'Add home screen widget';
+
+  @override
+  String get homeWidgetSetupBody =>
+      'Keep today\'s amal progress visible from your home screen.';
+
+  @override
+  String get homeWidgetAddButton => 'Add widget';
+
+  @override
+  String get homeWidgetUnsupportedMessage =>
+      'Direct add is not supported on this launcher.';
+
+  @override
+  String get homeWidgetPinRequested =>
+      'Widget add request sent. Confirm on your home screen.';
+
+  @override
+  String get homeWidgetPinFailed =>
+      'Could not start widget add right now. Use manual steps below.';
+
+  @override
+  String get homeWidgetIosGuide =>
+      'On iPhone: long-press the home screen, tap +, then search \"Amol Tracker\" widget.';
+
+  @override
+  String get homeWidgetFallbackSteps =>
+      'Manual steps: Long-press home screen -> Widgets -> Amol Tracker -> Add.';
+
+  @override
   String get signOut => 'Sign out';
 
   @override

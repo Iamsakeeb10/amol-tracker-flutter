@@ -278,6 +278,66 @@ abstract class AppLocalizations {
   /// **'Adjust schedule and notifications'**
   String get ramadanModeSubtitle;
 
+  /// No description provided for @homeWidgetSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Home screen widget'**
+  String get homeWidgetSettingsTitle;
+
+  /// No description provided for @homeWidgetSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get homeWidgetSettingsSubtitle;
+
+  /// No description provided for @homeWidgetSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add home screen widget'**
+  String get homeWidgetSetupTitle;
+
+  /// No description provided for @homeWidgetSetupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep today\'s amal progress visible from your home screen.'**
+  String get homeWidgetSetupBody;
+
+  /// No description provided for @homeWidgetAddButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add widget'**
+  String get homeWidgetAddButton;
+
+  /// No description provided for @homeWidgetUnsupportedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct add is not supported on this launcher.'**
+  String get homeWidgetUnsupportedMessage;
+
+  /// No description provided for @homeWidgetPinRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Widget add request sent. Confirm on your home screen.'**
+  String get homeWidgetPinRequested;
+
+  /// No description provided for @homeWidgetPinFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start widget add right now. Use manual steps below.'**
+  String get homeWidgetPinFailed;
+
+  /// No description provided for @homeWidgetIosGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'On iPhone: long-press the home screen, tap +, then search \"Amol Tracker\" widget.'**
+  String get homeWidgetIosGuide;
+
+  /// No description provided for @homeWidgetFallbackSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual steps: Long-press home screen -> Widgets -> Amol Tracker -> Add.'**
+  String get homeWidgetFallbackSteps;
+
   /// No description provided for @signOut.
   ///
   /// In en, this message translates to:

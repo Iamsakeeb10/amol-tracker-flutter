@@ -32,8 +32,12 @@ class IslamicDateService {
 
   static DateTime getMaghribTime() {
     final now = nowInBD();
+    return getMaghribTimeForDate(now);
+  }
+
+  static DateTime getMaghribTimeForDate(DateTime bdDate) {
     final prayerTimes = PrayerTimes(
-      date: DateTime(now.year, now.month, now.day),
+      date: DateTime(bdDate.year, bdDate.month, bdDate.day),
       coordinates: _coords,
       calculationParameters: _params,
     );
@@ -69,6 +73,20 @@ class IslamicDateService {
       now,
       maghribAtBdMoment: maghrib,
     );
+  }
+
+  static String islamicDateStringForBangladeshDate(DateTime bdDate) {
+    return islamicDateStringForGregorianDate(
+      DateTime(bdDate.year, bdDate.month, bdDate.day),
+    );
+  }
+
+  static bool isHijriDay13_14_15(DateTime bdDate) {
+    final storage = islamicDateStringForBangladeshDate(bdDate);
+    final parts = storage.split('-');
+    if (parts.length != 3) return false;
+    final day = int.tryParse(parts[2]);
+    return day == 13 || day == 14 || day == 15;
   }
 
   static String getDisplayIslamicDate() {

@@ -363,8 +363,6 @@ class _NotificationRow extends StatelessWidget {
                 SizedBox(height: 2.h),
                 Text(
                   _resolvedMessage(context),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodySmall(
                     context,
                   ).copyWith(fontSize: 11.sp),

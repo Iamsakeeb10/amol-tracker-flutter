@@ -36,12 +36,39 @@ class NotificationService {
   static const int _morningId = 600;
   static const int _eveningId = 630;
   static const int _streakId = 2200;
+  static const int _midnightFallbackId = 2250;
   static const int _jumuahId = 800;
+  static const int _ayyamBidId = 840;
   static const int _hadithMorningBaseId = 710;
   static const int _hadithEveningBaseId = 740;
   static const int _hadithDaysAhead = 7;
+  static const int _notificationDaysAhead = 7;
+  static const int _maxPerIslamicDay = 2;
   static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 8, minute: 0);
   static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 21, minute: 0);
+  static const String _lastSentKeyPrefix = 'notif_last_sent_';
+  static const String _historyKeyPrefix = 'notif_history_';
+
+  static const List<String> _morningBodies = [
+    'সকাল শুরু হোক আযকার দিয়ে। আজকের আমলের নিয়ত করো।',
+    'আজকের দিনটা আল্লাহর নামে শুরু করো। একটু একটু করেই হয় বড় পরিবর্তন।',
+  ];
+  static const List<String> _eveningBodies = [
+    'দিন শেষ হওয়ার আগে — আজ কি আল্লাহর জন্য কিছু করা হলো?',
+    'যে দিন আমল করা হয়, সে দিন কখনো ব্যর্থ নয়। আজ কি করেছ?',
+  ];
+  static const List<String> _streakBodies = [
+    'তোমার স্ট্রিক আজ রাতেই শেষ হয়ে যেতে পারে। এখনো সময় আছে — লগ করো।',
+    'ধারাবাহিকতার এই পথটা থেমে যাক না। আজকের আমল এখনই লগ করো।',
+  ];
+  static const List<String> _midnightBodies = [
+    'মাত্র কয়েক মিনিট বাকি। আজকের আমল জমা না দিলে স্ট্রিক যাবে।',
+    'এখনো সুযোগ আছে। দ্রুত লগ করো — এক মিনিটও লাগবে না।',
+  ];
+  static const List<String> _jumuahBodies = [
+    'আজ জুম্মাহ। যত বেশি পারো দরূদ পড়ো — এই দিনের প্রতিটি দরূদে বিশেষ মর্যাদা আছে।',
+    'আজ জুম্মাহ — সপ্তাহের সেরা দিন। আমলে পূর্ণ করো এই দিনকে।',
+  ];
 
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
@@ -143,11 +170,25 @@ class NotificationService {
 
   Future<void> scheduleAll() async {
     await cancelLocalSchedules();
-    if (isMorningEnabled) await _scheduleMorning();
-    if (isEveningEnabled) await _scheduleEvening();
+    await _cancelUrgencyIfLoggedToday();
+    if (isMorningEnabled) {
+      await _scheduleAyyamBid();
+      await _scheduleMorning();
+    }
+    if (isEveningEnabled) await _scheduleEveningNoLog();
     if (isStreakEnabled) await _scheduleStreakWarning();
     await _scheduleJumuah();
     await _scheduleHadithNotifications();
+  }
+
+  Future<void> _cancelUrgencyIfLoggedToday() async {
+    final hijriDate = IslamicDateService.getCurrentIslamicDateStringSafe();
+    if (!await _hasLoggedIslamicDate(hijriDate)) return;
+    await _localNotifications.cancel(_streakId);
+    await _localNotifications.cancel(_midnightFallbackId);
+    for (var i = 1; i < _notificationDaysAhead; i++) {
+      await _localNotifications.cancel(_streakId + i);
+    }
   }
 
   Future<void> _safeRescheduleAll() async {
@@ -189,7 +230,9 @@ class NotificationService {
     for (var i = 1; i < 7; i++) {
       await _localNotifications.cancel(_streakId + i);
     }
+    await _localNotifications.cancel(_midnightFallbackId);
     await _localNotifications.cancel(_jumuahId);
+    await _localNotifications.cancel(_ayyamBidId);
     for (var i = 0; i < _hadithDaysAhead; i++) {
       await _localNotifications.cancel(_hadithMorningBaseId + i);
       await _localNotifications.cancel(_hadithEveningBaseId + i);
@@ -300,38 +343,129 @@ class NotificationService {
     return value >= from || value < to;
   }
 
+  String _historyKeyForDate(DateTime date) =>
+      '$_historyKeyPrefix${date.year}-${date.month}-${date.day}';
+
+  String _categoryLastSentKey(String category) =>
+      '$_lastSentKeyPrefix$category';
+
+  DateTime _bdCalendarDate(DateTime source) =>
+      IslamicDateService.bangladeshCalendarDateOnly(source);
+
+  List<String> _messageHistoryForDate(DateTime date) {
+    final raw = LocalStorageService.getPref<dynamic>(
+      _historyKeyForDate(date),
+      [],
+    );
+    if (raw is List) {
+      return raw.map((e) => e.toString()).toList();
+    }
+    return <String>[];
+  }
+
+  Future<void> _appendMessageHistory(DateTime date, String message) async {
+    final list = _messageHistoryForDate(date);
+    list.add(message);
+    await LocalStorageService.setPref(_historyKeyForDate(date), list);
+  }
+
+  bool _isAtDailyCap(DateTime date) =>
+      _messageHistoryForDate(date).length >= _maxPerIslamicDay;
+
+  String _pickMessage({required String category, required List<String> pool}) {
+    final last = LocalStorageService.getPref<String>(
+      _categoryLastSentKey(category),
+      '',
+    );
+    for (final message in pool) {
+      if (message != last) return message;
+    }
+    return pool.first;
+  }
+
+  Future<void> _markCategoryMessage(String category, String message) async {
+    await LocalStorageService.setPref(_categoryLastSentKey(category), message);
+  }
+
+  Future<bool> _hasLoggedIslamicDate(String hijriDate) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+    final fs = FirebaseFirestore.instance;
+    final doc = await fs
+        .collection('users')
+        .doc(user.uid)
+        .collection('amalLogs')
+        .doc(hijriDate)
+        .get();
+    return doc.exists;
+  }
+
+  Future<void> _schedulePolicyAware({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledDate,
+    required String payload,
+    required String category,
+    DateTimeComponents? matchDateTimeComponents,
+  }) async {
+    final scheduleDate = _bdCalendarDate(scheduledDate);
+    if (_isAtDailyCap(scheduleDate)) return;
+    await _safeZonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      payload: payload,
+      matchDateTimeComponents: matchDateTimeComponents,
+    );
+    await _appendMessageHistory(scheduleDate, body);
+    await _markCategoryMessage(category, body);
+  }
+
   Future<void> _scheduleMorning() async {
     final at = morningTime;
     if (_isSuppressedByQuietHours(at)) return;
+    final selectedBody = _pickMessage(
+      category: 'morning',
+      pool: _morningBodies,
+    );
     if (_isCurrentMinute(at)) {
       await _localNotifications.show(
         _morningId + 100000,
         'ফজরের পর — আমলের শুরু',
-        'সকালের আযকার পড়েছেন? দিনের প্রথম আমলটি এখনই শুরু করুন।',
-        _notificationDetails(payload: AppRoutes.home),
+        selectedBody,
+        _notificationDetails(payload: AppRoutes.home, body: selectedBody),
         payload: AppRoutes.home,
       );
     }
-    await _safeZonedSchedule(
+    await _schedulePolicyAware(
       id: _morningId,
       title: 'ফজরের পর — আমলের শুরু',
-      body: 'সকালের আযকার পড়েছেন? দিনের প্রথম আমলটি এখনই শুরু করুন।',
+      body: selectedBody,
       scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
+      category: 'morning',
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
 
-  Future<void> _scheduleEvening() async {
+  Future<void> _scheduleEveningNoLog() async {
+    final hijriDate = IslamicDateService.getCurrentIslamicDateStringSafe();
+    if (await _hasLoggedIslamicDate(hijriDate)) return;
     final at = eveningTime;
     if (_isSuppressedByQuietHours(at)) return;
-    await _safeZonedSchedule(
+    final selectedBody = _pickMessage(
+      category: 'evening',
+      pool: _eveningBodies,
+    );
+    await _schedulePolicyAware(
       id: _eveningId,
       title: 'আসরের পর — সন্ধ্যার প্রস্তুতি',
-      body:
-          'সন্ধ্যার আযকারের সময় হয়ে আসছে। মাগরিবের আগেই আমলনামা সাজিয়ে নিন।',
+      body: selectedBody,
       scheduledDate: _nextInstanceForRecurring(at),
       payload: AppRoutes.home,
+      category: 'evening',
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
@@ -342,30 +476,24 @@ class NotificationService {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      final hijriDate = IslamicDateService.getCurrentIslamicDateString();
-      final fs = FirebaseFirestore.instance;
-      final todayLogDoc = await fs
-          .collection('users')
-          .doc(user.uid)
-          .collection('amalLogs')
-          .doc(hijriDate)
-          .get();
-
-      // If user has already logged today, don't show the notification
-      if (todayLogDoc.exists) return;
+      final hijriDate = IslamicDateService.getCurrentIslamicDateStringSafe();
+      if (await _hasLoggedIslamicDate(hijriDate)) return;
 
       final now = tz.TZDateTime.now(tz.local);
 
       // Schedule for today and next 7 days to ensure continuous scheduling
-      for (int dayOffset = 0; dayOffset < 7; dayOffset++) {
+      final selectedBody = _pickMessage(
+        category: 'streak',
+        pool: _streakBodies,
+      );
+      for (int dayOffset = 0; dayOffset < _notificationDaysAhead; dayOffset++) {
         final targetDate = DateTime(
           now.year,
           now.month,
           now.day,
         ).add(Duration(days: dayOffset));
 
-        final prayerTime = IslamicDateService.getMaghribTime();
-        // Get Maghrib time for the target date (approximate by using current logic)
+        final prayerTime = IslamicDateService.getMaghribTimeForDate(targetDate);
         final notificationTime = prayerTime.subtract(
           const Duration(minutes: 15),
         );
@@ -389,43 +517,86 @@ class NotificationService {
         // Skip if time has passed
         if (!scheduledDate.isAfter(now)) continue;
 
-        await _safeZonedSchedule(
+        await _schedulePolicyAware(
           id: _streakId + dayOffset,
           title: 'আজকের আমল বাকি আছে!',
-          body:
-              'মাগরিবের আগেই আজকের আমল লগ করে দিন — একটি দিন মিস করলে স্ট্রিক শেষ। আল্লাহ ছোট হলেও নিয়মিত আমল বেশি পছন্দ করেন।',
+          body: selectedBody,
           scheduledDate: scheduledDate,
           payload: AppRoutes.home,
+          category: 'streak',
           matchDateTimeComponents: null,
         );
       }
+      await _scheduleAlmostMidnightFallback();
     } catch (_) {
       // Fallback to default time (6 PM) if Maghrib calculation fails
       const at = TimeOfDay(hour: 18, minute: 0);
       if (_isSuppressedByQuietHours(at)) return;
-      await _safeZonedSchedule(
+      final selectedBody = _pickMessage(
+        category: 'streak',
+        pool: _streakBodies,
+      );
+      await _schedulePolicyAware(
         id: _streakId,
         title: 'আজকের আমল বাকি আছে!',
-        body:
-            'মাগরিবের আগেই আজকের আমল লগ করে দিন — একটি দিন মিস করলে স্ট্রিক শেষ। আল্লাহ ছোট হলেও নিয়মিত আমল বেশি পছন্দ করেন।',
+        body: selectedBody,
         scheduledDate: _nextInstanceForRecurring(at),
         payload: AppRoutes.home,
+        category: 'streak',
         matchDateTimeComponents: DateTimeComponents.time,
       );
     }
   }
 
+  Future<void> _scheduleAlmostMidnightFallback() async {
+    final hijriDate = IslamicDateService.getCurrentIslamicDateStringSafe();
+    if (await _hasLoggedIslamicDate(hijriDate)) return;
+    const at = TimeOfDay(hour: 23, minute: 30);
+    if (_isSuppressedByQuietHours(at)) return;
+    final selectedBody = _pickMessage(
+      category: 'midnight_fallback',
+      pool: _midnightBodies,
+    );
+    await _schedulePolicyAware(
+      id: _midnightFallbackId,
+      title: 'দিন শেষ হওয়ার আগে আমল লগ করুন',
+      body: selectedBody,
+      scheduledDate: _nextInstanceForRecurring(at),
+      payload: AppRoutes.home,
+      category: 'midnight_fallback',
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
   Future<void> _scheduleJumuah() async {
     const at = TimeOfDay(hour: 9, minute: 30);
     if (_isSuppressedByQuietHours(at)) return;
-    await _safeZonedSchedule(
+    final selectedBody = _pickMessage(category: 'jumuah', pool: _jumuahBodies);
+    await _schedulePolicyAware(
       id: _jumuahId,
       title: 'জুমআর দিন — সেরা আমলের দিন',
-      body:
-          'জুমআর দিনে সূরা কাহফ তিলাওয়াত করুন, দরূদ বেশি বেশি পড়ুন। আজকের আমলনামা পূর্ণ করুন।',
+      body: selectedBody,
       scheduledDate: _nextWeeklyInstance(DateTime.friday, at),
       payload: AppRoutes.home,
+      category: 'jumuah',
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+    );
+  }
+
+  Future<void> _scheduleAyyamBid() async {
+    final now = DateTime.now();
+    final bdNow = IslamicDateService.bangladeshDateTimeFrom(now);
+    if (!IslamicDateService.isHijriDay13_14_15(bdNow)) return;
+    final at = morningTime;
+    if (_isSuppressedByQuietHours(at)) return;
+    await _schedulePolicyAware(
+      id: _ayyamBidId,
+      title: 'আইয়ামে বিয স্মরণ',
+      body: 'আইয়ামে বিয — এই তিন দিনের রোযা সুন্নাত। আজকের আমলে যোগ করো।',
+      scheduledDate: _nextInstanceForRecurring(at),
+      payload: AppRoutes.home,
+      category: 'ayyam_bid',
+      matchDateTimeComponents: DateTimeComponents.time,
     );
   }
 
@@ -479,12 +650,13 @@ class NotificationService {
       at.minute,
     );
     if (!scheduledDate.isAfter(tz.TZDateTime.now(tz.local))) return;
-    await _safeZonedSchedule(
+    await _schedulePolicyAware(
       id: id,
       title: title,
       body: '$hadith\n$suffix',
       scheduledDate: scheduledDate,
       payload: AppRoutes.notifications,
+      category: title.contains('☀️') ? 'hadith_morning' : 'hadith_evening',
       matchDateTimeComponents: null,
     );
   }
@@ -497,7 +669,7 @@ class NotificationService {
     required String payload,
     DateTimeComponents? matchDateTimeComponents,
   }) async {
-    final details = _notificationDetails(payload: payload);
+    final details = _notificationDetails(payload: payload, body: body);
     try {
       await _localNotifications.zonedSchedule(
         id,
@@ -558,9 +730,12 @@ class NotificationService {
     return timezoneMap[offsetHours] ?? 'UTC';
   }
 
-  NotificationDetails _notificationDetails({required String payload}) {
+  NotificationDetails _notificationDetails({
+    required String payload,
+    required String body,
+  }) {
     return NotificationDetails(
-      android: const AndroidNotificationDetails(
+      android: AndroidNotificationDetails(
         'amal_tracker_daily',
         'দৈনিক নোটিফিকেশন',
         channelDescription: 'আমল লগ করার জন্য দৈনিক ও সাপ্তাহিক নোটিফিকেশন',
@@ -572,6 +747,7 @@ class NotificationService {
         category: AndroidNotificationCategory.reminder,
         visibility: NotificationVisibility.public,
         fullScreenIntent: true,
+        styleInformation: BigTextStyleInformation(body),
       ),
       iOS: DarwinNotificationDetails(
         threadIdentifier: payload,
@@ -682,7 +858,7 @@ class NotificationService {
       id,
       title,
       body,
-      _notificationDetails(payload: route),
+      _notificationDetails(payload: route, body: body),
       payload: route,
     );
   }

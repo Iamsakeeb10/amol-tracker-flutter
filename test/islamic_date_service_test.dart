@@ -58,22 +58,43 @@ void main() {
       expect(recent[1], yesterday);
     });
 
-    test('isWithinEditWindow uses shiftStorageByDays not raw Gregorian diff', () {
-      final today = IslamicDateService.getCurrentIslamicDateStringSafe();
-      final yesterday = IslamicDateService.shiftStorageByDays(today, -1);
-      final day7Ago = IslamicDateService.shiftStorageByDays(today, -7);
+    test(
+      'isWithinEditWindow uses shiftStorageByDays not raw Gregorian diff',
+      () {
+        final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+        final yesterday = IslamicDateService.shiftStorageByDays(today, -1);
+        final day7Ago = IslamicDateService.shiftStorageByDays(today, -7);
 
-      expect(
-        IslamicDateService.isWithinEditWindow(yesterday, today, 6),
-        isTrue,
+        expect(
+          IslamicDateService.isWithinEditWindow(yesterday, today, 6),
+          isTrue,
+        );
+        expect(IslamicDateService.isWithinEditWindow(today, today, 6), isFalse);
+        expect(
+          IslamicDateService.isWithinEditWindow(day7Ago, today, 6),
+          isFalse,
+        );
+      },
+    );
+
+    test('getMaghribTimeForDate returns a stable date for target day', () {
+      final target = DateTime(2026, 5, 10, 9, 15);
+      final maghrib = IslamicDateService.getMaghribTimeForDate(target);
+      expect(maghrib.year, target.year);
+      expect(maghrib.month, target.month);
+      expect(maghrib.day, target.day);
+      expect(maghrib.hour, inInclusiveRange(16, 20));
+    });
+
+    test('isHijriDay13_14_15 matches storage day extraction', () {
+      final date = DateTime(2026, 5, 8);
+      final storage = IslamicDateService.islamicDateStringForBangladeshDate(
+        date,
       );
+      final day = int.parse(storage.split('-')[2]);
       expect(
-        IslamicDateService.isWithinEditWindow(today, today, 6),
-        isFalse,
-      );
-      expect(
-        IslamicDateService.isWithinEditWindow(day7Ago, today, 6),
-        isFalse,
+        IslamicDateService.isHijriDay13_14_15(date),
+        day == 13 || day == 14 || day == 15,
       );
     });
   });

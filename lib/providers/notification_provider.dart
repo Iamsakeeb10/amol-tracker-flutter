@@ -94,41 +94,76 @@ class NotificationPrefsNotifier extends StateNotifier<NotificationPrefsState> {
   final NotificationService _service;
 
   Future<void> setMorningEnabled(bool value) async {
-    await _service.setMorningEnabled(value);
+    final previous = state;
     state = state.copyWith(morningEnabled: value);
+    try {
+      await _service.setMorningEnabled(value);
+    } catch (_) {
+      state = previous;
+    }
   }
 
   Future<void> setMorningTime(TimeOfDay value) async {
-    await _service.setMorningTime(value);
+    final previous = state;
     state = state.copyWith(morningTime: value);
+    try {
+      await _service.setMorningTime(value);
+    } catch (_) {
+      state = previous;
+    }
   }
 
   Future<void> setEveningEnabled(bool value) async {
-    await _service.setEveningEnabled(value);
+    final previous = state;
     state = state.copyWith(eveningEnabled: value);
+    try {
+      await _service.setEveningEnabled(value);
+    } catch (_) {
+      state = previous;
+    }
   }
 
   Future<void> setEveningTime(TimeOfDay value) async {
-    await _service.setEveningTime(value);
+    final previous = state;
     state = state.copyWith(eveningTime: value);
+    try {
+      await _service.setEveningTime(value);
+    } catch (_) {
+      state = previous;
+    }
   }
 
   Future<void> setStreakEnabled(bool value) async {
-    await _service.setStreakEnabled(value);
+    final previous = state;
     state = state.copyWith(streakEnabled: value);
+    try {
+      await _service.setStreakEnabled(value);
+    } catch (_) {
+      state = previous;
+    }
   }
 
   Future<void> setCommunityEnabled(bool value) async {
-    await _service.setCommunityEnabled(value);
+    final previous = state;
     state = state.copyWith(communityEnabled: value);
+    try {
+      await _service.setCommunityEnabled(value);
+    } catch (_) {
+      state = previous;
+    }
   }
 
   Future<void> setQuietHours({
     required TimeOfDay from,
     required TimeOfDay to,
   }) async {
-    await _service.setQuietHours(from: from, to: to);
+    final previous = state;
     state = state.copyWith(quietFrom: from, quietTo: to);
+    try {
+      await _service.setQuietHours(from: from, to: to);
+    } catch (_) {
+      state = previous;
+    }
   }
 
   Future<void> refresh() async {

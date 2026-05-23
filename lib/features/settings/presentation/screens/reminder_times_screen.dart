@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -26,7 +28,9 @@ class ReminderTimesScreen extends ConsumerWidget {
       initialTime: prefs.morningTime,
     );
     if (selected == null) return;
-    await ref.read(notificationPrefsProvider.notifier).setMorningTime(selected);
+    unawaited(
+      ref.read(notificationPrefsProvider.notifier).setMorningTime(selected),
+    );
   }
 
   Future<void> _pickEveningTime(
@@ -39,7 +43,9 @@ class ReminderTimesScreen extends ConsumerWidget {
       initialTime: prefs.eveningTime,
     );
     if (selected == null) return;
-    await ref.read(notificationPrefsProvider.notifier).setEveningTime(selected);
+    unawaited(
+      ref.read(notificationPrefsProvider.notifier).setEveningTime(selected),
+    );
   }
 
   @override

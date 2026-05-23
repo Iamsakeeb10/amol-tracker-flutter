@@ -239,29 +239,29 @@ class NotificationService {
 
   Future<void> setMorningEnabled(bool enabled) async {
     await LocalStorageService.setPref(notifMorningKey, enabled);
-    await scheduleAll();
+    unawaited(_safeRescheduleAll());
   }
 
   Future<void> setMorningTime(TimeOfDay value) async {
     await LocalStorageService.setPref(notifMorningHourKey, value.hour);
     await LocalStorageService.setPref(notifMorningMinuteKey, value.minute);
-    await scheduleAll();
+    unawaited(_safeRescheduleAll());
   }
 
   Future<void> setEveningEnabled(bool enabled) async {
     await LocalStorageService.setPref(notifEveningKey, enabled);
-    await scheduleAll();
+    unawaited(_safeRescheduleAll());
   }
 
   Future<void> setEveningTime(TimeOfDay value) async {
     await LocalStorageService.setPref(notifEveningHourKey, value.hour);
     await LocalStorageService.setPref(notifEveningMinuteKey, value.minute);
-    await scheduleAll();
+    unawaited(_safeRescheduleAll());
   }
 
   Future<void> setStreakEnabled(bool enabled) async {
     await LocalStorageService.setPref(notifStreakKey, enabled);
-    await scheduleAll();
+    unawaited(_safeRescheduleAll());
   }
 
   Future<void> setCommunityEnabled(bool enabled) async {
@@ -329,7 +329,7 @@ class NotificationService {
     await LocalStorageService.setPref(quietFromMinuteKey, from.minute);
     await LocalStorageService.setPref(quietToHourKey, to.hour);
     await LocalStorageService.setPref(quietToMinuteKey, to.minute);
-    await scheduleAll();
+    unawaited(_safeRescheduleAll());
   }
 
   bool _isSuppressedByQuietHours(TimeOfDay scheduled) {

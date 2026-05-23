@@ -43,11 +43,9 @@ class NotificationService {
   static const int _hadithEveningBaseId = 740;
   static const int _hadithDaysAhead = 7;
   static const int _notificationDaysAhead = 7;
-  static const int _maxPerIslamicDay = 2;
   static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 8, minute: 0);
   static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 21, minute: 0);
   static const String _lastSentKeyPrefix = 'notif_last_sent_';
-  static const String _historyKeyPrefix = 'notif_history_';
 
   static const List<String> _morningBodies = [
     'সকাল শুরু হোক আযকার দিয়ে। আজকের আমলের নিয়ত করো।',
@@ -343,34 +341,8 @@ class NotificationService {
     return value >= from || value < to;
   }
 
-  String _historyKeyForDate(DateTime date) =>
-      '$_historyKeyPrefix${date.year}-${date.month}-${date.day}';
-
   String _categoryLastSentKey(String category) =>
       '$_lastSentKeyPrefix$category';
-
-  DateTime _bdCalendarDate(DateTime source) =>
-      IslamicDateService.bangladeshCalendarDateOnly(source);
-
-  List<String> _messageHistoryForDate(DateTime date) {
-    final raw = LocalStorageService.getPref<dynamic>(
-      _historyKeyForDate(date),
-      [],
-    );
-    if (raw is List) {
-      return raw.map((e) => e.toString()).toList();
-    }
-    return <String>[];
-  }
-
-  Future<void> _appendMessageHistory(DateTime date, String message) async {
-    final list = _messageHistoryForDate(date);
-    list.add(message);
-    await LocalStorageService.setPref(_historyKeyForDate(date), list);
-  }
-
-  bool _isAtDailyCap(DateTime date) =>
-      _messageHistoryForDate(date).length >= _maxPerIslamicDay;
 
   String _pickMessage({required String category, required List<String> pool}) {
     final last = LocalStorageService.getPref<String>(
@@ -409,8 +381,6 @@ class NotificationService {
     required String category,
     DateTimeComponents? matchDateTimeComponents,
   }) async {
-    final scheduleDate = _bdCalendarDate(scheduledDate);
-    if (_isAtDailyCap(scheduleDate)) return;
     await _safeZonedSchedule(
       id: id,
       title: title,
@@ -419,7 +389,6 @@ class NotificationService {
       payload: payload,
       matchDateTimeComponents: matchDateTimeComponents,
     );
-    await _appendMessageHistory(scheduleDate, body);
     await _markCategoryMessage(category, body);
   }
 

@@ -13,122 +13,196 @@ class AppTextStyles {
     return _cache.putIfAbsent(key, build);
   }
 
-  static TextStyle displayLarge(BuildContext context) => _cached(
-    'displayLarge',
-    () => GoogleFonts.cormorantGaramond(
-      fontSize: 36.sp,
-      fontWeight: FontWeight.w600,
-      color: AppColors.textPrimary,
-      height: 1.1,
-      decoration: TextDecoration.none,
-    ),
-  );
+  static String _localeCode(BuildContext context, {Locale? locale}) {
+    return locale?.languageCode ?? Localizations.localeOf(context).languageCode;
+  }
 
-  static TextStyle displayMedium(BuildContext context) => _cached(
-    'displayMedium',
-    () => GoogleFonts.cormorantGaramond(
-      fontSize: 28.sp,
-      fontWeight: FontWeight.w600,
-      color: AppColors.textPrimary,
-      height: 1.15,
-      decoration: TextDecoration.none,
-    ),
-  );
+  static bool _isBn(BuildContext context, {Locale? locale}) {
+    return _localeCode(context, locale: locale) == 'bn';
+  }
 
-  static TextStyle headlineLarge(BuildContext context) => _cached(
-    'headlineLarge',
-    () => GoogleFonts.cormorantGaramond(
-      fontSize: 22.sp,
-      fontWeight: FontWeight.w600,
-      color: AppColors.textPrimary,
-      letterSpacing: 0.2,
-      decoration: TextDecoration.none,
-    ),
-  );
+  static String _cacheKey(
+    BuildContext context,
+    String key, {
+    Locale? locale,
+  }) {
+    return '${_localeCode(context, locale: locale)}_$key';
+  }
 
-  static TextStyle headlineMedium(BuildContext context) => _cached(
-    'headlineMedium',
-    () => GoogleFonts.cormorantGaramond(
-      fontSize: 18.sp,
-      fontWeight: FontWeight.w500,
-      color: AppColors.textPrimary,
+  static TextStyle _displayFont(
+    BuildContext context, {
+    Locale? locale,
+    required double fontSize,
+    FontWeight fontWeight = FontWeight.w600,
+    Color color = AppColors.textPrimary,
+    double? height,
+    double letterSpacing = 0,
+  }) {
+    final style = TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      height: height,
+      letterSpacing: letterSpacing,
       decoration: TextDecoration.none,
-    ),
-  );
+    );
+    if (_isBn(context, locale: locale)) {
+      return GoogleFonts.notoSansBengali(textStyle: style);
+    }
+    return GoogleFonts.plusJakartaSans(textStyle: style);
+  }
 
-  static TextStyle goldNumeric(BuildContext context) => _cached(
-    'goldNumeric',
-    () => GoogleFonts.cormorantGaramond(
-      fontSize: 26.sp,
-      fontWeight: FontWeight.w600,
-      color: AppColors.goldLight,
+  static TextStyle _bodyFont(
+    BuildContext context, {
+    Locale? locale,
+    required double fontSize,
+    FontWeight fontWeight = FontWeight.w400,
+    Color color = AppColors.textPrimary,
+    double? height,
+    double letterSpacing = 0,
+  }) {
+    final style = TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      height: height,
+      letterSpacing: letterSpacing,
       decoration: TextDecoration.none,
-    ),
-  );
+    );
+    if (_isBn(context, locale: locale)) {
+      return GoogleFonts.notoSansBengali(textStyle: style);
+    }
+    return GoogleFonts.dmSans(textStyle: style);
+  }
 
-  static TextStyle bodyLarge(BuildContext context) => _cached(
-    'bodyLarge',
-    () => GoogleFonts.dmSans(
-      fontSize: 15.sp,
-      fontWeight: FontWeight.w400,
-      color: AppColors.textPrimary,
-      height: 1.5,
-      decoration: TextDecoration.none,
-    ),
-  );
+  static TextStyle displayLarge(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'displayLarge', locale: locale), () {
+        return _displayFont(
+          context,
+          locale: locale,
+          fontSize: 36.sp,
+          height: 1.1,
+        );
+      });
 
-  static TextStyle bodyMedium(BuildContext context) => _cached(
-    'bodyMedium',
-    () => GoogleFonts.dmSans(
-      fontSize: 13.5.sp,
-      fontWeight: FontWeight.w400,
-      color: AppColors.textSecondary,
-      height: 1.45,
-      decoration: TextDecoration.none,
-    ),
-  );
+  static TextStyle displayMedium(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'displayMedium', locale: locale), () {
+        return _displayFont(
+          context,
+          locale: locale,
+          fontSize: 28.sp,
+          height: 1.15,
+        );
+      });
 
-  static TextStyle bodySmall(BuildContext context) => _cached(
-    'bodySmall',
-    () => GoogleFonts.dmSans(
-      fontSize: 12.sp,
-      fontWeight: FontWeight.w400,
-      color: AppColors.textMuted,
-      height: 1.4,
-      decoration: TextDecoration.none,
-    ),
-  );
+  static TextStyle headlineLarge(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'headlineLarge', locale: locale), () {
+        return _displayFont(
+          context,
+          locale: locale,
+          fontSize: 22.sp,
+          letterSpacing: 0.2,
+        );
+      });
 
-  static TextStyle label(BuildContext context) => _cached(
-    'label',
-    () => GoogleFonts.dmSans(
+  static TextStyle headlineMedium(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'headlineMedium', locale: locale), () {
+        return _displayFont(
+          context,
+          locale: locale,
+          fontSize: 18.sp,
+          fontWeight: FontWeight.w500,
+        );
+      });
+
+  static TextStyle goldNumeric(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'goldNumeric', locale: locale), () {
+        return _displayFont(
+          context,
+          locale: locale,
+          fontSize: 26.sp,
+          color: AppColors.goldLight,
+        );
+      });
+
+  static TextStyle bodyLarge(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'bodyLarge', locale: locale), () {
+        return _bodyFont(
+          context,
+          locale: locale,
+          fontSize: 15.sp,
+          height: 1.5,
+        );
+      });
+
+  static TextStyle bodyMedium(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'bodyMedium', locale: locale), () {
+        return _bodyFont(
+          context,
+          locale: locale,
+          fontSize: 13.5.sp,
+          color: AppColors.textSecondary,
+          height: 1.45,
+        );
+      });
+
+  static TextStyle bodySmall(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'bodySmall', locale: locale), () {
+        return _bodyFont(
+          context,
+          locale: locale,
+          fontSize: 12.sp,
+          color: AppColors.textMuted,
+          height: 1.4,
+        );
+      });
+
+  static TextStyle label(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'label', locale: locale), () {
+        return _bodyFont(
+          context,
+          locale: locale,
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textMuted,
+          letterSpacing: 1.4,
+        );
+      });
+
+  static TextStyle button(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'button', locale: locale), () {
+        return _bodyFont(
+          context,
+          locale: locale,
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.4,
+        );
+      });
+
+  static TextStyle pill(BuildContext context, {Locale? locale}) =>
+      _cached(_cacheKey(context, 'pill', locale: locale), () {
+        return _bodyFont(
+          context,
+          locale: locale,
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.4,
+        );
+      });
+
+  static TextStyle navLabel(
+    BuildContext context, {
+    Locale? locale,
+    required bool selected,
+  }) {
+    return _bodyFont(
+      context,
+      locale: locale,
       fontSize: 11.sp,
-      fontWeight: FontWeight.w500,
-      color: AppColors.textMuted,
-      letterSpacing: 1.4,
-      decoration: TextDecoration.none,
-    ),
-  );
-
-  static TextStyle button(BuildContext context) => _cached(
-    'button',
-    () => GoogleFonts.dmSans(
-      fontSize: 14.sp,
-      fontWeight: FontWeight.w500,
-      color: AppColors.textPrimary,
+      fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
+      color: selected ? AppColors.gold : AppColors.textMuted,
       letterSpacing: 0.4,
-      decoration: TextDecoration.none,
-    ),
-  );
-
-  static TextStyle pill(BuildContext context) => _cached(
-    'pill',
-    () => GoogleFonts.dmSans(
-      fontSize: 11.sp,
-      fontWeight: FontWeight.w500,
-      color: AppColors.textPrimary,
-      letterSpacing: 0.4,
-      decoration: TextDecoration.none,
-    ),
-  );
+    );
+  }
 }

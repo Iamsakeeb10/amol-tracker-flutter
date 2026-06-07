@@ -18,6 +18,10 @@ class AppTheme {
     }
 
     final base = ThemeData.dark(useMaterial3: true);
+    final isBn = locale?.languageCode == 'bn';
+    final baseTextTheme = isBn
+        ? GoogleFonts.notoSansBengaliTextTheme(base.textTheme)
+        : GoogleFonts.dmSansTextTheme(base.textTheme);
 
     _cachedLocaleTag = localeTag;
     _cachedTheme = base.copyWith(
@@ -32,16 +36,16 @@ class AppTheme {
         error: AppColors.danger,
         onError: AppColors.textPrimary,
       ),
-      textTheme: GoogleFonts.dmSansTextTheme(base.textTheme).copyWith(
-        displayLarge: AppTextStyles.displayLarge(context),
-        displayMedium: AppTextStyles.displayMedium(context),
-        headlineLarge: AppTextStyles.headlineLarge(context),
-        headlineMedium: AppTextStyles.headlineMedium(context),
-        bodyLarge: AppTextStyles.bodyLarge(context),
-        bodyMedium: AppTextStyles.bodyMedium(context),
-        bodySmall: AppTextStyles.bodySmall(context),
-        labelMedium: AppTextStyles.label(context),
-        labelLarge: AppTextStyles.button(context),
+      textTheme: baseTextTheme.copyWith(
+        displayLarge: AppTextStyles.displayLarge(context, locale: locale),
+        displayMedium: AppTextStyles.displayMedium(context, locale: locale),
+        headlineLarge: AppTextStyles.headlineLarge(context, locale: locale),
+        headlineMedium: AppTextStyles.headlineMedium(context, locale: locale),
+        bodyLarge: AppTextStyles.bodyLarge(context, locale: locale),
+        bodyMedium: AppTextStyles.bodyMedium(context, locale: locale),
+        bodySmall: AppTextStyles.bodySmall(context, locale: locale),
+        labelMedium: AppTextStyles.label(context, locale: locale),
+        labelLarge: AppTextStyles.button(context, locale: locale),
       ),
       appBarTheme: AppBarTheme(
         scrolledUnderElevation: 0,
@@ -49,7 +53,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: false,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
-        titleTextStyle: AppTextStyles.headlineMedium(context),
+        titleTextStyle: AppTextStyles.headlineMedium(context, locale: locale),
         systemOverlayStyle: null,
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -72,11 +76,10 @@ class AppTheme {
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
-          return GoogleFonts.dmSans(
-            fontSize: 11.sp,
-            fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
-            color: selected ? AppColors.gold : AppColors.textMuted,
-            letterSpacing: 0.4,
+          return AppTextStyles.navLabel(
+            context,
+            locale: locale,
+            selected: selected,
           );
         }),
       ),
@@ -105,7 +108,10 @@ class AppTheme {
         dialHandColor: AppColors.gold,
         dialTextColor: AppColors.textPrimary,
         entryModeIconColor: AppColors.gold,
-        helpTextStyle: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+        helpTextStyle: AppTextStyles.label(
+          context,
+          locale: locale,
+        ).copyWith(color: AppColors.gold),
         cancelButtonStyle: TextButton.styleFrom(foregroundColor: AppColors.textMuted),
         confirmButtonStyle: TextButton.styleFrom(foregroundColor: AppColors.gold),
       ),

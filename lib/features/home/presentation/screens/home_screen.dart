@@ -656,6 +656,7 @@ class _Header extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).languageCode;
     final unread = ref.watch(unreadNotificationsCountProvider);
     final unreadLabel = unread > 99 ? '99+' : '$unread';
 
@@ -673,7 +674,7 @@ class _Header extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  IslamicDateService.weekdayEnglishToday(),
+                  IslamicDateService.weekdayToday(languageCode: locale),
                   style: AppTextStyles.displayMedium(context),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

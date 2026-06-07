@@ -192,10 +192,14 @@ class IslamicDateService {
     return (year: 1440, month: 1);
   }
 
-  /// English weekday name for the current Bangladesh-local calendar day.
-  static String weekdayEnglishToday() {
-    return DateFormat('EEEE').format(nowInBD());
+  /// Weekday name for the current Bangladesh-local calendar day (en or bn).
+  static String weekdayToday({String languageCode = 'en'}) {
+    final locale = languageCode == 'bn' ? 'bn_BD' : 'en_US';
+    return DateFormat('EEEE', locale).format(nowInBD());
   }
+
+  /// English weekday name for the current Bangladesh-local calendar day.
+  static String weekdayEnglishToday() => weekdayToday(languageCode: 'en');
 
   /// English weekday for the Gregorian day mapped from a Hijri storage key.
   static String weekdayEnglishForStorage(String hijriYyyyMmDd) {

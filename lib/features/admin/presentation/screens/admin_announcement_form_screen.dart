@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/admin_config.dart';
-import '../../../../core/theme/colors.dart';
+import '../../../../core/router/routes.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/announcement_model.dart';
@@ -12,8 +12,10 @@ import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/announcement_modal.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
+import '../../../../shared/widgets/section_header.dart';
 import '../widgets/admin_announcement_helpers.dart';
 import '../widgets/admin_form_date_field.dart';
+import '../widgets/admin_shared_widgets.dart';
 
 class AdminAnnouncementFormScreen extends ConsumerStatefulWidget {
   const AdminAnnouncementFormScreen({super.key, this.existing});
@@ -93,9 +95,7 @@ class _AdminAnnouncementFormScreenState
       startsAt: _startsAt,
       expiresAt: _expiresAt,
     )) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.adminDateRangeInvalid)),
-      );
+      showAdminSnackBar(context, message: l10n.adminDateRangeInvalid, isError: true);
       return;
     }
 
@@ -124,25 +124,19 @@ class _AdminAnnouncementFormScreenState
         await service.createAnnouncement(data: data, adminUid: uid!);
       }
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.adminFormSaved)),
-      );
+      showAdminSnackBar(context, message: l10n.adminFormSaved);
       context.pop();
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.adminSaveFailed)),
-      );
+      showAdminSnackBar(context, message: l10n.adminSaveFailed, isError: true);
     }
   }
 
   void _preview() {
     final l10n = AppLocalizations.of(context)!;
     if (_titleCtrl.text.trim().isEmpty || _messageCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.adminPreviewRequired)),
-      );
+      showAdminSnackBar(context, message: l10n.adminPreviewRequired, isError: true);
       return;
     }
     showDialog<void>(
@@ -169,65 +163,92 @@ class _AdminAnnouncementFormScreenState
       );
     }
 
+    final formTitle = _isEdit
+        ? l10n.adminFormEditTitle
+        : l10n.adminFormCreateTitle;
+
     return AppScaffold(
       padding: EdgeInsets.zero,
+      appBar: AdminAppBar(
+        title: formTitle,
+        fallbackRoute: AppRoutes.adminAnnouncements,
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 32.h),
           children: [
-            Text(
-              _isEdit ? l10n.adminFormEditTitle : l10n.adminFormCreateTitle,
-              style: AppTextStyles.displayMedium(context),
+            AdminScreenHeader(
+              subtitle: l10n.adminAnnouncementsTitle.toUpperCase(),
+              title: formTitle,
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 18.h),
+            SectionHeader(title: l10n.adminFormMessage.toUpperCase()),
             CardContainer(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _dropdown(l10n),
-                  _field(
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 12.h),
+                    child: Text(
+                      l10n.adminFormType,
+                      style: AppTextStyles.label(context),
+                    ),
+                  ),
+                  AdminTypePillSelector(
+                    selected: _type,
+                    onChanged: (v) => setState(() => _type = v),
+                  ),
+                  SizedBox(height: 12.h),
+                  AdminFormField(
                     label: l10n.adminFormTitle,
                     controller: _titleCtrl,
+                    icon: Icons.title_rounded,
                     required: true,
                     error: l10n.adminFormTitleRequired,
                   ),
-                  _field(
+                  AdminFormField(
                     label: l10n.adminFormMessage,
                     controller: _messageCtrl,
+                    icon: Icons.message_outlined,
                     required: true,
                     error: l10n.adminFormMessageRequired,
                     maxLines: 5,
                   ),
-                  _field(
+                  AdminFormField(
                     label: l10n.adminFormArabicText,
                     controller: _arabicCtrl,
+                    icon: Icons.translate_rounded,
                     textDirection: TextDirection.rtl,
                   ),
-                  _field(
+                  AdminFormField(
                     label: l10n.adminFormImageUrl,
                     controller: _imageCtrl,
+                    icon: Icons.image_outlined,
                   ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      l10n.adminFormActive,
-                      style: AppTextStyles.bodyMedium(context),
-                    ),
+                ],
+              ),
+            ),
+            SizedBox(height: 16.h),
+            SectionHeader(title: l10n.adminFormActive.toUpperCase()),
+            CardContainer(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+              child: Column(
+                children: [
+                  AdminToggleRow(
+                    icon: Icons.toggle_on_outlined,
+                    title: l10n.adminFormActive,
                     value: _isActive,
-                    activeThumbColor: AppColors.gold,
                     onChanged: (v) => setState(() => _isActive = v),
                   ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      l10n.adminFormShowOnce,
-                      style: AppTextStyles.bodyMedium(context),
-                    ),
+                  const Divider(),
+                  AdminToggleRow(
+                    icon: Icons.looks_one_outlined,
+                    title: l10n.adminFormShowOnce,
                     value: _showOnce,
-                    activeThumbColor: AppColors.gold,
                     onChanged: (v) => setState(() => _showOnce = v),
                   ),
+                  const Divider(),
                   AdminFormDateField(
                     label: l10n.adminFormStartsAt,
                     value: _startsAt,
@@ -249,101 +270,16 @@ class _AdminAnnouncementFormScreenState
                 ],
               ),
             ),
-            SizedBox(height: 20.h),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _preview,
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.goldBorder),
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                    ),
-                    child: Text(l10n.adminFormPreview),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : _save,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.gold,
-                      foregroundColor: AppColors.emeraldDeep,
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                    ),
-                    child: _isSaving
-                        ? SizedBox(
-                            width: 18.r,
-                            height: 18.r,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.emeraldDeep,
-                            ),
-                          )
-                        : Text(l10n.adminFormSave),
-                  ),
-                ),
-              ],
+            SizedBox(height: 24.h),
+            AdminFormActionRow(
+              previewLabel: l10n.adminFormPreview,
+              saveLabel: l10n.adminFormSave,
+              isSaving: _isSaving,
+              onPreview: _preview,
+              onSave: _save,
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _dropdown(AppLocalizations l10n) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
-      child: DropdownButtonFormField<String>(
-        initialValue: _type,
-        decoration: InputDecoration(
-          labelText: l10n.adminFormType,
-          labelStyle: AppTextStyles.label(context),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-        ),
-        dropdownColor: AppColors.emeraldMid,
-        items: kAnnouncementTypes
-            .map(
-              (t) => DropdownMenuItem(
-                value: t,
-                child: Text(typeLabel(l10n, t)),
-              ),
-            )
-            .toList(),
-        onChanged: (v) {
-          if (v != null) setState(() => _type = v);
-        },
-      ),
-    );
-  }
-
-  Widget _field({
-    required String label,
-    required TextEditingController controller,
-    bool required = false,
-    String? error,
-    int maxLines = 1,
-    TextDirection? textDirection,
-  }) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
-      child: TextFormField(
-        controller: controller,
-        maxLines: maxLines,
-        textDirection: textDirection,
-        style: AppTextStyles.bodyMedium(context),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: AppTextStyles.label(context),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-        ),
-        validator: required
-            ? (v) => (v == null || v.trim().isEmpty) ? error : null
-            : null,
       ),
     );
   }

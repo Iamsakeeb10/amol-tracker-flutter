@@ -1195,4 +1195,41 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get adminPreviewRequired => 'প্রিভিউ করতে শিরোনাম ও বার্তা লিখুন।';
+
+  @override
+  String get adminPushNotificationTitle => 'পুশ নোটিফিকেশন';
+
+  @override
+  String get adminPushScreenTitle => 'পুশ পাঠান';
+
+  @override
+  String get adminPushTitle => 'শিরোনাম';
+
+  @override
+  String get adminPushMessage => 'বার্তা';
+
+  @override
+  String get adminPushType => 'ধরন';
+
+  @override
+  String get adminPushTitleRequired => 'শিরোনাম প্রয়োজন।';
+
+  @override
+  String get adminPushMessageRequired => 'বার্তা প্রয়োজন।';
+
+  @override
+  String get adminPushSend => 'সকল ব্যবহারকারীকে পাঠান';
+
+  @override
+  String get adminPushSent => 'নোটিফিকেশন সফলভাবে পাঠানো হয়েছে।';
+
+  @override
+  String get adminPushFailed => 'নোটিফিকেশন পাঠাতে ব্যর্থ।';
+
+  @override
+  String get adminPushGatewayNotConfigured => 'পুশ গেটওয়ে কনফিগার করা নেই।';
+
+  @override
+  String get adminPushGatewayKeyMissing =>
+      'গেটওয়ে কী নেই। --dart-define=DUA_PUSH_GATEWAY_KEY=your_key দিয়ে চালান';
 }

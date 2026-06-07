@@ -40,4 +40,5 @@ class AppRoutes {
 
   static const adminAnnouncements = '/admin/announcements';
   static const adminAnnouncementForm = '/admin/announcement-form';
+  static const adminPushNotification = '/admin/push-notification';
 }

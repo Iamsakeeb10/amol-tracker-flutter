@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../features/admin/presentation/screens/admin_announcement_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_announcements_screen.dart';
+import '../../features/admin/presentation/screens/admin_push_notification_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/community/presentation/screens/community_screen.dart';
 import '../../features/community/presentation/screens/user_profile_screen.dart';
@@ -178,6 +179,11 @@ GoRouter buildAppRouter() {
             existing: extra is AnnouncementModel ? extra : null,
           );
         },
+      ),
+      GoRoute(
+        path: AppRoutes.adminPushNotification,
+        name: 'adminPushNotification',
+        builder: (_, _) => const AdminPushNotificationScreen(),
       ),
       GoRoute(
         path: AppRoutes.settings,

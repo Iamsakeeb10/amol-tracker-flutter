@@ -2293,6 +2293,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add a title and message to preview.'**
   String get adminPreviewRequired;
+
+  /// No description provided for @adminPushNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Push Notification'**
+  String get adminPushNotificationTitle;
+
+  /// No description provided for @adminPushScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Push'**
+  String get adminPushScreenTitle;
+
+  /// No description provided for @adminPushTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get adminPushTitle;
+
+  /// No description provided for @adminPushMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get adminPushMessage;
+
+  /// No description provided for @adminPushType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get adminPushType;
+
+  /// No description provided for @adminPushTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Title is required.'**
+  String get adminPushTitleRequired;
+
+  /// No description provided for @adminPushMessageRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Message is required.'**
+  String get adminPushMessageRequired;
+
+  /// No description provided for @adminPushSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to all users'**
+  String get adminPushSend;
+
+  /// No description provided for @adminPushSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification sent successfully.'**
+  String get adminPushSent;
+
+  /// No description provided for @adminPushFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send notification.'**
+  String get adminPushFailed;
+
+  /// No description provided for @adminPushGatewayNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Push gateway not configured.'**
+  String get adminPushGatewayNotConfigured;
+
+  /// No description provided for @adminPushGatewayKeyMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Gateway key missing. Run with --dart-define=DUA_PUSH_GATEWAY_KEY=your_key'**
+  String get adminPushGatewayKeyMissing;
 }
 
 class _AppLocalizationsDelegate

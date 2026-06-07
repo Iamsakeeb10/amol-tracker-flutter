@@ -31,6 +31,21 @@ class AdminFormDateField extends StatelessWidget {
       padding: EdgeInsets.only(bottom: 12.h),
       child: Row(
         children: [
+          Container(
+            width: 34.r,
+            height: 34.r,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.cardBorder,
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Icon(
+              Icons.calendar_today_outlined,
+              size: 16.r,
+              color: AppColors.gold,
+            ),
+          ),
+          SizedBox(width: 12.w),
           Expanded(
             child: InkWell(
               onTap: onPick,

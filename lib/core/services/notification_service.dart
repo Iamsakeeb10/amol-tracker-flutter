@@ -11,6 +11,7 @@ import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../router/routes.dart';
+import '../utils/fcm_notification_display.dart';
 import 'hadith_asset_service.dart';
 import 'islamic_date_service.dart';
 import 'local_storage_service.dart';
@@ -47,6 +48,7 @@ class NotificationService {
   static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 8, minute: 0);
   static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 21, minute: 0);
   static const String _lastSentKeyPrefix = 'notif_last_sent_';
+  static const String _fcmOwnerUidKey = 'fcm_token_owner_uid';
 
   static const List<String> _morningBodies = [
     'সকাল শুরু হোক আযকার দিয়ে। আজকের আমলের নিয়ত করো।',
@@ -154,6 +156,74 @@ class NotificationService {
     await _syncFcmToken();
   }
 
+  /*
+  Purpose:
+  Detach this device's FCM token from the signed-in user on logout.
+
+  Response:
+  None.
+
+  Business Rules:
+  - Removes fcmToken from the current user's Firestore doc.
+  - Deletes the local FCM token so pushes stop until next login.
+
+  Flow:
+  1. Resolve current Firebase uid.
+  2. Delete fcmToken field on users/{uid}.
+  3. Call FirebaseMessaging.deleteToken().
+  4. Clear local owner tracking pref.
+
+  Side Effects:
+  - User doc no longer targets this device for remote push.
+
+  Failure Cases:
+  - No signed-in user: only local owner pref is cleared.
+  */
+  Future<void> clearFcmTokenForCurrentUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await _clearFcmTokenOnUserDoc(user.uid);
+    }
+    try {
+      await _messaging.deleteToken();
+    } catch (_) {}
+    await LocalStorageService.deletePref(_fcmOwnerUidKey);
+  }
+
+  Future<void> _clearFcmTokenOnUserDoc(String uid) async {
+    if (uid.isEmpty) return;
+    final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
+    final userSnap = await userRef.get();
+    if (!userSnap.exists) return;
+    await userRef.set(
+      <String, dynamic>{'fcmToken': FieldValue.delete()},
+      SetOptions(merge: true),
+    );
+  }
+
+  /*
+  Purpose:
+  Register this device's FCM token for the active user only.
+
+  Response:
+  None.
+
+  Business Rules:
+  - One device token must not remain on a previous account doc.
+  - Only writes when users/{uid} already exists.
+
+  Flow:
+  1. Read current uid + device token.
+  2. If another uid owned this device locally, clear its fcmToken.
+  3. Save token on the active user doc.
+  4. Remember active uid locally for the next switch.
+
+  Side Effects:
+  - Updates users/{uid}.fcmToken in Firestore.
+
+  Failure Cases:
+  - No auth, missing token, or missing user doc: no-op.
+  */
   Future<void> _syncFcmToken() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -164,7 +234,17 @@ class NotificationService {
         .doc(user.uid);
     final userSnap = await userRef.get();
     if (!userSnap.exists) return;
+
+    final previousOwnerUid = LocalStorageService.getPref<String>(
+      _fcmOwnerUidKey,
+      '',
+    );
+    if (previousOwnerUid.isNotEmpty && previousOwnerUid != user.uid) {
+      await _clearFcmTokenOnUserDoc(previousOwnerUid);
+    }
+
     await userRef.set({'fcmToken': token}, SetOptions(merge: true));
+    await LocalStorageService.setPref(_fcmOwnerUidKey, user.uid);
   }
 
   Future<void> scheduleAll() async {
@@ -815,7 +895,12 @@ class NotificationService {
   }
 
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
-    final notification = message.notification;
+    // Data-only admin pushes: show once via shared helper (avoids FCM+local dupes).
+    if (message.notification == null) {
+      await FcmNotificationDisplay.show(message);
+      return;
+    }
+
     final rawType =
         (message.data['type'] ?? message.data['notificationType'] ?? '')
             .toString();
@@ -823,10 +908,12 @@ class NotificationService {
     final duaMessage = (message.data['message'] ?? '').toString().trim();
     final title = isDua
         ? 'নতুন দোয়া পেয়েছেন'
-        : (notification?.title ?? 'নতুন নোটিফিকেশন');
+        : (message.notification?.title ?? 'নতুন নোটিফিকেশন');
     final body = isDua
-        ? (duaMessage.isNotEmpty ? duaMessage : (notification?.body ?? ''))
-        : (notification?.body ?? '');
+        ? (duaMessage.isNotEmpty
+              ? duaMessage
+              : (message.notification?.body ?? ''))
+        : (message.notification?.body ?? '');
     final route = _routeFromMessage(message);
     final id =
         message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch;

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'local_storage_service.dart';
+import 'notification_service.dart';
 
 class AuthService {
   AuthService({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
@@ -33,6 +34,7 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    await NotificationService.instance.clearFcmTokenForCurrentUser();
     await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
     await LocalStorageService.clearAll();
   }

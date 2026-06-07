@@ -1191,4 +1191,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminPreviewRequired => 'Add a title and message to preview.';
+
+  @override
+  String get adminPushNotificationTitle => 'Push Notification';
+
+  @override
+  String get adminPushScreenTitle => 'Send Push';
+
+  @override
+  String get adminPushTitle => 'Title';
+
+  @override
+  String get adminPushMessage => 'Message';
+
+  @override
+  String get adminPushType => 'Type';
+
+  @override
+  String get adminPushTitleRequired => 'Title is required.';
+
+  @override
+  String get adminPushMessageRequired => 'Message is required.';
+
+  @override
+  String get adminPushSend => 'Send to all users';
+
+  @override
+  String get adminPushSent => 'Notification sent successfully.';
+
+  @override
+  String get adminPushFailed => 'Failed to send notification.';
+
+  @override
+  String get adminPushGatewayNotConfigured => 'Push gateway not configured.';
+
+  @override
+  String get adminPushGatewayKeyMissing =>
+      'Gateway key missing. Run with --dart-define=DUA_PUSH_GATEWAY_KEY=your_key';
 }

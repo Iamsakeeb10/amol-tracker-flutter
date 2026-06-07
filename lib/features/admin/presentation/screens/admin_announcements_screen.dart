@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/admin_config.dart';
 import '../../../../core/router/routes.dart';
@@ -14,6 +15,7 @@ import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../widgets/admin_announcement_tile.dart';
+import '../widgets/admin_shared_widgets.dart';
 
 class AdminAnnouncementsScreen extends ConsumerWidget {
   const AdminAnnouncementsScreen({super.key});
@@ -39,24 +41,30 @@ class AdminAnnouncementsScreen extends ConsumerWidget {
 
     return AppScaffold(
       padding: EdgeInsets.zero,
-      floatingActionButton: FloatingActionButton(
+      appBar: AdminAppBar(title: l10n.adminAnnouncementsTitle),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.adminAnnouncementForm),
         backgroundColor: AppColors.gold,
         foregroundColor: AppColors.emeraldDeep,
-        child: Icon(Icons.add, size: 24.r),
+        icon: Icon(Icons.add, size: 20.r),
+        label: Text(
+          l10n.adminFormCreateTitle,
+          style: AppTextStyles.button(context).copyWith(
+            color: AppColors.emeraldDeep,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 100.h),
         children: [
-          Text(
-            l10n.adminAnnouncementsTitle,
-            style: AppTextStyles.displayMedium(context),
+          AdminScreenHeader(
+            subtitle: l10n.adminSectionTitle.toUpperCase(),
+            title: l10n.adminAnnouncementsTitle,
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 18.h),
           announcementsAsync.when(
-            loading: () => const Center(
-              child: CircularProgressIndicator(color: AppColors.gold),
-            ),
+            loading: () => const _AdminListShimmer(),
             error: (_, _) => CardContainer(
               child: Text(
                 l10n.adminLoadFailed,
@@ -64,24 +72,11 @@ class AdminAnnouncementsScreen extends ConsumerWidget {
               ),
             ),
             data: (items) {
-              if (items.isEmpty) {
-                return CardContainer(
-                  child: Text(
-                    l10n.adminEmptyList,
-                    style: AppTextStyles.bodyMedium(context),
-                  ),
-                );
-              }
-              return CardContainer(
-                padding: EdgeInsets.symmetric(vertical: 4.h),
-                child: Column(
-                  children: [
-                    for (var i = 0; i < items.length; i++) ...[
-                      _AdminAnnouncementRow(announcement: items[i]),
-                      if (i < items.length - 1) const Divider(),
-                    ],
-                  ],
-                ),
+              if (items.isEmpty) return _AdminEmptyList(message: l10n.adminEmptyList);
+              return Column(
+                children: items
+                    .map((a) => _AdminAnnouncementRow(announcement: a))
+                    .toList(),
               );
             },
           ),
@@ -89,7 +84,61 @@ class AdminAnnouncementsScreen extends ConsumerWidget {
       ),
     );
   }
+}
 
+class _AdminEmptyList extends StatelessWidget {
+  const _AdminEmptyList({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return CardContainer(
+      padding: EdgeInsets.symmetric(vertical: 32.h, horizontal: 20.w),
+      child: Column(
+        children: [
+          Icon(
+            Icons.campaign_outlined,
+            color: AppColors.gold,
+            size: 36.r,
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium(context),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminListShimmer extends StatelessWidget {
+  const _AdminListShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.cardDark,
+      highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: Column(
+        children: List.generate(
+          3,
+          (i) => Padding(
+            padding: EdgeInsets.only(bottom: 8.h),
+            child: Container(
+              height: 72.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _AdminAnnouncementRow extends ConsumerWidget {
@@ -115,9 +164,7 @@ class _AdminAnnouncementRow extends ConsumerWidget {
           );
         } catch (_) {
           if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.adminToggleFailed)),
-          );
+          showAdminSnackBar(context, message: l10n.adminToggleFailed, isError: true);
         }
       },
       onDismissed: () async {
@@ -127,9 +174,7 @@ class _AdminAnnouncementRow extends ConsumerWidget {
               .deleteAnnouncement(announcement.id);
         } catch (_) {
           if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.adminDeleteFailed)),
-          );
+          showAdminSnackBar(context, message: l10n.adminDeleteFailed, isError: true);
         }
       },
     );

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/announcement_model.dart';
+import '../../../../shared/widgets/card_container.dart';
+import '../../../../shared/widgets/streak_badge.dart';
 import 'admin_announcement_helpers.dart';
+import 'admin_shared_widgets.dart';
 
 class AdminAnnouncementTile extends StatelessWidget {
   const AdminAnnouncementTile({
@@ -21,63 +25,86 @@ class AdminAnnouncementTile extends StatelessWidget {
   final ValueChanged<bool> onToggleActive;
   final Future<void> Function() onDismissed;
 
+  String _dateSubtitle() {
+    final created = DateFormat('dd MMM yyyy').format(announcement.createdAt);
+    if (announcement.startsAt != null) {
+      final start = DateFormat('dd MMM').format(announcement.startsAt!);
+      return '$created · starts $start';
+    }
+    return created;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final status = statusForAnnouncement(announcement);
 
-    return Dismissible(
-      key: ValueKey<String>(announcement.id),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: EdgeInsets.only(right: 20.w),
-        color: AppColors.danger.withValues(alpha: 0.85),
-        child: Icon(Icons.delete_outline, color: AppColors.textPrimary, size: 22.r),
-      ),
-      confirmDismiss: (_) async {
-        final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: AppColors.emeraldDeep,
-            title: Text(
-              l10n.adminDeleteTitle,
-              style: AppTextStyles.headlineMedium(ctx),
-            ),
-            content: Text(
-              l10n.adminDeleteConfirm,
-              style: AppTextStyles.bodyMedium(ctx),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(
-                  l10n.delete,
-                  style: const TextStyle(color: AppColors.danger),
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Dismissible(
+        key: ValueKey<String>(announcement.id),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: EdgeInsets.only(right: 20.w),
+          decoration: BoxDecoration(
+            color: AppColors.dangerLight,
+            borderRadius: BorderRadius.circular(AppRadius.lg.r),
+            border: Border.all(color: AppColors.danger.withValues(alpha: 0.4)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.delete,
+                style: AppTextStyles.bodySmall(context).copyWith(
+                  color: AppColors.danger,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+              SizedBox(width: 6.w),
+              Icon(Icons.delete_outline, color: AppColors.danger, size: 20.r),
             ],
           ),
-        );
-        return confirmed ?? false;
-      },
-      onDismissed: (_) => onDismissed(),
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        ),
+        confirmDismiss: (_) async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: AppColors.emeraldDeep,
+              title: Text(
+                l10n.adminDeleteTitle,
+                style: AppTextStyles.headlineMedium(ctx),
+              ),
+              content: Text(
+                l10n.adminDeleteConfirm,
+                style: AppTextStyles.bodyMedium(ctx),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: Text(
+                    l10n.delete,
+                    style: const TextStyle(color: AppColors.danger),
+                  ),
+                ),
+              ],
+            ),
+          );
+          return confirmed ?? false;
+        },
+        onDismissed: (_) => onDismissed(),
+        child: CardContainer(
+          onTap: onTap,
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           child: Row(
             children: [
-              Icon(
-                iconForAnnouncementType(announcement.type),
-                color: AppColors.goldLight,
-                size: 20.r,
-              ),
-              SizedBox(width: 10.w),
+              AdminIconBox(icon: iconForAnnouncementType(announcement.type)),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,34 +119,33 @@ class AdminAnnouncementTile extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 4.h),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 8.w,
-                        vertical: 2.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusColor(status).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8.r),
-                        border: Border.all(
-                          color: statusColor(status).withValues(alpha: 0.5),
-                        ),
-                      ),
-                      child: Text(
-                        statusLabel(l10n, status),
-                        style: AppTextStyles.label(context).copyWith(
-                          color: statusColor(status),
-                          fontSize: 10.sp,
-                        ),
+                    Text(
+                      _dateSubtitle(),
+                      style: AppTextStyles.bodySmall(context).copyWith(
+                        fontSize: 11.sp,
                       ),
                     ),
                   ],
                 ),
               ),
-              Switch(
-                value: announcement.isActive,
-                onChanged: onToggleActive,
-                activeThumbColor: AppColors.gold,
-                activeTrackColor: AppColors.gold.withValues(alpha: 0.4),
+              SizedBox(width: 8.w),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Pill(
+                    text: statusLabel(l10n, status),
+                    color: statusColor(status).withValues(alpha: 0.2),
+                    textColor: statusColor(status),
+                  ),
+                  SizedBox(height: 6.h),
+                  Switch(
+                    value: announcement.isActive,
+                    onChanged: onToggleActive,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    activeThumbColor: AppColors.emeraldDeep,
+                    activeTrackColor: AppColors.gold,
+                  ),
+                ],
               ),
             ],
           ),

@@ -164,10 +164,20 @@ class MoreScreen extends ConsumerWidget {
             SectionHeader(title: l10n.adminSectionTitle),
             CardContainer(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-              child: NavRow(
-                icon: Icons.campaign_outlined,
-                title: l10n.adminAnnouncementsTitle,
-                onTap: () => context.push(AppRoutes.adminAnnouncements),
+              child: Column(
+                children: [
+                  NavRow(
+                    icon: Icons.campaign_outlined,
+                    title: l10n.adminAnnouncementsTitle,
+                    onTap: () => context.push(AppRoutes.adminAnnouncements),
+                  ),
+                  const Divider(),
+                  NavRow(
+                    icon: Icons.notifications_active_outlined,
+                    title: l10n.adminPushNotificationTitle,
+                    onTap: () => context.push(AppRoutes.adminPushNotification),
+                  ),
+                ],
               ),
             ),
           ],

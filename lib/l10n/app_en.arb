@@ -453,5 +453,17 @@
   "adminDeleteFailed": "Could not delete announcement.",
   "adminToggleFailed": "Could not update announcement.",
   "adminDateRangeInvalid": "Expires at must be after starts at.",
-  "adminPreviewRequired": "Add a title and message to preview."
+  "adminPreviewRequired": "Add a title and message to preview.",
+  "adminPushNotificationTitle": "Push Notification",
+  "adminPushScreenTitle": "Send Push",
+  "adminPushTitle": "Title",
+  "adminPushMessage": "Message",
+  "adminPushType": "Type",
+  "adminPushTitleRequired": "Title is required.",
+  "adminPushMessageRequired": "Message is required.",
+  "adminPushSend": "Send to all users",
+  "adminPushSent": "Notification sent successfully.",
+  "adminPushFailed": "Failed to send notification.",
+  "adminPushGatewayNotConfigured": "Push gateway not configured.",
+  "adminPushGatewayKeyMissing": "Gateway key missing. Run with --dart-define=DUA_PUSH_GATEWAY_KEY=your_key"
 }

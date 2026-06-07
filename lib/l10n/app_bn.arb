@@ -453,5 +453,17 @@
   "adminDeleteFailed": "ঘোষণা মুছে ফেলা যায়নি।",
   "adminToggleFailed": "ঘোষণা আপডেট করা যায়নি।",
   "adminDateRangeInvalid": "শেষ সময় শুরুর সময়ের পরে হতে হবে।",
-  "adminPreviewRequired": "প্রিভিউ করতে শিরোনাম ও বার্তা লিখুন।"
+  "adminPreviewRequired": "প্রিভিউ করতে শিরোনাম ও বার্তা লিখুন।",
+  "adminPushNotificationTitle": "পুশ নোটিফিকেশন",
+  "adminPushScreenTitle": "পুশ পাঠান",
+  "adminPushTitle": "শিরোনাম",
+  "adminPushMessage": "বার্তা",
+  "adminPushType": "ধরন",
+  "adminPushTitleRequired": "শিরোনাম প্রয়োজন।",
+  "adminPushMessageRequired": "বার্তা প্রয়োজন।",
+  "adminPushSend": "সকল ব্যবহারকারীকে পাঠান",
+  "adminPushSent": "নোটিফিকেশন সফলভাবে পাঠানো হয়েছে।",
+  "adminPushFailed": "নোটিফিকেশন পাঠাতে ব্যর্থ।",
+  "adminPushGatewayNotConfigured": "পুশ গেটওয়ে কনফিগার করা নেই।",
+  "adminPushGatewayKeyMissing": "গেটওয়ে কী নেই। --dart-define=DUA_PUSH_GATEWAY_KEY=your_key দিয়ে চালান"
 }

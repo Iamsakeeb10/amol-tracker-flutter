@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 import 'app.dart';
+import 'core/utils/fcm_notification_display.dart';
 import 'core/services/local_storage_service.dart';
 import 'core/theme/colors.dart';
 import 'firebase_options.dart';
@@ -15,6 +16,9 @@ import 'firebase_options.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (message.notification == null) {
+    await FcmNotificationDisplay.show(message);
+  }
 }
 
 Future<void> main() async {

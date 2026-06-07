@@ -1751,8 +1751,8 @@ abstract class AppLocalizations {
   /// No description provided for @draftSavedTapSaveToFinish.
   ///
   /// In en, this message translates to:
-  /// **'Draft saved. Tap Save to finish today.'**
-  String get draftSavedTapSaveToFinish;
+  /// **'Draft saved. Tap {saveButton} to finish today.'**
+  String draftSavedTapSaveToFinish(Object saveButton);
 
   /// No description provided for @completeAllAmalAutoSave.
   ///

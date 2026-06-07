@@ -910,8 +910,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get saveTodaysAmal => 'আজকের আমল সংরক্ষণ করুন';
 
   @override
-  String get draftSavedTapSaveToFinish =>
-      'খসড়া সংরক্ষিত। আজকের হিসাব শেষ করতে \"সংরক্ষণ করুন\" চাপুন।';
+  String draftSavedTapSaveToFinish(Object saveButton) {
+    return 'খসড়া সংরক্ষিত। আজকের হিসাব শেষ করতে \"$saveButton\" চাপুন।';
+  }
 
   @override
   String get completeAllAmalAutoSave =>

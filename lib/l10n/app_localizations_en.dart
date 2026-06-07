@@ -907,8 +907,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveTodaysAmal => 'Save today\'s amal';
 
   @override
-  String get draftSavedTapSaveToFinish =>
-      'Draft saved. Tap Save to finish today.';
+  String draftSavedTapSaveToFinish(Object saveButton) {
+    return 'Draft saved. Tap $saveButton to finish today.';
+  }
 
   @override
   String get completeAllAmalAutoSave =>

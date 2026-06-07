@@ -13,10 +13,10 @@ import '../../providers/auth_provider.dart';
 class HomeSaveFab extends ConsumerWidget {
   const HomeSaveFab({super.key});
 
-  static const _fabHeight = 40.0;
-  static const _fabHorizontalPadding = 16.0;
-  static const _iconSize = 18.0;
-  static const _labelSize = 14.0;
+  static const _fabHeight = 48.0;
+  static const _fabHorizontalPadding = 20.0;
+  static const _iconSize = 20.0;
+  static const _labelSize = 15.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -11,6 +11,7 @@ import '../../../../core/utils/time_display_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/notification_provider.dart';
+import '../../../../providers/syllabus_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -33,7 +34,12 @@ class MoreScreen extends ConsumerWidget {
     final displayName = rawName.trim().isEmpty ? l10n.profile : rawName.trim();
     final initial = displayName.substring(0, 1).toUpperCase();
     final streak = user?.currentStreak ?? 0;
-    final isAdmin = AdminConfig.isAdmin(user?.uid);
+    final isFullAdmin = AdminConfig.isFullAdmin(user?.uid, role: user?.role);
+    final isListedModerator =
+        ref.watch(isListedCourseModeratorProvider).value ?? false;
+    final canManageCourses =
+        AdminConfig.canAccessCourseAdmin(user?.uid, role: user?.role) ||
+        isListedModerator;
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
@@ -143,6 +149,12 @@ class MoreScreen extends ConsumerWidget {
                 ),
                 const Divider(),
                 NavRow(
+                  icon: Icons.menu_book_outlined,
+                  title: l10n.syllabusTitle,
+                  onTap: () => context.push(AppRoutes.syllabus),
+                ),
+                const Divider(),
+                NavRow(
                   icon: Icons.person_outline,
                   title: l10n.profileAndBadges,
                   onTap: () => context.push(AppRoutes.profile),
@@ -171,24 +183,35 @@ class MoreScreen extends ConsumerWidget {
               ],
             ),
           ),
-          if (isAdmin) ...[
+          if (isFullAdmin || canManageCourses) ...[
             SizedBox(height: 18.h),
             SectionHeader(title: l10n.adminSectionTitle),
             CardContainer(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               child: Column(
                 children: [
-                  NavRow(
-                    icon: Icons.campaign_outlined,
-                    title: l10n.adminAnnouncementsTitle,
-                    onTap: () => context.push(AppRoutes.adminAnnouncements),
-                  ),
-                  const Divider(),
-                  NavRow(
-                    icon: Icons.notifications_active_outlined,
-                    title: l10n.adminPushNotificationTitle,
-                    onTap: () => context.push(AppRoutes.adminPushNotification),
-                  ),
+                  if (isFullAdmin) ...[
+                    NavRow(
+                      icon: Icons.campaign_outlined,
+                      title: l10n.adminAnnouncementsTitle,
+                      onTap: () => context.push(AppRoutes.adminAnnouncements),
+                    ),
+                    const Divider(),
+                  ],
+                  if (canManageCourses) ...[
+                    NavRow(
+                      icon: Icons.menu_book_outlined,
+                      title: l10n.adminCoursesTitle,
+                      onTap: () => context.push(AppRoutes.adminCourses),
+                    ),
+                    if (isFullAdmin) const Divider(),
+                  ],
+                  if (isFullAdmin)
+                    NavRow(
+                      icon: Icons.notifications_active_outlined,
+                      title: l10n.adminPushNotificationTitle,
+                      onTap: () => context.push(AppRoutes.adminPushNotification),
+                    ),
                 ],
               ),
             ),

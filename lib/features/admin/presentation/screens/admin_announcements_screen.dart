@@ -23,9 +23,9 @@ class AdminAnnouncementsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final uid = ref.watch(authStateProvider).asData?.value?.uid;
+    final user = ref.watch(currentUserProvider).asData?.value;
 
-    if (!AdminConfig.isAdmin(uid)) {
+    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) {
       return AppScaffold(
         body: Center(
           child: Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -334,14 +335,52 @@ class AdminFormActionRow extends StatelessWidget {
   }
 }
 
+class AdminListShimmer extends StatelessWidget {
+  const AdminListShimmer({super.key, this.itemCount = 3});
+
+  final int itemCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.cardDark,
+      highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: Column(
+        children: List.generate(
+          itemCount,
+          (_) => Padding(
+            padding: EdgeInsets.only(bottom: 8.h),
+            child: Container(
+              height: 72.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 void showAdminSnackBar(
   BuildContext context, {
   required String message,
   bool isError = false,
+  bool popAfter = false,
 }) {
-  ScaffoldMessenger.of(context).showSnackBar(
+  final textStyle = AppTextStyles.bodyMedium(context).copyWith(
+    color: AppColors.textPrimary,
+    fontWeight: FontWeight.w600,
+  );
+  final messenger = ScaffoldMessenger.of(context);
+  if (popAfter) {
+    context.pop();
+  }
+  messenger.showSnackBar(
     SnackBar(
-      content: Text(message),
+      content: Text(message, style: textStyle),
       backgroundColor: isError ? AppColors.danger : AppColors.emeraldMid,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),

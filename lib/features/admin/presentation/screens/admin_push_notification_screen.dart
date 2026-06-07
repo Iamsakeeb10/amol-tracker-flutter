@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/admin_config.dart';
-import '../../../../core/services/admin_push_gateway_service.dart';
 import '../../../../core/utils/admin_push_debug.dart';
+import '../../../../providers/admin_push_provider.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -14,10 +14,6 @@ import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 import '../widgets/admin_shared_widgets.dart';
-
-final adminPushGatewayServiceProvider = Provider<AdminPushGatewayService>(
-  (ref) => AdminPushGatewayService.fromEnvironment(),
-);
 
 class AdminPushNotificationScreen extends ConsumerStatefulWidget {
   const AdminPushNotificationScreen({super.key});
@@ -53,7 +49,8 @@ class _AdminPushNotificationScreenState
     if (!_formKey.currentState!.validate()) return;
 
     final uid = ref.read(authStateProvider).asData?.value?.uid;
-    if (!AdminConfig.isAdmin(uid)) return;
+    final user = ref.read(currentUserProvider).asData?.value;
+    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) return;
 
     final gateway = ref.read(adminPushGatewayServiceProvider);
     logAdminPushDebug(
@@ -93,10 +90,10 @@ class _AdminPushNotificationScreenState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final uid = ref.watch(authStateProvider).asData?.value?.uid;
+    final user = ref.watch(currentUserProvider).asData?.value;
     final hasKey = ref.watch(adminPushGatewayServiceProvider).hasGatewayKey;
 
-    if (!AdminConfig.isAdmin(uid)) {
+    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) {
       return AppScaffold(
         body: Center(
           child: Text(

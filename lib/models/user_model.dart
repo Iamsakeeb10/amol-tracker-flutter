@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'user_role.dart';
+
 class UserModel {
   final String uid;
   final String name;
@@ -16,6 +18,7 @@ class UserModel {
   final List<String> badges;
   final List<String> seenBadgeCelebrations;
   final List<String> seenAnnouncements;
+  final UserRole role;
 
   const UserModel({
     required this.uid,
@@ -33,6 +36,7 @@ class UserModel {
     required this.badges,
     required this.seenBadgeCelebrations,
     required this.seenAnnouncements,
+    this.role = UserRole.user,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
@@ -61,6 +65,7 @@ class UserModel {
           ((map['seenAnnouncements'] as List<dynamic>?) ?? const [])
               .map((item) => item.toString())
               .toList(),
+      role: UserRole.fromString(map['role'] as String?),
     );
   }
 
@@ -83,6 +88,8 @@ class UserModel {
       'showOnLeaderboard': showOnLeaderboard,
       'badges': badges,
       'seenBadgeCelebrations': seenBadgeCelebrations,
+      'seenAnnouncements': seenAnnouncements,
+      if (role != UserRole.user) 'role': role.firestoreValue,
     };
   }
 }

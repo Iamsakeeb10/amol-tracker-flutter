@@ -45,6 +45,12 @@ class FirestoreService {
     return doc.exists;
   }
 
+  Future<UserModel?> fetchUser(String uid) async {
+    final doc = await _users.doc(uid).get();
+    if (!doc.exists) return null;
+    return UserModel.fromDoc(doc);
+  }
+
   Future<void> createUser(UserModel user) async {
     await _users.doc(user.uid).set(user.toMap());
   }

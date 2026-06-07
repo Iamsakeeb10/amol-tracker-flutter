@@ -257,6 +257,23 @@ class AppLocalizationsBn extends AppLocalizations {
   String get more => 'আরও';
 
   @override
+  String get navHome => 'হোম';
+
+  @override
+  String get navHistory => 'ইতিহাস';
+
+  @override
+  String get navCommunity => 'কমিউনিটি';
+
+  @override
+  String get navMore => 'আরও';
+
+  @override
+  String routeNotFound(String path) {
+    return 'রুট পাওয়া যায়নি: $path';
+  }
+
+  @override
   String get account => 'অ্যাকাউন্ট';
 
   @override
@@ -530,6 +547,22 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String leaderboardNudgeBehindFirstPoints(Object behind) {
     return '১ম স্থানের থেকে $behind পয়েন্ট পিছিয়ে - আজ লগ করে এগিয়ে যান।';
+  }
+
+  @override
+  String get leaderboardQuizTab => 'কুইজ';
+
+  @override
+  String get leaderboardQuizBeFirst => 'কুইজ পাস করার জন্য প্রথম হন!';
+
+  @override
+  String leaderboardNudgeBehindQuizPoints(Object behind) {
+    return '২য় স্থানের থেকে $behind পয়েন্ট পিছিয়ে - আরও কুইজ পাস করে এগিয়ে যান।';
+  }
+
+  @override
+  String leaderboardNudgeBehindFirstQuizPoints(Object behind) {
+    return '১ম স্থানের থেকে $behind পয়েন্ট পিছিয়ে - আরও কুইজ পাস করে শীর্ষে উঠুন।';
   }
 
   @override
@@ -1045,6 +1078,13 @@ class AppLocalizationsBn extends AppLocalizations {
   String get badgePerfectWeekDesc => 'টানা ৭ দিন ৮০+ স্কোর করুন।';
 
   @override
+  String get badgeCourseGraduateTitle => 'কোর্স গ্র্যাজুয়েট';
+
+  @override
+  String get badgeCourseGraduateDesc =>
+      'একটি সিলেবাস কোর্সের সব পাঠ সম্পন্ন করুন।';
+
+  @override
   String get exitAppTitle => 'অ্যাপ বন্ধ করবে?';
 
   @override
@@ -1369,4 +1409,487 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get adminPushGatewayKeyMissing =>
       'গেটওয়ে কী নেই। --dart-define=DUA_PUSH_GATEWAY_KEY=your_key দিয়ে চালান';
+
+  @override
+  String get adminCoursesTitle => 'কোর্স';
+
+  @override
+  String get adminCourseCreateTitle => 'কোর্স তৈরি';
+
+  @override
+  String get adminCourseEditTitle => 'কোর্স সম্পাদনা';
+
+  @override
+  String get adminCourseEmptyList => 'এখনো কোনো কোর্স নেই। + চাপুন।';
+
+  @override
+  String get adminCourseLoadFailed => 'কোর্স লোড করা যায়নি।';
+
+  @override
+  String get adminCourseDeleteTitle => 'কোর্স মুছবেন?';
+
+  @override
+  String get adminCourseDeleteFailed => 'কোর্স মুছে ফেলা যায়নি।';
+
+  @override
+  String get adminCoursePublishFailed => 'কোর্স স্ট্যাটাস আপডেট করা যায়নি।';
+
+  @override
+  String get adminCourseFormSaved => 'কোর্স সংরক্ষিত হয়েছে।';
+
+  @override
+  String get adminCoursePublishedPushTitle => 'নতুন কোর্স উপলব্ধ';
+
+  @override
+  String adminCoursePublishedPushMessage(String title) {
+    return 'একটি নতুন সিলেবাস কোর্স প্রকাশিত হয়েছে: $title। এনরোল করতে সিলেবাস খুলুন।';
+  }
+
+  @override
+  String get adminCourseManageLessons => 'পাঠ পরিচালনা';
+
+  @override
+  String get adminCourseDescription => 'বিবরণ';
+
+  @override
+  String get adminCourseDescriptionRequired => 'বিবরণ প্রয়োজন।';
+
+  @override
+  String get adminCourseCoverUrl => 'কভার ছবির URL (ঐচ্ছিক)';
+
+  @override
+  String get adminCourseTags => 'ট্যাগ (কমা দিয়ে)';
+
+  @override
+  String get adminCourseModerators => 'মডারেটর UID (কমা দিয়ে)';
+
+  @override
+  String get adminCourseDetailsSection => 'কোর্স বিবরণ';
+
+  @override
+  String get adminCourseModeratorsSection => 'মডারেটর';
+
+  @override
+  String get adminCourseStatusSection => 'স্ট্যাটাস';
+
+  @override
+  String get adminCourseStatusPublished => 'প্রকাশিত';
+
+  @override
+  String get adminCourseStatusDraft => 'খসড়া';
+
+  @override
+  String get adminLessonsTitle => 'পাঠ';
+
+  @override
+  String get adminLessonsSubtitle => 'টেনে সাজান। প্রস্তুত হলে প্রকাশ করুন।';
+
+  @override
+  String get adminLessonCreateTitle => 'পাঠ যোগ';
+
+  @override
+  String get adminLessonEditTitle => 'পাঠ সম্পাদনা';
+
+  @override
+  String get adminLessonEmptyList => 'এখনো কোনো পাঠ নেই। + চাপুন।';
+
+  @override
+  String get adminLessonLoadFailed => 'পাঠ লোড করা যায়নি।';
+
+  @override
+  String get adminLessonDeleteTitle => 'পাঠ মুছবেন?';
+
+  @override
+  String get adminLessonDeleteFailed => 'পাঠ মুছে ফেলা যায়নি।';
+
+  @override
+  String get adminLessonReorderFailed => 'পাঠের ক্রম সংরক্ষণ করা যায়নি।';
+
+  @override
+  String get adminLessonFormSaved => 'পাঠ সংরক্ষিত হয়েছে।';
+
+  @override
+  String get adminLessonDetailsSection => 'পাঠ বিবরণ';
+
+  @override
+  String get adminLessonResourceType => 'রিসোর্স ধরন';
+
+  @override
+  String get adminLessonTypeYoutube => 'YouTube';
+
+  @override
+  String get adminLessonTypePdf => 'PDF';
+
+  @override
+  String get adminLessonTypeLink => 'লিংক';
+
+  @override
+  String get adminLessonTypeText => 'টেক্সট';
+
+  @override
+  String get adminLessonYoutubeUrl => 'YouTube URL';
+
+  @override
+  String get adminLessonPdfUrl => 'PDF URL';
+
+  @override
+  String get adminLessonLinkUrl => 'লিংক URL';
+
+  @override
+  String get adminLessonTextContent => 'টেক্সট বিষয়বস্তু';
+
+  @override
+  String get adminLessonResourceUrlRequired =>
+      'রিসোর্স URL বা বিষয়বস্তু প্রয়োজন।';
+
+  @override
+  String get adminLessonThumbnailUrl => 'থাম্বনেইল URL (ঐচ্ছিক)';
+
+  @override
+  String get adminLessonDuration => 'সময়কাল (মিনিট, ঐচ্ছিক)';
+
+  @override
+  String get adminLessonPublished => 'প্রকাশিত';
+
+  @override
+  String get adminQuizTitle => 'কুইজ';
+
+  @override
+  String get adminQuizCreateTitle => 'কুইজ তৈরি';
+
+  @override
+  String get adminQuizEditTitle => 'কুইজ সম্পাদনা';
+
+  @override
+  String get adminQuizFormSaved => 'কুইজ সংরক্ষিত হয়েছে।';
+
+  @override
+  String get adminQuizDetailsSection => 'কুইজ সেটিংস';
+
+  @override
+  String get adminQuizLinkedLesson => 'সংযুক্ত পাঠ (ঐচ্ছিক)';
+
+  @override
+  String get adminQuizScopeCourse => 'কোর্স-স্তরের কুইজ';
+
+  @override
+  String get adminQuizTimeLimit => 'সময়সীমা (সেকেন্ড, ০ = নেই)';
+
+  @override
+  String get adminQuizPassingScore => 'পাস স্কোর (প্রয়োজনীয় সঠিক উত্তর)';
+
+  @override
+  String get adminQuizQuestionsSection => 'প্রশ্ন';
+
+  @override
+  String get adminQuizQuestionsEmpty =>
+      'এখনো কোনো প্রশ্ন নেই। সংরক্ষণের আগে অন্তত একটি যোগ করুন।';
+
+  @override
+  String get adminQuizEmptyList => 'এখনো কোনো কুইজ নেই।';
+
+  @override
+  String get adminQuizQuestionsRequired => 'অন্তত একটি প্রশ্ন যোগ করুন।';
+
+  @override
+  String get adminQuizPassingScoreTooHigh =>
+      'পাস স্কোর প্রশ্ন সংখ্যার বেশি হতে পারে না।';
+
+  @override
+  String get adminQuizAddQuestion => 'প্রশ্ন যোগ';
+
+  @override
+  String get adminQuizQuestionCreateTitle => 'প্রশ্ন যোগ';
+
+  @override
+  String get adminQuizQuestionEditTitle => 'প্রশ্ন সম্পাদনা';
+
+  @override
+  String get adminQuizQuestionDeleteTitle => 'প্রশ্ন মুছবেন?';
+
+  @override
+  String get adminQuizQuestionTextSection => 'প্রশ্ন';
+
+  @override
+  String get adminQuizQuestionText => 'প্রশ্নের টেক্সট';
+
+  @override
+  String get adminQuizQuestionTextRequired => 'প্রশ্নের টেক্সট প্রয়োজন।';
+
+  @override
+  String get adminQuizOptionsSection => 'উত্তরের অপশন';
+
+  @override
+  String get adminQuizSelectCorrectHint =>
+      'সঠিক উত্তরের জন্য রেডিও বাটন নির্বাচন করুন।';
+
+  @override
+  String adminQuizOptionLabel(int number) {
+    return 'অপশন $number';
+  }
+
+  @override
+  String get adminQuizOptionRequired => 'অপশন প্রয়োজন।';
+
+  @override
+  String get adminQuizOptionsMinRequired => 'অন্তত দুটি অপশন প্রয়োজন।';
+
+  @override
+  String get adminQuizCorrectAnswerRequired =>
+      'টেক্সট সহ একটি সঠিক উত্তর নির্বাচন করুন।';
+
+  @override
+  String get adminQuizExplanationSection => 'ব্যাখ্যা';
+
+  @override
+  String get adminQuizExplanation => 'ব্যাখ্যা (কুইজের পর দেখানো হবে)';
+
+  @override
+  String get adminQuizQuestionDone => 'সম্পন্ন';
+
+  @override
+  String adminQuizCorrectAnswer(String answer) {
+    return 'উত্তর: $answer';
+  }
+
+  @override
+  String adminQuizOptionCount(int count) {
+    return '$count অপশন';
+  }
+
+  @override
+  String get syllabusTitle => 'পাঠ্যক্রম';
+
+  @override
+  String get syllabusSearchHint => 'কোর্স খুঁজুন…';
+
+  @override
+  String get syllabusEmptyList => 'এখনো কোনো প্রকাশিত কোর্স নেই।';
+
+  @override
+  String get syllabusLoadFailed => 'কোর্স লোড করা যায়নি।';
+
+  @override
+  String get syllabusNoSearchResults =>
+      'আপনার অনুসন্ধানের সাথে কোনো কোর্স মিলেনি।';
+
+  @override
+  String get syllabusAllTags => 'সব';
+
+  @override
+  String get syllabusEnroll => 'ভর্তি হন';
+
+  @override
+  String get syllabusEnrolled => 'ভর্তি হয়েছেন';
+
+  @override
+  String get syllabusEnrollPrompt =>
+      'এই কোর্সে আপনার অগ্রগতি ট্র্যাক করতে ভর্তি হন।';
+
+  @override
+  String get syllabusEnrollSuccess => 'আপনি ভর্তি হয়েছেন!';
+
+  @override
+  String syllabusProgressLabel(int completed, int total) {
+    return '$total পাঠের মধ্যে $completed';
+  }
+
+  @override
+  String get syllabusCourseCompleted => 'কোর্স সম্পন্ন';
+
+  @override
+  String get syllabusLessonsSection => 'পাঠ';
+
+  @override
+  String get syllabusNoLessons => 'এখনো কোনো পাঠ প্রকাশিত হয়নি।';
+
+  @override
+  String syllabusLessonCount(int count) {
+    return '$countটি পাঠ';
+  }
+
+  @override
+  String get syllabusCourseLoadFailed => 'কোর্স লোড করা যায়নি।';
+
+  @override
+  String get syllabusLessonLoadFailed => 'পাঠ লোড করা যায়নি।';
+
+  @override
+  String get syllabusMarkComplete => 'সম্পন্ন হিসেবে চিহ্নিত করুন';
+
+  @override
+  String get syllabusLessonCompleted => 'পাঠ সম্পন্ন';
+
+  @override
+  String get syllabusLessonCompleteSuccess => 'অগ্রগতি সংরক্ষিত!';
+
+  @override
+  String get syllabusEnrollToComplete =>
+      'পাঠের অগ্রগতি ট্র্যাক করতে এই কোর্সে ভর্তি হন।';
+
+  @override
+  String get syllabusOpenPdf => 'PDF খুলুন';
+
+  @override
+  String get syllabusOpenLink => 'লিংক খুলুন';
+
+  @override
+  String get syllabusInvalidYoutubeUrl => 'এই পাঠের YouTube URL সঠিক নয়।';
+
+  @override
+  String get syllabusVideoNowPlaying => 'এখন চলছে';
+
+  @override
+  String get syllabusVideoRewind => '১০ সেকেন্ড পেছনে';
+
+  @override
+  String get syllabusVideoForward => '১০ সেকেন্ড এগিয়ে';
+
+  @override
+  String get syllabusVideoRestart => 'আবার শুরু';
+
+  @override
+  String get syllabusVideoMute => 'নিঃশব্দ';
+
+  @override
+  String get syllabusVideoUnmute => 'শব্দ চালু';
+
+  @override
+  String get syllabusVideoOpenYoutube => 'YouTube-এ খুলুন';
+
+  @override
+  String get syllabusLaunchUrlFailed => 'এই রিসোর্স খোলা যায়নি।';
+
+  @override
+  String get syllabusQuizTitle => 'কুইজ';
+
+  @override
+  String get syllabusQuizLoadFailed => 'এই কুইজ লোড করা যায়নি।';
+
+  @override
+  String get syllabusQuizRulesTitle => 'শুরু করার আগে';
+
+  @override
+  String syllabusQuizQuestionCount(int count) {
+    return '$countটি প্রশ্ন';
+  }
+
+  @override
+  String syllabusQuizTimeLimitLabel(String limit) {
+    return 'সময়সীমা: $limit';
+  }
+
+  @override
+  String get syllabusQuizNoTimeLimit => 'সময়সীমা নেই';
+
+  @override
+  String syllabusQuizPassingScoreLabel(int score) {
+    return '$scoreটি সঠিক উত্তরে পাস';
+  }
+
+  @override
+  String get syllabusQuizPreviousAttempts => 'আপনার চেষ্টা';
+
+  @override
+  String syllabusQuizAttemptCount(int count) {
+    return '$countটি চেষ্টা';
+  }
+
+  @override
+  String syllabusQuizBestScore(int score, int total) {
+    return 'সর্বোচ্চ স্কোর: $score / $total';
+  }
+
+  @override
+  String get syllabusQuizAlreadyPassed => 'আপনি এই কুইজে পাস করেছেন';
+
+  @override
+  String get syllabusQuizStart => 'কুইজ শুরু করুন';
+
+  @override
+  String syllabusQuizProgress(int current, int total) {
+    return 'প্রশ্ন $current / $total';
+  }
+
+  @override
+  String get syllabusQuizQuestionLabel => 'প্রশ্ন';
+
+  @override
+  String get syllabusQuizNext => 'পরবর্তী';
+
+  @override
+  String get syllabusQuizPrevious => 'পূর্ববর্তী';
+
+  @override
+  String get syllabusQuizSubmit => 'জমা দিন';
+
+  @override
+  String get syllabusQuizTimeRemaining => 'বাকি সময়';
+
+  @override
+  String get syllabusQuizTimeUp => 'সময় শেষ — আপনার উত্তর জমা দেওয়া হচ্ছে।';
+
+  @override
+  String get syllabusQuizConfirmExitTitle => 'কুইজ ছেড়ে যাবেন?';
+
+  @override
+  String get syllabusQuizConfirmExitMessage =>
+      'এই চেষ্টার অগ্রগতি হারিয়ে যাবে।';
+
+  @override
+  String get syllabusQuizLeave => 'ছেড়ে যান';
+
+  @override
+  String get syllabusQuizResultTitle => 'কুইজ ফলাফল';
+
+  @override
+  String get syllabusQuizResultPassed => 'পাস!';
+
+  @override
+  String get syllabusQuizResultFailed => 'পাস হয়নি';
+
+  @override
+  String syllabusQuizYourScore(int score, int total) {
+    return 'স্কোর: $score / $total';
+  }
+
+  @override
+  String syllabusQuizTimeTaken(String time) {
+    return 'সময় লেগেছে: $time';
+  }
+
+  @override
+  String get syllabusQuizReviewSection => 'উত্তর পর্যালোচনা';
+
+  @override
+  String syllabusQuizReviewQuestion(int number) {
+    return 'প্রশ্ন $number';
+  }
+
+  @override
+  String get syllabusQuizYourAnswer => 'আপনার উত্তর';
+
+  @override
+  String get syllabusQuizCorrectAnswer => 'সঠিক উত্তর';
+
+  @override
+  String get syllabusQuizExplanation => 'ব্যাখ্যা';
+
+  @override
+  String get syllabusQuizRetry => 'আবার চেষ্টা করুন';
+
+  @override
+  String get syllabusQuizBackToCourse => 'কোর্সে ফিরে যান';
+
+  @override
+  String get syllabusQuizExcellent => 'অসাধারণ!';
+
+  @override
+  String get syllabusQuizGoodEffort => 'ভালো চেষ্টা!';
+
+  @override
+  String get syllabusQuizKeepLearning => 'শেখা চালিয়ে যান!';
+
+  @override
+  String get syllabusQuizNotReady => 'এই কুইজ এখনো প্রস্তুত নয়।';
 }

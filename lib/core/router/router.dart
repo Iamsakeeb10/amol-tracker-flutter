@@ -6,6 +6,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../features/admin/presentation/screens/admin_announcement_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_announcements_screen.dart';
+import '../../features/admin/presentation/screens/admin_course_form_screen.dart';
+import '../../features/admin/presentation/screens/admin_course_list_screen.dart';
+import '../../features/admin/presentation/screens/admin_lesson_form_screen.dart';
+import '../../features/admin/presentation/screens/admin_lesson_list_screen.dart';
+import '../../features/admin/presentation/screens/admin_question_editor_screen.dart';
+import '../../features/admin/presentation/screens/admin_quiz_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_push_notification_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/community/presentation/screens/community_screen.dart';
@@ -16,6 +22,9 @@ import '../../features/history/presentation/screens/history_screen.dart';
 import '../../features/home/presentation/screens/day_complete_screen.dart';
 import '../../models/amal_log_model.dart';
 import '../../models/announcement_model.dart';
+import '../../models/course_model.dart';
+import '../../features/admin/presentation/widgets/admin_course_helpers.dart';
+import '../../features/admin/presentation/widgets/admin_quiz_helpers.dart';
 import '../../features/home/presentation/screens/empty_state_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart';
@@ -30,6 +39,13 @@ import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/asma_ul_husna/presentation/screens/asma_ul_husna_screen.dart';
 import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
 import '../../features/hijri_calendar/presentation/screens/hijri_calendar_screen.dart';
+import '../../features/syllabus/presentation/screens/course_detail_screen.dart';
+import '../../features/syllabus/presentation/screens/lesson_viewer_screen.dart';
+import '../../features/syllabus/presentation/screens/quiz_intro_screen.dart';
+import '../../features/syllabus/presentation/screens/quiz_question_screen.dart';
+import '../../features/syllabus/presentation/screens/quiz_result_screen.dart';
+import '../../features/syllabus/presentation/screens/syllabus_library_screen.dart';
+import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/app_launch_route.dart';
 import '../../shared/widgets/bottom_nav.dart';
 import '../../shared/widgets/dev_screen.dart';
@@ -178,6 +194,55 @@ GoRouter buildAppRouter() {
         builder: (_, _) => const HijriCalendarScreen(),
       ),
       GoRoute(
+        path: AppRoutes.syllabus,
+        name: 'syllabus',
+        builder: (_, _) => const SyllabusLibraryScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.courseDetailPattern,
+        name: 'courseDetail',
+        builder: (_, state) {
+          final courseId = state.pathParameters['courseId'] ?? '';
+          return CourseDetailScreen(courseId: courseId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.lessonViewerPattern,
+        name: 'lessonViewer',
+        builder: (_, state) {
+          final courseId = state.pathParameters['courseId'] ?? '';
+          final lessonId = state.pathParameters['lessonId'] ?? '';
+          return LessonViewerScreen(courseId: courseId, lessonId: lessonId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.quizIntroPattern,
+        name: 'quizIntro',
+        builder: (_, state) {
+          final courseId = state.pathParameters['courseId'] ?? '';
+          final quizId = state.pathParameters['quizId'] ?? '';
+          return QuizIntroScreen(courseId: courseId, quizId: quizId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.quizPlayPattern,
+        name: 'quizPlay',
+        builder: (_, state) {
+          final courseId = state.pathParameters['courseId'] ?? '';
+          final quizId = state.pathParameters['quizId'] ?? '';
+          return QuizQuestionScreen(courseId: courseId, quizId: quizId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.quizResultPattern,
+        name: 'quizResult',
+        builder: (_, state) {
+          final courseId = state.pathParameters['courseId'] ?? '';
+          final quizId = state.pathParameters['quizId'] ?? '';
+          return QuizResultScreen(courseId: courseId, quizId: quizId);
+        },
+      ),
+      GoRoute(
         path: AppRoutes.adminAnnouncements,
         name: 'adminAnnouncements',
         builder: (_, _) => const AdminAnnouncementsScreen(),
@@ -196,6 +261,62 @@ GoRouter buildAppRouter() {
         path: AppRoutes.adminPushNotification,
         name: 'adminPushNotification',
         builder: (_, _) => const AdminPushNotificationScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminCourses,
+        name: 'adminCourses',
+        builder: (_, _) => const AdminCourseListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminCourseForm,
+        name: 'adminCourseForm',
+        builder: (_, state) {
+          final extra = state.extra;
+          return AdminCourseFormScreen(
+            existing: extra is CourseModel ? extra : null,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.adminLessonsPattern,
+        name: 'adminLessons',
+        builder: (_, state) {
+          final courseId = state.pathParameters['courseId'] ?? '';
+          return AdminLessonListScreen(courseId: courseId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.adminLessonForm,
+        name: 'adminLessonForm',
+        builder: (_, state) {
+          final extra = state.extra;
+          if (extra is! AdminLessonFormArgs) {
+            return const AdminCourseListScreen();
+          }
+          return AdminLessonFormScreen(args: extra);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.adminQuizForm,
+        name: 'adminQuizForm',
+        builder: (_, state) {
+          final extra = state.extra;
+          if (extra is! AdminQuizFormArgs) {
+            return const AdminCourseListScreen();
+          }
+          return AdminQuizFormScreen(args: extra);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.adminQuestionEditor,
+        name: 'adminQuestionEditor',
+        builder: (_, state) {
+          final extra = state.extra;
+          if (extra is! AdminQuestionEditorArgs) {
+            return const AdminCourseListScreen();
+          }
+          return AdminQuestionEditorScreen(args: extra);
+        },
       ),
       GoRoute(
         path: AppRoutes.settings,
@@ -220,15 +341,19 @@ GoRouter buildAppRouter() {
         ],
       ),
     ],
-    errorBuilder: (_, state) => Scaffold(
-      backgroundColor: AppColors.emeraldDeep,
-      body: Center(
-        child: Text(
-          'Route not found: ${state.uri.path}',
-          style: const TextStyle(color: AppColors.textSecondary),
+    errorBuilder: (context, state) {
+      final l10n = AppLocalizations.of(context);
+      return Scaffold(
+        backgroundColor: AppColors.emeraldDeep,
+        body: Center(
+          child: Text(
+            l10n?.routeNotFound(state.uri.path) ??
+                'Route not found: ${state.uri.path}',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
 }
 

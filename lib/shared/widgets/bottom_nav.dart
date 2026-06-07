@@ -7,6 +7,7 @@ import '../../core/router/routes.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/confirm_exit_app_on_back.dart';
+import '../../l10n/app_localizations.dart';
 import 'home_save_fab.dart';
 
 class ScaffoldWithBottomNav extends ConsumerWidget {
@@ -23,7 +24,10 @@ class ScaffoldWithBottomNav extends ConsumerWidget {
         location.startsWith('/notifications') ||
         location.startsWith('/leaderboard') ||
         location.startsWith('/settings') ||
-        location.startsWith('/hijri-calendar')) {
+        location.startsWith('/hijri-calendar') ||
+        location.startsWith('/syllabus') ||
+        location.startsWith('/dhikr') ||
+        location.startsWith('/asma-ul-husna')) {
       return 3;
     }
     return 0;
@@ -69,19 +73,24 @@ class _BottomNavBar extends StatelessWidget {
 
   const _BottomNavBar({required this.currentIndex, required this.onTap});
 
-  static const _items = <_NavItem>[
-    _NavItem(Icons.home_outlined, Icons.home_rounded, 'Home'),
-    _NavItem(
-      Icons.calendar_today_outlined,
-      Icons.calendar_today,
-      'History',
-    ),
-    _NavItem(Icons.grid_view_outlined, Icons.grid_view_rounded, 'Community'),
-    _NavItem(Icons.menu, Icons.menu_open, 'More'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final items = <_NavItem>[
+      _NavItem(Icons.home_outlined, Icons.home_rounded, l10n.navHome),
+      _NavItem(
+        Icons.calendar_today_outlined,
+        Icons.calendar_today,
+        l10n.navHistory,
+      ),
+      _NavItem(
+        Icons.grid_view_outlined,
+        Icons.grid_view_rounded,
+        l10n.navCommunity,
+      ),
+      _NavItem(Icons.menu, Icons.menu_open, l10n.navMore),
+    ];
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.emeraldDeep.withValues(alpha: 0.95),
@@ -94,9 +103,9 @@ class _BottomNavBar extends StatelessWidget {
         child: SizedBox(
           height: 64.h,
           child: Row(
-            children: List.generate(_items.length, (i) {
+            children: List.generate(items.length, (i) {
               final selected = currentIndex == i;
-              final item = _items[i];
+              final item = items[i];
               return Expanded(
                 child: InkWell(
                   onTap: () => onTap(i),

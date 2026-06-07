@@ -99,8 +99,8 @@ class _AdminAnnouncementFormScreenState
       return;
     }
 
-    final uid = ref.read(authStateProvider).asData?.value?.uid;
-    if (!AdminConfig.isAdmin(uid)) return;
+    final user = ref.read(currentUserProvider).asData?.value;
+    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) return;
 
     setState(() => _isSaving = true);
     final data = announcementToFirestoreMap(
@@ -121,11 +121,14 @@ class _AdminAnnouncementFormScreenState
       if (_isEdit) {
         await service.updateAnnouncement(widget.existing!.id, data);
       } else {
-        await service.createAnnouncement(data: data, adminUid: uid!);
+        await service.createAnnouncement(data: data, adminUid: user!.uid);
       }
       if (!mounted) return;
-      showAdminSnackBar(context, message: l10n.adminFormSaved);
-      context.pop();
+      showAdminSnackBar(
+        context,
+        message: l10n.adminFormSaved,
+        popAfter: true,
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSaving = false);
@@ -149,9 +152,9 @@ class _AdminAnnouncementFormScreenState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final uid = ref.watch(authStateProvider).asData?.value?.uid;
+    final user = ref.watch(currentUserProvider).asData?.value;
 
-    if (!AdminConfig.isAdmin(uid)) {
+    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) {
       return AppScaffold(
         body: Center(
           child: Text(

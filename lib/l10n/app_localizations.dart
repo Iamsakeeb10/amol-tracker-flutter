@@ -566,6 +566,36 @@ abstract class AppLocalizations {
   /// **'MORE'**
   String get more;
 
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get navHistory;
+
+  /// No description provided for @navCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get navCommunity;
+
+  /// No description provided for @navMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get navMore;
+
+  /// No description provided for @routeNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Route not found: {path}'**
+  String routeNotFound(String path);
+
   /// No description provided for @account.
   ///
   /// In en, this message translates to:
@@ -1039,6 +1069,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{behind} pts behind 1st place - log today to take the lead.'**
   String leaderboardNudgeBehindFirstPoints(Object behind);
+
+  /// No description provided for @leaderboardQuizTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get leaderboardQuizTab;
+
+  /// No description provided for @leaderboardQuizBeFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Be the first to pass a quiz!'**
+  String get leaderboardQuizBeFirst;
+
+  /// No description provided for @leaderboardNudgeBehindQuizPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{behind} pts behind 2nd place - pass more quizzes to climb.'**
+  String leaderboardNudgeBehindQuizPoints(Object behind);
+
+  /// No description provided for @leaderboardNudgeBehindFirstQuizPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{behind} pts behind 1st place - pass more quizzes to take the lead.'**
+  String leaderboardNudgeBehindFirstQuizPoints(Object behind);
 
   /// No description provided for @history.
   ///
@@ -1994,6 +2048,18 @@ abstract class AppLocalizations {
   /// **'Score 80+ for 7 consecutive days.'**
   String get badgePerfectWeekDesc;
 
+  /// No description provided for @badgeCourseGraduateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Graduate'**
+  String get badgeCourseGraduateTitle;
+
+  /// No description provided for @badgeCourseGraduateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete all lessons in a syllabus course.'**
+  String get badgeCourseGraduateDesc;
+
   /// No description provided for @exitAppTitle.
   ///
   /// In en, this message translates to:
@@ -2617,6 +2683,894 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Gateway key missing. Run with --dart-define=DUA_PUSH_GATEWAY_KEY=your_key'**
   String get adminPushGatewayKeyMissing;
+
+  /// No description provided for @adminCoursesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get adminCoursesTitle;
+
+  /// No description provided for @adminCourseCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create course'**
+  String get adminCourseCreateTitle;
+
+  /// No description provided for @adminCourseEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit course'**
+  String get adminCourseEditTitle;
+
+  /// No description provided for @adminCourseEmptyList.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses yet. Tap + to create one.'**
+  String get adminCourseEmptyList;
+
+  /// No description provided for @adminCourseLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load courses.'**
+  String get adminCourseLoadFailed;
+
+  /// No description provided for @adminCourseDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete course?'**
+  String get adminCourseDeleteTitle;
+
+  /// No description provided for @adminCourseDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete course.'**
+  String get adminCourseDeleteFailed;
+
+  /// No description provided for @adminCoursePublishFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update course status.'**
+  String get adminCoursePublishFailed;
+
+  /// No description provided for @adminCourseFormSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Course saved.'**
+  String get adminCourseFormSaved;
+
+  /// No description provided for @adminCoursePublishedPushTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New course available'**
+  String get adminCoursePublishedPushTitle;
+
+  /// No description provided for @adminCoursePublishedPushMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A new syllabus course is live: {title}. Open Syllabus to enroll.'**
+  String adminCoursePublishedPushMessage(String title);
+
+  /// No description provided for @adminCourseManageLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage lessons'**
+  String get adminCourseManageLessons;
+
+  /// No description provided for @adminCourseDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get adminCourseDescription;
+
+  /// No description provided for @adminCourseDescriptionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Description is required.'**
+  String get adminCourseDescriptionRequired;
+
+  /// No description provided for @adminCourseCoverUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover image URL (optional)'**
+  String get adminCourseCoverUrl;
+
+  /// No description provided for @adminCourseTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags (comma-separated)'**
+  String get adminCourseTags;
+
+  /// No description provided for @adminCourseModerators.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderator UIDs (comma-separated)'**
+  String get adminCourseModerators;
+
+  /// No description provided for @adminCourseDetailsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Course details'**
+  String get adminCourseDetailsSection;
+
+  /// No description provided for @adminCourseModeratorsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderators'**
+  String get adminCourseModeratorsSection;
+
+  /// No description provided for @adminCourseStatusSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get adminCourseStatusSection;
+
+  /// No description provided for @adminCourseStatusPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get adminCourseStatusPublished;
+
+  /// No description provided for @adminCourseStatusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get adminCourseStatusDraft;
+
+  /// No description provided for @adminLessonsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons'**
+  String get adminLessonsTitle;
+
+  /// No description provided for @adminLessonsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder lessons. Toggle publish when ready.'**
+  String get adminLessonsSubtitle;
+
+  /// No description provided for @adminLessonCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add lesson'**
+  String get adminLessonCreateTitle;
+
+  /// No description provided for @adminLessonEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit lesson'**
+  String get adminLessonEditTitle;
+
+  /// No description provided for @adminLessonEmptyList.
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons yet. Tap + to add one.'**
+  String get adminLessonEmptyList;
+
+  /// No description provided for @adminLessonLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load lessons.'**
+  String get adminLessonLoadFailed;
+
+  /// No description provided for @adminLessonDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete lesson?'**
+  String get adminLessonDeleteTitle;
+
+  /// No description provided for @adminLessonDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete lesson.'**
+  String get adminLessonDeleteFailed;
+
+  /// No description provided for @adminLessonReorderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save lesson order.'**
+  String get adminLessonReorderFailed;
+
+  /// No description provided for @adminLessonFormSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson saved.'**
+  String get adminLessonFormSaved;
+
+  /// No description provided for @adminLessonDetailsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson details'**
+  String get adminLessonDetailsSection;
+
+  /// No description provided for @adminLessonResourceType.
+  ///
+  /// In en, this message translates to:
+  /// **'Resource type'**
+  String get adminLessonResourceType;
+
+  /// No description provided for @adminLessonTypeYoutube.
+  ///
+  /// In en, this message translates to:
+  /// **'YouTube'**
+  String get adminLessonTypeYoutube;
+
+  /// No description provided for @adminLessonTypePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF'**
+  String get adminLessonTypePdf;
+
+  /// No description provided for @adminLessonTypeLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get adminLessonTypeLink;
+
+  /// No description provided for @adminLessonTypeText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get adminLessonTypeText;
+
+  /// No description provided for @adminLessonYoutubeUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'YouTube URL'**
+  String get adminLessonYoutubeUrl;
+
+  /// No description provided for @adminLessonPdfUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF URL'**
+  String get adminLessonPdfUrl;
+
+  /// No description provided for @adminLessonLinkUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Link URL'**
+  String get adminLessonLinkUrl;
+
+  /// No description provided for @adminLessonTextContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Text content'**
+  String get adminLessonTextContent;
+
+  /// No description provided for @adminLessonResourceUrlRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Resource URL or content is required.'**
+  String get adminLessonResourceUrlRequired;
+
+  /// No description provided for @adminLessonThumbnailUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Thumbnail URL (optional)'**
+  String get adminLessonThumbnailUrl;
+
+  /// No description provided for @adminLessonDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (minutes, optional)'**
+  String get adminLessonDuration;
+
+  /// No description provided for @adminLessonPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get adminLessonPublished;
+
+  /// No description provided for @adminQuizTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quizzes'**
+  String get adminQuizTitle;
+
+  /// No description provided for @adminQuizCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create quiz'**
+  String get adminQuizCreateTitle;
+
+  /// No description provided for @adminQuizEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit quiz'**
+  String get adminQuizEditTitle;
+
+  /// No description provided for @adminQuizFormSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz saved.'**
+  String get adminQuizFormSaved;
+
+  /// No description provided for @adminQuizDetailsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz settings'**
+  String get adminQuizDetailsSection;
+
+  /// No description provided for @adminQuizLinkedLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked lesson (optional)'**
+  String get adminQuizLinkedLesson;
+
+  /// No description provided for @adminQuizScopeCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Course-level quiz'**
+  String get adminQuizScopeCourse;
+
+  /// No description provided for @adminQuizTimeLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Time limit (seconds, 0 = none)'**
+  String get adminQuizTimeLimit;
+
+  /// No description provided for @adminQuizPassingScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Passing score (correct answers needed)'**
+  String get adminQuizPassingScore;
+
+  /// No description provided for @adminQuizQuestionsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get adminQuizQuestionsSection;
+
+  /// No description provided for @adminQuizQuestionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No questions yet. Add at least one before saving.'**
+  String get adminQuizQuestionsEmpty;
+
+  /// No description provided for @adminQuizEmptyList.
+  ///
+  /// In en, this message translates to:
+  /// **'No quizzes yet.'**
+  String get adminQuizEmptyList;
+
+  /// No description provided for @adminQuizQuestionsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one question.'**
+  String get adminQuizQuestionsRequired;
+
+  /// No description provided for @adminQuizPassingScoreTooHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Passing score cannot exceed question count.'**
+  String get adminQuizPassingScoreTooHigh;
+
+  /// No description provided for @adminQuizAddQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Add question'**
+  String get adminQuizAddQuestion;
+
+  /// No description provided for @adminQuizQuestionCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add question'**
+  String get adminQuizQuestionCreateTitle;
+
+  /// No description provided for @adminQuizQuestionEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit question'**
+  String get adminQuizQuestionEditTitle;
+
+  /// No description provided for @adminQuizQuestionDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete question?'**
+  String get adminQuizQuestionDeleteTitle;
+
+  /// No description provided for @adminQuizQuestionTextSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get adminQuizQuestionTextSection;
+
+  /// No description provided for @adminQuizQuestionText.
+  ///
+  /// In en, this message translates to:
+  /// **'Question text'**
+  String get adminQuizQuestionText;
+
+  /// No description provided for @adminQuizQuestionTextRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Question text is required.'**
+  String get adminQuizQuestionTextRequired;
+
+  /// No description provided for @adminQuizOptionsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer options'**
+  String get adminQuizOptionsSection;
+
+  /// No description provided for @adminQuizSelectCorrectHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the radio button for the correct answer.'**
+  String get adminQuizSelectCorrectHint;
+
+  /// No description provided for @adminQuizOptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Option {number}'**
+  String adminQuizOptionLabel(int number);
+
+  /// No description provided for @adminQuizOptionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Option is required.'**
+  String get adminQuizOptionRequired;
+
+  /// No description provided for @adminQuizOptionsMinRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'At least two options are required.'**
+  String get adminQuizOptionsMinRequired;
+
+  /// No description provided for @adminQuizCorrectAnswerRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a correct answer with text.'**
+  String get adminQuizCorrectAnswerRequired;
+
+  /// No description provided for @adminQuizExplanationSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation'**
+  String get adminQuizExplanationSection;
+
+  /// No description provided for @adminQuizExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation (shown after quiz)'**
+  String get adminQuizExplanation;
+
+  /// No description provided for @adminQuizQuestionDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get adminQuizQuestionDone;
+
+  /// No description provided for @adminQuizCorrectAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer: {answer}'**
+  String adminQuizCorrectAnswer(String answer);
+
+  /// No description provided for @adminQuizOptionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} opts'**
+  String adminQuizOptionCount(int count);
+
+  /// No description provided for @syllabusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Syllabus'**
+  String get syllabusTitle;
+
+  /// No description provided for @syllabusSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search courses…'**
+  String get syllabusSearchHint;
+
+  /// No description provided for @syllabusEmptyList.
+  ///
+  /// In en, this message translates to:
+  /// **'No published courses yet.'**
+  String get syllabusEmptyList;
+
+  /// No description provided for @syllabusLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load courses.'**
+  String get syllabusLoadFailed;
+
+  /// No description provided for @syllabusNoSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No courses match your search.'**
+  String get syllabusNoSearchResults;
+
+  /// No description provided for @syllabusAllTags.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get syllabusAllTags;
+
+  /// No description provided for @syllabusEnroll.
+  ///
+  /// In en, this message translates to:
+  /// **'Enroll'**
+  String get syllabusEnroll;
+
+  /// No description provided for @syllabusEnrolled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolled'**
+  String get syllabusEnrolled;
+
+  /// No description provided for @syllabusEnrollPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enroll to track your progress through this course.'**
+  String get syllabusEnrollPrompt;
+
+  /// No description provided for @syllabusEnrollSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re enrolled!'**
+  String get syllabusEnrollSuccess;
+
+  /// No description provided for @syllabusProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} of {total} lessons'**
+  String syllabusProgressLabel(int completed, int total);
+
+  /// No description provided for @syllabusCourseCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Course completed'**
+  String get syllabusCourseCompleted;
+
+  /// No description provided for @syllabusLessonsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons'**
+  String get syllabusLessonsSection;
+
+  /// No description provided for @syllabusNoLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons published yet.'**
+  String get syllabusNoLessons;
+
+  /// No description provided for @syllabusLessonCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons'**
+  String syllabusLessonCount(int count);
+
+  /// No description provided for @syllabusCourseLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load course.'**
+  String get syllabusCourseLoadFailed;
+
+  /// No description provided for @syllabusLessonLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load lesson.'**
+  String get syllabusLessonLoadFailed;
+
+  /// No description provided for @syllabusMarkComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as complete'**
+  String get syllabusMarkComplete;
+
+  /// No description provided for @syllabusLessonCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson completed'**
+  String get syllabusLessonCompleted;
+
+  /// No description provided for @syllabusLessonCompleteSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress saved!'**
+  String get syllabusLessonCompleteSuccess;
+
+  /// No description provided for @syllabusEnrollToComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Enroll in this course to track lesson progress.'**
+  String get syllabusEnrollToComplete;
+
+  /// No description provided for @syllabusOpenPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Open PDF'**
+  String get syllabusOpenPdf;
+
+  /// No description provided for @syllabusOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Open link'**
+  String get syllabusOpenLink;
+
+  /// No description provided for @syllabusInvalidYoutubeUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'This lesson has an invalid YouTube URL.'**
+  String get syllabusInvalidYoutubeUrl;
+
+  /// No description provided for @syllabusVideoNowPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Now playing'**
+  String get syllabusVideoNowPlaying;
+
+  /// No description provided for @syllabusVideoRewind.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewind 10s'**
+  String get syllabusVideoRewind;
+
+  /// No description provided for @syllabusVideoForward.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward 10s'**
+  String get syllabusVideoForward;
+
+  /// No description provided for @syllabusVideoRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart'**
+  String get syllabusVideoRestart;
+
+  /// No description provided for @syllabusVideoMute.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get syllabusVideoMute;
+
+  /// No description provided for @syllabusVideoUnmute.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get syllabusVideoUnmute;
+
+  /// No description provided for @syllabusVideoOpenYoutube.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in YouTube'**
+  String get syllabusVideoOpenYoutube;
+
+  /// No description provided for @syllabusLaunchUrlFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open this resource.'**
+  String get syllabusLaunchUrlFailed;
+
+  /// No description provided for @syllabusQuizTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get syllabusQuizTitle;
+
+  /// No description provided for @syllabusQuizLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this quiz.'**
+  String get syllabusQuizLoadFailed;
+
+  /// No description provided for @syllabusQuizRulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you start'**
+  String get syllabusQuizRulesTitle;
+
+  /// No description provided for @syllabusQuizQuestionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} questions'**
+  String syllabusQuizQuestionCount(int count);
+
+  /// No description provided for @syllabusQuizTimeLimitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time limit: {limit}'**
+  String syllabusQuizTimeLimitLabel(String limit);
+
+  /// No description provided for @syllabusQuizNoTimeLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'No time limit'**
+  String get syllabusQuizNoTimeLimit;
+
+  /// No description provided for @syllabusQuizPassingScoreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pass with {score} correct answers'**
+  String syllabusQuizPassingScoreLabel(int score);
+
+  /// No description provided for @syllabusQuizPreviousAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Your attempts'**
+  String get syllabusQuizPreviousAttempts;
+
+  /// No description provided for @syllabusQuizAttemptCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} attempt(s)'**
+  String syllabusQuizAttemptCount(int count);
+
+  /// No description provided for @syllabusQuizBestScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Best score: {score} / {total}'**
+  String syllabusQuizBestScore(int score, int total);
+
+  /// No description provided for @syllabusQuizAlreadyPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'You passed this quiz'**
+  String get syllabusQuizAlreadyPassed;
+
+  /// No description provided for @syllabusQuizStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start quiz'**
+  String get syllabusQuizStart;
+
+  /// No description provided for @syllabusQuizProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {current} of {total}'**
+  String syllabusQuizProgress(int current, int total);
+
+  /// No description provided for @syllabusQuizQuestionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get syllabusQuizQuestionLabel;
+
+  /// No description provided for @syllabusQuizNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get syllabusQuizNext;
+
+  /// No description provided for @syllabusQuizPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get syllabusQuizPrevious;
+
+  /// No description provided for @syllabusQuizSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get syllabusQuizSubmit;
+
+  /// No description provided for @syllabusQuizTimeRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Time remaining'**
+  String get syllabusQuizTimeRemaining;
+
+  /// No description provided for @syllabusQuizTimeUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Time is up — submitting your answers.'**
+  String get syllabusQuizTimeUp;
+
+  /// No description provided for @syllabusQuizConfirmExitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave quiz?'**
+  String get syllabusQuizConfirmExitTitle;
+
+  /// No description provided for @syllabusQuizConfirmExitMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress on this attempt will be lost.'**
+  String get syllabusQuizConfirmExitMessage;
+
+  /// No description provided for @syllabusQuizLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get syllabusQuizLeave;
+
+  /// No description provided for @syllabusQuizResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz result'**
+  String get syllabusQuizResultTitle;
+
+  /// No description provided for @syllabusQuizResultPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed!'**
+  String get syllabusQuizResultPassed;
+
+  /// No description provided for @syllabusQuizResultFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not passed'**
+  String get syllabusQuizResultFailed;
+
+  /// No description provided for @syllabusQuizYourScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score: {score} / {total}'**
+  String syllabusQuizYourScore(int score, int total);
+
+  /// No description provided for @syllabusQuizTimeTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Time taken: {time}'**
+  String syllabusQuizTimeTaken(String time);
+
+  /// No description provided for @syllabusQuizReviewSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer review'**
+  String get syllabusQuizReviewSection;
+
+  /// No description provided for @syllabusQuizReviewQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {number}'**
+  String syllabusQuizReviewQuestion(int number);
+
+  /// No description provided for @syllabusQuizYourAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get syllabusQuizYourAnswer;
+
+  /// No description provided for @syllabusQuizCorrectAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answer'**
+  String get syllabusQuizCorrectAnswer;
+
+  /// No description provided for @syllabusQuizExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Explanation'**
+  String get syllabusQuizExplanation;
+
+  /// No description provided for @syllabusQuizRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get syllabusQuizRetry;
+
+  /// No description provided for @syllabusQuizBackToCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to course'**
+  String get syllabusQuizBackToCourse;
+
+  /// No description provided for @syllabusQuizExcellent.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent!'**
+  String get syllabusQuizExcellent;
+
+  /// No description provided for @syllabusQuizGoodEffort.
+  ///
+  /// In en, this message translates to:
+  /// **'Good effort!'**
+  String get syllabusQuizGoodEffort;
+
+  /// No description provided for @syllabusQuizKeepLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep learning!'**
+  String get syllabusQuizKeepLearning;
+
+  /// No description provided for @syllabusQuizNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'This quiz is not ready yet.'**
+  String get syllabusQuizNotReady;
 }
 
 class _AppLocalizationsDelegate

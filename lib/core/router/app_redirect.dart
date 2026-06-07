@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../constants/admin_config.dart';
 import '../services/firestore_service.dart';
+import '../services/syllabus_service.dart';
 import 'routes.dart';
 
 /// Auth-aware redirect used by [GoRouter] (except on launch/dev).
@@ -29,9 +30,34 @@ Future<String?> redirectForLocation(
     return AppRoutes.home;
   }
 
-  final isAdminRoute = location.startsWith('/admin');
-  if (isAdminRoute && !AdminConfig.isAdmin(authUser.uid)) {
-    return AppRoutes.home;
+  if (location.startsWith('/admin')) {
+    if (AdminConfig.isUidAdmin(authUser.uid)) return null;
+
+    final user = await firestoreService.fetchUser(authUser.uid);
+    final role = user?.role;
+
+    if (AdminConfig.isFullAdminRoute(location)) {
+      if (!AdminConfig.isFullAdmin(authUser.uid, role: role)) {
+        return AppRoutes.home;
+      }
+      return null;
+    }
+
+    if (AdminConfig.isCourseAdminRoute(location)) {
+      if (AdminConfig.canAccessCourseAdmin(authUser.uid, role: role)) {
+        return null;
+      }
+      final isListedModerator =
+          await SyllabusService().isListedCourseModerator(authUser.uid);
+      if (!isListedModerator) {
+        return AppRoutes.home;
+      }
+      return null;
+    }
+
+    if (!AdminConfig.isFullAdmin(authUser.uid, role: role)) {
+      return AppRoutes.home;
+    }
   }
 
   return null;

@@ -304,6 +304,8 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
         return l10n.badgeTopCommunityTitle;
       case 'perfectWeek':
         return l10n.badgePerfectWeekTitle;
+      case 'courseGraduate':
+        return l10n.badgeCourseGraduateTitle;
       default:
         return badge.title;
     }
@@ -327,6 +329,8 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
         return l10n.badgeTopCommunityDesc;
       case 'perfectWeek':
         return l10n.badgePerfectWeekDesc;
+      case 'courseGraduate':
+        return l10n.badgeCourseGraduateDesc;
       default:
         return badge.description;
     }

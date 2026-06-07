@@ -1,7 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/services/islamic_date_service.dart';
+import '../core/services/quiz_leaderboard_service.dart';
 import 'auth_provider.dart';
+
+final quizLeaderboardServiceProvider = Provider<QuizLeaderboardService>(
+  (ref) => QuizLeaderboardService(),
+);
 
 class LeaderboardEntry {
   const LeaderboardEntry({
@@ -99,6 +104,34 @@ final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
         isAnonymousDisplay:
             user?.isAnonymousDisplay ??
             (row['isAnonymousDisplay'] as bool? ?? false),
+        score: row['score'] as int? ?? 0,
+      ),
+    );
+  }
+  return entries;
+});
+
+final quizLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
+  ref,
+) async {
+  final rows =
+      await ref.read(quizLeaderboardServiceProvider).fetchLeaderboard();
+  final fs = ref.read(firestoreServiceProvider);
+  final users = await fs.usersByIds(
+    rows.map((row) => (row['uid'] as String?) ?? ''),
+  );
+  final entries = <LeaderboardEntry>[];
+  for (final row in rows) {
+    final uid = (row['uid'] as String?) ?? '';
+    if (uid.isEmpty) continue;
+    final user = users[uid];
+    final showOnLeaderboard = user?.showOnLeaderboard ?? true;
+    if (!showOnLeaderboard) continue;
+    entries.add(
+      LeaderboardEntry(
+        uid: uid,
+        displayName: _safeName(user?.name ?? ''),
+        isAnonymousDisplay: user?.isAnonymousDisplay ?? false,
         score: row['score'] as int? ?? 0,
       ),
     );

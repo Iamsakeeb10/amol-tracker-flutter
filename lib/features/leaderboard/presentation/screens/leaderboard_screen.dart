@@ -27,6 +27,7 @@ class LeaderboardScreen extends ConsumerStatefulWidget {
 class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   int _periodIndex = 0;
   bool get _isStreak => _periodIndex == 2;
+  bool get _isQuiz => _periodIndex == 3;
 
   void _logDebug(String message) {
     if (kDebugMode) {
@@ -45,13 +46,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final periods = [l10n.weekly, l10n.daily, l10n.streak];
+    final periods = [l10n.weekly, l10n.daily, l10n.streak, l10n.leaderboardQuizTab];
     final authUid = ref.watch(authStateProvider).asData?.value?.uid;
-    final data = _periodIndex == 0
-        ? ref.watch(weeklyLeaderboardProvider)
-        : _periodIndex == 1
-        ? ref.watch(dailyLeaderboardProvider)
-        : ref.watch(streakLeaderboardProvider);
+    final data = switch (_periodIndex) {
+      0 => ref.watch(weeklyLeaderboardProvider),
+      1 => ref.watch(dailyLeaderboardProvider),
+      2 => ref.watch(streakLeaderboardProvider),
+      _ => ref.watch(quizLeaderboardProvider),
+    };
 
     return AppScaffold(
       appBar: AppBar(
@@ -116,7 +118,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         SliverToBoxAdapter(
           child: CardContainer(
             child: Text(
-              l10n.leaderboardBeFirstToday,
+              _isQuiz
+                  ? l10n.leaderboardQuizBeFirst
+                  : l10n.leaderboardBeFirstToday,
               style: AppTextStyles.bodyLarge(context),
             ),
           ),
@@ -261,6 +265,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         ? (isSecondPlace
               ? l10n.leaderboardNudgeBehindFirstDays(behind)
               : l10n.leaderboardNudgeBehindDays(behind))
+        : _isQuiz
+        ? (isSecondPlace
+              ? l10n.leaderboardNudgeBehindFirstQuizPoints(behind)
+              : l10n.leaderboardNudgeBehindQuizPoints(behind))
         : (isSecondPlace
               ? l10n.leaderboardNudgeBehindFirstPoints(behind)
               : l10n.leaderboardNudgeBehindPoints(behind));
@@ -310,7 +318,7 @@ class _Tabs extends StatelessWidget {
                 child: Text(
                   options[i],
                   style: AppTextStyles.button(context).copyWith(
-                    fontSize: 12.sp,
+                    fontSize: options.length > 3 ? 11.sp : 12.sp,
                     color: selected
                         ? AppColors.emeraldDeep
                         : AppColors.textSecondary,

@@ -256,6 +256,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get more => 'MORE';
 
   @override
+  String get navHome => 'Home';
+
+  @override
+  String get navHistory => 'History';
+
+  @override
+  String get navCommunity => 'Community';
+
+  @override
+  String get navMore => 'More';
+
+  @override
+  String routeNotFound(String path) {
+    return 'Route not found: $path';
+  }
+
+  @override
   String get account => 'Account';
 
   @override
@@ -527,6 +544,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String leaderboardNudgeBehindFirstPoints(Object behind) {
     return '$behind pts behind 1st place - log today to take the lead.';
+  }
+
+  @override
+  String get leaderboardQuizTab => 'Quiz';
+
+  @override
+  String get leaderboardQuizBeFirst => 'Be the first to pass a quiz!';
+
+  @override
+  String leaderboardNudgeBehindQuizPoints(Object behind) {
+    return '$behind pts behind 2nd place - pass more quizzes to climb.';
+  }
+
+  @override
+  String leaderboardNudgeBehindFirstQuizPoints(Object behind) {
+    return '$behind pts behind 1st place - pass more quizzes to take the lead.';
   }
 
   @override
@@ -1042,6 +1075,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get badgePerfectWeekDesc => 'Score 80+ for 7 consecutive days.';
 
   @override
+  String get badgeCourseGraduateTitle => 'Course Graduate';
+
+  @override
+  String get badgeCourseGraduateDesc =>
+      'Complete all lessons in a syllabus course.';
+
+  @override
   String get exitAppTitle => 'Exit app?';
 
   @override
@@ -1366,4 +1406,489 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get adminPushGatewayKeyMissing =>
       'Gateway key missing. Run with --dart-define=DUA_PUSH_GATEWAY_KEY=your_key';
+
+  @override
+  String get adminCoursesTitle => 'Courses';
+
+  @override
+  String get adminCourseCreateTitle => 'Create course';
+
+  @override
+  String get adminCourseEditTitle => 'Edit course';
+
+  @override
+  String get adminCourseEmptyList => 'No courses yet. Tap + to create one.';
+
+  @override
+  String get adminCourseLoadFailed => 'Could not load courses.';
+
+  @override
+  String get adminCourseDeleteTitle => 'Delete course?';
+
+  @override
+  String get adminCourseDeleteFailed => 'Could not delete course.';
+
+  @override
+  String get adminCoursePublishFailed => 'Could not update course status.';
+
+  @override
+  String get adminCourseFormSaved => 'Course saved.';
+
+  @override
+  String get adminCoursePublishedPushTitle => 'New course available';
+
+  @override
+  String adminCoursePublishedPushMessage(String title) {
+    return 'A new syllabus course is live: $title. Open Syllabus to enroll.';
+  }
+
+  @override
+  String get adminCourseManageLessons => 'Manage lessons';
+
+  @override
+  String get adminCourseDescription => 'Description';
+
+  @override
+  String get adminCourseDescriptionRequired => 'Description is required.';
+
+  @override
+  String get adminCourseCoverUrl => 'Cover image URL (optional)';
+
+  @override
+  String get adminCourseTags => 'Tags (comma-separated)';
+
+  @override
+  String get adminCourseModerators => 'Moderator UIDs (comma-separated)';
+
+  @override
+  String get adminCourseDetailsSection => 'Course details';
+
+  @override
+  String get adminCourseModeratorsSection => 'Moderators';
+
+  @override
+  String get adminCourseStatusSection => 'Status';
+
+  @override
+  String get adminCourseStatusPublished => 'Published';
+
+  @override
+  String get adminCourseStatusDraft => 'Draft';
+
+  @override
+  String get adminLessonsTitle => 'Lessons';
+
+  @override
+  String get adminLessonsSubtitle =>
+      'Drag to reorder lessons. Toggle publish when ready.';
+
+  @override
+  String get adminLessonCreateTitle => 'Add lesson';
+
+  @override
+  String get adminLessonEditTitle => 'Edit lesson';
+
+  @override
+  String get adminLessonEmptyList => 'No lessons yet. Tap + to add one.';
+
+  @override
+  String get adminLessonLoadFailed => 'Could not load lessons.';
+
+  @override
+  String get adminLessonDeleteTitle => 'Delete lesson?';
+
+  @override
+  String get adminLessonDeleteFailed => 'Could not delete lesson.';
+
+  @override
+  String get adminLessonReorderFailed => 'Could not save lesson order.';
+
+  @override
+  String get adminLessonFormSaved => 'Lesson saved.';
+
+  @override
+  String get adminLessonDetailsSection => 'Lesson details';
+
+  @override
+  String get adminLessonResourceType => 'Resource type';
+
+  @override
+  String get adminLessonTypeYoutube => 'YouTube';
+
+  @override
+  String get adminLessonTypePdf => 'PDF';
+
+  @override
+  String get adminLessonTypeLink => 'Link';
+
+  @override
+  String get adminLessonTypeText => 'Text';
+
+  @override
+  String get adminLessonYoutubeUrl => 'YouTube URL';
+
+  @override
+  String get adminLessonPdfUrl => 'PDF URL';
+
+  @override
+  String get adminLessonLinkUrl => 'Link URL';
+
+  @override
+  String get adminLessonTextContent => 'Text content';
+
+  @override
+  String get adminLessonResourceUrlRequired =>
+      'Resource URL or content is required.';
+
+  @override
+  String get adminLessonThumbnailUrl => 'Thumbnail URL (optional)';
+
+  @override
+  String get adminLessonDuration => 'Duration (minutes, optional)';
+
+  @override
+  String get adminLessonPublished => 'Published';
+
+  @override
+  String get adminQuizTitle => 'Quizzes';
+
+  @override
+  String get adminQuizCreateTitle => 'Create quiz';
+
+  @override
+  String get adminQuizEditTitle => 'Edit quiz';
+
+  @override
+  String get adminQuizFormSaved => 'Quiz saved.';
+
+  @override
+  String get adminQuizDetailsSection => 'Quiz settings';
+
+  @override
+  String get adminQuizLinkedLesson => 'Linked lesson (optional)';
+
+  @override
+  String get adminQuizScopeCourse => 'Course-level quiz';
+
+  @override
+  String get adminQuizTimeLimit => 'Time limit (seconds, 0 = none)';
+
+  @override
+  String get adminQuizPassingScore => 'Passing score (correct answers needed)';
+
+  @override
+  String get adminQuizQuestionsSection => 'Questions';
+
+  @override
+  String get adminQuizQuestionsEmpty =>
+      'No questions yet. Add at least one before saving.';
+
+  @override
+  String get adminQuizEmptyList => 'No quizzes yet.';
+
+  @override
+  String get adminQuizQuestionsRequired => 'Add at least one question.';
+
+  @override
+  String get adminQuizPassingScoreTooHigh =>
+      'Passing score cannot exceed question count.';
+
+  @override
+  String get adminQuizAddQuestion => 'Add question';
+
+  @override
+  String get adminQuizQuestionCreateTitle => 'Add question';
+
+  @override
+  String get adminQuizQuestionEditTitle => 'Edit question';
+
+  @override
+  String get adminQuizQuestionDeleteTitle => 'Delete question?';
+
+  @override
+  String get adminQuizQuestionTextSection => 'Question';
+
+  @override
+  String get adminQuizQuestionText => 'Question text';
+
+  @override
+  String get adminQuizQuestionTextRequired => 'Question text is required.';
+
+  @override
+  String get adminQuizOptionsSection => 'Answer options';
+
+  @override
+  String get adminQuizSelectCorrectHint =>
+      'Select the radio button for the correct answer.';
+
+  @override
+  String adminQuizOptionLabel(int number) {
+    return 'Option $number';
+  }
+
+  @override
+  String get adminQuizOptionRequired => 'Option is required.';
+
+  @override
+  String get adminQuizOptionsMinRequired =>
+      'At least two options are required.';
+
+  @override
+  String get adminQuizCorrectAnswerRequired =>
+      'Select a correct answer with text.';
+
+  @override
+  String get adminQuizExplanationSection => 'Explanation';
+
+  @override
+  String get adminQuizExplanation => 'Explanation (shown after quiz)';
+
+  @override
+  String get adminQuizQuestionDone => 'Done';
+
+  @override
+  String adminQuizCorrectAnswer(String answer) {
+    return 'Answer: $answer';
+  }
+
+  @override
+  String adminQuizOptionCount(int count) {
+    return '$count opts';
+  }
+
+  @override
+  String get syllabusTitle => 'Syllabus';
+
+  @override
+  String get syllabusSearchHint => 'Search courses…';
+
+  @override
+  String get syllabusEmptyList => 'No published courses yet.';
+
+  @override
+  String get syllabusLoadFailed => 'Could not load courses.';
+
+  @override
+  String get syllabusNoSearchResults => 'No courses match your search.';
+
+  @override
+  String get syllabusAllTags => 'All';
+
+  @override
+  String get syllabusEnroll => 'Enroll';
+
+  @override
+  String get syllabusEnrolled => 'Enrolled';
+
+  @override
+  String get syllabusEnrollPrompt =>
+      'Enroll to track your progress through this course.';
+
+  @override
+  String get syllabusEnrollSuccess => 'You\'re enrolled!';
+
+  @override
+  String syllabusProgressLabel(int completed, int total) {
+    return '$completed of $total lessons';
+  }
+
+  @override
+  String get syllabusCourseCompleted => 'Course completed';
+
+  @override
+  String get syllabusLessonsSection => 'Lessons';
+
+  @override
+  String get syllabusNoLessons => 'No lessons published yet.';
+
+  @override
+  String syllabusLessonCount(int count) {
+    return '$count lessons';
+  }
+
+  @override
+  String get syllabusCourseLoadFailed => 'Could not load course.';
+
+  @override
+  String get syllabusLessonLoadFailed => 'Could not load lesson.';
+
+  @override
+  String get syllabusMarkComplete => 'Mark as complete';
+
+  @override
+  String get syllabusLessonCompleted => 'Lesson completed';
+
+  @override
+  String get syllabusLessonCompleteSuccess => 'Progress saved!';
+
+  @override
+  String get syllabusEnrollToComplete =>
+      'Enroll in this course to track lesson progress.';
+
+  @override
+  String get syllabusOpenPdf => 'Open PDF';
+
+  @override
+  String get syllabusOpenLink => 'Open link';
+
+  @override
+  String get syllabusInvalidYoutubeUrl =>
+      'This lesson has an invalid YouTube URL.';
+
+  @override
+  String get syllabusVideoNowPlaying => 'Now playing';
+
+  @override
+  String get syllabusVideoRewind => 'Rewind 10s';
+
+  @override
+  String get syllabusVideoForward => 'Forward 10s';
+
+  @override
+  String get syllabusVideoRestart => 'Restart';
+
+  @override
+  String get syllabusVideoMute => 'Mute';
+
+  @override
+  String get syllabusVideoUnmute => 'Unmute';
+
+  @override
+  String get syllabusVideoOpenYoutube => 'Open in YouTube';
+
+  @override
+  String get syllabusLaunchUrlFailed => 'Could not open this resource.';
+
+  @override
+  String get syllabusQuizTitle => 'Quiz';
+
+  @override
+  String get syllabusQuizLoadFailed => 'Could not load this quiz.';
+
+  @override
+  String get syllabusQuizRulesTitle => 'Before you start';
+
+  @override
+  String syllabusQuizQuestionCount(int count) {
+    return '$count questions';
+  }
+
+  @override
+  String syllabusQuizTimeLimitLabel(String limit) {
+    return 'Time limit: $limit';
+  }
+
+  @override
+  String get syllabusQuizNoTimeLimit => 'No time limit';
+
+  @override
+  String syllabusQuizPassingScoreLabel(int score) {
+    return 'Pass with $score correct answers';
+  }
+
+  @override
+  String get syllabusQuizPreviousAttempts => 'Your attempts';
+
+  @override
+  String syllabusQuizAttemptCount(int count) {
+    return '$count attempt(s)';
+  }
+
+  @override
+  String syllabusQuizBestScore(int score, int total) {
+    return 'Best score: $score / $total';
+  }
+
+  @override
+  String get syllabusQuizAlreadyPassed => 'You passed this quiz';
+
+  @override
+  String get syllabusQuizStart => 'Start quiz';
+
+  @override
+  String syllabusQuizProgress(int current, int total) {
+    return 'Question $current of $total';
+  }
+
+  @override
+  String get syllabusQuizQuestionLabel => 'Question';
+
+  @override
+  String get syllabusQuizNext => 'Next';
+
+  @override
+  String get syllabusQuizPrevious => 'Previous';
+
+  @override
+  String get syllabusQuizSubmit => 'Submit';
+
+  @override
+  String get syllabusQuizTimeRemaining => 'Time remaining';
+
+  @override
+  String get syllabusQuizTimeUp => 'Time is up — submitting your answers.';
+
+  @override
+  String get syllabusQuizConfirmExitTitle => 'Leave quiz?';
+
+  @override
+  String get syllabusQuizConfirmExitMessage =>
+      'Your progress on this attempt will be lost.';
+
+  @override
+  String get syllabusQuizLeave => 'Leave';
+
+  @override
+  String get syllabusQuizResultTitle => 'Quiz result';
+
+  @override
+  String get syllabusQuizResultPassed => 'Passed!';
+
+  @override
+  String get syllabusQuizResultFailed => 'Not passed';
+
+  @override
+  String syllabusQuizYourScore(int score, int total) {
+    return 'Score: $score / $total';
+  }
+
+  @override
+  String syllabusQuizTimeTaken(String time) {
+    return 'Time taken: $time';
+  }
+
+  @override
+  String get syllabusQuizReviewSection => 'Answer review';
+
+  @override
+  String syllabusQuizReviewQuestion(int number) {
+    return 'Question $number';
+  }
+
+  @override
+  String get syllabusQuizYourAnswer => 'Your answer';
+
+  @override
+  String get syllabusQuizCorrectAnswer => 'Correct answer';
+
+  @override
+  String get syllabusQuizExplanation => 'Explanation';
+
+  @override
+  String get syllabusQuizRetry => 'Try again';
+
+  @override
+  String get syllabusQuizBackToCourse => 'Back to course';
+
+  @override
+  String get syllabusQuizExcellent => 'Excellent!';
+
+  @override
+  String get syllabusQuizGoodEffort => 'Good effort!';
+
+  @override
+  String get syllabusQuizKeepLearning => 'Keep learning!';
+
+  @override
+  String get syllabusQuizNotReady => 'This quiz is not ready yet.';
 }

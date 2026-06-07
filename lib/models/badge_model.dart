@@ -9,6 +9,7 @@ enum BadgeType {
   hundredDays,
   topOfCommunity,
   perfectWeek,
+  courseGraduate,
 }
 
 class BadgeDefinition {
@@ -91,5 +92,12 @@ const List<BadgeDefinition> kBadgeDefinitions = [
     title: 'Perfect Week',
     description: 'Score 80+ for 7 consecutive days.',
     icon: Icons.calendar_month,
+  ),
+  BadgeDefinition(
+    type: BadgeType.courseGraduate,
+    id: 'courseGraduate',
+    title: 'Course Graduate',
+    description: 'Complete all lessons in a syllabus course.',
+    icon: Icons.school_outlined,
   ),
 ];

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/admin_config.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -32,6 +33,7 @@ class MoreScreen extends ConsumerWidget {
     final displayName = rawName.trim().isEmpty ? l10n.profile : rawName.trim();
     final initial = displayName.substring(0, 1).toUpperCase();
     final streak = user?.currentStreak ?? 0;
+    final isAdmin = AdminConfig.isAdmin(user?.uid);
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
@@ -157,6 +159,18 @@ class MoreScreen extends ConsumerWidget {
               ],
             ),
           ),
+          if (isAdmin) ...[
+            SizedBox(height: 18.h),
+            SectionHeader(title: l10n.adminSectionTitle),
+            CardContainer(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              child: NavRow(
+                icon: Icons.campaign_outlined,
+                title: l10n.adminAnnouncementsTitle,
+                onTap: () => context.push(AppRoutes.adminAnnouncements),
+              ),
+            ),
+          ],
           SizedBox(height: 18.h),
           // SectionHeader(title: l10n.emptyDevSection),
           // CardContainer(

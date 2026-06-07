@@ -37,4 +37,7 @@ class AppRoutes {
   static const dhikr = '/dhikr';
 
   static const dev = '/dev';
+
+  static const adminAnnouncements = '/admin/announcements';
+  static const adminAnnouncementForm = '/admin/announcement-form';
 }

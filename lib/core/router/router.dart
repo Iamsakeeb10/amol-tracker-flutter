@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../features/admin/presentation/screens/admin_announcement_form_screen.dart';
+import '../../features/admin/presentation/screens/admin_announcements_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/community/presentation/screens/community_screen.dart';
 import '../../features/community/presentation/screens/user_profile_screen.dart';
@@ -12,6 +14,7 @@ import '../../features/history/presentation/screens/edit_amal_screen.dart';
 import '../../features/history/presentation/screens/history_screen.dart';
 import '../../features/home/presentation/screens/day_complete_screen.dart';
 import '../../models/amal_log_model.dart';
+import '../../models/announcement_model.dart';
 import '../../features/home/presentation/screens/empty_state_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart';
@@ -160,6 +163,21 @@ GoRouter buildAppRouter() {
         path: AppRoutes.dhikr,
         name: 'dhikr',
         builder: (_, _) => const DhikrCounterScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminAnnouncements,
+        name: 'adminAnnouncements',
+        builder: (_, _) => const AdminAnnouncementsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminAnnouncementForm,
+        name: 'adminAnnouncementForm',
+        builder: (_, state) {
+          final extra = state.extra;
+          return AdminAnnouncementFormScreen(
+            existing: extra is AnnouncementModel ? extra : null,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.settings,

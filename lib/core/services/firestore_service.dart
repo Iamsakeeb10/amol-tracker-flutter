@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hijri/hijri_calendar.dart';
 
@@ -85,17 +87,26 @@ class FirestoreService {
   - Stream errors propagate to Riverpod; UI treats as no pending announcement.
   */
   Stream<List<AnnouncementModel>> announcementsStream() {
-    return _firestore
-        .collection('announcements')
-        .where('isActive', isEqualTo: true)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snap) => snap.docs
-              .map(AnnouncementModel.fromDoc)
-              .where((announcement) => announcement.isCurrentlyActive)
-              .toList(),
-        );
+    return _resilientAnnouncementStream(
+      query: () => _announcements
+          .where('isActive', isEqualTo: true)
+          .orderBy('createdAt', descending: true),
+      mapDocs: (docs) => docs
+          .map(AnnouncementModel.fromDoc)
+          .where((announcement) => announcement.isCurrentlyActive)
+          .toList(),
+      fallbackMapDocs: (docs) {
+        final items = docs
+            .map(AnnouncementModel.fromDoc)
+            .where(
+              (announcement) =>
+                  announcement.isActive && announcement.isCurrentlyActive,
+            )
+            .toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return items;
+      },
+    );
   }
 
   /*
@@ -124,6 +135,173 @@ class FirestoreService {
     await _users.doc(uid).update(<String, dynamic>{
       'seenAnnouncements': FieldValue.arrayUnion(<String>[announcementId]),
     });
+  }
+
+  CollectionReference<Map<String, dynamic>> get _announcements =>
+      _firestore.collection('announcements');
+
+  /*
+  Purpose:
+  Stream all announcements for the in-app admin list screen.
+
+  Response:
+  Emits all documents ordered newest first, regardless of isActive.
+
+  Business Rules:
+  - Admin UI only; not filtered by schedule or active flag.
+  - Client sorts by createdAt descending.
+
+  Flow:
+  1. Subscribe to full announcements collection.
+  2. Map docs to AnnouncementModel.
+  3. Sort client-side by createdAt descending.
+
+  Side Effects:
+  - Opens a live Firestore listener.
+
+  Failure Cases:
+  - Stream errors propagate to Riverpod; admin list shows error state.
+  */
+  Stream<List<AnnouncementModel>> allAnnouncementsStream() {
+    return _resilientAnnouncementStream(
+      query: () => _announcements.orderBy('createdAt', descending: true),
+      mapDocs: (docs) => docs.map(AnnouncementModel.fromDoc).toList(),
+      fallbackMapDocs: (docs) {
+        final items = docs.map(AnnouncementModel.fromDoc).toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return items;
+      },
+    );
+  }
+
+  Stream<List<AnnouncementModel>> _resilientAnnouncementStream({
+    required Query<Map<String, dynamic>> Function() query,
+    required List<AnnouncementModel> Function(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+    )
+    mapDocs,
+    required List<AnnouncementModel> Function(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+    )
+    fallbackMapDocs,
+  }) {
+    late StreamSubscription<QuerySnapshot<Map<String, dynamic>>> subscription;
+    final controller = StreamController<List<AnnouncementModel>>();
+    var usingFallback = false;
+
+    void listenFallback() {
+      usingFallback = true;
+      subscription = _announcements.snapshots().listen(
+        (snap) => controller.add(fallbackMapDocs(snap.docs)),
+        onError: controller.addError,
+      );
+    }
+
+    void listenPrimary() {
+      subscription = query().snapshots().listen(
+        (snap) => controller.add(mapDocs(snap.docs)),
+        onError: (Object error, StackTrace stackTrace) {
+          final isIndexError = error is FirebaseException &&
+              error.code == 'failed-precondition';
+          if (!usingFallback && isIndexError) {
+            subscription.cancel();
+            listenFallback();
+            return;
+          }
+          controller.addError(error, stackTrace);
+        },
+      );
+    }
+
+    listenPrimary();
+    controller.onCancel = () => subscription.cancel();
+    return controller.stream;
+  }
+
+  /*
+  Purpose:
+  Create a new announcement document from admin form data.
+
+  Response:
+  The new document id.
+
+  Business Rules:
+  - createdAt is always server timestamp.
+  - adminUid is stored for audit.
+
+  Flow:
+  1. Merge caller fields with createdAt and adminUid.
+  2. add() to announcements collection.
+  3. Return generated doc id.
+
+  Side Effects:
+  - Writes one Firestore document.
+
+  Failure Cases:
+  - Firestore permission/write errors bubble to caller.
+  */
+  Future<String> createAnnouncement({
+    required Map<String, dynamic> data,
+    required String adminUid,
+  }) async {
+    final doc = await _announcements.add(<String, dynamic>{
+      ...data,
+      'adminUid': adminUid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    return doc.id;
+  }
+
+  /*
+  Purpose:
+  Update an existing announcement from admin form or quick toggle.
+
+  Response:
+  None.
+
+  Business Rules:
+  - Does not overwrite createdAt or adminUid on update.
+  - Partial updates allowed via caller data map.
+
+  Flow:
+  1. update() announcements/{id} with provided fields.
+
+  Side Effects:
+  - Writes to Firestore.
+
+  Failure Cases:
+  - Firestore write errors bubble to caller.
+  */
+  Future<void> updateAnnouncement(
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    if (id.isEmpty) return;
+    await _announcements.doc(id).update(data);
+  }
+
+  /*
+  Purpose:
+  Permanently remove an announcement from Firestore.
+
+  Response:
+  None.
+
+  Business Rules:
+  - Hard delete; no soft-delete flag.
+
+  Flow:
+  1. delete() announcements/{id}.
+
+  Side Effects:
+  - Removes document from Firestore.
+
+  Failure Cases:
+  - Firestore delete errors bubble to caller.
+  */
+  Future<void> deleteAnnouncement(String id) async {
+    if (id.isEmpty) return;
+    await _announcements.doc(id).delete();
   }
 
   Future<void> updateUserDisplayFields(

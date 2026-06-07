@@ -40,6 +40,51 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final Set<String> _sessionDismissedAnnouncementIds = <String>{};
   bool _isAnnouncementDialogOpen = false;
+  String? _trackedUserId;
+  String? _scheduledAnnouncementId;
+
+  void _resetAnnouncementSessionForUser(String? uid) {
+    _sessionDismissedAnnouncementIds.clear();
+    _isAnnouncementDialogOpen = false;
+    _scheduledAnnouncementId = null;
+    _trackedUserId = uid;
+    _didInitialAnnouncementCheck = false;
+  }
+
+  bool _didInitialAnnouncementCheck = false;
+
+  AnnouncementModel? _resolveNextAnnouncement() {
+    final announcements = ref.read(announcementsProvider).value ?? const [];
+    final user = ref.read(currentUserProvider).value;
+    if (user == null || announcements.isEmpty) return null;
+
+    final seen = user.seenAnnouncements;
+    for (final announcement in announcements) {
+      if (_sessionDismissedAnnouncementIds.contains(announcement.id)) {
+        continue;
+      }
+      if (!announcement.showOnce || !seen.contains(announcement.id)) {
+        return announcement;
+      }
+    }
+    return null;
+  }
+
+  void _scheduleAnnouncementShow() {
+    if (!mounted || _isAnnouncementDialogOpen) return;
+
+    final target = _resolveNextAnnouncement();
+    if (target == null) return;
+    if (_scheduledAnnouncementId == target.id) return;
+
+    _scheduledAnnouncementId = target.id;
+    // Show after the current frame paints — no extra artificial delay.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _scheduledAnnouncementId = null;
+      _showAnnouncementDialog(target);
+    });
+  }
 
   Future<void> _showAnnouncementDialog(AnnouncementModel announcement) async {
     if (!mounted || _isAnnouncementDialogOpen) return;
@@ -55,10 +100,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (!mounted) return;
     _isAnnouncementDialogOpen = false;
-    if (!announcement.showOnce) {
-      setState(() {
-        _sessionDismissedAnnouncementIds.add(announcement.id);
-      });
+
+    // Always hide for the rest of this session (showOnce also persists to Firestore).
+    setState(() {
+      _sessionDismissedAnnouncementIds.add(announcement.id);
+    });
+
+    final next = _resolveNextAnnouncement();
+    if (next != null && next.id != announcement.id) {
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      if (!mounted) return;
+      await _showAnnouncementDialog(next);
     }
   }
 
@@ -70,10 +122,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final user = userAsync.asData?.value;
     final connectivity = ref.watch(connectivityListProvider).asData?.value;
 
+    ref.listen<String?>(
+      authStateProvider.select((auth) => auth.asData?.value?.uid),
+      (previousUid, nextUid) {
+        if (previousUid == nextUid) return;
+        _resetAnnouncementSessionForUser(nextUid);
+        if (nextUid != null) _scheduleAnnouncementShow();
+      },
+    );
+    ref.listen(currentUserProvider, (previous, next) {
+      final nextUser = next.asData?.value;
+      if (nextUser == null) return;
+      if (_trackedUserId != nextUser.uid) {
+        _resetAnnouncementSessionForUser(nextUser.uid);
+      }
+      _scheduleAnnouncementShow();
+    });
+    ref.listen(announcementsProvider, (previous, next) {
+      if (!next.hasValue) return;
+      _scheduleAnnouncementShow();
+    });
+    ref.listen<AnnouncementModel?>(pendingAnnouncementProvider, (
+      previous,
+      next,
+    ) {
+      if (next == null) return;
+      _scheduleAnnouncementShow();
+    });
+
     if (authUser == null || user == null) {
       return AppScaffold(
         body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
       );
+    }
+
+    if (!_didInitialAnnouncementCheck) {
+      _didInitialAnnouncementCheck = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scheduleAnnouncementShow();
+      });
     }
 
     final uid = authUser.uid;
@@ -96,20 +183,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted || next == null || previous == next) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next)));
     });
-    ref.listen<AnnouncementModel?>(pendingAnnouncementProvider, (
-      previous,
-      next,
-    ) {
-      if (next == null) return;
-      if (previous?.id == next.id) return;
-      if (_sessionDismissedAnnouncementIds.contains(next.id)) return;
-
-      Future<void>.delayed(const Duration(milliseconds: 800), () {
-        if (!mounted) return;
-        _showAnnouncementDialog(next);
-      });
-    });
-
     // Only show banner once we know status; [none] means offline per connectivity_plus.
     final offline =
         connectivity != null && connectivity.contains(ConnectivityResult.none);

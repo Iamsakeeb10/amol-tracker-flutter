@@ -7,6 +7,10 @@ final announcementsProvider = StreamProvider<List<AnnouncementModel>>((ref) {
   return ref.read(firestoreServiceProvider).announcementsStream();
 });
 
+final allAnnouncementsProvider = StreamProvider<List<AnnouncementModel>>((ref) {
+  return ref.read(firestoreServiceProvider).allAnnouncementsStream();
+});
+
 /*
 Purpose:
 Resolve the single announcement that should be shown next on HomeScreen.

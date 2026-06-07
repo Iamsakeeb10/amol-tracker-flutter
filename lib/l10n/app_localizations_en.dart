@@ -1092,4 +1092,103 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get announcementTypeHadith => 'Hadith';
+
+  @override
+  String get adminSectionTitle => 'Admin';
+
+  @override
+  String get adminAnnouncementsTitle => 'Announcements';
+
+  @override
+  String get adminStatusLive => 'Live';
+
+  @override
+  String get adminStatusScheduled => 'Scheduled';
+
+  @override
+  String get adminStatusExpired => 'Expired';
+
+  @override
+  String get adminStatusOff => 'Off';
+
+  @override
+  String get adminFormType => 'Type';
+
+  @override
+  String get adminFormTitle => 'Title';
+
+  @override
+  String get adminFormMessage => 'Message';
+
+  @override
+  String get adminFormArabicText => 'Arabic text (optional)';
+
+  @override
+  String get adminFormImageUrl => 'Image URL (optional)';
+
+  @override
+  String get adminFormActive => 'Active';
+
+  @override
+  String get adminFormShowOnce => 'Show once per user';
+
+  @override
+  String get adminFormStartsAt => 'Starts at';
+
+  @override
+  String get adminFormExpiresAt => 'Expires at';
+
+  @override
+  String get adminFormPreview => 'Preview';
+
+  @override
+  String get adminFormSave => 'Save';
+
+  @override
+  String get adminFormClearDate => 'Clear';
+
+  @override
+  String get adminFormCreateTitle => 'Create announcement';
+
+  @override
+  String get adminFormEditTitle => 'Edit announcement';
+
+  @override
+  String get adminFormTitleRequired => 'Title is required.';
+
+  @override
+  String get adminFormMessageRequired => 'Message is required.';
+
+  @override
+  String get adminFormSaved => 'Announcement saved.';
+
+  @override
+  String get adminDeleteTitle => 'Delete announcement?';
+
+  @override
+  String get adminDeleteConfirm => 'This cannot be undone.';
+
+  @override
+  String get adminEmptyList => 'No announcements yet. Tap + to create one.';
+
+  @override
+  String get adminNotAuthorized => 'You do not have access to this screen.';
+
+  @override
+  String get adminLoadFailed => 'Could not load announcements.';
+
+  @override
+  String get adminSaveFailed => 'Could not save announcement.';
+
+  @override
+  String get adminDeleteFailed => 'Could not delete announcement.';
+
+  @override
+  String get adminToggleFailed => 'Could not update announcement.';
+
+  @override
+  String get adminDateRangeInvalid => 'Expires at must be after starts at.';
+
+  @override
+  String get adminPreviewRequired => 'Add a title and message to preview.';
 }

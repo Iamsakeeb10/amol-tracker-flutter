@@ -2095,6 +2095,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hadith'**
   String get announcementTypeHadith;
+
+  /// No description provided for @adminSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get adminSectionTitle;
+
+  /// No description provided for @adminAnnouncementsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcements'**
+  String get adminAnnouncementsTitle;
+
+  /// No description provided for @adminStatusLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get adminStatusLive;
+
+  /// No description provided for @adminStatusScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get adminStatusScheduled;
+
+  /// No description provided for @adminStatusExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get adminStatusExpired;
+
+  /// No description provided for @adminStatusOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get adminStatusOff;
+
+  /// No description provided for @adminFormType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get adminFormType;
+
+  /// No description provided for @adminFormTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get adminFormTitle;
+
+  /// No description provided for @adminFormMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get adminFormMessage;
+
+  /// No description provided for @adminFormArabicText.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic text (optional)'**
+  String get adminFormArabicText;
+
+  /// No description provided for @adminFormImageUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Image URL (optional)'**
+  String get adminFormImageUrl;
+
+  /// No description provided for @adminFormActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get adminFormActive;
+
+  /// No description provided for @adminFormShowOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Show once per user'**
+  String get adminFormShowOnce;
+
+  /// No description provided for @adminFormStartsAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts at'**
+  String get adminFormStartsAt;
+
+  /// No description provided for @adminFormExpiresAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires at'**
+  String get adminFormExpiresAt;
+
+  /// No description provided for @adminFormPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get adminFormPreview;
+
+  /// No description provided for @adminFormSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get adminFormSave;
+
+  /// No description provided for @adminFormClearDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get adminFormClearDate;
+
+  /// No description provided for @adminFormCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create announcement'**
+  String get adminFormCreateTitle;
+
+  /// No description provided for @adminFormEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit announcement'**
+  String get adminFormEditTitle;
+
+  /// No description provided for @adminFormTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Title is required.'**
+  String get adminFormTitleRequired;
+
+  /// No description provided for @adminFormMessageRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Message is required.'**
+  String get adminFormMessageRequired;
+
+  /// No description provided for @adminFormSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement saved.'**
+  String get adminFormSaved;
+
+  /// No description provided for @adminDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete announcement?'**
+  String get adminDeleteTitle;
+
+  /// No description provided for @adminDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone.'**
+  String get adminDeleteConfirm;
+
+  /// No description provided for @adminEmptyList.
+  ///
+  /// In en, this message translates to:
+  /// **'No announcements yet. Tap + to create one.'**
+  String get adminEmptyList;
+
+  /// No description provided for @adminNotAuthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have access to this screen.'**
+  String get adminNotAuthorized;
+
+  /// No description provided for @adminLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load announcements.'**
+  String get adminLoadFailed;
+
+  /// No description provided for @adminSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save announcement.'**
+  String get adminSaveFailed;
+
+  /// No description provided for @adminDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete announcement.'**
+  String get adminDeleteFailed;
+
+  /// No description provided for @adminToggleFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update announcement.'**
+  String get adminToggleFailed;
+
+  /// No description provided for @adminDateRangeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires at must be after starts at.'**
+  String get adminDateRangeInvalid;
+
+  /// No description provided for @adminPreviewRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a title and message to preview.'**
+  String get adminPreviewRequired;
 }
 
 class _AppLocalizationsDelegate

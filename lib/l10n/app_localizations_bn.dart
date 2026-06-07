@@ -1096,4 +1096,103 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get announcementTypeHadith => 'হাদিস';
+
+  @override
+  String get adminSectionTitle => 'অ্যাডমিন';
+
+  @override
+  String get adminAnnouncementsTitle => 'ঘোষণা';
+
+  @override
+  String get adminStatusLive => 'লাইভ';
+
+  @override
+  String get adminStatusScheduled => 'নির্ধারিত';
+
+  @override
+  String get adminStatusExpired => 'মেয়াদোত্তীর্ণ';
+
+  @override
+  String get adminStatusOff => 'বন্ধ';
+
+  @override
+  String get adminFormType => 'ধরন';
+
+  @override
+  String get adminFormTitle => 'শিরোনাম';
+
+  @override
+  String get adminFormMessage => 'বার্তা';
+
+  @override
+  String get adminFormArabicText => 'আরবি টেক্সট (ঐচ্ছিক)';
+
+  @override
+  String get adminFormImageUrl => 'ছবির URL (ঐচ্ছিক)';
+
+  @override
+  String get adminFormActive => 'সক্রিয়';
+
+  @override
+  String get adminFormShowOnce => 'প্রতি ব্যবহারকারীকে একবার দেখান';
+
+  @override
+  String get adminFormStartsAt => 'শুরু সময়';
+
+  @override
+  String get adminFormExpiresAt => 'শেষ সময়';
+
+  @override
+  String get adminFormPreview => 'প্রিভিউ';
+
+  @override
+  String get adminFormSave => 'সংরক্ষণ';
+
+  @override
+  String get adminFormClearDate => 'মুছুন';
+
+  @override
+  String get adminFormCreateTitle => 'ঘোষণা তৈরি করুন';
+
+  @override
+  String get adminFormEditTitle => 'ঘোষণা সম্পাদনা';
+
+  @override
+  String get adminFormTitleRequired => 'শিরোনাম প্রয়োজন।';
+
+  @override
+  String get adminFormMessageRequired => 'বার্তা প্রয়োজন।';
+
+  @override
+  String get adminFormSaved => 'ঘোষণা সংরক্ষিত হয়েছে।';
+
+  @override
+  String get adminDeleteTitle => 'ঘোষণা মুছবেন?';
+
+  @override
+  String get adminDeleteConfirm => 'এটি পূর্বাবস্থায় ফেরানো যাবে না।';
+
+  @override
+  String get adminEmptyList => 'এখনো কোনো ঘোষণা নেই। + চাপুন।';
+
+  @override
+  String get adminNotAuthorized => 'আপনার এই স্ক্রিনে প্রবেশের অনুমতি নেই।';
+
+  @override
+  String get adminLoadFailed => 'ঘোষণা লোড করা যায়নি।';
+
+  @override
+  String get adminSaveFailed => 'ঘোষণা সংরক্ষণ করা যায়নি।';
+
+  @override
+  String get adminDeleteFailed => 'ঘোষণা মুছে ফেলা যায়নি।';
+
+  @override
+  String get adminToggleFailed => 'ঘোষণা আপডেট করা যায়নি।';
+
+  @override
+  String get adminDateRangeInvalid => 'শেষ সময় শুরুর সময়ের পরে হতে হবে।';
+
+  @override
+  String get adminPreviewRequired => 'প্রিভিউ করতে শিরোনাম ও বার্তা লিখুন।';
 }

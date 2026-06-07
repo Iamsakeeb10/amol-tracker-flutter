@@ -46,7 +46,7 @@ Future<void> submitTodaysAmal(
       context,
       preservedStreak: result.streakResult.newCurrentStreak,
       onUseFreeze: () async {
-        await notifier.applyFreeze(user);
+        await notifier.applyFreeze(user, hijri: result.log.hijriDate);
         if (!context.mounted) return;
         context.push(AppRoutes.dayComplete, extra: result.log);
       },

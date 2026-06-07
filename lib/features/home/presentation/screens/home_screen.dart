@@ -150,7 +150,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _scheduleAnnouncementShow();
     });
 
-    if (authUser == null || user == null) {
+    if (authUser == null) {
+      return AppScaffold(
+        body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
+      );
+    }
+
+    if (userAsync.hasError) {
+      return AppScaffold(
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  l10n.historyLoadFailed,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium(context),
+                ),
+                SizedBox(height: 16.h),
+                FilledButton(
+                  onPressed: () => ref.invalidate(currentUserProvider),
+                  child: Text(l10n.refresh),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (user == null) {
       return AppScaffold(
         body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
       );

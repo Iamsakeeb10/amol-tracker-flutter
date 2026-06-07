@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../constants/admin_config.dart';
 import '../services/firestore_service.dart';
 import 'routes.dart';
 
@@ -27,6 +28,12 @@ Future<String?> redirectForLocation(
   if (isSigningIn || isOnboarding) {
     return AppRoutes.home;
   }
+
+  final isAdminRoute = location.startsWith('/admin');
+  if (isAdminRoute && !AdminConfig.isAdmin(authUser.uid)) {
+    return AppRoutes.home;
+  }
+
   return null;
 }
 

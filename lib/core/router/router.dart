@@ -10,8 +10,8 @@ import '../../features/admin/presentation/screens/admin_push_notification_screen
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/community/presentation/screens/community_screen.dart';
 import '../../features/community/presentation/screens/user_profile_screen.dart';
-import '../../features/history/presentation/screens/day_detail_screen.dart';
-import '../../features/history/presentation/screens/edit_amal_screen.dart';
+import '../../features/history/presentation/widgets/edit_amal_route_guard.dart';
+import '../../features/history/presentation/widgets/history_date_route_guard.dart';
 import '../../features/history/presentation/screens/history_screen.dart';
 import '../../features/home/presentation/screens/day_complete_screen.dart';
 import '../../models/amal_log_model.dart';
@@ -116,7 +116,7 @@ GoRouter buildAppRouter() {
         name: 'dayDetail',
         builder: (_, state) {
           final date = state.pathParameters['date'] ?? '';
-          return DayDetailScreen(hijriDate: date);
+          return HistoryDateRouteGuard(hijriDate: date);
         },
       ),
       GoRoute(
@@ -127,7 +127,7 @@ GoRouter buildAppRouter() {
           final existingLog = state.extra is AmalLogModel
               ? state.extra as AmalLogModel
               : null;
-          return EditAmalScreen(
+          return EditAmalRouteGuard(
             hijriDate: hijriDate,
             existingLog: existingLog,
           );
@@ -246,7 +246,6 @@ class _DayCompleteRedirectState extends State<_DayCompleteRedirect> {
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
-    notifyListeners();
     _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
   }
 

@@ -21,7 +21,7 @@ String _safeName(String value) =>
     value.trim().isEmpty ? 'Anonymous' : value.trim();
 
 final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
-  final today = IslamicDateService.getCurrentIslamicDateString();
+  final today = IslamicDateService.getCurrentIslamicDateStringSafe();
   final fs = ref.read(firestoreServiceProvider);
   return fs.communityDayStream(today).asyncMap((rows) async {
     final users = await fs.usersByIds(rows.map((r) => r.uid));

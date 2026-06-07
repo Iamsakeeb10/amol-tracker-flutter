@@ -1,6 +1,7 @@
 import '../../models/amal_log_model.dart';
 import '../../shared/mock/mock_data.dart';
 import '../constants/amal_fields.dart' as amal_const;
+import '../constants/default_amal_fields.dart';
 import '../services/islamic_date_service.dart';
 import 'score_calculator.dart';
 
@@ -80,6 +81,7 @@ class HistoryMonthCalculator {
         days: days,
         logs: logs,
         maxScore: maxScore,
+        todayStr: todayStr,
       ),
       avgScore: avgScore,
       hasScoredLogs: logsWithScore.isNotEmpty,
@@ -99,10 +101,13 @@ class HistoryMonthCalculator {
     final byDay = <int, AmalLogModel>{};
     for (final log in logs) {
       final segs = log.hijriDate.split('-');
-      if (segs.length == 3 &&
-          int.parse(segs[0]) == hijriYear &&
-          int.parse(segs[1]) == hijriMonth) {
-        byDay[int.parse(segs[2])] = log;
+      if (segs.length != 3) continue;
+      final year = int.tryParse(segs[0]);
+      final month = int.tryParse(segs[1]);
+      final day = int.tryParse(segs[2]);
+      if (year == null || month == null || day == null) continue;
+      if (year == hijriYear && month == hijriMonth) {
+        byDay[day] = log;
       }
     }
 
@@ -175,6 +180,7 @@ class HistoryMonthCalculator {
     required List<MockDay> days,
     required List<AmalLogModel> logs,
     required int maxScore,
+    required String todayStr,
   }) {
     final activePastDays = days
         .where(
@@ -188,7 +194,9 @@ class HistoryMonthCalculator {
     if (activePastDays == 0) return 0;
 
     final halfScore = (maxScore * 0.5).round();
-    final logged50Plus = logs.where((l) => l.score >= halfScore).length;
+    final pastLogs = logs.where((l) => l.hijriDate != todayStr);
+    final logged50Plus =
+        pastLogs.where((l) => l.score >= halfScore).length;
     return ((logged50Plus / activePastDays) * 100).round().clamp(0, 100);
   }
 
@@ -198,9 +206,11 @@ class HistoryMonthCalculator {
     String locale,
   ) {
     if (logs.isEmpty || fields.isEmpty) return null;
-    final counts = <String, int>{for (final f in fields) f.id: 0};
+    final activeFields = resolveAmalFields(fields);
+    if (activeFields.isEmpty) return null;
+    final counts = <String, int>{for (final f in activeFields) f.id: 0};
     for (final log in logs) {
-      for (final f in fields) {
+      for (final f in activeFields) {
         final isDone = f.type == amal_const.AmalType.numeric
             ? getNumericValue(log.toggles[f.id], f.maxValue) > 0
             : (log.toggles[f.id] == true);
@@ -217,7 +227,7 @@ class HistoryMonthCalculator {
       }
     });
     if (maxId == null || maxC <= 0) return null;
-    final field = fields.firstWhere((f) => f.id == maxId);
+    final field = activeFields.firstWhere((f) => f.id == maxId);
     return (id: maxId!, label: field.getLabel(locale), misses: maxC);
   }
 }

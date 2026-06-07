@@ -49,6 +49,7 @@ class NotificationService {
   static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 21, minute: 0);
   static const String _lastSentKeyPrefix = 'notif_last_sent_';
   static const String _fcmOwnerUidKey = 'fcm_token_owner_uid';
+  static final tz.Location _bdTz = tz.getLocation('Asia/Dhaka');
 
   static const List<String> _morningBodies = [
     'সকাল শুরু হোক আযকার দিয়ে। আজকের আমলের নিয়ত করো।',
@@ -449,12 +450,10 @@ class NotificationService {
   Future<bool> _hasLoggedIslamicDate(String hijriDate) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return false;
-    final fs = FirebaseFirestore.instance;
-    final doc = await fs
-        .collection('users')
-        .doc(user.uid)
-        .collection('amalLogs')
-        .doc(hijriDate)
+    final docId = '${user.uid}_$hijriDate';
+    final doc = await FirebaseFirestore.instance
+        .collection('amal_logs')
+        .doc(docId)
         .get();
     return doc.exists;
   }
@@ -535,7 +534,7 @@ class NotificationService {
       final hijriDate = IslamicDateService.getCurrentIslamicDateStringSafe();
       if (await _hasLoggedIslamicDate(hijriDate)) return;
 
-      final now = tz.TZDateTime.now(tz.local);
+      final now = tz.TZDateTime.now(_bdTz);
 
       // Schedule for today and next 7 days to ensure continuous scheduling
       final selectedBody = _pickMessage(
@@ -562,7 +561,7 @@ class NotificationService {
         if (_isSuppressedByQuietHours(notificationTimeOfDay)) continue;
 
         final scheduledDate = tz.TZDateTime(
-          tz.local,
+          _bdTz,
           targetDate.year,
           targetDate.month,
           targetDate.day,
@@ -662,7 +661,7 @@ class NotificationService {
 
   Future<void> _scheduleHadithNotifications() async {
     if (_hadithList.isEmpty) return;
-    final now = tz.TZDateTime.now(tz.local);
+    final now = tz.TZDateTime.now(_bdTz);
     for (var i = 0; i < _hadithDaysAhead; i++) {
       final day = now.add(Duration(days: i));
       final dayKey =
@@ -698,14 +697,14 @@ class NotificationService {
   }) async {
     if (_isSuppressedByQuietHours(at)) return;
     final scheduledDate = tz.TZDateTime(
-      tz.local,
+      _bdTz,
       date.year,
       date.month,
       date.day,
       at.hour,
       at.minute,
     );
-    if (!scheduledDate.isAfter(tz.TZDateTime.now(tz.local))) return;
+    if (!scheduledDate.isAfter(tz.TZDateTime.now(_bdTz))) return;
     await _schedulePolicyAware(
       id: id,
       title: title,
@@ -818,14 +817,14 @@ class NotificationService {
   }
 
   bool _isCurrentMinute(TimeOfDay time) {
-    final now = tz.TZDateTime.now(tz.local);
+    final now = tz.TZDateTime.now(_bdTz);
     return now.hour == time.hour && now.minute == time.minute;
   }
 
   tz.TZDateTime _nextInstance(TimeOfDay time) {
-    final now = tz.TZDateTime.now(tz.local);
+    final now = tz.TZDateTime.now(_bdTz);
     var scheduled = tz.TZDateTime(
-      tz.local,
+      _bdTz,
       now.year,
       now.month,
       now.day,
@@ -840,9 +839,9 @@ class NotificationService {
   }
 
   tz.TZDateTime _nextInstanceForRecurring(TimeOfDay time) {
-    final now = tz.TZDateTime.now(tz.local);
+    final now = tz.TZDateTime.now(_bdTz);
     var scheduled = tz.TZDateTime(
-      tz.local,
+      _bdTz,
       now.year,
       now.month,
       now.day,

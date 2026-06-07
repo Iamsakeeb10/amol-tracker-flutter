@@ -33,6 +33,24 @@ Map<String, dynamic> _emptyTogglesForFields(List<AmalField> fields) {
   };
 }
 
+bool _isPerfectWeekChain(List<AmalLogModel> logs) {
+  if (logs.length < 7) return false;
+  final chain = logs.sublist(logs.length - 7);
+  for (var i = 1; i < chain.length; i++) {
+    final expected = IslamicDateService.shiftStorageByDays(
+      chain[i - 1].hijriDate,
+      1,
+    );
+    if (chain[i].hijriDate != expected) return false;
+  }
+  return true;
+}
+
+int _streakAfterFreeze(int currentStreak) {
+  final baseline = currentStreak <= 0 ? 1 : currentStreak;
+  return baseline + 1;
+}
+
 class AmalState {
   const AmalState({
     required this.toggles,
@@ -59,15 +77,24 @@ class AmalState {
   final String? error;
   final AmalLogModel? submittedLog;
 
-  int get doneCount =>
-      toggles.values.where((v) => v == true || (v is int && v > 0)).length;
+  int get doneCount {
+    final activeIds = resolveAmalFields(fields).map((f) => f.id).toSet();
+    return toggles.entries
+        .where((e) => activeIds.contains(e.key))
+        .where((e) => e.value == true || (e.value is int && e.value > 0))
+        .length;
+  }
 
   int get totalScore => calculateScore(toggles, fields);
 
   int get maxScore => getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
 
-  bool get hasAnyDone =>
-      toggles.values.any((v) => v == true || (v is int && v > 0));
+  bool get hasAnyDone {
+    final activeIds = resolveAmalFields(fields).map((f) => f.id).toSet();
+    return toggles.entries
+        .where((e) => activeIds.contains(e.key))
+        .any((e) => e.value == true || (e.value is int && e.value > 0));
+  }
 
   AmalState copyWith({
     Map<String, dynamic>? toggles,
@@ -156,7 +183,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       fields = kDefaultAmalFields;
     }
 
-    final hijri = IslamicDateService.getCurrentIslamicDateString();
+    final hijri = IslamicDateService.getCurrentIslamicDateStringSafe();
     final fs = _ref.read(firestoreServiceProvider);
 
     try {
@@ -233,7 +260,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   Future<void> _persistDraft() async {
     if (state.isSubmitted) return;
-    final hijri = IslamicDateService.getCurrentIslamicDateString();
+    final hijri = IslamicDateService.getCurrentIslamicDateStringSafe();
     await LocalStorageService.saveLog(_draftHiveKey(hijri), <String, dynamic>{
       'uid': _uid,
       'hijriDate': hijri,
@@ -302,10 +329,11 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   void markAllDone() {
     if (state.isSubmitted || state.isLoading) return;
-    final next = <String, dynamic>{
-      for (final f in state.fields)
-        f.id: f.type == AmalType.numeric ? f.maxValue : true,
-    };
+    final activeFields = resolveAmalFields(state.fields);
+    final next = Map<String, dynamic>.from(state.toggles);
+    for (final f in activeFields) {
+      next[f.id] = f.type == AmalType.numeric ? f.maxValue : true;
+    }
     state = state.copyWith(toggles: next, clearError: true);
     Future<void>.microtask(_persistDraft);
   }
@@ -319,12 +347,18 @@ class AmalNotifier extends StateNotifier<AmalState> {
     Future<void>.microtask(_persistDraft);
   }
 
-  Future<void> applyFreeze(UserModel user) async {
+  Future<void> applyFreeze(UserModel user, {required String hijri}) async {
     final fs = _ref.read(firestoreServiceProvider);
+    final baseline = user.currentStreak <= 0 ? 1 : user.currentStreak;
+    final newCurrent = baseline + 1;
+    final newBest = newCurrent > user.bestStreak ? newCurrent : user.bestStreak;
     await fs.updateStreak(
       user.uid,
       streakFreezeUsed: true,
       streakFreezeWeekKey: weekKeyFromDate(HijriHelper.bangladeshNow()),
+      currentStreak: newCurrent,
+      bestStreak: newBest,
+      lastLogDate: hijri,
     );
   }
 
@@ -342,7 +376,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       return null;
     }
 
-    final hijri = IslamicDateService.getCurrentIslamicDateString();
+    final hijri = IslamicDateService.getCurrentIslamicDateStringSafe();
     final toggles = normalizeTogglesForFields(state.toggles, state.fields);
     final score = calculateScore(toggles, state.fields);
     final now = DateTime.now().toUtc();
@@ -411,7 +445,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
               fs: fs,
               user: user,
               submittedLog: log,
-              resultingCurrentStreak: streakResult.newCurrentStreak,
+              resultingCurrentStreak: _streakAfterFreeze(user.currentStreak),
               currentWeekKey: currentWeekKey,
             );
             break;
@@ -436,7 +470,11 @@ class AmalNotifier extends StateNotifier<AmalState> {
         error: submitWarning,
         submittedLog: log,
       );
-      await _updateHomeWidget(streakOverride: streakResult.newCurrentStreak);
+      await _updateHomeWidget(
+        streakOverride: streakResult.action == StreakAction.showFreeze
+            ? _streakAfterFreeze(user.currentStreak)
+            : streakResult.newCurrentStreak,
+      );
     }
     _ref.invalidate(historyMonthProvider);
     Future<void>.microtask(() => _trySyncSubmittedLog(log));
@@ -461,9 +499,10 @@ class AmalNotifier extends StateNotifier<AmalState> {
     }
 
     final recent = await fs.getRecentLogs(user.uid, limit: 7);
+    final threshold = (maxScore * 0.8).round();
     final perfectWeek =
-        recent.length >= 7 &&
-        recent.every((log) => log.score >= (maxScore * 0.8).round());
+        _isPerfectWeekChain(recent) &&
+        recent.every((log) => log.score >= threshold);
     if (perfectWeek) nextBadges.add('perfectWeek');
 
     final weeklyRows = await fs.weeklyLeaderboard();

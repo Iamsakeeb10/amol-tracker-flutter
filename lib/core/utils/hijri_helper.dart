@@ -14,7 +14,7 @@ class HijriHelper {
 
   /// Hijri date string for storage and Firestore: `YYYY-MM-DD`.
   static String todayString() {
-    return IslamicDateService.getCurrentIslamicDateString();
+    return IslamicDateService.getCurrentIslamicDateStringSafe();
   }
 
   static String _formatStorage(int year, int month, int day) {

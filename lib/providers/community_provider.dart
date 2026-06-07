@@ -20,19 +20,7 @@ final communityRecentDatesProvider = Provider<List<String>>((ref) {
 final communityAccountCreatedHijriProvider = Provider<String?>((ref) {
   final currentUser = ref.watch(currentUserProvider).asData?.value;
   if (currentUser == null) return null;
-
-  final createdAtLocal = currentUser.createdAt.toLocal();
-  final nowBd = IslamicDateService.nowInBD();
-  final createdOnCurrentGregorianDay =
-      createdAtLocal.year == nowBd.year &&
-      createdAtLocal.month == nowBd.month &&
-      createdAtLocal.day == nowBd.day;
-
-  if (createdOnCurrentGregorianDay) {
-    return IslamicDateService.getCurrentIslamicDateStringSafe();
-  }
-
-  return IslamicDateService.islamicDateStringForGregorianDate(createdAtLocal);
+  return IslamicDateService.hijriStorageForAccountCreated(currentUser.createdAt);
 });
 
 class CommunitySheetState {
@@ -68,7 +56,7 @@ class CommunitySheetState {
   final DocumentSnapshot<Map<String, dynamic>>? lastDoc;
 
   bool get isToday =>
-      selectedDate == IslamicDateService.getCurrentIslamicDateString();
+      selectedDate == IslamicDateService.getCurrentIslamicDateStringSafe();
 
   List<AmalLogModel> filteredRowsExcludingUid(String? currentUid) {
     final lower = searchQuery.trim().toLowerCase();
@@ -127,7 +115,7 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
   CommunitySheetNotifier(this._ref)
     : super(
         CommunitySheetState.initial(
-          IslamicDateService.getCurrentIslamicDateString(),
+          IslamicDateService.getCurrentIslamicDateStringSafe(),
         ),
       ) {
     _subscribeToday();
@@ -159,7 +147,7 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
       clearError: true,
       clearLastDoc: true,
     );
-    if (hijriDate == IslamicDateService.getCurrentIslamicDateString()) {
+    if (hijriDate == IslamicDateService.getCurrentIslamicDateStringSafe()) {
       _subscribeToday();
       return;
     }
@@ -187,7 +175,12 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
 
   Future<void> loadMore() async {
     if (state.isLoading || state.isLoadingMore || !state.hasMore) return;
-    if (state.lastDoc == null) return;
+    if (state.lastDoc == null) {
+      if (state.isToday) {
+        await _bootstrapTodayPagination();
+      }
+      if (state.lastDoc == null) return;
+    }
     state = state.copyWith(isLoadingMore: true, clearError: true);
     try {
       final fs = _ref.read(firestoreServiceProvider);
@@ -225,7 +218,7 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
 
   void _subscribeToday() {
     _todaySub?.cancel();
-    final today = IslamicDateService.getCurrentIslamicDateString();
+    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
     final fs = _ref.read(firestoreServiceProvider);
     _pagedRows = const <AmalLogModel>[];
     state = state.copyWith(
@@ -248,7 +241,9 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
           );
         }
       } catch (_) {
-        // Cursor bootstrap is best-effort; stream still drives live rows.
+        if (mounted && state.selectedDate == today) {
+          state = state.copyWith(hasMore: false);
+        }
       }
     });
     _todaySub = fs.communityDayStream(today).listen(
@@ -288,6 +283,23 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
         hasMore: false,
         error: 'Unable to load this date.',
       );
+    }
+  }
+
+  Future<void> _bootstrapTodayPagination() async {
+    if (!state.isToday || state.lastDoc != null) return;
+    try {
+      final fs = _ref.read(firestoreServiceProvider);
+      final firstPage = await fs.communityDayFetch(state.selectedDate);
+      if (!mounted) return;
+      state = state.copyWith(
+        hasMore: firstPage.rows.length == 20,
+        lastDoc: firstPage.lastDoc,
+        clearError: true,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      state = state.copyWith(hasMore: false);
     }
   }
 

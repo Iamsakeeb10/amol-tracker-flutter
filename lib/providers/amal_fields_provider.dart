@@ -136,6 +136,13 @@ class AmalFieldsNotifier extends AsyncNotifier<List<AmalField>> {
       if (version == null || version == _cachedVersion) return;
       if (_cachedVersion < 0) {
         _cachedVersion = version;
+        final storedVersion = LocalStorageService.getPref(
+          AmalFieldsConfig.prefVersionKey,
+          -1,
+        );
+        if (storedVersion != version) {
+          unawaited(_refreshInBackground());
+        }
         return;
       }
       _metaDebounce?.cancel();

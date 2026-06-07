@@ -92,9 +92,7 @@ final historyMonthSummaryProvider =
       getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
   final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
   final accountCreatedHijri =
-      IslamicDateService.islamicDateStringForGregorianDate(
-        input.accountCreatedAt.toLocal(),
-      );
+      IslamicDateService.hijriStorageForAccountCreated(input.accountCreatedAt);
   final daysInMonth = HijriCalendar().getDaysInMonth(
     input.monthKey.hijriYear,
     input.monthKey.hijriMonth,

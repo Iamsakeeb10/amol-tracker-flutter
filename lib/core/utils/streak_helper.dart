@@ -120,9 +120,10 @@ StreakResult computeStreakResult({
   }
 
   if (diffDays == 2 && !streakFreezeUsed) {
+    final preserved = currentStreak > 0 ? currentStreak : 1;
     return StreakResult(
       action: StreakAction.showFreeze,
-      newCurrentStreak: currentStreak,
+      newCurrentStreak: preserved,
       newBestStreak: bestStreak,
     );
   }

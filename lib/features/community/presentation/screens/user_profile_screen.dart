@@ -137,10 +137,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               final selectedScore = selectedLog?.score ?? 0;
               final effectiveDate =
                   profileData?.effectiveDate ??
-                  IslamicDateService.getCurrentIslamicDateString();
+                  IslamicDateService.getCurrentIslamicDateStringSafe();
               final dateIsToday =
                   effectiveDate ==
-                  IslamicDateService.getCurrentIslamicDateString();
+                  IslamicDateService.getCurrentIslamicDateStringSafe();
               final displayStreak = resolveDisplayedStreakValues(
                 currentStreak: user.currentStreak,
                 bestStreak: user.bestStreak,
@@ -390,7 +390,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 
   Future<_ProfileData> _loadProfileData(FirestoreService fs, String uid) async {
-    final today = IslamicDateService.getCurrentIslamicDateString();
+    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
     final effectiveDate = widget.selectedHijriDate ?? today;
     final fallback =
         (widget.selectedLogFallback != null &&
@@ -458,7 +458,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _sendingDua = true);
     try {
-      final today = IslamicDateService.getCurrentIslamicDateString();
+      final today = IslamicDateService.getCurrentIslamicDateStringSafe();
       logDuaPushDebug(
         'user profile send dua tapped: senderUid=$senderUid '
         'recipientUid=$recipientUid hijriDate=$today',

@@ -330,7 +330,7 @@ class FirestoreService {
     if (logFields.isEmpty) return;
 
     final todayDocId =
-        '${uid}_${IslamicDateService.getCurrentIslamicDateString()}';
+        '${uid}_${IslamicDateService.getCurrentIslamicDateStringSafe()}';
     final todayRef = _amalLogs.doc(todayDocId);
     final todaySnap = await todayRef.get();
     if (todaySnap.exists) {
@@ -551,6 +551,14 @@ class FirestoreService {
   }
 
   Future<List<Map<String, dynamic>>> weeklyLeaderboard() async {
+    try {
+      return await _weeklyLeaderboardQuery();
+    } catch (_) {
+      return const <Map<String, dynamic>>[];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _weeklyLeaderboardQuery() async {
     final end = IslamicDateService.getCurrentIslamicDateStringSafe();
     final start = IslamicDateService.shiftStorageByDays(end, -6);
 

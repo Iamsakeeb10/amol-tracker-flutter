@@ -84,6 +84,14 @@ Map<String, dynamic> setAmalNumeric(
     }
   }
 
+  if (fieldId == kTakbirFieldId) {
+    final fardField = _fieldById(fields, kFardFieldId);
+    if (fardField != null) {
+      final fardVal = getNumericValue(next[kFardFieldId], fardField.maxValue);
+      next[fieldId] = (next[fieldId] as int).clamp(0, fardVal);
+    }
+  }
+
   return next;
 }
 

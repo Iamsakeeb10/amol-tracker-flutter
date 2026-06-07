@@ -28,6 +28,7 @@ import '../../features/settings/presentation/screens/prayer_reminder_screen.dart
 import '../../features/settings/presentation/screens/reminder_times_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
+import '../../features/hijri_calendar/presentation/screens/hijri_calendar_screen.dart';
 import '../../shared/widgets/app_launch_route.dart';
 import '../../shared/widgets/bottom_nav.dart';
 import '../../shared/widgets/dev_screen.dart';
@@ -164,6 +165,11 @@ GoRouter buildAppRouter() {
         path: AppRoutes.dhikr,
         name: 'dhikr',
         builder: (_, _) => const DhikrCounterScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.hijriCalendar,
+        name: 'hijriCalendar',
+        builder: (_, _) => const HijriCalendarScreen(),
       ),
       GoRoute(
         path: AppRoutes.adminAnnouncements,

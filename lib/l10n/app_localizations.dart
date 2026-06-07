@@ -386,6 +386,84 @@ abstract class AppLocalizations {
   /// **'Hijri'**
   String get hijri;
 
+  /// No description provided for @hijriCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Hijri Calendar'**
+  String get hijriCalendar;
+
+  /// No description provided for @todayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayLabel;
+
+  /// No description provided for @islamicEventsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'ISLAMIC EVENTS'**
+  String get islamicEventsTitle;
+
+  /// No description provided for @eventIslamicNewYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Islamic New Year'**
+  String get eventIslamicNewYear;
+
+  /// No description provided for @eventAshura.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of Ashura'**
+  String get eventAshura;
+
+  /// No description provided for @eventMawlid.
+  ///
+  /// In en, this message translates to:
+  /// **'Mawlid an-Nabi'**
+  String get eventMawlid;
+
+  /// No description provided for @eventIsraMiraj.
+  ///
+  /// In en, this message translates to:
+  /// **'Isra and Mi\'raj'**
+  String get eventIsraMiraj;
+
+  /// No description provided for @eventShabeBarat.
+  ///
+  /// In en, this message translates to:
+  /// **'Shab-e-Barat'**
+  String get eventShabeBarat;
+
+  /// No description provided for @eventRamadanStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start of Ramadan'**
+  String get eventRamadanStart;
+
+  /// No description provided for @eventLaylatAlQadr.
+  ///
+  /// In en, this message translates to:
+  /// **'Laylat al-Qadr'**
+  String get eventLaylatAlQadr;
+
+  /// No description provided for @eventEidAlFitr.
+  ///
+  /// In en, this message translates to:
+  /// **'Eid al-Fitr'**
+  String get eventEidAlFitr;
+
+  /// No description provided for @eventArafat.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of Arafat'**
+  String get eventArafat;
+
+  /// No description provided for @eventEidAlAdha.
+  ///
+  /// In en, this message translates to:
+  /// **'Eid al-Adha'**
+  String get eventEidAlAdha;
+
   /// No description provided for @ramadanMode.
   ///
   /// In en, this message translates to:

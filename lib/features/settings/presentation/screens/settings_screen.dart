@@ -462,7 +462,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   icon: Icons.calendar_view_month_outlined,
                   title: l10n.calendarType,
                   trailing: l10n.hijri,
-                  onTap: () {},
+                  onTap: () => context.push(AppRoutes.hijriCalendar),
                 ),
                 const Divider(),
                 NavRow(

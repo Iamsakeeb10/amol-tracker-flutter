@@ -125,6 +125,12 @@ class MoreScreen extends ConsumerWidget {
                 ),
                 const Divider(),
                 NavRow(
+                  icon: Icons.calendar_month_outlined,
+                  title: l10n.hijriCalendar,
+                  onTap: () => context.push(AppRoutes.hijriCalendar),
+                ),
+                const Divider(),
+                NavRow(
                   icon: Icons.fiber_manual_record_outlined,
                   title: l10n.dhikrCounter,
                   onTap: () => context.push(AppRoutes.dhikr),

@@ -35,6 +35,7 @@ class AppRoutes {
   static const prayerAdhan = '/settings/prayer-adhan';
 
   static const dhikr = '/dhikr';
+  static const hijriCalendar = '/hijri-calendar';
 
   static const dev = '/dev';
 

@@ -161,6 +161,45 @@ class AppLocalizationsBn extends AppLocalizations {
   String get hijri => 'হিজরি';
 
   @override
+  String get hijriCalendar => 'হিজরি ক্যালেন্ডার';
+
+  @override
+  String get todayLabel => 'আজ';
+
+  @override
+  String get islamicEventsTitle => 'ইসলামিক অনুষ্ঠান';
+
+  @override
+  String get eventIslamicNewYear => 'ইসলামিক নববর্ষ';
+
+  @override
+  String get eventAshura => 'আশুরা';
+
+  @override
+  String get eventMawlid => 'ঈদে মিলাদুন্নবী';
+
+  @override
+  String get eventIsraMiraj => 'শবে মেরাজ';
+
+  @override
+  String get eventShabeBarat => 'শবে বরাত';
+
+  @override
+  String get eventRamadanStart => 'রমজানের শুরু';
+
+  @override
+  String get eventLaylatAlQadr => 'লাইলাতুল কদর';
+
+  @override
+  String get eventEidAlFitr => 'ঈদুল ফিতর';
+
+  @override
+  String get eventArafat => 'আরাফার দিন';
+
+  @override
+  String get eventEidAlAdha => 'ঈদুল আযহা';
+
+  @override
   String get ramadanMode => 'রমাদান মোড';
 
   @override

@@ -70,8 +70,11 @@ class _Chip extends StatelessWidget {
       ),
       selected: selected,
       onSelected: (_) => onTap(),
+      showCheckmark: false,
       selectedColor: AppColors.gold,
-      backgroundColor: AppColors.cardDark,
+      backgroundColor: AppColors.emeraldMid,
+      disabledColor: AppColors.emeraldMid,
+      surfaceTintColor: Colors.transparent,
       side: BorderSide(
         color: selected ? AppColors.goldBorder : AppColors.cardBorder,
       ),

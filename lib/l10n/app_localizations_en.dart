@@ -931,4 +931,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get badgePerfectWeekDesc => 'Score 80+ for 7 consecutive days.';
+
+  @override
+  String get exitAppTitle => 'Exit app?';
+
+  @override
+  String get exitAppConfirm => 'Have you logged today\'s amal?';
+
+  @override
+  String get exitAppStay => 'Stay';
+
+  @override
+  String get exitApp => 'Exit';
 }

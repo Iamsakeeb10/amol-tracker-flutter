@@ -16,7 +16,6 @@ import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
-import '../../../../models/user_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
@@ -27,7 +26,6 @@ import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
-import '../../../../shared/widgets/streak_freeze_modal.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -94,10 +92,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
     ref.watch(amalLogRefreshProvider);
 
+    final showSaveFab = !isSubmitted && hasAnyDone;
+
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
-        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 96.h),
+        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, showSaveFab ? 112.h : 96.h),
         children: [
           if (offline)
             Padding(
@@ -264,61 +264,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 locale: locale,
               ),
             SizedBox(height: 14.h),
-            SizedBox(
-              width: double.infinity,
-              height: 50.h,
-              child: hasAnyDone
-                  ? ElevatedButton(
-                      onPressed: isAmalLoading
-                          ? null
-                          : () => _onSubmit(context, uid, user),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gold,
-                        foregroundColor: AppColors.emeraldDeep,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14.r),
-                        ),
-                      ),
-                      child: isAmalLoading
-                          ? SizedBox(
-                              width: 22.r,
-                              height: 22.r,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.emeraldDeep,
-                              ),
-                            )
-                          : Text(
-                              l10n.saveTodaysAmal,
-                              style: AppTextStyles.button(context).copyWith(
-                                color: AppColors.emeraldDeep,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    )
-                  : OutlinedButton(
-                      onPressed: isAmalLoading
-                          ? null
-                          : amalNotifier.markAllDone,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.gold,
-                        side: const BorderSide(color: AppColors.goldBorder),
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14.r),
-                        ),
-                      ),
-                      child: Text(
-                        l10n.markAllDone,
-                        style: AppTextStyles.button(context).copyWith(
-                          color: AppColors.gold,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-            ),
-            SizedBox(height: 8.h),
             Text(
               hasAnyDone
                   ? l10n.draftSavedTapSaveToFinish
@@ -342,36 +287,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await context.push(AppRoutes.editAmalPath(todayHijri), extra: log);
     if (!mounted) return;
     ref.invalidate(amalProvider(uid));
-  }
-
-  Future<void> _onSubmit(
-    BuildContext context,
-    String uid,
-    UserModel user,
-  ) async {
-    final notifier = ref.read(amalProvider(uid).notifier);
-    final result = await notifier.submit(user);
-    if (!context.mounted) return;
-    if (result == null) return;
-
-    if (result.streakResult.action == StreakAction.showFreeze) {
-      await StreakFreezeModal.show(
-        context,
-        preservedStreak: result.streakResult.newCurrentStreak,
-        onUseFreeze: () async {
-          await notifier.applyFreeze(user);
-          if (!context.mounted) return;
-          context.push(AppRoutes.dayComplete, extra: result.log);
-        },
-        onResetStreak: () async {
-          await notifier.resetStreak(user.uid);
-          if (!context.mounted) return;
-          context.push(AppRoutes.dayComplete, extra: result.log);
-        },
-      );
-    } else {
-      context.push(AppRoutes.dayComplete, extra: result.log);
-    }
   }
 
   List<Widget> _buildAmalFieldSection({

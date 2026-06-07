@@ -358,5 +358,9 @@
   "badgeTopCommunityTitle": "Top of Community",
   "badgeTopCommunityDesc": "Rank #1 on the global weekly leaderboard.",
   "badgePerfectWeekTitle": "Perfect Week",
-  "badgePerfectWeekDesc": "Score 80+ for 7 consecutive days."
+  "badgePerfectWeekDesc": "Score 80+ for 7 consecutive days.",
+  "exitAppTitle": "Exit app?",
+  "exitAppConfirm": "Have you logged today's amal?",
+  "exitAppStay": "Stay",
+  "exitApp": "Exit"
 }

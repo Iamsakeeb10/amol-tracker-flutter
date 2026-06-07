@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
+import 'exit_back_handler.dart';
 
 class AppScaffold extends StatelessWidget {
   final Widget body;
@@ -12,6 +13,7 @@ class AppScaffold extends StatelessWidget {
   final bool showGeoBackground;
   final EdgeInsetsGeometry? padding;
   final bool safeAreaBottom;
+  final bool handleExitBack;
 
   const AppScaffold({
     super.key,
@@ -23,11 +25,12 @@ class AppScaffold extends StatelessWidget {
     this.showGeoBackground = true,
     this.padding,
     this.safeAreaBottom = true,
+    this.handleExitBack = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final scaffold = Scaffold(
       extendBody: true,
       backgroundColor: AppColors.emeraldDeep,
       appBar: appBar,
@@ -64,6 +67,9 @@ class AppScaffold extends StatelessWidget {
         ],
       ),
     );
+
+    if (!handleExitBack) return scaffold;
+    return ExitBackHandler(child: scaffold);
   }
 }
 

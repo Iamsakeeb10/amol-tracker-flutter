@@ -1789,6 +1789,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Score 80+ for 7 consecutive days.'**
   String get badgePerfectWeekDesc;
+
+  /// No description provided for @exitAppTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit app?'**
+  String get exitAppTitle;
+
+  /// No description provided for @exitAppConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Have you logged today\'s amal?'**
+  String get exitAppConfirm;
+
+  /// No description provided for @exitAppStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get exitAppStay;
+
+  /// No description provided for @exitApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exitApp;
 }
 
 class _AppLocalizationsDelegate

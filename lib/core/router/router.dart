@@ -118,8 +118,9 @@ GoRouter buildAppRouter() {
         name: AppRoutes.editAmal,
         builder: (_, state) {
           final hijriDate = state.pathParameters['date'] ?? '';
-          final existingLog =
-              state.extra is AmalLogModel ? state.extra as AmalLogModel : null;
+          final existingLog = state.extra is AmalLogModel
+              ? state.extra as AmalLogModel
+              : null;
           return EditAmalScreen(
             hijriDate: hijriDate,
             existingLog: existingLog,
@@ -221,4 +222,3 @@ class GoRouterRefreshStream extends ChangeNotifier {
     super.dispose();
   }
 }
-

@@ -84,6 +84,7 @@ class _DayCompleteScreenState extends ConsumerState<DayCompleteScreen> {
         if (!didPop) _goHome(context);
       },
       child: AppScaffold(
+        handleExitBack: false,
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(Icons.close, size: 22.r),

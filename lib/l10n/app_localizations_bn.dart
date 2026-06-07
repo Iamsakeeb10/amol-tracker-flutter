@@ -933,4 +933,16 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get badgePerfectWeekDesc => 'টানা ৭ দিন ৮০+ স্কোর করুন।';
+
+  @override
+  String get exitAppTitle => 'অ্যাপ বন্ধ করবে?';
+
+  @override
+  String get exitAppConfirm => 'আজকের আমল লগ করা হয়েছে কি?';
+
+  @override
+  String get exitAppStay => 'থাকো';
+
+  @override
+  String get exitApp => 'বন্ধ করো';
 }

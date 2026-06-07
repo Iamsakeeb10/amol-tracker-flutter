@@ -358,5 +358,9 @@
   "badgeTopCommunityTitle": "কমিউনিটির টপ",
   "badgeTopCommunityDesc": "গ্লোবাল সাপ্তাহিক লিডারবোর্ডে #১ হন।",
   "badgePerfectWeekTitle": "পারফেক্ট সপ্তাহ",
-  "badgePerfectWeekDesc": "টানা ৭ দিন ৮০+ স্কোর করুন।"
+  "badgePerfectWeekDesc": "টানা ৭ দিন ৮০+ স্কোর করুন।",
+  "exitAppTitle": "অ্যাপ বন্ধ করবে?",
+  "exitAppConfirm": "আজকের আমল লগ করা হয়েছে কি?",
+  "exitAppStay": "থাকো",
+  "exitApp": "বন্ধ করো"
 }

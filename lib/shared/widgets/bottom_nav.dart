@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/router/routes.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../core/utils/confirm_exit_app_on_back.dart';
+import 'home_save_fab.dart';
 
-class ScaffoldWithBottomNav extends StatelessWidget {
+class ScaffoldWithBottomNav extends ConsumerWidget {
   final Widget child;
   const ScaffoldWithBottomNav({super.key, required this.child});
 
@@ -39,14 +42,21 @@ class ScaffoldWithBottomNav extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      backgroundColor: AppColors.emeraldDeep,
-      body: child,
-      bottomNavigationBar: _BottomNavBar(
-        currentIndex: _selectedIndex(context),
-        onTap: (i) => _onTap(context, i),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final onHome = GoRouterState.of(context).matchedLocation.startsWith(
+      AppRoutes.home,
+    );
+    return ConfirmExitAppOnBack(
+      child: Scaffold(
+        extendBody: true,
+        backgroundColor: AppColors.emeraldDeep,
+        floatingActionButton: onHome ? const HomeSaveFab() : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        body: child,
+        bottomNavigationBar: _BottomNavBar(
+          currentIndex: _selectedIndex(context),
+          onTap: (i) => _onTap(context, i),
+        ),
       ),
     );
   }

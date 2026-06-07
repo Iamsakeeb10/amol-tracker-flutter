@@ -2456,6 +2456,197 @@ abstract class AppLocalizations {
   /// **'Announcements'**
   String get adminAnnouncementsTitle;
 
+  /// No description provided for @adminAmalFieldsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Amal Fields'**
+  String get adminAmalFieldsTitle;
+
+  /// No description provided for @adminAmalFieldFormCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create amal field'**
+  String get adminAmalFieldFormCreate;
+
+  /// No description provided for @adminAmalFieldFormEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit amal field'**
+  String get adminAmalFieldFormEdit;
+
+  /// No description provided for @adminAmalFieldId.
+  ///
+  /// In en, this message translates to:
+  /// **'Field ID'**
+  String get adminAmalFieldId;
+
+  /// No description provided for @adminAmalFieldLabelEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Label (English)'**
+  String get adminAmalFieldLabelEn;
+
+  /// No description provided for @adminAmalFieldLabelBn.
+  ///
+  /// In en, this message translates to:
+  /// **'Label (Bengali, optional)'**
+  String get adminAmalFieldLabelBn;
+
+  /// No description provided for @adminAmalFieldSublabelEn.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (English)'**
+  String get adminAmalFieldSublabelEn;
+
+  /// No description provided for @adminAmalFieldSublabelBn.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (Bengali, optional)'**
+  String get adminAmalFieldSublabelBn;
+
+  /// No description provided for @adminAmalFieldPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Points'**
+  String get adminAmalFieldPoints;
+
+  /// No description provided for @adminAmalFieldMaxValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Max value'**
+  String get adminAmalFieldMaxValue;
+
+  /// No description provided for @adminAmalFieldOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Display order'**
+  String get adminAmalFieldOrder;
+
+  /// No description provided for @adminAmalFieldTypeBoolean.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes / No'**
+  String get adminAmalFieldTypeBoolean;
+
+  /// No description provided for @adminAmalFieldTypeNumeric.
+  ///
+  /// In en, this message translates to:
+  /// **'Numeric'**
+  String get adminAmalFieldTypeNumeric;
+
+  /// No description provided for @adminAmalFieldIdRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Field ID is required.'**
+  String get adminAmalFieldIdRequired;
+
+  /// No description provided for @adminAmalFieldIdInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use lowercase letters, numbers, and underscores only.'**
+  String get adminAmalFieldIdInvalid;
+
+  /// No description provided for @adminAmalFieldLabelRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'English label is required.'**
+  String get adminAmalFieldLabelRequired;
+
+  /// No description provided for @adminAmalFieldPointsInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Points must be between 0 and 100.'**
+  String get adminAmalFieldPointsInvalid;
+
+  /// No description provided for @adminAmalFieldMaxValueInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Max value must be at least 1.'**
+  String get adminAmalFieldMaxValueInvalid;
+
+  /// No description provided for @adminAmalFieldOrderInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Order must be 0 or greater.'**
+  String get adminAmalFieldOrderInvalid;
+
+  /// No description provided for @adminAmalFieldSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Amal field saved.'**
+  String get adminAmalFieldSaved;
+
+  /// No description provided for @adminAmalFieldSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save amal field.'**
+  String get adminAmalFieldSaveFailed;
+
+  /// No description provided for @adminAmalFieldToggleFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update amal field.'**
+  String get adminAmalFieldToggleFailed;
+
+  /// No description provided for @adminAmalFieldIdImmutable.
+  ///
+  /// In en, this message translates to:
+  /// **'Field ID cannot be changed after creation.'**
+  String get adminAmalFieldIdImmutable;
+
+  /// No description provided for @adminAmalFieldPreviewRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an English label to preview.'**
+  String get adminAmalFieldPreviewRequired;
+
+  /// No description provided for @adminAmalFieldEmptyList.
+  ///
+  /// In en, this message translates to:
+  /// **'No amal fields yet. Tap + to create one.'**
+  String get adminAmalFieldEmptyList;
+
+  /// No description provided for @adminAmalFieldsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load amal fields.'**
+  String get adminAmalFieldsLoadFailed;
+
+  /// No description provided for @adminAmalFieldIdentitySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity'**
+  String get adminAmalFieldIdentitySection;
+
+  /// No description provided for @adminAmalFieldLabelsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels'**
+  String get adminAmalFieldLabelsSection;
+
+  /// No description provided for @adminAmalFieldScoringSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Scoring'**
+  String get adminAmalFieldScoringSection;
+
+  /// No description provided for @adminAmalFieldDisplaySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get adminAmalFieldDisplaySection;
+
+  /// No description provided for @adminAmalFieldTileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{id} · {type} · {points} · #{order}'**
+  String adminAmalFieldTileSubtitle(
+    String id,
+    String type,
+    String points,
+    int order,
+  );
+
   /// No description provided for @adminStatusLive.
   ///
   /// In en, this message translates to:

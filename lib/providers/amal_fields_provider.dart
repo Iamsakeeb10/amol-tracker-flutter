@@ -23,6 +23,11 @@ final amalFieldCountProvider = Provider<int>((ref) {
   return ref.watch(amalFieldsListProvider).length;
 });
 
+/// Admin: all field definitions including inactive.
+final allAmalFieldsProvider = StreamProvider<List<AmalField>>((ref) {
+  return ref.read(amalFieldsServiceProvider).allFieldsStream();
+});
+
 class AmalFieldsNotifier extends AsyncNotifier<List<AmalField>> {
   List<AmalField>? _sessionFields;
   int _cachedVersion = -1;

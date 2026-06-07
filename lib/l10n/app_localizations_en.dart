@@ -1300,6 +1300,110 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminAnnouncementsTitle => 'Announcements';
 
   @override
+  String get adminAmalFieldsTitle => 'Amal Fields';
+
+  @override
+  String get adminAmalFieldFormCreate => 'Create amal field';
+
+  @override
+  String get adminAmalFieldFormEdit => 'Edit amal field';
+
+  @override
+  String get adminAmalFieldId => 'Field ID';
+
+  @override
+  String get adminAmalFieldLabelEn => 'Label (English)';
+
+  @override
+  String get adminAmalFieldLabelBn => 'Label (Bengali, optional)';
+
+  @override
+  String get adminAmalFieldSublabelEn => 'Description (English)';
+
+  @override
+  String get adminAmalFieldSublabelBn => 'Description (Bengali, optional)';
+
+  @override
+  String get adminAmalFieldPoints => 'Points';
+
+  @override
+  String get adminAmalFieldMaxValue => 'Max value';
+
+  @override
+  String get adminAmalFieldOrder => 'Display order';
+
+  @override
+  String get adminAmalFieldTypeBoolean => 'Yes / No';
+
+  @override
+  String get adminAmalFieldTypeNumeric => 'Numeric';
+
+  @override
+  String get adminAmalFieldIdRequired => 'Field ID is required.';
+
+  @override
+  String get adminAmalFieldIdInvalid =>
+      'Use lowercase letters, numbers, and underscores only.';
+
+  @override
+  String get adminAmalFieldLabelRequired => 'English label is required.';
+
+  @override
+  String get adminAmalFieldPointsInvalid => 'Points must be between 0 and 100.';
+
+  @override
+  String get adminAmalFieldMaxValueInvalid => 'Max value must be at least 1.';
+
+  @override
+  String get adminAmalFieldOrderInvalid => 'Order must be 0 or greater.';
+
+  @override
+  String get adminAmalFieldSaved => 'Amal field saved.';
+
+  @override
+  String get adminAmalFieldSaveFailed => 'Could not save amal field.';
+
+  @override
+  String get adminAmalFieldToggleFailed => 'Could not update amal field.';
+
+  @override
+  String get adminAmalFieldIdImmutable =>
+      'Field ID cannot be changed after creation.';
+
+  @override
+  String get adminAmalFieldPreviewRequired =>
+      'Add an English label to preview.';
+
+  @override
+  String get adminAmalFieldEmptyList =>
+      'No amal fields yet. Tap + to create one.';
+
+  @override
+  String get adminAmalFieldsLoadFailed => 'Could not load amal fields.';
+
+  @override
+  String get adminAmalFieldIdentitySection => 'Identity';
+
+  @override
+  String get adminAmalFieldLabelsSection => 'Labels';
+
+  @override
+  String get adminAmalFieldScoringSection => 'Scoring';
+
+  @override
+  String get adminAmalFieldDisplaySection => 'Display';
+
+  @override
+  String adminAmalFieldTileSubtitle(
+    String id,
+    String type,
+    String points,
+    int order,
+  ) {
+    return '$id · $type · $points · #$order';
+  }
+
+  @override
   String get adminStatusLive => 'Live';
 
   @override

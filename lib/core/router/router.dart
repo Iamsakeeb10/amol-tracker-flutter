@@ -6,6 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../features/admin/presentation/screens/admin_announcement_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_announcements_screen.dart';
+import '../../features/admin/presentation/screens/admin_amal_field_form_screen.dart';
+import '../../features/admin/presentation/screens/admin_amal_fields_screen.dart';
 import '../../features/admin/presentation/screens/admin_course_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_course_list_screen.dart';
 import '../../features/admin/presentation/screens/admin_lesson_form_screen.dart';
@@ -21,6 +23,7 @@ import '../../features/history/presentation/widgets/history_date_route_guard.dar
 import '../../features/history/presentation/screens/history_screen.dart';
 import '../../features/home/presentation/screens/day_complete_screen.dart';
 import '../../models/amal_log_model.dart';
+import '../../core/constants/amal_fields.dart';
 import '../../models/announcement_model.dart';
 import '../../models/course_model.dart';
 import '../../features/admin/presentation/widgets/admin_course_helpers.dart';
@@ -261,6 +264,21 @@ GoRouter buildAppRouter() {
         path: AppRoutes.adminPushNotification,
         name: 'adminPushNotification',
         builder: (_, _) => const AdminPushNotificationScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminAmalFields,
+        name: 'adminAmalFields',
+        builder: (_, _) => const AdminAmalFieldsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminAmalFieldForm,
+        name: 'adminAmalFieldForm',
+        builder: (_, state) {
+          final extra = state.extra;
+          return AdminAmalFieldFormScreen(
+            existing: extra is AmalField ? extra : null,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.adminCourses,

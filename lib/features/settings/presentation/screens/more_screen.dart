@@ -197,6 +197,12 @@ class MoreScreen extends ConsumerWidget {
                       onTap: () => context.push(AppRoutes.adminAnnouncements),
                     ),
                     const Divider(),
+                    NavRow(
+                      icon: Icons.checklist_rtl_outlined,
+                      title: l10n.adminAmalFieldsTitle,
+                      onTap: () => context.push(AppRoutes.adminAmalFields),
+                    ),
+                    const Divider(),
                   ],
                   if (canManageCourses) ...[
                     NavRow(

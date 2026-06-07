@@ -1303,6 +1303,110 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminAnnouncementsTitle => 'ঘোষণা';
 
   @override
+  String get adminAmalFieldsTitle => 'আমল ফিল্ড';
+
+  @override
+  String get adminAmalFieldFormCreate => 'আমল ফিল্ড তৈরি';
+
+  @override
+  String get adminAmalFieldFormEdit => 'আমল ফিল্ড সম্পাদনা';
+
+  @override
+  String get adminAmalFieldId => 'ফিল্ড ID';
+
+  @override
+  String get adminAmalFieldLabelEn => 'লেবেল (ইংরেজি)';
+
+  @override
+  String get adminAmalFieldLabelBn => 'লেবেল (বাংলা, ঐচ্ছিক)';
+
+  @override
+  String get adminAmalFieldSublabelEn => 'বিবরণ (ইংরেজি)';
+
+  @override
+  String get adminAmalFieldSublabelBn => 'বিবরণ (বাংলা, ঐচ্ছিক)';
+
+  @override
+  String get adminAmalFieldPoints => 'পয়েন্ট';
+
+  @override
+  String get adminAmalFieldMaxValue => 'সর্বোচ্চ মান';
+
+  @override
+  String get adminAmalFieldOrder => 'প্রদর্শন ক্রম';
+
+  @override
+  String get adminAmalFieldTypeBoolean => 'হ্যাঁ / না';
+
+  @override
+  String get adminAmalFieldTypeNumeric => 'সংখ্যাসূচক';
+
+  @override
+  String get adminAmalFieldIdRequired => 'ফিল্ড ID প্রয়োজন।';
+
+  @override
+  String get adminAmalFieldIdInvalid =>
+      'ছোট হাতের অক্ষর, সংখ্যা ও আন্ডারস্কোর ব্যবহার করুন।';
+
+  @override
+  String get adminAmalFieldLabelRequired => 'ইংরেজি লেবেল প্রয়োজন।';
+
+  @override
+  String get adminAmalFieldPointsInvalid =>
+      'পয়েন্ট ০ থেকে ১০০ এর মধ্যে হতে হবে।';
+
+  @override
+  String get adminAmalFieldMaxValueInvalid => 'সর্বোচ্চ মান কমপক্ষে ১ হতে হবে।';
+
+  @override
+  String get adminAmalFieldOrderInvalid => 'ক্রম ০ বা তার বেশি হতে হবে।';
+
+  @override
+  String get adminAmalFieldSaved => 'আমল ফিল্ড সংরক্ষিত হয়েছে।';
+
+  @override
+  String get adminAmalFieldSaveFailed => 'আমল ফিল্ড সংরক্ষণ করা যায়নি।';
+
+  @override
+  String get adminAmalFieldToggleFailed => 'আমল ফিল্ড আপডেট করা যায়নি।';
+
+  @override
+  String get adminAmalFieldIdImmutable =>
+      'তৈরির পর ফিল্ড ID পরিবর্তন করা যাবে না।';
+
+  @override
+  String get adminAmalFieldPreviewRequired =>
+      'প্রিভিউ করতে ইংরেজি লেবেল লিখুন।';
+
+  @override
+  String get adminAmalFieldEmptyList => 'এখনো কোনো আমল ফিল্ড নেই। + চাপুন।';
+
+  @override
+  String get adminAmalFieldsLoadFailed => 'আমল ফিল্ড লোড করা যায়নি।';
+
+  @override
+  String get adminAmalFieldIdentitySection => 'পরিচয়';
+
+  @override
+  String get adminAmalFieldLabelsSection => 'লেবেল';
+
+  @override
+  String get adminAmalFieldScoringSection => 'স্কোরিং';
+
+  @override
+  String get adminAmalFieldDisplaySection => 'প্রদর্শন';
+
+  @override
+  String adminAmalFieldTileSubtitle(
+    String id,
+    String type,
+    String points,
+    int order,
+  ) {
+    return '$id · $type · $points · #$order';
+  }
+
+  @override
   String get adminStatusLive => 'লাইভ';
 
   @override

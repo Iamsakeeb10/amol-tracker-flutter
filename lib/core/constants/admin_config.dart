@@ -34,7 +34,9 @@ class AdminConfig {
   static bool isFullAdminRoute(String location) {
     return location == '/admin/announcements' ||
         location == '/admin/announcement-form' ||
-        location == '/admin/push-notification';
+        location == '/admin/push-notification' ||
+        location == '/admin/amal-fields' ||
+        location == '/admin/amal-field-form';
   }
 
   static bool isCourseAdminRoute(String location) {

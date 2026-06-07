@@ -160,6 +160,9 @@ class AdminFormField extends StatelessWidget {
     this.error,
     this.maxLines = 1,
     this.textDirection,
+    this.keyboardType,
+    this.validator,
+    this.readOnly = false,
   });
 
   final String label;
@@ -169,6 +172,17 @@ class AdminFormField extends StatelessWidget {
   final String? error;
   final int maxLines;
   final TextDirection? textDirection;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
+  final bool readOnly;
+
+  String? Function(String?)? get _effectiveValidator {
+    if (validator != null) return validator;
+    if (required) {
+      return (v) => (v == null || v.trim().isEmpty) ? error : null;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,6 +192,9 @@ class AdminFormField extends StatelessWidget {
         controller: controller,
         maxLines: maxLines,
         textDirection: textDirection,
+        keyboardType: keyboardType,
+        readOnly: readOnly,
+        enabled: !readOnly,
         style: AppTextStyles.bodyMedium(context).copyWith(
           color: AppColors.textPrimary,
         ),
@@ -205,10 +222,12 @@ class AdminFormField extends StatelessWidget {
             borderRadius: BorderRadius.circular(12.r),
             borderSide: const BorderSide(color: AppColors.danger),
           ),
+          disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: const BorderSide(color: AppColors.cardBorder),
+          ),
         ),
-        validator: required
-            ? (v) => (v == null || v.trim().isEmpty) ? error : null
-            : null,
+        validator: _effectiveValidator,
       ),
     );
   }

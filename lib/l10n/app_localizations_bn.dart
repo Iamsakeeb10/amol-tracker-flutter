@@ -1182,6 +1182,43 @@ class AppLocalizationsBn extends AppLocalizations {
   String get husnaRetryQuiz => 'আবার চেষ্টা';
 
   @override
+  String get husnaSearch => 'নাম খুঁজুন...';
+
+  @override
+  String get husnaFilterAll => 'সব';
+
+  @override
+  String get husnaFilterLearned => 'শিখেছি';
+
+  @override
+  String get husnaFilterNotLearned => 'শিখিনি';
+
+  @override
+  String husnaQuizProgress(int current, int total) {
+    return 'প্রশ্ন $current / $total';
+  }
+
+  @override
+  String get husnaQuizExcellent => 'চমৎকার!';
+
+  @override
+  String get husnaQuizGoodEffort => 'ভালো চেষ্টা!';
+
+  @override
+  String get husnaQuizKeepLearning => 'শেখা চালিয়ে যান!';
+
+  @override
+  String get husnaSwipeHint => 'পরের নাম দেখতে সোয়াইপ করুন';
+
+  @override
+  String get husnaPronunciation => 'উচ্চারণ';
+
+  @override
+  String husnaCorrectAnswer(String name) {
+    return 'সঠিক উত্তর: $name';
+  }
+
+  @override
   String get announcementDismiss => 'বুঝেছি';
 
   @override

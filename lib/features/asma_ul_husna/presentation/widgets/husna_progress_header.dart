@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/asma_ul_husna.dart';
@@ -8,21 +9,24 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/card_container.dart';
+import '../../../../shared/widgets/score_bar.dart';
 
-class HusnaProgressHeader extends StatelessWidget {
+class HusnaProgressHeader extends ConsumerWidget {
   const HusnaProgressHeader({
     super.key,
     required this.learnedCount,
+    required this.learnedPercent,
     required this.canStartQuiz,
     required this.onStartQuiz,
   });
 
   final int learnedCount;
+  final int learnedPercent;
   final bool canStartQuiz;
   final VoidCallback onStartQuiz;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final progress = learnedCount / kHusnaTotalCount;
 
@@ -47,9 +51,9 @@ class HusnaProgressHeader extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '$learnedCount',
+                      '$learnedPercent%',
                       style: AppTextStyles.goldNumeric(context).copyWith(
-                        fontSize: 20.sp,
+                        fontSize: 16.sp,
                       ),
                     ),
                   ],
@@ -75,6 +79,8 @@ class HusnaProgressHeader extends StatelessWidget {
                         fontSize: 12.sp,
                       ),
                     ),
+                    SizedBox(height: 8.h),
+                    ScoreBar(value: progress, height: 5),
                   ],
                 ),
               ),
@@ -100,7 +106,8 @@ class HusnaProgressHeader extends StatelessWidget {
                 canStartQuiz ? l10n.husnaStartQuiz : l10n.husnaNoNamesLearned,
                 style: AppTextStyles.bodyMedium(context).copyWith(
                   fontWeight: FontWeight.w700,
-                  color: canStartQuiz ? AppColors.emeraldDeep : AppColors.textMuted,
+                  color:
+                      canStartQuiz ? AppColors.emeraldDeep : AppColors.textMuted,
                   fontSize: 13.sp,
                 ),
               ),

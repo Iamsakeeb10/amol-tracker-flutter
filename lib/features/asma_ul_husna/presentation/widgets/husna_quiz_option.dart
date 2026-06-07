@@ -55,16 +55,31 @@ class HusnaQuizOption extends StatelessWidget {
       child: InkWell(
         onTap: enabled ? onTap : null,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  name.transliteration,
-                  style: AppTextStyles.bodyLarge(context).copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14.sp,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name.arabic,
+                      textDirection: TextDirection.rtl,
+                      style: AppTextStyles.bodyLarge(context).copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      name.transliteration,
+                      style: AppTextStyles.bodySmall(context).copyWith(
+                        color: AppColors.gold,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               if (state == HusnaQuizOptionState.correct)

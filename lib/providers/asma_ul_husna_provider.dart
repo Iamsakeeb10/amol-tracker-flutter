@@ -9,12 +9,17 @@ import '../models/husna_name_model.dart';
 const int kHusnaQuizMinLearned = 4;
 const int kHusnaQuizQuestionCount = 10;
 
+enum HusnaFilterMode { all, learned, notLearned }
+
 class AsmaUlHusnaState {
   const AsmaUlHusnaState({
     required this.learnedNumbers,
     required this.isLoading,
+    required this.searchQuery,
+    required this.filterMode,
     required this.quizScore,
     required this.quizTotal,
+    required this.quizCurrentIndex,
     required this.quizFinished,
     required this.currentQuestion,
     required this.quizOptions,
@@ -26,8 +31,11 @@ class AsmaUlHusnaState {
     return const AsmaUlHusnaState(
       learnedNumbers: <int>{},
       isLoading: true,
+      searchQuery: '',
+      filterMode: HusnaFilterMode.all,
       quizScore: 0,
       quizTotal: 0,
+      quizCurrentIndex: 0,
       quizFinished: false,
       currentQuestion: null,
       quizOptions: <HusnaName>[],
@@ -38,8 +46,11 @@ class AsmaUlHusnaState {
 
   final Set<int> learnedNumbers;
   final bool isLoading;
+  final String searchQuery;
+  final HusnaFilterMode filterMode;
   final int quizScore;
   final int quizTotal;
+  final int quizCurrentIndex;
   final bool quizFinished;
   final HusnaName? currentQuestion;
   final List<HusnaName> quizOptions;
@@ -51,15 +62,37 @@ class AsmaUlHusnaState {
   double get learnedProgress =>
       kHusnaTotalCount <= 0 ? 0 : learnedCount / kHusnaTotalCount;
 
+  int get learnedPercent => (learnedProgress * 100).round();
+
   bool get canStartQuiz => learnedCount >= kHusnaQuizMinLearned;
 
   bool isLearned(int number) => learnedNumbers.contains(number);
 
+  List<HusnaName> get filteredNames {
+    return kAsmaUlHusna.where((name) {
+      if (!name.matchesSearch(searchQuery)) return false;
+      switch (filterMode) {
+        case HusnaFilterMode.all:
+          return true;
+        case HusnaFilterMode.learned:
+          return learnedNumbers.contains(name.number);
+        case HusnaFilterMode.notLearned:
+          return !learnedNumbers.contains(name.number);
+      }
+    }).toList();
+  }
+
+  double get quizProgress =>
+      quizTotal <= 0 ? 0 : (quizCurrentIndex + 1) / quizTotal;
+
   AsmaUlHusnaState copyWith({
     Set<int>? learnedNumbers,
     bool? isLoading,
+    String? searchQuery,
+    HusnaFilterMode? filterMode,
     int? quizScore,
     int? quizTotal,
+    int? quizCurrentIndex,
     bool? quizFinished,
     HusnaName? currentQuestion,
     List<HusnaName>? quizOptions,
@@ -71,8 +104,11 @@ class AsmaUlHusnaState {
     return AsmaUlHusnaState(
       learnedNumbers: learnedNumbers ?? this.learnedNumbers,
       isLoading: isLoading ?? this.isLoading,
+      searchQuery: searchQuery ?? this.searchQuery,
+      filterMode: filterMode ?? this.filterMode,
       quizScore: quizScore ?? this.quizScore,
       quizTotal: quizTotal ?? this.quizTotal,
+      quizCurrentIndex: quizCurrentIndex ?? this.quizCurrentIndex,
       quizFinished: quizFinished ?? this.quizFinished,
       currentQuestion:
           clearQuestion ? null : (currentQuestion ?? this.currentQuestion),
@@ -86,23 +122,22 @@ class AsmaUlHusnaState {
 
 /*
 Purpose:
-Track learned Asma ul Husna names locally and run an offline meaning-to-name quiz.
+Track learned Asma ul Husna names, filter/search the catalog, and run quiz sessions.
 
 Response:
-Immutable [AsmaUlHusnaState] with learned set, loading flag, and active quiz session.
+Immutable [AsmaUlHusnaState] with learned set, filter state, and active quiz session.
 
 Business Rules:
 - Learned numbers persist in Hive under husna_learned.
+- Search matches Arabic, transliteration, Bangla pronunciation, and meanings.
 - Quiz unlocks after at least 4 names are marked learned.
-- Quiz asks 10 questions from learned names only.
-- Each question shows meaning; user picks one of four transliterations.
-- Correct answers increment score; session ends after 10 questions.
+- Quiz asks up to 10 questions from learned names only.
 
 Flow:
 1. Load learned numbers from Hive on init/refresh.
-2. Toggle learned state per name number and persist immediately.
-3. Start quiz by shuffling learned names and building first question.
-4. On answer, reveal result then advance or finish session.
+2. Apply search + filter locally for list rendering.
+3. Start quiz, track current question index, score answers.
+4. Advance or finish quiz after each answered question.
 
 Side Effects:
 - Hive writes when learned set changes.
@@ -127,6 +162,14 @@ class AsmaUlHusnaNotifier extends StateNotifier<AsmaUlHusnaState> {
   Future<void> _load() async {
     final learned = LocalStorageService.getHusnaLearnedNumbers();
     state = state.copyWith(learnedNumbers: learned, isLoading: false);
+  }
+
+  void setSearchQuery(String query) {
+    state = state.copyWith(searchQuery: query);
+  }
+
+  void setFilterMode(HusnaFilterMode mode) {
+    state = state.copyWith(filterMode: mode);
   }
 
   Future<void> toggleLearned(int number) async {
@@ -155,15 +198,16 @@ class AsmaUlHusnaNotifier extends StateNotifier<AsmaUlHusnaState> {
     state = state.copyWith(
       quizScore: 0,
       quizTotal: _quizQueue.length,
+      quizCurrentIndex: 0,
       quizFinished: false,
       showAnswerResult: false,
       clearSelectedAnswer: true,
     );
-    _setQuestion(_quizQueue.first);
+    _setQuestion(_quizQueue.first, index: 0);
     return true;
   }
 
-  void _setQuestion(HusnaName question) {
+  void _setQuestion(HusnaName question, {required int index}) {
     final distractors = kAsmaUlHusna
         .where((n) => n.number != question.number)
         .toList()
@@ -173,6 +217,7 @@ class AsmaUlHusnaNotifier extends StateNotifier<AsmaUlHusnaState> {
     state = state.copyWith(
       currentQuestion: question,
       quizOptions: options,
+      quizCurrentIndex: index,
       showAnswerResult: false,
       clearSelectedAnswer: true,
     );
@@ -194,7 +239,8 @@ class AsmaUlHusnaNotifier extends StateNotifier<AsmaUlHusnaState> {
     if (!state.showAnswerResult || state.quizFinished) return;
     final current = state.currentQuestion;
     if (current == null) return;
-    final currentIndex = _quizQueue.indexWhere((n) => n.number == current.number);
+    final currentIndex =
+        _quizQueue.indexWhere((n) => n.number == current.number);
     final isLast = currentIndex < 0 || currentIndex >= _quizQueue.length - 1;
     if (isLast) {
       state = state.copyWith(
@@ -206,7 +252,7 @@ class AsmaUlHusnaNotifier extends StateNotifier<AsmaUlHusnaState> {
       );
       return;
     }
-    _setQuestion(_quizQueue[currentIndex + 1]);
+    _setQuestion(_quizQueue[currentIndex + 1], index: currentIndex + 1);
   }
 
   void resetQuiz() {
@@ -214,6 +260,7 @@ class AsmaUlHusnaNotifier extends StateNotifier<AsmaUlHusnaState> {
     state = state.copyWith(
       quizScore: 0,
       quizTotal: 0,
+      quizCurrentIndex: 0,
       quizFinished: false,
       clearQuestion: true,
       quizOptions: const [],

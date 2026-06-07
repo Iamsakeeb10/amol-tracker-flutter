@@ -3,14 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/asma_ul_husna.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../models/husna_name_model.dart';
 import '../../../../providers/asma_ul_husna_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../widgets/husna_filter_chips.dart';
 import '../widgets/husna_name_card.dart';
 import '../widgets/husna_progress_header.dart';
 import 'asma_ul_husna_detail_screen.dart';
@@ -24,6 +23,8 @@ class AsmaUlHusnaScreen extends ConsumerStatefulWidget {
 }
 
 class _AsmaUlHusnaScreenState extends ConsumerState<AsmaUlHusnaScreen> {
+  final _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -32,10 +33,16 @@ class _AsmaUlHusnaScreenState extends ConsumerState<AsmaUlHusnaScreen> {
     });
   }
 
-  void _openDetail(HusnaName name) {
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _openDetail(int initialNumber) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => AsmaUlHusnaDetailScreen(name: name),
+        builder: (_) => AsmaUlHusnaDetailScreen(initialNumber: initialNumber),
       ),
     );
   }
@@ -54,9 +61,12 @@ class _AsmaUlHusnaScreenState extends ConsumerState<AsmaUlHusnaScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(asmaUlHusnaProvider);
+    final notifier = ref.read(asmaUlHusnaProvider.notifier);
+    final names = state.filteredNames;
 
     return AppScaffold(
       handleExitBack: false,
+      padding: EdgeInsets.zero,
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: 22.r),
@@ -74,36 +84,80 @@ class _AsmaUlHusnaScreenState extends ConsumerState<AsmaUlHusnaScreen> {
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.only(top: 8.h, bottom: 16.h),
+                    padding: EdgeInsets.only(top: 8.h, bottom: 12.h),
                     child: HusnaProgressHeader(
                       learnedCount: state.learnedCount,
+                      learnedPercent: state.learnedPercent,
                       canStartQuiz: state.canStartQuiz,
                       onStartQuiz: _openQuiz,
                     ),
                   ),
                 ),
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
-                  sliver: SliverGrid(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 10.h,
-                      crossAxisSpacing: 10.w,
-                      childAspectRatio: 0.92,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final name = kAsmaUlHusna[index];
-                        return HusnaNameCard(
-                          name: name,
-                          isLearned: state.isLearned(name.number),
-                          onTap: () => _openDetail(name),
-                        );
-                      },
-                      childCount: kAsmaUlHusna.length,
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: notifier.setSearchQuery,
+                      style: AppTextStyles.bodyLarge(context),
+                      decoration: InputDecoration(
+                        hintText: l10n.husnaSearch,
+                        hintStyle: AppTextStyles.bodyMedium(context),
+                        filled: true,
+                        fillColor: AppColors.cardDark,
+                        prefixIcon: Icon(Icons.search_rounded, size: 20.r),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: const BorderSide(color: AppColors.cardBorder),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: const BorderSide(color: AppColors.cardBorder),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: const BorderSide(color: AppColors.goldBorder),
+                        ),
+                      ),
                     ),
                   ),
                 ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+                    child: HusnaFilterChips(
+                      selected: state.filterMode,
+                      onChanged: notifier.setFilterMode,
+                    ),
+                  ),
+                ),
+                if (names.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Text(
+                        l10n.husnaSearch,
+                        style: AppTextStyles.bodyMedium(context),
+                      ),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final name = names[index];
+                          return HusnaNameCard(
+                            name: name,
+                            isLearned: state.isLearned(name.number),
+                            onTap: () => _openDetail(name.number),
+                          );
+                        },
+                        childCount: names.length,
+                      ),
+                    ),
+                  ),
               ],
             ),
     );

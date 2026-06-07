@@ -2252,6 +2252,72 @@ abstract class AppLocalizations {
   /// **'Try Again'**
   String get husnaRetryQuiz;
 
+  /// No description provided for @husnaSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search names...'**
+  String get husnaSearch;
+
+  /// No description provided for @husnaFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get husnaFilterAll;
+
+  /// No description provided for @husnaFilterLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Learned'**
+  String get husnaFilterLearned;
+
+  /// No description provided for @husnaFilterNotLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Learned'**
+  String get husnaFilterNotLearned;
+
+  /// No description provided for @husnaQuizProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {current} of {total}'**
+  String husnaQuizProgress(int current, int total);
+
+  /// No description provided for @husnaQuizExcellent.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent!'**
+  String get husnaQuizExcellent;
+
+  /// No description provided for @husnaQuizGoodEffort.
+  ///
+  /// In en, this message translates to:
+  /// **'Good effort!'**
+  String get husnaQuizGoodEffort;
+
+  /// No description provided for @husnaQuizKeepLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep learning!'**
+  String get husnaQuizKeepLearning;
+
+  /// No description provided for @husnaSwipeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to see next name'**
+  String get husnaSwipeHint;
+
+  /// No description provided for @husnaPronunciation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pronunciation'**
+  String get husnaPronunciation;
+
+  /// No description provided for @husnaCorrectAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answer: {name}'**
+  String husnaCorrectAnswer(String name);
+
   /// No description provided for @announcementDismiss.
   ///
   /// In en, this message translates to:

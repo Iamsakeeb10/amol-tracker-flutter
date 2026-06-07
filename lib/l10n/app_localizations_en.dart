@@ -1179,6 +1179,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get husnaRetryQuiz => 'Try Again';
 
   @override
+  String get husnaSearch => 'Search names...';
+
+  @override
+  String get husnaFilterAll => 'All';
+
+  @override
+  String get husnaFilterLearned => 'Learned';
+
+  @override
+  String get husnaFilterNotLearned => 'Not Learned';
+
+  @override
+  String husnaQuizProgress(int current, int total) {
+    return 'Question $current of $total';
+  }
+
+  @override
+  String get husnaQuizExcellent => 'Excellent!';
+
+  @override
+  String get husnaQuizGoodEffort => 'Good effort!';
+
+  @override
+  String get husnaQuizKeepLearning => 'Keep learning!';
+
+  @override
+  String get husnaSwipeHint => 'Swipe to see next name';
+
+  @override
+  String get husnaPronunciation => 'Pronunciation';
+
+  @override
+  String husnaCorrectAnswer(String name) {
+    return 'Correct answer: $name';
+  }
+
+  @override
   String get announcementDismiss => 'Understood';
 
   @override

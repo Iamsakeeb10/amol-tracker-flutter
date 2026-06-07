@@ -221,8 +221,7 @@ class QuizIntroScreen extends ConsumerWidget {
     final quiz = ref.read(quizSessionProvider(_quizRef)).quiz;
     if (quiz == null || quiz.questionCount == 0) return;
 
-    ref.read(quizSessionProvider(_quizRef).notifier).startSession();
-    context.push(AppRoutes.quizPlayPath(courseId, quizId));
+    context.push(AppRoutes.quizBismillahPath(courseId, quizId));
   }
 }
 

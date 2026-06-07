@@ -13,6 +13,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/streak_badge.dart';
+import '../widgets/admin_push_type_selector.dart';
 import '../widgets/admin_shared_widgets.dart';
 
 class AdminPushNotificationScreen extends ConsumerStatefulWidget {
@@ -144,7 +145,7 @@ class _AdminPushNotificationScreenState
             SizedBox(height: 16.h),
             SectionHeader(title: l10n.adminPushType.toUpperCase()),
             CardContainer(
-              child: AdminTypePillSelector(
+              child: AdminPushTypePillSelector(
                 selected: _type,
                 onChanged: (v) => setState(() => _type = v),
               ),

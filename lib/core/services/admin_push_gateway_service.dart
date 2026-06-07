@@ -20,6 +20,15 @@ class AdminPushResult {
 }
 
 class AdminPushGatewayService {
+  /// Allowed FCM/inbox payload types for admin broadcast pushes.
+  static const List<String> allowedPushTypes = [
+    'announcement',
+    'reminder',
+    'dua',
+    'hadith',
+    'syllabus_course',
+  ];
+
   static const String _defaultGatewayUrl =
       'https://amol-admin-push.amol-dua.workers.dev';
 
@@ -81,6 +90,14 @@ class AdminPushGatewayService {
     required String message,
     required String type,
   }) async {
+    if (!allowedPushTypes.contains(type)) {
+      logAdminPushDebug('push skipped: unsupported type=$type');
+      return AdminPushResult(
+        success: false,
+        error: 'unsupported_push_type',
+      );
+    }
+
     if (!isConfigured) {
       logAdminPushDebug('push skipped: gateway URL is not configured');
       return const AdminPushResult(

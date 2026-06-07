@@ -17,6 +17,7 @@ const kLessonResourceTypes = <LessonResourceType>[
   LessonResourceType.pdf,
   LessonResourceType.link,
   LessonResourceType.text,
+  LessonResourceType.audio,
 ];
 
 class AdminLessonFormArgs {
@@ -63,6 +64,7 @@ IconData iconForResourceType(LessonResourceType type) {
     LessonResourceType.pdf => Icons.picture_as_pdf_outlined,
     LessonResourceType.link => Icons.link_rounded,
     LessonResourceType.text => Icons.article_outlined,
+    LessonResourceType.audio => Icons.headphones_outlined,
   };
 }
 
@@ -72,6 +74,7 @@ String resourceTypeLabel(AppLocalizations l10n, LessonResourceType type) {
     LessonResourceType.pdf => l10n.adminLessonTypePdf,
     LessonResourceType.link => l10n.adminLessonTypeLink,
     LessonResourceType.text => l10n.adminLessonTypeText,
+    LessonResourceType.audio => l10n.adminLessonTypeAudio,
   };
 }
 
@@ -257,4 +260,20 @@ class AdminCourseStatusSelector extends StatelessWidget {
       }).toList(),
     );
   }
+}
+
+String? validateAudioLessonUrl(String? value, AppLocalizations l10n) {
+  final trimmed = value?.trim() ?? '';
+  if (trimmed.isEmpty) return l10n.adminLessonResourceUrlRequired;
+  final uri = Uri.tryParse(trimmed);
+  if (uri == null ||
+      !uri.hasScheme ||
+      (uri.scheme != 'http' && uri.scheme != 'https')) {
+    return l10n.adminLessonAudioUrlInvalid;
+  }
+  final path = uri.path.toLowerCase();
+  if (!path.endsWith('.mp3') && !path.endsWith('.m4a')) {
+    return l10n.adminLessonAudioUrlInvalid;
+  }
+  return null;
 }

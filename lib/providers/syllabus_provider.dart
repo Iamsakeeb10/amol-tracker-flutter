@@ -1,15 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
+import 'dart:async';
 
 import '../core/services/syllabus_service.dart';
+import '../core/services/lms_xp_service.dart';
+import '../core/services/lms_review_service.dart';
 import '../core/utils/syllabus_badge_helper.dart';
 import '../models/course_model.dart';
 import '../models/lesson_model.dart';
 import '../models/user_progress_model.dart';
 import 'auth_provider.dart';
+import 'lms_level_celebration_provider.dart';
 
 final syllabusServiceProvider = Provider<SyllabusService>(
   (ref) => SyllabusService(),
+);
+
+final lmsReviewServiceProvider = Provider<LmsReviewService>(
+  (ref) => LmsReviewService(),
 );
 
 final publishedCoursesProvider = StreamProvider<List<CourseModel>>((ref) {
@@ -169,6 +177,23 @@ class SyllabusCourseActionState {
   }
 }
 
+class LessonCompleteResult {
+  const LessonCompleteResult({
+    required this.success,
+    this.courseJustCompleted = false,
+    this.courseCompletedAt,
+  });
+
+  const LessonCompleteResult.failure()
+      : success = false,
+        courseJustCompleted = false,
+        courseCompletedAt = null;
+
+  final bool success;
+  final bool courseJustCompleted;
+  final DateTime? courseCompletedAt;
+}
+
 /*
 Purpose:
 Handle enrollment and lesson completion mutations for one course.
@@ -218,15 +243,20 @@ class SyllabusCourseNotifier extends StateNotifier<SyllabusCourseActionState> {
     }
   }
 
-  Future<bool> markLessonComplete(String lessonId) async {
+  Future<LessonCompleteResult> markLessonComplete(String lessonId) async {
     final uid = _uid;
     if (uid == null || uid.isEmpty || _courseId.isEmpty || lessonId.isEmpty) {
       state = state.copyWith(error: 'Sign in to track lesson progress.');
-      return false;
+      return const LessonCompleteResult.failure();
     }
 
     final totalLessons =
         _ref.read(publishedCourseLessonsProvider(_courseId)).value?.length;
+    final priorProgress =
+        _ref.read(currentUserCourseProgressProvider(_courseId)).value;
+    final alreadyComplete =
+        priorProgress?.completedLessons.contains(lessonId) ?? false;
+    final wasCourseComplete = priorProgress?.isCourseCompleted ?? false;
 
     state = state.copyWith(isBusy: true, clearError: true);
     try {
@@ -237,18 +267,44 @@ class SyllabusCourseNotifier extends StateNotifier<SyllabusCourseActionState> {
         lessonId: lessonId,
         totalLessons: totalLessons,
       );
+      if (!alreadyComplete) {
+        try {
+          await awardLmsXpAndCelebrate(
+            _ref,
+            uid: uid,
+            amount: LmsXpService.xpLessonComplete,
+          );
+        } catch (_) {
+          // Progress saved; XP can sync on next action.
+        }
+      }
       final progress = await service.getUserProgress(uid, _courseId);
-      if (progress?.isCourseCompleted == true) {
+      final courseJustCompleted =
+          !wasCourseComplete && (progress?.isCourseCompleted ?? false);
+      if (courseJustCompleted) {
         await awardCourseGraduateBadgeIfNeeded(_ref, uid);
+        try {
+          await awardLmsXpAndCelebrate(
+            _ref,
+            uid: uid,
+            amount: LmsXpService.xpCourseComplete,
+          );
+        } catch (_) {
+          // Badge/progress saved; XP is best-effort.
+        }
       }
       state = state.copyWith(isBusy: false);
-      return true;
+      return LessonCompleteResult(
+        success: true,
+        courseJustCompleted: courseJustCompleted,
+        courseCompletedAt: progress?.completedAt,
+      );
     } catch (_) {
       state = state.copyWith(
         isBusy: false,
         error: 'Unable to save lesson progress.',
       );
-      return false;
+      return const LessonCompleteResult.failure();
     }
   }
 }

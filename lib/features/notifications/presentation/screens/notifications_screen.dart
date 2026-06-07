@@ -264,6 +264,8 @@ class _NotificationRow extends StatelessWidget {
         return Icons.local_fire_department_outlined;
       case 'badge':
         return Icons.workspace_premium_outlined;
+      case 'syllabus_review':
+        return Icons.menu_book_outlined;
       case 'community':
       default:
         return Icons.notifications_outlined;
@@ -278,13 +280,20 @@ class _NotificationRow extends StatelessWidget {
         return AppRoutes.community;
       case 'badge':
         return AppRoutes.profile;
+      case 'syllabus_review':
+        final courseId = item.courseId?.trim() ?? '';
+        final lessonId = item.lessonId?.trim() ?? '';
+        if (courseId.isNotEmpty && lessonId.isNotEmpty) {
+          return AppRoutes.lessonViewerPath(courseId, lessonId);
+        }
+        return AppRoutes.syllabus;
       case 'dua':
       default:
         return AppRoutes.notifications;
     }
   }
 
-  String _typeLabel() {
+  String _typeLabel(AppLocalizations l10n) {
     switch (item.type) {
       case 'dua':
         return 'দোয়া';
@@ -294,6 +303,8 @@ class _NotificationRow extends StatelessWidget {
         return 'ব্যাজ';
       case 'community':
         return 'কমিউনিটি';
+      case 'syllabus_review':
+        return l10n.notificationTypeStudyReview;
       default:
         return 'নোটিফিকেশন';
     }
@@ -301,6 +312,7 @@ class _NotificationRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final uid = FirebaseAuth.instance.currentUser?.uid;
     return CardContainer(
       onTap: () async {
@@ -342,7 +354,7 @@ class _NotificationRow extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        _typeLabel(),
+                        _typeLabel(l10n),
                         style: AppTextStyles.bodyLarge(context).copyWith(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w500,

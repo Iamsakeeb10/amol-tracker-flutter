@@ -45,6 +45,7 @@ import '../../features/hijri_calendar/presentation/screens/hijri_calendar_screen
 import '../../features/syllabus/presentation/screens/course_detail_screen.dart';
 import '../../features/syllabus/presentation/screens/lesson_viewer_screen.dart';
 import '../../features/syllabus/presentation/screens/quiz_intro_screen.dart';
+import '../../features/syllabus/presentation/screens/quiz_bismillah_screen.dart';
 import '../../features/syllabus/presentation/screens/quiz_question_screen.dart';
 import '../../features/syllabus/presentation/screens/quiz_result_screen.dart';
 import '../../features/syllabus/presentation/screens/syllabus_library_screen.dart';
@@ -225,6 +226,15 @@ GoRouter buildAppRouter() {
           final courseId = state.pathParameters['courseId'] ?? '';
           final quizId = state.pathParameters['quizId'] ?? '';
           return QuizIntroScreen(courseId: courseId, quizId: quizId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.quizBismillahPattern,
+        name: 'quizBismillah',
+        builder: (_, state) {
+          final courseId = state.pathParameters['courseId'] ?? '';
+          final quizId = state.pathParameters['quizId'] ?? '';
+          return QuizBismillahScreen(courseId: courseId, quizId: quizId);
         },
       ),
       GoRoute(

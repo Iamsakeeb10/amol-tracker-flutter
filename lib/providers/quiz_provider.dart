@@ -2,9 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
 
 import '../core/services/quiz_service.dart';
+import '../core/services/lms_xp_service.dart';
 import '../models/quiz_attempt_model.dart';
 import '../models/quiz_model.dart';
 import 'auth_provider.dart';
+import 'lms_level_celebration_provider.dart';
 
 final quizServiceProvider = Provider<QuizService>((ref) => QuizService());
 
@@ -308,6 +310,7 @@ class QuizSessionNotifier extends StateNotifier<QuizSessionState> {
             uid,
             quizId: quiz.id,
           );
+      final hadPassedBefore = priorAttempts.any((a) => a.passed);
       final attemptNumber = priorAttempts.length + 1;
       final attemptId = await _ref.read(quizServiceProvider).submitQuizAttempt(
             uid: uid,
@@ -317,6 +320,17 @@ class QuizSessionNotifier extends StateNotifier<QuizSessionState> {
           );
       final attempt =
           await _ref.read(quizServiceProvider).getQuizAttempt(uid, attemptId);
+      if (attempt != null && attempt.passed && !hadPassedBefore) {
+        try {
+          final xpAmount = _ref.read(lmsXpServiceProvider).quizPassXpBonus(
+                attempt.score,
+                attempt.totalQuestions,
+              );
+          await awardLmsXpAndCelebrate(_ref, uid: uid, amount: xpAmount);
+        } catch (_) {
+          // Attempt saved; XP is best-effort.
+        }
+      }
       state = state.copyWith(
         isSubmitting: false,
         sessionFinished: true,

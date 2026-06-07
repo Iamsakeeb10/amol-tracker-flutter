@@ -149,6 +149,7 @@ class _AdminLessonFormScreenState extends ConsumerState<AdminLessonFormScreen> {
       LessonResourceType.pdf => l10n.adminLessonPdfUrl,
       LessonResourceType.link => l10n.adminLessonLinkUrl,
       LessonResourceType.text => l10n.adminLessonTextContent,
+      LessonResourceType.audio => l10n.adminLessonAudioUrl,
     };
   }
 
@@ -226,6 +227,9 @@ class _AdminLessonFormScreenState extends ConsumerState<AdminLessonFormScreen> {
                     required: _resourceType != LessonResourceType.text,
                     error: l10n.adminLessonResourceUrlRequired,
                     maxLines: _resourceType == LessonResourceType.text ? 8 : 1,
+                    validator: _resourceType == LessonResourceType.audio
+                        ? (v) => validateAudioLessonUrl(v, l10n)
+                        : null,
                   ),
                   AdminFormField(
                     label: l10n.adminLessonThumbnailUrl,

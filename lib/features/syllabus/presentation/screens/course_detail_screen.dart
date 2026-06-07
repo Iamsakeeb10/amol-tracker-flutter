@@ -16,6 +16,7 @@ import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 import '../widgets/course_progress_header.dart';
 import '../widgets/course_quiz_list_section.dart';
+import '../widgets/course_certificate_sheet.dart';
 import '../widgets/syllabus_helpers.dart';
 import '../widgets/syllabus_lesson_tile.dart';
 
@@ -118,6 +119,7 @@ class CourseDetailScreen extends ConsumerWidget {
           final lessons = lessonsAsync.value ?? const [];
           final progress = progressAsync.value;
           final isEnrolled = progress != null;
+          final user = ref.watch(currentUserProvider).asData?.value;
 
           return CustomScrollView(
             slivers: [
@@ -190,6 +192,33 @@ class CourseDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (progress?.isCourseCompleted == true)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: user == null
+                            ? null
+                            : () => CourseCertificateSheet.show(
+                                  context,
+                                  courseTitle: course.title,
+                                  userName: user.name,
+                                  completedAt:
+                                      progress!.completedAt ?? DateTime.now(),
+                                ),
+                        icon: Icon(Icons.workspace_premium_outlined, size: 18.r),
+                        label: Text(l10n.courseCertificateView),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.gold,
+                          side: const BorderSide(color: AppColors.gold),
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 8.h),

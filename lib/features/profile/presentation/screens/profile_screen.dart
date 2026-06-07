@@ -18,6 +18,7 @@ import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/badge_tile.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
+import '../../../../features/syllabus/presentation/widgets/lms_xp_widgets.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 
 final profileRecentLogsProvider =
@@ -170,6 +171,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   prominent: true,
                 ),
               ]),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 18.h),
+            sliver: SliverToBoxAdapter(
+              child: LmsXpProfileSection(lmsXp: user.lmsXp),
             ),
           ),
           SliverPadding(

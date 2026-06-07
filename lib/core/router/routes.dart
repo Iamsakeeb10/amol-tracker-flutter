@@ -56,6 +56,12 @@ class AppRoutes {
   static String quizIntroPath(String courseId, String quizId) =>
       '/syllabus/courses/$courseId/quizzes/$quizId';
 
+  static const quizBismillahPattern =
+      '/syllabus/courses/:courseId/quizzes/:quizId/bismillah';
+
+  static String quizBismillahPath(String courseId, String quizId) =>
+      '/syllabus/courses/$courseId/quizzes/$quizId/bismillah';
+
   static const quizPlayPattern =
       '/syllabus/courses/:courseId/quizzes/:quizId/play';
 

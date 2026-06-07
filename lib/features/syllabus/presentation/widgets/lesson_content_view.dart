@@ -8,6 +8,7 @@ import '../../../../core/utils/external_url_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/lesson_model.dart';
 import 'lesson_youtube_player.dart';
+import 'lesson_audio_player.dart';
 
 class LessonContentView extends StatelessWidget {
   const LessonContentView({
@@ -39,6 +40,10 @@ class LessonContentView extends StatelessWidget {
           icon: Icons.open_in_new_rounded,
           actionLabel: AppLocalizations.of(context)!.syllabusOpenLink,
           onLaunchFailed: onLaunchFailed,
+        ),
+      LessonResourceType.audio => LessonAudioPlayer(
+          audioUrl: lesson.resourceUrl,
+          title: lesson.title,
         ),
     };
   }

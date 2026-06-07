@@ -218,6 +218,24 @@ abstract class AppLocalizations {
   /// **'Push updates from community'**
   String get communityActivitySubtitle;
 
+  /// No description provided for @studyReviewReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Study review reminders'**
+  String get studyReviewReminder;
+
+  /// No description provided for @studyReviewReminderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Spaced repetition nudges for enrolled lessons'**
+  String get studyReviewReminderSubtitle;
+
+  /// No description provided for @notificationTypeStudyReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Study review'**
+  String get notificationTypeStudyReview;
+
   /// No description provided for @reminderTimes.
   ///
   /// In en, this message translates to:
@@ -2863,6 +2881,18 @@ abstract class AppLocalizations {
   /// **'Type'**
   String get adminPushType;
 
+  /// No description provided for @adminPushTypeSyllabusCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Syllabus course'**
+  String get adminPushTypeSyllabusCourse;
+
+  /// No description provided for @adminPushTypeSyllabusReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Study review'**
+  String get adminPushTypeSyllabusReview;
+
   /// No description provided for @adminPushTitleRequired.
   ///
   /// In en, this message translates to:
@@ -3132,6 +3162,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Text'**
   String get adminLessonTypeText;
+
+  /// No description provided for @adminLessonTypeAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio'**
+  String get adminLessonTypeAudio;
+
+  /// No description provided for @adminLessonAudioUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio file URL (MP3/M4A)'**
+  String get adminLessonAudioUrl;
+
+  /// No description provided for @adminLessonAudioUrlInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid http(s) URL ending in .mp3 or .m4a.'**
+  String get adminLessonAudioUrlInvalid;
 
   /// No description provided for @adminLessonYoutubeUrl.
   ///
@@ -3822,6 +3870,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This quiz is not ready yet.'**
   String get syllabusQuizNotReady;
+
+  /// No description provided for @syllabusQuizBismillahTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin with Bismillah'**
+  String get syllabusQuizBismillahTitle;
+
+  /// No description provided for @syllabusQuizBismillahArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'**
+  String get syllabusQuizBismillahArabic;
+
+  /// No description provided for @syllabusQuizBismillahTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'In the name of Allah, the Most Gracious, the Most Merciful.'**
+  String get syllabusQuizBismillahTranslation;
+
+  /// No description provided for @syllabusQuizBismillahIntention.
+  ///
+  /// In en, this message translates to:
+  /// **'O Allah, grant me beneficial knowledge and a sound understanding.'**
+  String get syllabusQuizBismillahIntention;
+
+  /// No description provided for @syllabusQuizBismillahBegin.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin quiz'**
+  String get syllabusQuizBismillahBegin;
+
+  /// No description provided for @lmsXpSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning progress'**
+  String get lmsXpSectionTitle;
+
+  /// No description provided for @lmsXpLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP'**
+  String lmsXpLabel(int xp);
+
+  /// No description provided for @lmsXpToNextLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'{xp} XP to next level'**
+  String lmsXpToNextLevel(int xp);
+
+  /// No description provided for @lmsLevelUpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Level up!'**
+  String get lmsLevelUpTitle;
+
+  /// No description provided for @lmsLevelUpTapToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to continue'**
+  String get lmsLevelUpTapToContinue;
+
+  /// No description provided for @lessonDiscussionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discussion'**
+  String get lessonDiscussionTitle;
+
+  /// No description provided for @lessonDiscussionEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet. Start the conversation with your study group.'**
+  String get lessonDiscussionEmpty;
+
+  /// No description provided for @lessonDiscussionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your thoughts on this lesson…'**
+  String get lessonDiscussionHint;
+
+  /// No description provided for @lessonDiscussionPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get lessonDiscussionPost;
+
+  /// No description provided for @lessonDiscussionPostFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not post comment. Try again.'**
+  String get lessonDiscussionPostFailed;
+
+  /// No description provided for @lessonDiscussionLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load discussion.'**
+  String get lessonDiscussionLoadFailed;
+
+  /// No description provided for @lessonDiscussionEnrollPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enroll in this course to join the discussion.'**
+  String get lessonDiscussionEnrollPrompt;
+
+  /// No description provided for @lessonDiscussionEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit comment'**
+  String get lessonDiscussionEditTitle;
+
+  /// No description provided for @lessonDiscussionEditFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save comment. Try again.'**
+  String get lessonDiscussionEditFailed;
+
+  /// No description provided for @lessonDiscussionEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited'**
+  String get lessonDiscussionEdited;
+
+  /// No description provided for @courseCertificateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate of Completion'**
+  String get courseCertificateTitle;
+
+  /// No description provided for @courseCertificateArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'بارك الله فيك'**
+  String get courseCertificateArabic;
+
+  /// No description provided for @courseCertificatePresentedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Presented to'**
+  String get courseCertificatePresentedTo;
+
+  /// No description provided for @courseCertificateForCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'For completing the course'**
+  String get courseCertificateForCourse;
+
+  /// No description provided for @courseCertificateDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed on {date}'**
+  String courseCertificateDate(String date);
+
+  /// No description provided for @courseCertificateShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get courseCertificateShare;
+
+  /// No description provided for @courseCertificateView.
+  ///
+  /// In en, this message translates to:
+  /// **'View certificate'**
+  String get courseCertificateView;
+
+  /// No description provided for @syllabusBookmarkedFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarked'**
+  String get syllabusBookmarkedFilter;
+
+  /// No description provided for @syllabusBookmarksEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No bookmarked lessons yet.'**
+  String get syllabusBookmarksEmpty;
+
+  /// No description provided for @syllabusAudioLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this audio lesson.'**
+  String get syllabusAudioLoadFailed;
 }
 
 class _AppLocalizationsDelegate

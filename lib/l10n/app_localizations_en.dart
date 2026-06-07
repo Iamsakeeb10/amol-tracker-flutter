@@ -69,6 +69,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityActivitySubtitle => 'Push updates from community';
 
   @override
+  String get studyReviewReminder => 'Study review reminders';
+
+  @override
+  String get studyReviewReminderSubtitle =>
+      'Spaced repetition nudges for enrolled lessons';
+
+  @override
+  String get notificationTypeStudyReview => 'Study review';
+
+  @override
   String get reminderTimes => 'Reminder times';
 
   @override
@@ -1512,6 +1522,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminPushType => 'Type';
 
   @override
+  String get adminPushTypeSyllabusCourse => 'Syllabus course';
+
+  @override
+  String get adminPushTypeSyllabusReview => 'Study review';
+
+  @override
   String get adminPushTitleRequired => 'Title is required.';
 
   @override
@@ -1649,6 +1665,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminLessonTypeText => 'Text';
+
+  @override
+  String get adminLessonTypeAudio => 'Audio';
+
+  @override
+  String get adminLessonAudioUrl => 'Audio file URL (MP3/M4A)';
+
+  @override
+  String get adminLessonAudioUrlInvalid =>
+      'Enter a valid http(s) URL ending in .mp3 or .m4a.';
 
   @override
   String get adminLessonYoutubeUrl => 'YouTube URL';
@@ -2038,4 +2064,105 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syllabusQuizNotReady => 'This quiz is not ready yet.';
+
+  @override
+  String get syllabusQuizBismillahTitle => 'Begin with Bismillah';
+
+  @override
+  String get syllabusQuizBismillahArabic =>
+      'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+
+  @override
+  String get syllabusQuizBismillahTranslation =>
+      'In the name of Allah, the Most Gracious, the Most Merciful.';
+
+  @override
+  String get syllabusQuizBismillahIntention =>
+      'O Allah, grant me beneficial knowledge and a sound understanding.';
+
+  @override
+  String get syllabusQuizBismillahBegin => 'Begin quiz';
+
+  @override
+  String get lmsXpSectionTitle => 'Learning progress';
+
+  @override
+  String lmsXpLabel(int xp) {
+    return '$xp XP';
+  }
+
+  @override
+  String lmsXpToNextLevel(int xp) {
+    return '$xp XP to next level';
+  }
+
+  @override
+  String get lmsLevelUpTitle => 'Level up!';
+
+  @override
+  String get lmsLevelUpTapToContinue => 'Tap to continue';
+
+  @override
+  String get lessonDiscussionTitle => 'Discussion';
+
+  @override
+  String get lessonDiscussionEmpty =>
+      'No comments yet. Start the conversation with your study group.';
+
+  @override
+  String get lessonDiscussionHint => 'Share your thoughts on this lesson…';
+
+  @override
+  String get lessonDiscussionPost => 'Post';
+
+  @override
+  String get lessonDiscussionPostFailed => 'Could not post comment. Try again.';
+
+  @override
+  String get lessonDiscussionLoadFailed => 'Could not load discussion.';
+
+  @override
+  String get lessonDiscussionEnrollPrompt =>
+      'Enroll in this course to join the discussion.';
+
+  @override
+  String get lessonDiscussionEditTitle => 'Edit comment';
+
+  @override
+  String get lessonDiscussionEditFailed => 'Could not save comment. Try again.';
+
+  @override
+  String get lessonDiscussionEdited => 'Edited';
+
+  @override
+  String get courseCertificateTitle => 'Certificate of Completion';
+
+  @override
+  String get courseCertificateArabic => 'بارك الله فيك';
+
+  @override
+  String get courseCertificatePresentedTo => 'Presented to';
+
+  @override
+  String get courseCertificateForCourse => 'For completing the course';
+
+  @override
+  String courseCertificateDate(String date) {
+    return 'Completed on $date';
+  }
+
+  @override
+  String get courseCertificateShare => 'Share';
+
+  @override
+  String get courseCertificateView => 'View certificate';
+
+  @override
+  String get syllabusBookmarkedFilter => 'Bookmarked';
+
+  @override
+  String get syllabusBookmarksEmpty => 'No bookmarked lessons yet.';
+
+  @override
+  String get syllabusAudioLoadFailed => 'Could not load this audio lesson.';
 }

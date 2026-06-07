@@ -19,6 +19,7 @@ class UserModel {
   final List<String> seenBadgeCelebrations;
   final List<String> seenAnnouncements;
   final UserRole role;
+  final int lmsXp;
 
   const UserModel({
     required this.uid,
@@ -37,6 +38,7 @@ class UserModel {
     required this.seenBadgeCelebrations,
     required this.seenAnnouncements,
     this.role = UserRole.user,
+    this.lmsXp = 0,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
@@ -66,6 +68,7 @@ class UserModel {
               .map((item) => item.toString())
               .toList(),
       role: UserRole.fromString(map['role'] as String?),
+      lmsXp: (map['lmsXp'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -90,6 +93,7 @@ class UserModel {
       'seenBadgeCelebrations': seenBadgeCelebrations,
       'seenAnnouncements': seenAnnouncements,
       if (role != UserRole.user) 'role': role.firestoreValue,
+      if (lmsXp > 0) 'lmsXp': lmsXp,
     };
   }
 }

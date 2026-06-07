@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum LessonResourceType { youtube, pdf, link, text }
+enum LessonResourceType { youtube, pdf, link, text, audio }
 
 LessonResourceType lessonResourceTypeFromString(String? value) {
   return LessonResourceType.values.firstWhere(

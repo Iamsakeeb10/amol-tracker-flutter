@@ -9,6 +9,8 @@ class NotificationModel {
     required this.createdAt,
     this.senderUid,
     this.senderName,
+    this.courseId,
+    this.lessonId,
   });
 
   final String id;
@@ -18,6 +20,8 @@ class NotificationModel {
   final DateTime createdAt;
   final String? senderUid;
   final String? senderName;
+  final String? courseId;
+  final String? lessonId;
 
   factory NotificationModel.fromDoc(
     DocumentSnapshot<Map<String, dynamic>> doc,
@@ -32,6 +36,8 @@ class NotificationModel {
       createdAt: createdAt is Timestamp ? createdAt.toDate() : DateTime.now(),
       senderUid: data['senderUid'] as String?,
       senderName: data['senderName'] as String?,
+      courseId: data['courseId'] as String?,
+      lessonId: data['lessonId'] as String?,
     );
   }
 }

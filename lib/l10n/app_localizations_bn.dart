@@ -69,6 +69,16 @@ class AppLocalizationsBn extends AppLocalizations {
   String get communityActivitySubtitle => 'কমিউনিটি থেকে আপডেট পাবেন';
 
   @override
+  String get studyReviewReminder => 'অধ্যয়ন পুনরালোচনা';
+
+  @override
+  String get studyReviewReminderSubtitle =>
+      'এনরোল করা পাঠের স্পেসড রিভিউ অনুস্মারক';
+
+  @override
+  String get notificationTypeStudyReview => 'অধ্যয়ন পুনরালোচনা';
+
+  @override
   String get reminderTimes => 'রিমাইন্ডার সময়';
 
   @override
@@ -1515,6 +1525,12 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminPushType => 'ধরন';
 
   @override
+  String get adminPushTypeSyllabusCourse => 'সিলেবাস কোর্স';
+
+  @override
+  String get adminPushTypeSyllabusReview => 'অধ্যয়ন পুনরালোচনা';
+
+  @override
   String get adminPushTitleRequired => 'শিরোনাম প্রয়োজন।';
 
   @override
@@ -1651,6 +1667,16 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get adminLessonTypeText => 'টেক্সট';
+
+  @override
+  String get adminLessonTypeAudio => 'অডিও';
+
+  @override
+  String get adminLessonAudioUrl => 'অডিও ফাইল URL (MP3/M4A)';
+
+  @override
+  String get adminLessonAudioUrlInvalid =>
+      'বৈধ http(s) URL দিন যা .mp3 বা .m4a দিয়ে শেষ হয়।';
 
   @override
   String get adminLessonYoutubeUrl => 'YouTube URL';
@@ -2039,4 +2065,107 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get syllabusQuizNotReady => 'এই কুইজ এখনো প্রস্তুত নয়।';
+
+  @override
+  String get syllabusQuizBismillahTitle => 'বিসমিল্লাহ দিয়ে শুরু করুন';
+
+  @override
+  String get syllabusQuizBismillahArabic =>
+      'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+
+  @override
+  String get syllabusQuizBismillahTranslation =>
+      'পরম করুণাময় ও অসীম দয়ালু আল্লাহর নামে।';
+
+  @override
+  String get syllabusQuizBismillahIntention =>
+      'হে আল্লাহ, আমাকে উপকারী জ্ঞান ও সঠিক বোঝাপড়া দান করুন।';
+
+  @override
+  String get syllabusQuizBismillahBegin => 'কুইজ শুরু করুন';
+
+  @override
+  String get lmsXpSectionTitle => 'শিক্ষার অগ্রগতি';
+
+  @override
+  String lmsXpLabel(int xp) {
+    return '$xp XP';
+  }
+
+  @override
+  String lmsXpToNextLevel(int xp) {
+    return 'পরবর্তী স্তরে $xp XP';
+  }
+
+  @override
+  String get lmsLevelUpTitle => 'নতুন স্তর!';
+
+  @override
+  String get lmsLevelUpTapToContinue => 'চালিয়ে যেতে ট্যাপ করুন';
+
+  @override
+  String get lessonDiscussionTitle => 'আলোচনা';
+
+  @override
+  String get lessonDiscussionEmpty =>
+      'এখনো কোনো মন্তব্য নেই। আপনার পড়াশোনার দলের সাথে কথোপকথন শুরু করুন।';
+
+  @override
+  String get lessonDiscussionHint => 'এই পাঠ সম্পর্কে আপনার মতামত শেয়ার করুন…';
+
+  @override
+  String get lessonDiscussionPost => 'পোস্ট';
+
+  @override
+  String get lessonDiscussionPostFailed =>
+      'মন্তব্য পোস্ট করা যায়নি। আবার চেষ্টা করুন।';
+
+  @override
+  String get lessonDiscussionLoadFailed => 'আলোচনা লোড করা যায়নি।';
+
+  @override
+  String get lessonDiscussionEnrollPrompt =>
+      'আলোচনায় যোগ দিতে এই কোর্সে এনরোল করুন।';
+
+  @override
+  String get lessonDiscussionEditTitle => 'মন্তব্য সম্পাদনা';
+
+  @override
+  String get lessonDiscussionEditFailed =>
+      'মন্তব্য সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।';
+
+  @override
+  String get lessonDiscussionEdited => 'সম্পাদিত';
+
+  @override
+  String get courseCertificateTitle => 'সমাপনী সনদ';
+
+  @override
+  String get courseCertificateArabic => 'بارك الله فيك';
+
+  @override
+  String get courseCertificatePresentedTo => 'সম্মানিত';
+
+  @override
+  String get courseCertificateForCourse => 'কোর্স সম্পন্নের জন্য';
+
+  @override
+  String courseCertificateDate(String date) {
+    return 'সম্পন্ন: $date';
+  }
+
+  @override
+  String get courseCertificateShare => 'শেয়ার';
+
+  @override
+  String get courseCertificateView => 'সনদ দেখুন';
+
+  @override
+  String get syllabusBookmarkedFilter => 'বুকমার্ক';
+
+  @override
+  String get syllabusBookmarksEmpty => 'এখনো কোনো বুকমার্ক নেই।';
+
+  @override
+  String get syllabusAudioLoadFailed => 'অডিও লেসন লোড করা যায়নি।';
 }

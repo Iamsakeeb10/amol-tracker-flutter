@@ -33,6 +33,7 @@ class NotificationPrefsState {
     required this.eveningTime,
     required this.streakEnabled,
     required this.communityEnabled,
+    required this.studyReviewEnabled,
     required this.quietFrom,
     required this.quietTo,
   });
@@ -43,6 +44,7 @@ class NotificationPrefsState {
   final TimeOfDay eveningTime;
   final bool streakEnabled;
   final bool communityEnabled;
+  final bool studyReviewEnabled;
   final TimeOfDay quietFrom;
   final TimeOfDay quietTo;
 
@@ -53,6 +55,7 @@ class NotificationPrefsState {
     TimeOfDay? eveningTime,
     bool? streakEnabled,
     bool? communityEnabled,
+    bool? studyReviewEnabled,
     TimeOfDay? quietFrom,
     TimeOfDay? quietTo,
   }) {
@@ -63,6 +66,7 @@ class NotificationPrefsState {
       eveningTime: eveningTime ?? this.eveningTime,
       streakEnabled: streakEnabled ?? this.streakEnabled,
       communityEnabled: communityEnabled ?? this.communityEnabled,
+      studyReviewEnabled: studyReviewEnabled ?? this.studyReviewEnabled,
       quietFrom: quietFrom ?? this.quietFrom,
       quietTo: quietTo ?? this.quietTo,
     );
@@ -86,6 +90,7 @@ class NotificationPrefsNotifier extends StateNotifier<NotificationPrefsState> {
           eveningTime: _service.eveningTime,
           streakEnabled: _service.isStreakEnabled,
           communityEnabled: _service.isCommunityEnabled,
+          studyReviewEnabled: _service.isStudyReviewEnabled,
           quietFrom: _service.quietFrom,
           quietTo: _service.quietTo,
         ),
@@ -153,6 +158,16 @@ class NotificationPrefsNotifier extends StateNotifier<NotificationPrefsState> {
     }
   }
 
+  Future<void> setStudyReviewEnabled(bool value) async {
+    final previous = state;
+    state = state.copyWith(studyReviewEnabled: value);
+    try {
+      await _service.setStudyReviewEnabled(value);
+    } catch (_) {
+      state = previous;
+    }
+  }
+
   Future<void> setQuietHours({
     required TimeOfDay from,
     required TimeOfDay to,
@@ -174,6 +189,7 @@ class NotificationPrefsNotifier extends StateNotifier<NotificationPrefsState> {
       eveningTime: _service.eveningTime,
       streakEnabled: _service.isStreakEnabled,
       communityEnabled: _service.isCommunityEnabled,
+      studyReviewEnabled: _service.isStudyReviewEnabled,
       quietFrom: _service.quietFrom,
       quietTo: _service.quietTo,
     );

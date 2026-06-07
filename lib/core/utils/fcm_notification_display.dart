@@ -96,11 +96,14 @@ class FcmNotificationDisplay {
     return _FcmContent(
       title: title,
       body: body,
-      route: _routeFromMessage(rawType),
+      route: _routeFromMessage(message),
     );
   }
 
-  static String _routeFromMessage(String rawType) {
+  static String _routeFromMessage(RemoteMessage message) {
+    final rawType =
+        (message.data['type'] ?? message.data['notificationType'] ?? '')
+            .toString();
     switch (rawType) {
       case 'leaderboard':
         return AppRoutes.leaderboard;
@@ -113,6 +116,13 @@ class FcmNotificationDisplay {
       case 'log_amal':
       case 'streak_warning':
         return AppRoutes.home;
+      case 'syllabus_review':
+        final courseId = (message.data['courseId'] ?? '').toString();
+        final lessonId = (message.data['lessonId'] ?? '').toString();
+        if (courseId.isNotEmpty && lessonId.isNotEmpty) {
+          return AppRoutes.lessonViewerPath(courseId, lessonId);
+        }
+        return AppRoutes.syllabus;
       default:
         return AppRoutes.notifications;
     }

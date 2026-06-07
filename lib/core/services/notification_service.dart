@@ -30,6 +30,7 @@ class NotificationService {
   static const String notifEveningMinuteKey = 'notif_evening_min';
   static const String notifStreakKey = 'notif_streak';
   static const String notifCommunityKey = 'notif_community';
+  static const String notifStudyReviewKey = 'notif_study_review';
   static const String quietFromHourKey = 'quiet_from_hour';
   static const String quietFromMinuteKey = 'quiet_from_min';
   static const String quietToHourKey = 'quiet_to_hour';
@@ -43,6 +44,9 @@ class NotificationService {
   static const int _ayyamBidId = 840;
   static const int _hadithMorningBaseId = 710;
   static const int _hadithEveningBaseId = 740;
+  static const int _lessonReviewBaseId = 3000;
+  static const int _lessonReviewIdRange = 500;
+  static const int _lessonReviewLookaheadDays = 21;
   static const int _hadithDaysAhead = 7;
   static const int _notificationDaysAhead = 7;
   static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 8, minute: 0);
@@ -322,6 +326,9 @@ class NotificationService {
       await _localNotifications.cancel(_hadithMorningBaseId + i);
       await _localNotifications.cancel(_hadithEveningBaseId + i);
     }
+    for (var i = 0; i < _lessonReviewIdRange; i++) {
+      await _localNotifications.cancel(_lessonReviewBaseId + i);
+    }
     await PrayerAdhanScheduler.instance.cancelAll(_localNotifications);
   }
 
@@ -361,6 +368,11 @@ class NotificationService {
     }
   }
 
+  Future<void> setStudyReviewEnabled(bool enabled) async {
+    await LocalStorageService.setPref(notifStudyReviewKey, enabled);
+    unawaited(_safeRescheduleAll());
+  }
+
   bool get isMorningEnabled =>
       LocalStorageService.getPref<bool>(notifMorningKey, true);
   TimeOfDay get morningTime => TimeOfDay(
@@ -398,6 +410,8 @@ class NotificationService {
       LocalStorageService.getPref<bool>(notifStreakKey, true);
   bool get isCommunityEnabled =>
       LocalStorageService.getPref<bool>(notifCommunityKey, true);
+  bool get isStudyReviewEnabled =>
+      LocalStorageService.getPref<bool>(notifStudyReviewKey, true);
 
   TimeOfDay get quietFrom => TimeOfDay(
     hour: LocalStorageService.getPref<int>(quietFromHourKey, 22),
@@ -427,6 +441,29 @@ class NotificationService {
     if (from == to) return false;
     if (from < to) return value >= from && value < to;
     return value >= from || value < to;
+  }
+
+  tz.TZDateTime _nextTimeOutsideQuietHours(tz.TZDateTime scheduled) {
+    final time = TimeOfDay(hour: scheduled.hour, minute: scheduled.minute);
+    if (!_isSuppressedByQuietHours(time)) return scheduled;
+
+    var next = tz.TZDateTime(
+      _bdTz,
+      scheduled.year,
+      scheduled.month,
+      scheduled.day,
+      quietTo.hour,
+      quietTo.minute,
+    );
+    if (!next.isAfter(scheduled)) {
+      next = next.add(const Duration(days: 1));
+    }
+    return next;
+  }
+
+  int _lessonReviewNotificationId(String courseId, String lessonId) {
+    final key = '${courseId}_$lessonId';
+    return _lessonReviewBaseId + (key.hashCode.abs() % _lessonReviewIdRange);
   }
 
   String _categoryLastSentKey(String category) =>
@@ -861,6 +898,72 @@ class NotificationService {
     return date;
   }
 
+  ({String title, String body}) _studyReviewNotificationCopy(String lessonTitle) {
+    final locale = LocalStorageService.getPref<String>('app_locale', 'bn');
+    final label = lessonTitle.trim().isEmpty
+        ? (locale.startsWith('bn') ? 'আপনার পাঠ' : 'your lesson')
+        : lessonTitle.trim();
+    if (locale.startsWith('bn')) {
+      return (title: 'অধ্যয়ন অনুস্মারক', body: 'পুনরায় দেখুন: $label');
+    }
+    return (title: 'Study reminder', body: 'Time to review: $label');
+  }
+
+  Future<void> _scheduleLessonReviewReminders() async {
+    if (!isStudyReviewEnabled) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final snap = await FirebaseFirestore.instance
+        .collection('userProgress')
+        .doc(user.uid)
+        .collection('lessonReviews')
+        .get();
+    final now = tz.TZDateTime.now(_bdTz);
+
+    for (final doc in snap.docs) {
+      final data = doc.data();
+      final courseId = (data['courseId'] as String?) ?? '';
+      final lessonId = doc.id;
+      final nextReviewAt = data['nextReviewAt'];
+      if (courseId.isEmpty || lessonId.isEmpty) continue;
+      if (nextReviewAt is! Timestamp) continue;
+
+      var scheduled = tz.TZDateTime.from(nextReviewAt.toDate(), _bdTz);
+      if (!scheduled.isAfter(now)) {
+        scheduled = now.add(const Duration(minutes: 5));
+      }
+      if (scheduled.isAfter(now.add(const Duration(days: _lessonReviewLookaheadDays)))) {
+        continue;
+      }
+      if (_isSuppressedByQuietHours(
+        TimeOfDay(hour: scheduled.hour, minute: scheduled.minute),
+      )) {
+        scheduled = _nextTimeOutsideQuietHours(scheduled);
+        if (scheduled.isAfter(now.add(const Duration(days: _lessonReviewLookaheadDays)))) {
+          continue;
+        }
+      }
+
+      final lessonTitle = ((data['lessonTitle'] as String?) ?? '').trim();
+      final copy = _studyReviewNotificationCopy(lessonTitle);
+      final payload = AppRoutes.lessonViewerPath(courseId, lessonId);
+      final id = _lessonReviewNotificationId(courseId, lessonId);
+
+      await _localNotifications.zonedSchedule(
+        id,
+        copy.title,
+        copy.body,
+        scheduled,
+        _notificationDetails(payload: payload, body: copy.body),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: payload,
+      );
+    }
+  }
+
   void _onLocalResponse(NotificationResponse response) {
     final payload = response.payload;
     if (payload == null || payload.isEmpty) return;
@@ -883,6 +986,15 @@ class NotificationService {
       case 'log_amal':
       case 'streak_warning':
         return AppRoutes.home;
+      case 'syllabus_review':
+        final courseId =
+            (message.data['courseId'] ?? '').toString();
+        final lessonId =
+            (message.data['lessonId'] ?? '').toString();
+        if (courseId.isNotEmpty && lessonId.isNotEmpty) {
+          return AppRoutes.lessonViewerPath(courseId, lessonId);
+        }
+        return AppRoutes.syllabus;
       default:
         return AppRoutes.notifications;
     }

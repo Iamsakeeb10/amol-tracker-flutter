@@ -8,6 +8,7 @@ import 'core/router/router.dart';
 import 'core/services/notification_service.dart';
 import 'core/theme/theme.dart';
 import 'features/badges/presentation/widgets/badge_celebration_overlay.dart';
+import 'features/syllabus/presentation/widgets/lms_level_up_overlay.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/amal_fields_provider.dart';
 import 'providers/badge_celebration_provider.dart';
@@ -74,7 +75,9 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
           data: MediaQueryData.fromView(
             View.of(context),
           ).copyWith(alwaysUse24HourFormat: false),
-          child: BadgeCelebrationHost(child: child!),
+          child: LmsLevelUpHost(
+            child: BadgeCelebrationHost(child: child!),
+          ),
         );
       },
       routerConfig: _router,

@@ -5,9 +5,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../providers/auth_provider.dart';
 import '../../../../providers/syllabus_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
+import 'lms_xp_widgets.dart';
 
 class CourseProgressHeader extends ConsumerWidget {
   const CourseProgressHeader({
@@ -25,6 +27,7 @@ class CourseProgressHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final summary = ref.watch(courseProgressSummaryProvider(courseId));
+    final lmsXp = ref.watch(currentUserProvider).asData?.value?.lmsXp ?? 0;
 
     return CardContainer(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -33,6 +36,7 @@ class CourseProgressHeader extends ConsumerWidget {
         children: [
           if (summary.isEnrolled && summary.totalLessons > 0) ...[
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Text(
@@ -48,6 +52,7 @@ class CourseProgressHeader extends ConsumerWidget {
                     ),
                   ),
                 ),
+                SizedBox(width: 8.w),
                 Text(
                   '${summary.completionPercent}%',
                   style: AppTextStyles.goldNumeric(context).copyWith(
@@ -55,6 +60,11 @@ class CourseProgressHeader extends ConsumerWidget {
                   ),
                 ),
               ],
+            ),
+            SizedBox(height: 8.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: LmsLevelCompactChip(lmsXp: lmsXp),
             ),
             SizedBox(height: 10.h),
             ScoreBar(value: summary.completionFraction, height: 6),

@@ -221,6 +221,10 @@
   "@leaderboardYourRank": {
     "placeholders": {"rank": {}, "score": {}, "stat": {}}
   },
+  "leaderboardYourRankNumber": "আপনার র‍্যাঙ্ক: #{rank}",
+  "@leaderboardYourRankNumber": {
+    "placeholders": {"rank": {"type": "int"}}
+  },
   "leaderboardLoadFailed": "এই মুহূর্তে লিডারবোর্ড লোড করা যাচ্ছে না।",
   "leaderboardNudgeKeepClimbing": "চালিয়ে যান - প্রতিটি আমল গুরুত্বপূর্ণ।",
   "leaderboardNudgeTop": "আপনি টপে আছেন - ধারাবাহিক থাকুন।",
@@ -238,6 +242,22 @@
   "@leaderboardNudgeBehindQuizPoints": {"placeholders": {"behind": {}}},
   "leaderboardNudgeBehindFirstQuizPoints": "১ম স্থানের থেকে {behind} পয়েন্ট পিছিয়ে - আরও কুইজ পাস করে শীর্ষে উঠুন।",
   "@leaderboardNudgeBehindFirstQuizPoints": {"placeholders": {"behind": {}}},
+  "leaderboardQuizAttempts": "চেষ্টা",
+  "leaderboardQuizStat": "{points} পয়েন্ট · {attempts} চেষ্টা",
+  "@leaderboardQuizStat": {
+    "placeholders": {
+      "points": {"type": "int"},
+      "attempts": {"type": "int"}
+    }
+  },
+  "leaderboardYourRankQuiz": "আপনার র‍্যাঙ্ক: #{rank} · {stat}",
+  "@leaderboardYourRankQuiz": {
+    "placeholders": {
+      "rank": {"type": "int"},
+      "stat": {"type": "String"}
+    }
+  },
+  "leaderboardQuizTiebreakerHint": "সমান পয়েন্টে কম চেষ্টায় এগিয়ে থাকবেন।",
   "history": "হিস্টোরি",
   "historyLoadFailed": "হিস্টোরি লোড করা যায়নি।",
   "historyConsistency": "{value}% কনসিস্টেন্সি",
@@ -664,6 +684,26 @@
   "syllabusQuizPreviousAttempts": "আপনার চেষ্টা",
   "syllabusQuizAttemptCount": "{count}টি চেষ্টা",
   "@syllabusQuizAttemptCount": {"placeholders": {"count": {"type": "int"}}},
+  "syllabusQuizAttemptNumber": "চেষ্টা #{number}",
+  "@syllabusQuizAttemptNumber": {"placeholders": {"number": {"type": "int"}}},
+  "syllabusQuizAttemptsLabel": "{count}টি চেষ্টা · সেরা {score}/{total}",
+  "@syllabusQuizAttemptsLabel": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "score": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "syllabusQuizAttemptHistoryRow": "{score}/{total} · {date}",
+  "@syllabusQuizAttemptHistoryRow": {
+    "placeholders": {
+      "score": {"type": "int"},
+      "total": {"type": "int"},
+      "date": {"type": "String"}
+    }
+  },
+  "syllabusQuizAttemptPassed": "পাস",
+  "syllabusQuizAttemptFailed": "অসফল",
   "syllabusQuizBestScore": "সর্বোচ্চ স্কোর: {score} / {total}",
   "@syllabusQuizBestScore": {"placeholders": {"score": {"type": "int"}, "total": {"type": "int"}}},
   "syllabusQuizAlreadyPassed": "আপনি এই কুইজে পাস করেছেন",

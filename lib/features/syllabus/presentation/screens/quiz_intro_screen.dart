@@ -7,6 +7,7 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../models/quiz_attempt_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/quiz_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -162,6 +163,17 @@ class QuizIntroScreen extends ConsumerWidget {
                     ],
                   ),
                 ],
+                SizedBox(height: 12.h),
+                ...() {
+                  final sorted = List<QuizAttemptModel>.from(progress.attempts)
+                    ..sort((a, b) => b.completedAt.compareTo(a.completedAt));
+                  return sorted.map(
+                    (attempt) => _AttemptHistoryRow(
+                      attempt: attempt,
+                      l10n: l10n,
+                    ),
+                  );
+                }(),
               ],
             ),
           ),
@@ -233,6 +245,58 @@ class _RuleRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _AttemptHistoryRow extends StatelessWidget {
+  const _AttemptHistoryRow({
+    required this.attempt,
+    required this.l10n,
+  });
+
+  final QuizAttemptModel attempt;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final statusColor = attempt.passed ? AppColors.success : AppColors.danger;
+    final statusLabel = attempt.passed
+        ? l10n.syllabusQuizAttemptPassed
+        : l10n.syllabusQuizAttemptFailed;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              l10n.syllabusQuizAttemptHistoryRow(
+                attempt.score,
+                attempt.totalQuestions,
+                formatQuizAttemptDate(attempt.completedAt),
+              ),
+              style: AppTextStyles.bodySmall(context),
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(color: statusColor.withValues(alpha: 0.4)),
+            ),
+            child: Text(
+              statusLabel,
+              style: AppTextStyles.bodySmall(context).copyWith(
+                color: statusColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 10.sp,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

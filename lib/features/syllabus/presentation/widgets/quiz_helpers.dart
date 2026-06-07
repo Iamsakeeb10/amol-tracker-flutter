@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import '../../../../l10n/app_localizations.dart';
 
 String formatQuizDuration(int totalSeconds) {
@@ -21,4 +23,8 @@ String quizOptionLetter(int index) {
 double quizProgressValue(int currentIndex, int totalQuestions) {
   if (totalQuestions <= 0) return 0;
   return (currentIndex + 1) / totalQuestions;
+}
+
+String formatQuizAttemptDate(DateTime date) {
+  return DateFormat('MMM d, yyyy · h:mm a').format(date.toLocal());
 }

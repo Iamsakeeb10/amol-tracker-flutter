@@ -1028,6 +1028,12 @@ abstract class AppLocalizations {
   /// **'Your rank: #{rank} · {score} {stat}'**
   String leaderboardYourRank(Object rank, Object score, Object stat);
 
+  /// No description provided for @leaderboardYourRankNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rank: #{rank}'**
+  String leaderboardYourRankNumber(int rank);
+
   /// No description provided for @leaderboardLoadFailed.
   ///
   /// In en, this message translates to:
@@ -1093,6 +1099,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{behind} pts behind 1st place - pass more quizzes to take the lead.'**
   String leaderboardNudgeBehindFirstQuizPoints(Object behind);
+
+  /// No description provided for @leaderboardQuizAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'attempts'**
+  String get leaderboardQuizAttempts;
+
+  /// No description provided for @leaderboardQuizStat.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} pts · {attempts} attempts'**
+  String leaderboardQuizStat(int points, int attempts);
+
+  /// No description provided for @leaderboardYourRankQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rank: #{rank} · {stat}'**
+  String leaderboardYourRankQuiz(int rank, String stat);
+
+  /// No description provided for @leaderboardQuizTiebreakerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Equal points? Fewer total attempts rank higher.'**
+  String get leaderboardQuizTiebreakerHint;
 
   /// No description provided for @history.
   ///
@@ -3397,6 +3427,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} attempt(s)'**
   String syllabusQuizAttemptCount(int count);
+
+  /// No description provided for @syllabusQuizAttemptNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempt #{number}'**
+  String syllabusQuizAttemptNumber(int number);
+
+  /// No description provided for @syllabusQuizAttemptsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} attempt(s) · best {score}/{total}'**
+  String syllabusQuizAttemptsLabel(int count, int score, int total);
+
+  /// No description provided for @syllabusQuizAttemptHistoryRow.
+  ///
+  /// In en, this message translates to:
+  /// **'{score}/{total} · {date}'**
+  String syllabusQuizAttemptHistoryRow(int score, int total, String date);
+
+  /// No description provided for @syllabusQuizAttemptPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Passed'**
+  String get syllabusQuizAttemptPassed;
+
+  /// No description provided for @syllabusQuizAttemptFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get syllabusQuizAttemptFailed;
 
   /// No description provided for @syllabusQuizBestScore.
   ///

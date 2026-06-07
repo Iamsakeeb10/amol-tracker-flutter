@@ -1,8 +1,12 @@
 package com.shakib.amol.amol_tracker_app
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
@@ -28,6 +32,25 @@ class AmolWidgetProvider : HomeWidgetProvider() {
 
     companion object {
         private const val TAG = "AmolWidgetProvider"
+        private const val WIDGET_TAP_REQUEST_CODE = 42
+
+        private fun widgetTapPendingIntent(context: Context): PendingIntent {
+            val intent = Intent(context, MainActivity::class.java).apply {
+                action = HomeWidgetLaunchIntent.HOME_WIDGET_LAUNCH_ACTION
+                data = Uri.parse("amol://widget/home")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            var flags = PendingIntent.FLAG_UPDATE_CURRENT
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                flags = flags or PendingIntent.FLAG_IMMUTABLE
+            }
+            return PendingIntent.getActivity(
+                context,
+                WIDGET_TAP_REQUEST_CODE,
+                intent,
+                flags,
+            )
+        }
 
         fun updateWidget(
             context: Context,
@@ -96,11 +119,7 @@ class AmolWidgetProvider : HomeWidgetProvider() {
                 views.setViewVisibility(R.id.widget_remaining, View.VISIBLE)
             }
 
-            val pendingIntent = HomeWidgetLaunchIntent.getActivity(
-                context,
-                MainActivity::class.java,
-                null,
-            )
+            val pendingIntent = widgetTapPendingIntent(context)
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
             views.setOnClickPendingIntent(R.id.widget_cta, pendingIntent)
 

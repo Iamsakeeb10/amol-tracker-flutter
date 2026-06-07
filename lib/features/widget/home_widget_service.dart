@@ -96,7 +96,7 @@ class HomeWidgetService {
   static void registerInteractivityCallback(Function(Uri?) onWidgetTap) {
     HomeWidget.setAppGroupId(_appGroupId);
     HomeWidget.widgetClicked.listen((uri) {
-      onWidgetTap(uri);
+      if (uri != null) onWidgetTap(uri);
     });
   }
 

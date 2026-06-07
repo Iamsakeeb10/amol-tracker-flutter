@@ -517,6 +517,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String leaderboardYourRankNumber(int rank) {
+    return 'Your rank: #$rank';
+  }
+
+  @override
   String get leaderboardLoadFailed => 'Could not load leaderboard right now.';
 
   @override
@@ -561,6 +566,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String leaderboardNudgeBehindFirstQuizPoints(Object behind) {
     return '$behind pts behind 1st place - pass more quizzes to take the lead.';
   }
+
+  @override
+  String get leaderboardQuizAttempts => 'attempts';
+
+  @override
+  String leaderboardQuizStat(int points, int attempts) {
+    return '$points pts · $attempts attempts';
+  }
+
+  @override
+  String leaderboardYourRankQuiz(int rank, String stat) {
+    return 'Your rank: #$rank · $stat';
+  }
+
+  @override
+  String get leaderboardQuizTiebreakerHint =>
+      'Equal points? Fewer total attempts rank higher.';
 
   @override
   String get history => 'HISTORY';
@@ -1793,6 +1815,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String syllabusQuizAttemptCount(int count) {
     return '$count attempt(s)';
   }
+
+  @override
+  String syllabusQuizAttemptNumber(int number) {
+    return 'Attempt #$number';
+  }
+
+  @override
+  String syllabusQuizAttemptsLabel(int count, int score, int total) {
+    return '$count attempt(s) · best $score/$total';
+  }
+
+  @override
+  String syllabusQuizAttemptHistoryRow(int score, int total, String date) {
+    return '$score/$total · $date';
+  }
+
+  @override
+  String get syllabusQuizAttemptPassed => 'Passed';
+
+  @override
+  String get syllabusQuizAttemptFailed => 'Failed';
 
   @override
   String syllabusQuizBestScore(int score, int total) {

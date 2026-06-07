@@ -71,6 +71,22 @@ class SyllabusQuizTile extends ConsumerWidget {
                       fontSize: 11.sp,
                     ),
                   ),
+                  if (progress.attemptCount > 0) ...[
+                    SizedBox(height: 4.h),
+                    Text(
+                      progress.bestAttempt == null
+                          ? l10n.syllabusQuizAttemptCount(progress.attemptCount)
+                          : l10n.syllabusQuizAttemptsLabel(
+                              progress.attemptCount,
+                              progress.bestAttempt!.score,
+                              progress.bestAttempt!.totalQuestions,
+                            ),
+                      style: AppTextStyles.bodySmall(context).copyWith(
+                        fontSize: 11.sp,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
                   if (progress.hasPassed) ...[
                     SizedBox(height: 6.h),
                     Row(

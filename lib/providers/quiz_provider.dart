@@ -125,6 +125,7 @@ class QuizSessionState {
     this.answers = const [],
     this.isSubmitting = false,
     this.submittedAttempt,
+    this.submittedAttemptNumber,
     this.sessionStarted = false,
     this.sessionFinished = false,
   });
@@ -136,6 +137,7 @@ class QuizSessionState {
   final List<int> answers;
   final bool isSubmitting;
   final QuizAttemptModel? submittedAttempt;
+  final int? submittedAttemptNumber;
   final bool sessionStarted;
   final bool sessionFinished;
 
@@ -163,6 +165,9 @@ class QuizSessionState {
     List<int>? answers,
     bool? isSubmitting,
     QuizAttemptModel? submittedAttempt,
+    bool clearSubmittedAttempt = false,
+    int? submittedAttemptNumber,
+    bool clearSubmittedAttemptNumber = false,
     bool? sessionStarted,
     bool? sessionFinished,
   }) {
@@ -173,7 +178,12 @@ class QuizSessionState {
       currentQuestionIndex: currentQuestionIndex ?? this.currentQuestionIndex,
       answers: answers ?? this.answers,
       isSubmitting: isSubmitting ?? this.isSubmitting,
-      submittedAttempt: submittedAttempt ?? this.submittedAttempt,
+      submittedAttempt: clearSubmittedAttempt
+          ? null
+          : (submittedAttempt ?? this.submittedAttempt),
+      submittedAttemptNumber: clearSubmittedAttemptNumber
+          ? null
+          : (submittedAttemptNumber ?? this.submittedAttemptNumber),
       sessionStarted: sessionStarted ?? this.sessionStarted,
       sessionFinished: sessionFinished ?? this.sessionFinished,
     );
@@ -245,6 +255,8 @@ class QuizSessionNotifier extends StateNotifier<QuizSessionState> {
       sessionFinished: false,
       currentQuestionIndex: 0,
       submittedAttempt: null,
+      clearSubmittedAttempt: true,
+      clearSubmittedAttemptNumber: true,
       answers: List<int>.filled(state.quiz!.questions.length, -1),
       clearError: true,
     );
@@ -292,6 +304,11 @@ class QuizSessionNotifier extends StateNotifier<QuizSessionState> {
 
     state = state.copyWith(isSubmitting: true, clearError: true);
     try {
+      final priorAttempts = await _ref.read(quizServiceProvider).getQuizAttempts(
+            uid,
+            quizId: quiz.id,
+          );
+      final attemptNumber = priorAttempts.length + 1;
       final attemptId = await _ref.read(quizServiceProvider).submitQuizAttempt(
             uid: uid,
             quiz: quiz,
@@ -304,6 +321,7 @@ class QuizSessionNotifier extends StateNotifier<QuizSessionState> {
         isSubmitting: false,
         sessionFinished: true,
         submittedAttempt: attempt,
+        submittedAttemptNumber: attemptNumber,
       );
       return true;
     } catch (_) {

@@ -104,6 +104,15 @@ class QuizResultScreen extends ConsumerWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              if (session.submittedAttemptNumber != null) ...[
+                SizedBox(height: 6.h),
+                Text(
+                  l10n.syllabusQuizAttemptNumber(session.submittedAttemptNumber!),
+                  style: AppTextStyles.bodySmall(context).copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
               if (attempt.timeTakenSeconds > 0) ...[
                 SizedBox(height: 6.h),
                 Text(

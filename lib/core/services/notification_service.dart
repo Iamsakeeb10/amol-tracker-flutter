@@ -801,7 +801,6 @@ class NotificationService {
         enableVibration: true,
         category: AndroidNotificationCategory.reminder,
         visibility: NotificationVisibility.public,
-        fullScreenIntent: true,
         styleInformation: BigTextStyleInformation(body),
       ),
       iOS: DarwinNotificationDetails(

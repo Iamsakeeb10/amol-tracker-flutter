@@ -16,6 +16,7 @@ import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
 import '../../../../shared/widgets/streak_badge.dart';
+import '../widgets/quiz_leaderboard_stat.dart';
 
 class LeaderboardScreen extends ConsumerStatefulWidget {
   const LeaderboardScreen({super.key});
@@ -137,8 +138,25 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     final statLabel = _statLabel();
 
     return [
+      if (_isQuiz)
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: Text(
+              l10n.leaderboardQuizTiebreakerHint,
+              style: AppTextStyles.bodySmall(context).copyWith(
+                color: AppColors.textMuted,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
       SliverToBoxAdapter(
-        child: _Podium(top3: top3, displayName: _displayName),
+        child: _Podium(
+          top3: top3,
+          displayName: _displayName,
+          isQuiz: _isQuiz,
+        ),
       ),
       SliverToBoxAdapter(child: SizedBox(height: 18.h)),
       SliverPadding(
@@ -156,6 +174,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 displayName: _displayName(user),
                 isYou: user.uid == authUid,
                 maxScore: maxScore,
+                isQuiz: _isQuiz,
                 onTap: () =>
                     context.push('${AppRoutes.userProfile}/${user.uid}'),
               ),
@@ -172,14 +191,29 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 Icon(Icons.push_pin_outlined, color: AppColors.gold),
                 SizedBox(width: 8.w),
                 Expanded(
-                  child: Text(
-                    l10n.leaderboardYourRank(
-                      userIndex + 1,
-                      pinnedUser.score,
-                      statLabel,
-                    ),
-                    style: AppTextStyles.bodyMedium(context),
-                  ),
+                  child: _isQuiz
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.leaderboardYourRankNumber(userIndex + 1),
+                              style: AppTextStyles.bodyMedium(context),
+                            ),
+                            SizedBox(height: 6.h),
+                            QuizLeaderboardStat(
+                              points: pinnedUser.score,
+                              attempts: pinnedUser.attemptCount ?? 0,
+                            ),
+                          ],
+                        )
+                      : Text(
+                          l10n.leaderboardYourRank(
+                            userIndex + 1,
+                            pinnedUser.score,
+                            statLabel,
+                          ),
+                          style: AppTextStyles.bodyMedium(context),
+                        ),
                 ),
               ],
             ),
@@ -337,7 +371,12 @@ class _Tabs extends StatelessWidget {
 class _Podium extends StatelessWidget {
   final List<LeaderboardEntry> top3;
   final String Function(LeaderboardEntry user) displayName;
-  const _Podium({required this.top3, required this.displayName});
+  final bool isQuiz;
+  const _Podium({
+    required this.top3,
+    required this.displayName,
+    this.isQuiz = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -383,12 +422,19 @@ class _Podium extends StatelessWidget {
                           context,
                         ).copyWith(fontSize: 12.sp),
                       ),
-                      Text(
-                        '${user.score}',
-                        style: AppTextStyles.goldNumeric(
-                          context,
-                        ).copyWith(fontSize: 16.sp),
-                      ),
+                      if (isQuiz)
+                        QuizLeaderboardStat(
+                          points: user.score,
+                          attempts: user.attemptCount ?? 0,
+                          compact: true,
+                        )
+                      else
+                        Text(
+                          '${user.score}',
+                          style: AppTextStyles.goldNumeric(
+                            context,
+                          ).copyWith(fontSize: 16.sp),
+                        ),
                       SizedBox(height: 6.h),
                       Container(
                         height: compact ? heights[i] + 8.h : heights[i],
@@ -431,6 +477,7 @@ class _RankRow extends StatelessWidget {
   final String displayName;
   final bool isYou;
   final int maxScore;
+  final bool isQuiz;
   final VoidCallback onTap;
 
   const _RankRow({
@@ -440,6 +487,7 @@ class _RankRow extends StatelessWidget {
     required this.displayName,
     required this.isYou,
     required this.maxScore,
+    this.isQuiz = false,
     required this.onTap,
   });
 
@@ -509,17 +557,24 @@ class _RankRow extends StatelessWidget {
               ),
             ),
             SizedBox(width: 8.w),
-            Text(
-              '${user.score}',
-              style: AppTextStyles.goldNumeric(
-                context,
-              ).copyWith(fontSize: 16.sp),
-            ),
-            SizedBox(width: 2.w),
-            Text(
-              statLabel,
-              style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
-            ),
+            if (isQuiz)
+              QuizLeaderboardStat(
+                points: user.score,
+                attempts: user.attemptCount ?? 0,
+              )
+            else ...[
+              Text(
+                '${user.score}',
+                style: AppTextStyles.goldNumeric(
+                  context,
+                ).copyWith(fontSize: 16.sp),
+              ),
+              SizedBox(width: 2.w),
+              Text(
+                statLabel,
+                style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
+              ),
+            ],
           ],
         ),
       ),

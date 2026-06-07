@@ -14,12 +14,14 @@ class LeaderboardEntry {
     required this.displayName,
     required this.isAnonymousDisplay,
     required this.score,
+    this.attemptCount,
   });
 
   final String uid;
   final String displayName;
   final bool isAnonymousDisplay;
   final int score;
+  final int? attemptCount;
 }
 
 String _safeName(String value) =>
@@ -133,6 +135,7 @@ final quizLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
         displayName: _safeName(user?.name ?? ''),
         isAnonymousDisplay: user?.isAnonymousDisplay ?? false,
         score: row['score'] as int? ?? 0,
+        attemptCount: row['attemptCount'] as int? ?? 0,
       ),
     );
   }

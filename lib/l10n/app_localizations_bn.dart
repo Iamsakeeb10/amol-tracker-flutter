@@ -519,6 +519,11 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String leaderboardYourRankNumber(int rank) {
+    return 'আপনার র‍্যাঙ্ক: #$rank';
+  }
+
+  @override
   String get leaderboardLoadFailed =>
       'এই মুহূর্তে লিডারবোর্ড লোড করা যাচ্ছে না।';
 
@@ -564,6 +569,23 @@ class AppLocalizationsBn extends AppLocalizations {
   String leaderboardNudgeBehindFirstQuizPoints(Object behind) {
     return '১ম স্থানের থেকে $behind পয়েন্ট পিছিয়ে - আরও কুইজ পাস করে শীর্ষে উঠুন।';
   }
+
+  @override
+  String get leaderboardQuizAttempts => 'চেষ্টা';
+
+  @override
+  String leaderboardQuizStat(int points, int attempts) {
+    return '$points পয়েন্ট · $attempts চেষ্টা';
+  }
+
+  @override
+  String leaderboardYourRankQuiz(int rank, String stat) {
+    return 'আপনার র‍্যাঙ্ক: #$rank · $stat';
+  }
+
+  @override
+  String get leaderboardQuizTiebreakerHint =>
+      'সমান পয়েন্টে কম চেষ্টায় এগিয়ে থাকবেন।';
 
   @override
   String get history => 'হিস্টোরি';
@@ -1794,6 +1816,27 @@ class AppLocalizationsBn extends AppLocalizations {
   String syllabusQuizAttemptCount(int count) {
     return '$countটি চেষ্টা';
   }
+
+  @override
+  String syllabusQuizAttemptNumber(int number) {
+    return 'চেষ্টা #$number';
+  }
+
+  @override
+  String syllabusQuizAttemptsLabel(int count, int score, int total) {
+    return '$countটি চেষ্টা · সেরা $score/$total';
+  }
+
+  @override
+  String syllabusQuizAttemptHistoryRow(int score, int total, String date) {
+    return '$score/$total · $date';
+  }
+
+  @override
+  String get syllabusQuizAttemptPassed => 'পাস';
+
+  @override
+  String get syllabusQuizAttemptFailed => 'অসফল';
 
   @override
   String syllabusQuizBestScore(int score, int total) {

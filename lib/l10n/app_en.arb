@@ -221,6 +221,10 @@
   "@leaderboardYourRank": {
     "placeholders": {"rank": {}, "score": {}, "stat": {}}
   },
+  "leaderboardYourRankNumber": "Your rank: #{rank}",
+  "@leaderboardYourRankNumber": {
+    "placeholders": {"rank": {"type": "int"}}
+  },
   "leaderboardLoadFailed": "Could not load leaderboard right now.",
   "leaderboardNudgeKeepClimbing": "Keep climbing - every amal counts.",
   "leaderboardNudgeTop": "You are on top - stay consistent.",
@@ -238,6 +242,22 @@
   "@leaderboardNudgeBehindQuizPoints": {"placeholders": {"behind": {}}},
   "leaderboardNudgeBehindFirstQuizPoints": "{behind} pts behind 1st place - pass more quizzes to take the lead.",
   "@leaderboardNudgeBehindFirstQuizPoints": {"placeholders": {"behind": {}}},
+  "leaderboardQuizAttempts": "attempts",
+  "leaderboardQuizStat": "{points} pts · {attempts} attempts",
+  "@leaderboardQuizStat": {
+    "placeholders": {
+      "points": {"type": "int"},
+      "attempts": {"type": "int"}
+    }
+  },
+  "leaderboardYourRankQuiz": "Your rank: #{rank} · {stat}",
+  "@leaderboardYourRankQuiz": {
+    "placeholders": {
+      "rank": {"type": "int"},
+      "stat": {"type": "String"}
+    }
+  },
+  "leaderboardQuizTiebreakerHint": "Equal points? Fewer total attempts rank higher.",
   "history": "HISTORY",
   "historyLoadFailed": "Could not load history.",
   "historyConsistency": "{value}% consistency",
@@ -667,6 +687,26 @@
   "syllabusQuizPreviousAttempts": "Your attempts",
   "syllabusQuizAttemptCount": "{count} attempt(s)",
   "@syllabusQuizAttemptCount": {"placeholders": {"count": {"type": "int"}}},
+  "syllabusQuizAttemptNumber": "Attempt #{number}",
+  "@syllabusQuizAttemptNumber": {"placeholders": {"number": {"type": "int"}}},
+  "syllabusQuizAttemptsLabel": "{count} attempt(s) · best {score}/{total}",
+  "@syllabusQuizAttemptsLabel": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "score": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "syllabusQuizAttemptHistoryRow": "{score}/{total} · {date}",
+  "@syllabusQuizAttemptHistoryRow": {
+    "placeholders": {
+      "score": {"type": "int"},
+      "total": {"type": "int"},
+      "date": {"type": "String"}
+    }
+  },
+  "syllabusQuizAttemptPassed": "Passed",
+  "syllabusQuizAttemptFailed": "Failed",
   "syllabusQuizBestScore": "Best score: {score} / {total}",
   "@syllabusQuizBestScore": {"placeholders": {"score": {"type": "int"}, "total": {"type": "int"}}},
   "syllabusQuizAlreadyPassed": "You passed this quiz",

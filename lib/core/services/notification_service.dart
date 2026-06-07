@@ -14,6 +14,7 @@ import '../router/routes.dart';
 import 'hadith_asset_service.dart';
 import 'islamic_date_service.dart';
 import 'local_storage_service.dart';
+import 'prayer_adhan_scheduler.dart';
 
 class NotificationService {
   NotificationService._();
@@ -177,6 +178,11 @@ class NotificationService {
     if (isStreakEnabled) await _scheduleStreakWarning();
     await _scheduleJumuah();
     await _scheduleHadithNotifications();
+    await PrayerAdhanScheduler.instance.scheduleAll(
+      localNotifications: _localNotifications,
+      quietFrom: quietFrom,
+      quietTo: quietTo,
+    );
   }
 
   Future<void> _cancelUrgencyIfLoggedToday() async {
@@ -235,6 +241,7 @@ class NotificationService {
       await _localNotifications.cancel(_hadithMorningBaseId + i);
       await _localNotifications.cancel(_hadithEveningBaseId + i);
     }
+    await PrayerAdhanScheduler.instance.cancelAll(_localNotifications);
   }
 
   Future<void> setMorningEnabled(bool enabled) async {

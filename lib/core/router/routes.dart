@@ -32,6 +32,7 @@ class AppRoutes {
   static const settings = '/settings';
   static const quietHours = '/settings/quiet-hours';
   static const reminderTimes = '/settings/reminder-times';
+  static const prayerAdhan = '/settings/prayer-adhan';
 
   static const dhikr = '/dhikr';
 

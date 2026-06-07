@@ -372,6 +372,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                 ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.graphic_eq_outlined,
+                  title: l10n.prayerAdhanReminder,
+                  onTap: () => context.push(AppRoutes.prayerAdhan),
+                ),
               ],
             ),
           ),

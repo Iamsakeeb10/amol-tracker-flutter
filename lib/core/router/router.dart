@@ -20,6 +20,7 @@ import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/more_screen.dart';
 import '../../features/settings/presentation/screens/quiet_hours_screen.dart';
+import '../../features/settings/presentation/screens/prayer_reminder_screen.dart';
 import '../../features/settings/presentation/screens/reminder_times_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
@@ -174,6 +175,11 @@ GoRouter buildAppRouter() {
             path: 'reminder-times',
             name: 'reminderTimes',
             builder: (_, _) => const ReminderTimesScreen(),
+          ),
+          GoRoute(
+            path: 'prayer-adhan',
+            name: 'prayerAdhan',
+            builder: (_, _) => const PrayerReminderScreen(),
           ),
         ],
       ),

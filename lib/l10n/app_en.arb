@@ -22,6 +22,36 @@
   "communityActivitySubtitle": "Push updates from community",
   "reminderTimes": "Reminder times",
   "reminderTimesDescription": "Set the exact reminder time for morning and evening notifications.",
+  "prayerAdhanReminder": "Prayer adhan reminder",
+  "prayerAdhanReminderSubtitle": "Per-prayer adhan alerts",
+  "prayerAdhanScreenTitle": "Prayer adhan reminder",
+  "prayerAdhanDescription": "Get adhan reminders for each prayer. Times are calculated for Bangladesh.",
+  "prayerAdhanTodayTimes": "Today's prayer times",
+  "prayerAdhanReminderTimes": "Reminder times",
+  "prayerAdhanReminderTimesDescription": "Tap to set a custom reminder time. Reset to use calculated adhan time for each day.",
+  "prayerAdhanCalculatedTime": "Adhan time",
+  "prayerAdhanCustomTimeLabel": "Custom time",
+  "prayerAdhanResetToAdhan": "Use adhan time",
+  "prayerAdhanOffsetTitle": "When should the reminder appear?",
+  "prayerAdhanAtTime": "At adhan time",
+  "prayerAdhanChipAtTime": "On time",
+  "prayerAdhanChipMinBefore": "{minutes}m before",
+  "@prayerAdhanChipMinBefore": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "prayerAdhanMinutesBefore": "{minutes} min before",
+  "@prayerAdhanMinutesBefore": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "prayerFajr": "Fajr",
+  "prayerDhuhr": "Dhuhr",
+  "prayerAsr": "Asr",
+  "prayerMaghrib": "Maghrib",
+  "prayerIsha": "Isha",
   "quietHours": "Quiet hours",
   "showOnLeaderboard": "Show me on leaderboard",
   "showAnonymous": "Show as anonymous in community",

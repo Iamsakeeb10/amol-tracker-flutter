@@ -76,6 +76,72 @@ class AppLocalizationsEn extends AppLocalizations {
       'Set the exact reminder time for morning and evening notifications.';
 
   @override
+  String get prayerAdhanReminder => 'Prayer adhan reminder';
+
+  @override
+  String get prayerAdhanReminderSubtitle => 'Per-prayer adhan alerts';
+
+  @override
+  String get prayerAdhanScreenTitle => 'Prayer adhan reminder';
+
+  @override
+  String get prayerAdhanDescription =>
+      'Get adhan reminders for each prayer. Times are calculated for Bangladesh.';
+
+  @override
+  String get prayerAdhanTodayTimes => 'Today\'s prayer times';
+
+  @override
+  String get prayerAdhanReminderTimes => 'Reminder times';
+
+  @override
+  String get prayerAdhanReminderTimesDescription =>
+      'Tap to set a custom reminder time. Reset to use calculated adhan time for each day.';
+
+  @override
+  String get prayerAdhanCalculatedTime => 'Adhan time';
+
+  @override
+  String get prayerAdhanCustomTimeLabel => 'Custom time';
+
+  @override
+  String get prayerAdhanResetToAdhan => 'Use adhan time';
+
+  @override
+  String get prayerAdhanOffsetTitle => 'When should the reminder appear?';
+
+  @override
+  String get prayerAdhanAtTime => 'At adhan time';
+
+  @override
+  String get prayerAdhanChipAtTime => 'On time';
+
+  @override
+  String prayerAdhanChipMinBefore(Object minutes) {
+    return '${minutes}m before';
+  }
+
+  @override
+  String prayerAdhanMinutesBefore(Object minutes) {
+    return '$minutes min before';
+  }
+
+  @override
+  String get prayerFajr => 'Fajr';
+
+  @override
+  String get prayerDhuhr => 'Dhuhr';
+
+  @override
+  String get prayerAsr => 'Asr';
+
+  @override
+  String get prayerMaghrib => 'Maghrib';
+
+  @override
+  String get prayerIsha => 'Isha';
+
+  @override
   String get quietHours => 'Quiet hours';
 
   @override

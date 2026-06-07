@@ -230,6 +230,126 @@ abstract class AppLocalizations {
   /// **'Set the exact reminder time for morning and evening notifications.'**
   String get reminderTimesDescription;
 
+  /// No description provided for @prayerAdhanReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer adhan reminder'**
+  String get prayerAdhanReminder;
+
+  /// No description provided for @prayerAdhanReminderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Per-prayer adhan alerts'**
+  String get prayerAdhanReminderSubtitle;
+
+  /// No description provided for @prayerAdhanScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer adhan reminder'**
+  String get prayerAdhanScreenTitle;
+
+  /// No description provided for @prayerAdhanDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Get adhan reminders for each prayer. Times are calculated for Bangladesh.'**
+  String get prayerAdhanDescription;
+
+  /// No description provided for @prayerAdhanTodayTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s prayer times'**
+  String get prayerAdhanTodayTimes;
+
+  /// No description provided for @prayerAdhanReminderTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder times'**
+  String get prayerAdhanReminderTimes;
+
+  /// No description provided for @prayerAdhanReminderTimesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to set a custom reminder time. Reset to use calculated adhan time for each day.'**
+  String get prayerAdhanReminderTimesDescription;
+
+  /// No description provided for @prayerAdhanCalculatedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhan time'**
+  String get prayerAdhanCalculatedTime;
+
+  /// No description provided for @prayerAdhanCustomTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom time'**
+  String get prayerAdhanCustomTimeLabel;
+
+  /// No description provided for @prayerAdhanResetToAdhan.
+  ///
+  /// In en, this message translates to:
+  /// **'Use adhan time'**
+  String get prayerAdhanResetToAdhan;
+
+  /// No description provided for @prayerAdhanOffsetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When should the reminder appear?'**
+  String get prayerAdhanOffsetTitle;
+
+  /// No description provided for @prayerAdhanAtTime.
+  ///
+  /// In en, this message translates to:
+  /// **'At adhan time'**
+  String get prayerAdhanAtTime;
+
+  /// No description provided for @prayerAdhanChipAtTime.
+  ///
+  /// In en, this message translates to:
+  /// **'On time'**
+  String get prayerAdhanChipAtTime;
+
+  /// No description provided for @prayerAdhanChipMinBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m before'**
+  String prayerAdhanChipMinBefore(Object minutes);
+
+  /// No description provided for @prayerAdhanMinutesBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min before'**
+  String prayerAdhanMinutesBefore(Object minutes);
+
+  /// No description provided for @prayerFajr.
+  ///
+  /// In en, this message translates to:
+  /// **'Fajr'**
+  String get prayerFajr;
+
+  /// No description provided for @prayerDhuhr.
+  ///
+  /// In en, this message translates to:
+  /// **'Dhuhr'**
+  String get prayerDhuhr;
+
+  /// No description provided for @prayerAsr.
+  ///
+  /// In en, this message translates to:
+  /// **'Asr'**
+  String get prayerAsr;
+
+  /// No description provided for @prayerMaghrib.
+  ///
+  /// In en, this message translates to:
+  /// **'Maghrib'**
+  String get prayerMaghrib;
+
+  /// No description provided for @prayerIsha.
+  ///
+  /// In en, this message translates to:
+  /// **'Isha'**
+  String get prayerIsha;
+
   /// No description provided for @quietHours.
   ///
   /// In en, this message translates to:

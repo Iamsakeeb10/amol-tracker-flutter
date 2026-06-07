@@ -86,6 +86,10 @@ class LocalStorageService {
     return fallback;
   }
 
+  static Future<void> deletePref(String key) async {
+    await _prefs.delete(key);
+  }
+
   static Future<void> saveCache(String key, String value) async {
     await _cache.put(key, value);
   }

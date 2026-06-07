@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../constants/app_constants.dart';
+import 'prayer_times_bd.dart';
 
 class IslamicDateService {
   IslamicDateService._();
@@ -35,22 +36,44 @@ class IslamicDateService {
     return getMaghribTimeForDate(now);
   }
 
+  /// All five daily prayer times for a Bangladesh calendar date.
+  static PrayerTimesBd getPrayerTimesForDate(DateTime bdDate) {
+    final prayerTimes = PrayerTimes(
+      date: DateTime(bdDate.year, bdDate.month, bdDate.day),
+      coordinates: _coords,
+      calculationParameters: _params,
+    );
+    return PrayerTimesBd(
+      fajr: _utcToBd(prayerTimes.fajr),
+      dhuhr: _utcToBd(prayerTimes.dhuhr),
+      asr: _utcToBd(prayerTimes.asr),
+      maghrib: _utcToBd(prayerTimes.maghrib),
+      isha: _utcToBd(prayerTimes.isha),
+    );
+  }
+
+  static PrayerTimesBd getPrayerTimesForToday() =>
+      getPrayerTimesForDate(nowInBD());
+
+  static DateTime _utcToBd(DateTime utc) {
+    final bd = utc.add(const Duration(hours: 6));
+    return DateTime(
+      bd.year,
+      bd.month,
+      bd.day,
+      bd.hour,
+      bd.minute,
+      bd.second,
+    );
+  }
+
   static DateTime getMaghribTimeForDate(DateTime bdDate) {
     final prayerTimes = PrayerTimes(
       date: DateTime(bdDate.year, bdDate.month, bdDate.day),
       coordinates: _coords,
       calculationParameters: _params,
     );
-    final maghribUtc = prayerTimes.maghrib;
-    final maghribBd = maghribUtc.add(const Duration(hours: 6));
-    return DateTime(
-      maghribBd.year,
-      maghribBd.month,
-      maghribBd.day,
-      maghribBd.hour,
-      maghribBd.minute,
-      maghribBd.second,
-    );
+    return _utcToBd(prayerTimes.maghrib);
   }
 
   static DateTime getMaghribTimeSafe() {

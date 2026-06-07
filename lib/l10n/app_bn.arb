@@ -22,6 +22,36 @@
   "communityActivitySubtitle": "কমিউনিটি থেকে আপডেট পাবেন",
   "reminderTimes": "রিমাইন্ডার সময়",
   "reminderTimesDescription": "সকালের ও সন্ধ্যার নোটিফিকেশনের নির্দিষ্ট সময় সেট করুন।",
+  "prayerAdhanReminder": "নামাযের আযান রিমাইন্ডার",
+  "prayerAdhanReminderSubtitle": "প্রতিটি ওয়াক্তের আলাদা রিমাইন্ডার",
+  "prayerAdhanScreenTitle": "নামাযের আযান রিমাইন্ডার",
+  "prayerAdhanDescription": "প্রতিটি ওয়াক্তের আযান রিমাইন্ডার পান। সময় বাংলাদেশের জন্য হিসাব করা হয়।",
+  "prayerAdhanTodayTimes": "আজকের নামাযের সময়",
+  "prayerAdhanReminderTimes": "রিমাইন্ডার সময়",
+  "prayerAdhanReminderTimesDescription": "কাস্টম সময় সেট করতে ট্যাপ করুন। প্রতিদিনের আযানের সময় ব্যবহার করতে রিসেট করুন।",
+  "prayerAdhanCalculatedTime": "আযানের সময়",
+  "prayerAdhanCustomTimeLabel": "কাস্টম সময়",
+  "prayerAdhanResetToAdhan": "আযানের সময় ব্যবহার করুন",
+  "prayerAdhanOffsetTitle": "রিমাইন্ডার কখন দেখাবে?",
+  "prayerAdhanAtTime": "আযানের সময়",
+  "prayerAdhanChipAtTime": "আযান",
+  "prayerAdhanChipMinBefore": "{minutes}m আগে",
+  "@prayerAdhanChipMinBefore": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "prayerAdhanMinutesBefore": "{minutes} মিনিট আগে",
+  "@prayerAdhanMinutesBefore": {
+    "placeholders": {
+      "minutes": {}
+    }
+  },
+  "prayerFajr": "ফজর",
+  "prayerDhuhr": "যোহর",
+  "prayerAsr": "আসর",
+  "prayerMaghrib": "মাগরিব",
+  "prayerIsha": "ইশা",
   "quietHours": "কোয়ায়েট আওয়ার",
   "showOnLeaderboard": "আমাকে লিডারবোর্ডে দেখান",
   "showAnonymous": "কমিউনিটিতে অ্যানোনিমাস দেখান",

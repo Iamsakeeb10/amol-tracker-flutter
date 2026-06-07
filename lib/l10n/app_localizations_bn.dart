@@ -76,6 +76,73 @@ class AppLocalizationsBn extends AppLocalizations {
       'সকালের ও সন্ধ্যার নোটিফিকেশনের নির্দিষ্ট সময় সেট করুন।';
 
   @override
+  String get prayerAdhanReminder => 'নামাযের আযান রিমাইন্ডার';
+
+  @override
+  String get prayerAdhanReminderSubtitle =>
+      'প্রতিটি ওয়াক্তের আলাদা রিমাইন্ডার';
+
+  @override
+  String get prayerAdhanScreenTitle => 'নামাযের আযান রিমাইন্ডার';
+
+  @override
+  String get prayerAdhanDescription =>
+      'প্রতিটি ওয়াক্তের আযান রিমাইন্ডার পান। সময় বাংলাদেশের জন্য হিসাব করা হয়।';
+
+  @override
+  String get prayerAdhanTodayTimes => 'আজকের নামাযের সময়';
+
+  @override
+  String get prayerAdhanReminderTimes => 'রিমাইন্ডার সময়';
+
+  @override
+  String get prayerAdhanReminderTimesDescription =>
+      'কাস্টম সময় সেট করতে ট্যাপ করুন। প্রতিদিনের আযানের সময় ব্যবহার করতে রিসেট করুন।';
+
+  @override
+  String get prayerAdhanCalculatedTime => 'আযানের সময়';
+
+  @override
+  String get prayerAdhanCustomTimeLabel => 'কাস্টম সময়';
+
+  @override
+  String get prayerAdhanResetToAdhan => 'আযানের সময় ব্যবহার করুন';
+
+  @override
+  String get prayerAdhanOffsetTitle => 'রিমাইন্ডার কখন দেখাবে?';
+
+  @override
+  String get prayerAdhanAtTime => 'আযানের সময়';
+
+  @override
+  String get prayerAdhanChipAtTime => 'আযান';
+
+  @override
+  String prayerAdhanChipMinBefore(Object minutes) {
+    return '${minutes}m আগে';
+  }
+
+  @override
+  String prayerAdhanMinutesBefore(Object minutes) {
+    return '$minutes মিনিট আগে';
+  }
+
+  @override
+  String get prayerFajr => 'ফজর';
+
+  @override
+  String get prayerDhuhr => 'যোহর';
+
+  @override
+  String get prayerAsr => 'আসর';
+
+  @override
+  String get prayerMaghrib => 'মাগরিব';
+
+  @override
+  String get prayerIsha => 'ইশা';
+
+  @override
   String get quietHours => 'কোয়ায়েট আওয়ার';
 
   @override

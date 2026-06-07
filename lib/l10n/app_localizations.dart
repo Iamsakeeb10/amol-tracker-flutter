@@ -2065,6 +2065,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A dhikr with this name already exists.'**
   String get dhikrDuplicateName;
+
+  /// No description provided for @announcementDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Understood'**
+  String get announcementDismiss;
+
+  /// No description provided for @announcementTypeReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get announcementTypeReminder;
+
+  /// No description provided for @announcementTypeAnnouncement.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement'**
+  String get announcementTypeAnnouncement;
+
+  /// No description provided for @announcementTypeDua.
+  ///
+  /// In en, this message translates to:
+  /// **'Dua'**
+  String get announcementTypeDua;
+
+  /// No description provided for @announcementTypeHadith.
+  ///
+  /// In en, this message translates to:
+  /// **'Hadith'**
+  String get announcementTypeHadith;
 }
 
 class _AppLocalizationsDelegate

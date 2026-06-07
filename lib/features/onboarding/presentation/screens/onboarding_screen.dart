@@ -127,6 +127,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       showOnLeaderboard: true,
       badges: const <String>[],
       seenBadgeCelebrations: const <String>[],
+      seenAnnouncements: const <String>[],
     );
 
     final success = await _persistOnboardingData(userModel);

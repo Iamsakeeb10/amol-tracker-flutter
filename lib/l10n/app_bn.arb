@@ -415,5 +415,10 @@
   "dhikrTapToCount": "গণনার জন্য ট্যাপ করুন",
   "dhikrNameRequired": "জিকিরের নাম লিখুন।",
   "dhikrTargetInvalid": "লক্ষ্য কমপক্ষে ১ হতে হবে।",
-  "dhikrDuplicateName": "এই নামে একটি জিকির ইতিমধ্যে আছে।"
+  "dhikrDuplicateName": "এই নামে একটি জিকির ইতিমধ্যে আছে।",
+  "announcementDismiss": "বুঝেছি",
+  "announcementTypeReminder": "রিমাইন্ডার",
+  "announcementTypeAnnouncement": "ঘোষণা",
+  "announcementTypeDua": "দোয়া",
+  "announcementTypeHadith": "হাদিস"
 }

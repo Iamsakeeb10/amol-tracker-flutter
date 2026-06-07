@@ -16,13 +16,16 @@ import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
+import '../../../../models/announcement_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
+import '../../../../providers/announcement_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/amal_fields_list_section.dart';
 import '../../../../shared/widgets/amal_row.dart';
+import '../../../../shared/widgets/announcement_modal.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/score_bar.dart';
@@ -35,6 +38,30 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final Set<String> _sessionDismissedAnnouncementIds = <String>{};
+  bool _isAnnouncementDialogOpen = false;
+
+  Future<void> _showAnnouncementDialog(AnnouncementModel announcement) async {
+    if (!mounted || _isAnnouncementDialogOpen) return;
+    if (_sessionDismissedAnnouncementIds.contains(announcement.id)) return;
+
+    _isAnnouncementDialogOpen = true;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withValues(alpha: 0.54),
+      builder: (_) => AnnouncementModal(announcement: announcement),
+    );
+
+    if (!mounted) return;
+    _isAnnouncementDialogOpen = false;
+    if (!announcement.showOnce) {
+      setState(() {
+        _sessionDismissedAnnouncementIds.add(announcement.id);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -68,6 +95,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.listen(amalProvider(uid).select((s) => s.error), (previous, next) {
       if (!mounted || next == null || previous == next) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next)));
+    });
+    ref.listen<AnnouncementModel?>(pendingAnnouncementProvider, (
+      previous,
+      next,
+    ) {
+      if (next == null) return;
+      if (previous?.id == next.id) return;
+      if (_sessionDismissedAnnouncementIds.contains(next.id)) return;
+
+      Future<void>.delayed(const Duration(milliseconds: 800), () {
+        if (!mounted) return;
+        _showAnnouncementDialog(next);
+      });
     });
 
     // Only show banner once we know status; [none] means offline per connectivity_plus.

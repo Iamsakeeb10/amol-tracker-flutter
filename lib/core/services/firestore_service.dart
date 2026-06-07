@@ -7,6 +7,7 @@ import '../utils/dua_push_debug.dart';
 import '../constants/amal_fields.dart';
 import '../../models/activity_feed_item_model.dart';
 import '../../models/amal_log_model.dart';
+import '../../models/announcement_model.dart';
 import '../../models/notification_model.dart';
 import '../../models/user_model.dart';
 
@@ -57,6 +58,71 @@ class FirestoreService {
     if (badgeIds.isEmpty) return;
     await _users.doc(uid).update(<String, dynamic>{
       'seenBadgeCelebrations': FieldValue.arrayUnion(badgeIds),
+    });
+  }
+
+  /*
+  Purpose:
+  Stream active admin announcements for real-time modal display on HomeScreen.
+
+  Response:
+  Emits a list of currently active announcements ordered newest first.
+
+  Business Rules:
+  - Only documents with isActive == true are queried.
+  - Client-side isCurrentlyActive filters startsAt / expiresAt windows.
+  - Empty list when collection is missing or has no active docs.
+
+  Flow:
+  1. Subscribe to announcements where isActive is true.
+  2. Order by createdAt descending.
+  3. Map docs to AnnouncementModel and filter by isCurrentlyActive.
+
+  Side Effects:
+  - Opens a live Firestore listener.
+
+  Failure Cases:
+  - Stream errors propagate to Riverpod; UI treats as no pending announcement.
+  */
+  Stream<List<AnnouncementModel>> announcementsStream() {
+    return _firestore
+        .collection('announcements')
+        .where('isActive', isEqualTo: true)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map(AnnouncementModel.fromDoc)
+              .where((announcement) => announcement.isCurrentlyActive)
+              .toList(),
+        );
+  }
+
+  /*
+  Purpose:
+  Persist that a show-once announcement was dismissed by the user.
+
+  Response:
+  Updates users/{uid}.seenAnnouncements via arrayUnion.
+
+  Business Rules:
+  - Only called when announcement.showOnce is true.
+  - Does not overwrite the full array; unions a single id.
+
+  Flow:
+  1. Validate uid and announcementId are non-empty.
+  2. arrayUnion announcementId into seenAnnouncements.
+
+  Side Effects:
+  - Writes to Firestore user document.
+
+  Failure Cases:
+  - Firestore write errors bubble to caller; modal already dismissed in UI.
+  */
+  Future<void> markAnnouncementSeen(String uid, String announcementId) async {
+    if (uid.isEmpty || announcementId.isEmpty) return;
+    await _users.doc(uid).update(<String, dynamic>{
+      'seenAnnouncements': FieldValue.arrayUnion(<String>[announcementId]),
     });
   }
 

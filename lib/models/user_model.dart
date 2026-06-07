@@ -15,6 +15,7 @@ class UserModel {
   final bool showOnLeaderboard;
   final List<String> badges;
   final List<String> seenBadgeCelebrations;
+  final List<String> seenAnnouncements;
 
   const UserModel({
     required this.uid,
@@ -31,6 +32,7 @@ class UserModel {
     required this.showOnLeaderboard,
     required this.badges,
     required this.seenBadgeCelebrations,
+    required this.seenAnnouncements,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
@@ -53,6 +55,10 @@ class UserModel {
           .toList(),
       seenBadgeCelebrations:
           ((map['seenBadgeCelebrations'] as List<dynamic>?) ?? const [])
+              .map((item) => item.toString())
+              .toList(),
+      seenAnnouncements:
+          ((map['seenAnnouncements'] as List<dynamic>?) ?? const [])
               .map((item) => item.toString())
               .toList(),
     );

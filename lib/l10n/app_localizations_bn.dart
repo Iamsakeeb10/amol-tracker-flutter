@@ -1081,4 +1081,19 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get dhikrDuplicateName => 'এই নামে একটি জিকির ইতিমধ্যে আছে।';
+
+  @override
+  String get announcementDismiss => 'বুঝেছি';
+
+  @override
+  String get announcementTypeReminder => 'রিমাইন্ডার';
+
+  @override
+  String get announcementTypeAnnouncement => 'ঘোষণা';
+
+  @override
+  String get announcementTypeDua => 'দোয়া';
+
+  @override
+  String get announcementTypeHadith => 'হাদিস';
 }

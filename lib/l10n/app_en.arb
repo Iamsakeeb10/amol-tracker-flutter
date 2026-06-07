@@ -415,5 +415,10 @@
   "dhikrTapToCount": "Tap to count",
   "dhikrNameRequired": "Please enter a dhikr name.",
   "dhikrTargetInvalid": "Target must be at least 1.",
-  "dhikrDuplicateName": "A dhikr with this name already exists."
+  "dhikrDuplicateName": "A dhikr with this name already exists.",
+  "announcementDismiss": "Understood",
+  "announcementTypeReminder": "Reminder",
+  "announcementTypeAnnouncement": "Announcement",
+  "announcementTypeDua": "Dua",
+  "announcementTypeHadith": "Hadith"
 }

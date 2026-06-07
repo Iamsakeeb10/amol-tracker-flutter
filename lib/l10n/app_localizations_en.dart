@@ -1077,4 +1077,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dhikrDuplicateName => 'A dhikr with this name already exists.';
+
+  @override
+  String get announcementDismiss => 'Understood';
+
+  @override
+  String get announcementTypeReminder => 'Reminder';
+
+  @override
+  String get announcementTypeAnnouncement => 'Announcement';
+
+  @override
+  String get announcementTypeDua => 'Dua';
+
+  @override
+  String get announcementTypeHadith => 'Hadith';
 }

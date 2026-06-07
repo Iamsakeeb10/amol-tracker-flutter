@@ -123,6 +123,12 @@ class MoreScreen extends ConsumerWidget {
                 ),
                 const Divider(),
                 NavRow(
+                  icon: Icons.fiber_manual_record_outlined,
+                  title: l10n.dhikrCounter,
+                  onTap: () => context.push(AppRoutes.dhikr),
+                ),
+                const Divider(),
+                NavRow(
                   icon: Icons.person_outline,
                   title: l10n.profileAndBadges,
                   onTap: () => context.push(AppRoutes.profile),

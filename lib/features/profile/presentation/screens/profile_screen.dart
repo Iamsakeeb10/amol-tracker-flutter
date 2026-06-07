@@ -10,7 +10,6 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
-import '../../../../models/badge_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
@@ -68,7 +67,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         : user.name.trim().substring(0, 1).toUpperCase();
     final fields = ref.watch(amalFieldsListProvider);
     final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
-    final compact = MediaQuery.sizeOf(context).width < 340.w;
 
     return AppScaffold(
       appBar: AppBar(
@@ -150,7 +148,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 crossAxisCount: 3,
                 mainAxisSpacing: 8.h,
                 crossAxisSpacing: 8.w,
-                childAspectRatio: compact ? 1.02 : 1.28,
+                childAspectRatio: profileStatGridAspectRatio(context),
               ),
               delegate: SliverChildListDelegate([
                 StatCard(
@@ -218,54 +216,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
           ),
-          SliverPadding(
-            padding: EdgeInsets.only(top: 18.h),
-            sliver: SliverToBoxAdapter(
-              child: Text(
-                l10n.badges,
-                style: AppTextStyles.headlineMedium(context),
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: EdgeInsets.only(top: 8.h, bottom: 24.h),
-            sliver: SliverGrid.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 10.h,
-                crossAxisSpacing: 10.w,
-                childAspectRatio: compact ? 1.05 : 1.5,
-              ),
-              itemCount: kBadgeDefinitions.length,
-              itemBuilder: (context, index) {
-                final badge = kBadgeDefinitions[index];
-                final unlocked = user.badges.contains(badge.id);
-                final progress = _badgeProgress(
-                  badge,
-                  user.currentStreak,
-                  unlocked,
-                );
-                return BadgeTile(
-                  badge: badge,
-                  unlocked: unlocked,
-                  progress: progress,
-                );
-              },
-            ),
+          ProfileBadgesSection(
+            unlockedBadgeIds: user.badges,
+            currentStreak: user.currentStreak,
           ),
         ],
       ),
     );
-  }
-
-  double _badgeProgress(
-    BadgeDefinition badge,
-    int currentStreak,
-    bool unlocked,
-  ) {
-    if (unlocked) return 1;
-    if (badge.streakThreshold == null || badge.streakThreshold == 0) return 0;
-    return (currentStreak / badge.streakThreshold!).clamp(0.0, 1.0);
   }
 
   Future<void> _showEditNameDialog(String uid, String currentName) async {

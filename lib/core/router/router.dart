@@ -22,6 +22,7 @@ import '../../features/settings/presentation/screens/more_screen.dart';
 import '../../features/settings/presentation/screens/quiet_hours_screen.dart';
 import '../../features/settings/presentation/screens/reminder_times_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
 import '../../shared/widgets/app_launch_route.dart';
 import '../../shared/widgets/bottom_nav.dart';
 import '../../shared/widgets/dev_screen.dart';
@@ -153,6 +154,11 @@ GoRouter buildAppRouter() {
         path: AppRoutes.profile,
         name: 'profile',
         builder: (_, _) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.dhikr,
+        name: 'dhikr',
+        builder: (_, _) => const DhikrCounterScreen(),
       ),
       GoRoute(
         path: AppRoutes.settings,

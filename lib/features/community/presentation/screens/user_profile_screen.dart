@@ -24,6 +24,7 @@ import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
+import '../../../../shared/widgets/badge_tile.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
 import '../../../../shared/widgets/streak_badge.dart';
@@ -152,7 +153,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         ? l10n.communityMember
                         : user.name.trim());
 
-              final compact = MediaQuery.sizeOf(context).width < 340.w;
               return CustomScrollView(
                 slivers: [
                   SliverPadding(
@@ -205,7 +205,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         crossAxisCount: 3,
                         mainAxisSpacing: 8.h,
                         crossAxisSpacing: 8.w,
-                        childAspectRatio: compact ? 1.05 : 1.28,
+                        childAspectRatio: profileStatGridAspectRatio(context),
                       ),
                       delegate: SliverChildListDelegate([
                         StatCard(
@@ -265,6 +265,16 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   ),
                   SizedBox(height: 8.h),
                   _WeeklyBars(logs: weekly, maxScore: maxScore),
+                  SizedBox(height: 16.h),
+                  Text(
+                    l10n.badges,
+                    style: AppTextStyles.headlineMedium(context),
+                  ),
+                  SizedBox(height: 8.h),
+                  ProfileBadgesGrid(
+                    unlockedBadgeIds: user.badges,
+                    currentStreak: displayStreak.currentStreak,
+                  ),
                   SizedBox(height: 16.h),
                   if (isOwn) ...[
                     Text(

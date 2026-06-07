@@ -6,10 +6,12 @@ import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/utils/dua_push_debug.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../models/badge_model.dart';
 import '../../../../shared/mock/mock_data.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
+import '../../../../shared/widgets/badge_tile.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
 import '../../../../shared/widgets/streak_badge.dart';
@@ -23,6 +25,16 @@ class FriendProfileScreen extends StatelessWidget {
     (u) => u.id == friendId,
     orElse: () => kFriends.first,
   );
+
+  List<String> _mockUnlockedBadgeIds(int streak) {
+    return kBadgeDefinitions
+        .where(
+          (badge) =>
+              badge.streakThreshold != null && streak >= badge.streakThreshold!,
+        )
+        .map((badge) => badge.id)
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,8 +99,13 @@ class FriendProfileScreen extends StatelessWidget {
                 crossAxisCount: 2,
                 mainAxisSpacing: 10.h,
                 crossAxisSpacing: 10.w,
-                childAspectRatio:
-                    MediaQuery.sizeOf(context).width < 340.w ? 1.72 : 2.15,
+                childAspectRatio: profileStatGridAspectRatio(
+                  context,
+                  crossAxisCount: 2,
+                  extraHorizontalPadding: 8,
+                  crossAxisSpacing: 10,
+                  minCellHeight: 108,
+                ),
               ),
               delegate: SliverChildListDelegate([
                 StatCard(
@@ -124,6 +141,26 @@ class FriendProfileScreen extends StatelessWidget {
                   prominent: true,
                 ),
               ]),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 18.h),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.badges,
+                    style: AppTextStyles.headlineMedium(context),
+                  ),
+                  SizedBox(height: 8.h),
+                  ProfileBadgesGrid(
+                    unlockedBadgeIds: _mockUnlockedBadgeIds(user.currentStreak),
+                    currentStreak: user.currentStreak,
+                    extraHorizontalPadding: 8,
+                  ),
+                ],
+              ),
             ),
           ),
           SliverPadding(

@@ -946,4 +946,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exitApp => 'Exit';
+
+  @override
+  String get dhikrCounter => 'Dhikr Counter';
+
+  @override
+  String get subhanAllah => 'SubhanAllah';
+
+  @override
+  String get alhamdulillah => 'Alhamdulillah';
+
+  @override
+  String get allahuAkbar => 'Allahu Akbar';
+
+  @override
+  String dhikrTarget(int count) {
+    return 'Target: $count';
+  }
+
+  @override
+  String get dhikrCount => 'Count';
+
+  @override
+  String get dhikrCompleted => 'Completed!';
+
+  @override
+  String get dhikrReset => 'Reset';
+
+  @override
+  String get dhikrCustom => 'Custom';
+
+  @override
+  String get dhikrAddCustom => 'Add custom dhikr';
+
+  @override
+  String get dhikrAdd => 'Add';
+
+  @override
+  String get dhikrCustomName => 'Dhikr name';
+
+  @override
+  String get dhikrCustomTarget => 'Target count';
+
+  @override
+  String get dhikrTodaySessions => 'Today\'s completions';
+
+  @override
+  String get dhikrNoSessions => 'No dhikr completed yet today.';
+
+  @override
+  String get dhikrSelectDhikr => 'Select dhikr';
+
+  @override
+  String get dhikrShortcutSubtitle => 'Count SubhanAllah, Alhamdulillah & more';
+
+  @override
+  String get dhikrTapToCount => 'Tap to count';
+
+  @override
+  String get dhikrNameRequired => 'Please enter a dhikr name.';
+
+  @override
+  String get dhikrTargetInvalid => 'Target must be at least 1.';
+
+  @override
+  String get dhikrDuplicateName => 'A dhikr with this name already exists.';
 }

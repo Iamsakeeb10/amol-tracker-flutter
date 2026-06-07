@@ -948,4 +948,70 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get exitApp => 'বন্ধ করো';
+
+  @override
+  String get dhikrCounter => 'দুআ ও জিকির কাউন্টার';
+
+  @override
+  String get subhanAllah => 'সুবহানাল্লাহ';
+
+  @override
+  String get alhamdulillah => 'আলহামদুলিল্লাহ';
+
+  @override
+  String get allahuAkbar => 'আল্লাহু আকবার';
+
+  @override
+  String dhikrTarget(int count) {
+    return 'লক্ষ্য: $count';
+  }
+
+  @override
+  String get dhikrCount => 'গণনা';
+
+  @override
+  String get dhikrCompleted => 'সম্পন্ন!';
+
+  @override
+  String get dhikrReset => 'রিসেট';
+
+  @override
+  String get dhikrCustom => 'কাস্টম';
+
+  @override
+  String get dhikrAddCustom => 'কাস্টম জিকির যোগ করুন';
+
+  @override
+  String get dhikrAdd => 'যোগ';
+
+  @override
+  String get dhikrCustomName => 'জিকিরের নাম';
+
+  @override
+  String get dhikrCustomTarget => 'লক্ষ্য সংখ্যা';
+
+  @override
+  String get dhikrTodaySessions => 'আজকের সম্পন্ন জিকির';
+
+  @override
+  String get dhikrNoSessions => 'আজ এখনো কোনো জিকির সম্পন্ন হয়নি।';
+
+  @override
+  String get dhikrSelectDhikr => 'জিকির নির্বাচন করুন';
+
+  @override
+  String get dhikrShortcutSubtitle =>
+      'সুবহানাল্লাহ, আলহামদুলিল্লাহ ও আরও গণনা করুন';
+
+  @override
+  String get dhikrTapToCount => 'গণনার জন্য ট্যাপ করুন';
+
+  @override
+  String get dhikrNameRequired => 'জিকিরের নাম লিখুন।';
+
+  @override
+  String get dhikrTargetInvalid => 'লক্ষ্য কমপক্ষে ১ হতে হবে।';
+
+  @override
+  String get dhikrDuplicateName => 'এই নামে একটি জিকির ইতিমধ্যে আছে।';
 }

@@ -114,4 +114,56 @@ class LocalStorageService {
       return null;
     }
   }
+
+  static const String _dhikrCustomPresetsKey = 'dhikr_custom_presets';
+  static const String _dhikrSelectedPresetKey = 'dhikr_selected_preset_id';
+
+  static String _dhikrDayKey(String hijriDate) => 'dhikr_$hijriDate';
+
+  static Future<void> saveDhikrSession(
+    String hijriDate,
+    Map<String, dynamic> session,
+  ) async {
+    final key = _dhikrDayKey(hijriDate);
+    final existing = getDhikrSessionMaps(hijriDate);
+    existing.add(session);
+    await _box.put(key, existing);
+  }
+
+  static List<Map<String, dynamic>> getDhikrSessionMaps(String hijriDate) {
+    final value = _box.get(_dhikrDayKey(hijriDate));
+    if (value is! List) return <Map<String, dynamic>>[];
+    try {
+      return value
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+    } catch (_) {
+      return <Map<String, dynamic>>[];
+    }
+  }
+
+  static Future<void> saveCustomPresets(List<Map<String, dynamic>> presets) async {
+    await _prefs.put(_dhikrCustomPresetsKey, presets);
+  }
+
+  static List<Map<String, dynamic>> getCustomPresets() {
+    final value = _prefs.get(_dhikrCustomPresetsKey);
+    if (value is! List) return <Map<String, dynamic>>[];
+    try {
+      return value
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+    } catch (_) {
+      return <Map<String, dynamic>>[];
+    }
+  }
+
+  static Future<void> saveSelectedDhikrPresetId(String presetId) async {
+    await _prefs.put(_dhikrSelectedPresetKey, presetId);
+  }
+
+  static String getSelectedDhikrPresetId(String fallback) {
+    final value = _prefs.get(_dhikrSelectedPresetKey);
+    return value is String && value.isNotEmpty ? value : fallback;
+  }
 }

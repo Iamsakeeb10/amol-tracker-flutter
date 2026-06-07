@@ -192,7 +192,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ],
             ),
-            SizedBox(height: 6.h),
+            SizedBox(height: 12.h),
             ..._buildAmalFieldSection(
               uid: uid,
               fieldsAsync: fieldsAsync,
@@ -270,6 +270,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ).copyWith(color: AppColors.textSecondary, fontSize: 12.sp),
             ),
           ],
+          SizedBox(height: 14.h),
+          CardContainer(
+            onTap: () => context.push(AppRoutes.dhikr),
+            child: Row(
+              children: [
+                Container(
+                  width: 42.r,
+                  height: 42.r,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.goldCard,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: AppColors.goldBorder),
+                  ),
+                  child: Icon(
+                    Icons.fiber_manual_record_outlined,
+                    color: AppColors.gold,
+                    size: 20.r,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.dhikrCounter,
+                        style: AppTextStyles.bodyLarge(context).copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        l10n.dhikrShortcutSubtitle,
+                        style: AppTextStyles.bodySmall(context).copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 11.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20.r),
+              ],
+            ),
+          ),
         ],
       ),
     );

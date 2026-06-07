@@ -1819,6 +1819,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exit'**
   String get exitApp;
+
+  /// No description provided for @dhikrCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'Dhikr Counter'**
+  String get dhikrCounter;
+
+  /// No description provided for @subhanAllah.
+  ///
+  /// In en, this message translates to:
+  /// **'SubhanAllah'**
+  String get subhanAllah;
+
+  /// No description provided for @alhamdulillah.
+  ///
+  /// In en, this message translates to:
+  /// **'Alhamdulillah'**
+  String get alhamdulillah;
+
+  /// No description provided for @allahuAkbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Allahu Akbar'**
+  String get allahuAkbar;
+
+  /// No description provided for @dhikrTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target: {count}'**
+  String dhikrTarget(int count);
+
+  /// No description provided for @dhikrCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get dhikrCount;
+
+  /// No description provided for @dhikrCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed!'**
+  String get dhikrCompleted;
+
+  /// No description provided for @dhikrReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get dhikrReset;
+
+  /// No description provided for @dhikrCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get dhikrCustom;
+
+  /// No description provided for @dhikrAddCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom dhikr'**
+  String get dhikrAddCustom;
+
+  /// No description provided for @dhikrAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get dhikrAdd;
+
+  /// No description provided for @dhikrCustomName.
+  ///
+  /// In en, this message translates to:
+  /// **'Dhikr name'**
+  String get dhikrCustomName;
+
+  /// No description provided for @dhikrCustomTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target count'**
+  String get dhikrCustomTarget;
+
+  /// No description provided for @dhikrTodaySessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s completions'**
+  String get dhikrTodaySessions;
+
+  /// No description provided for @dhikrNoSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'No dhikr completed yet today.'**
+  String get dhikrNoSessions;
+
+  /// No description provided for @dhikrSelectDhikr.
+  ///
+  /// In en, this message translates to:
+  /// **'Select dhikr'**
+  String get dhikrSelectDhikr;
+
+  /// No description provided for @dhikrShortcutSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Count SubhanAllah, Alhamdulillah & more'**
+  String get dhikrShortcutSubtitle;
+
+  /// No description provided for @dhikrTapToCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to count'**
+  String get dhikrTapToCount;
+
+  /// No description provided for @dhikrNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a dhikr name.'**
+  String get dhikrNameRequired;
+
+  /// No description provided for @dhikrTargetInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Target must be at least 1.'**
+  String get dhikrTargetInvalid;
+
+  /// No description provided for @dhikrDuplicateName.
+  ///
+  /// In en, this message translates to:
+  /// **'A dhikr with this name already exists.'**
+  String get dhikrDuplicateName;
 }
 
 class _AppLocalizationsDelegate

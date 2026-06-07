@@ -170,4 +170,20 @@ class LocalStorageService {
     final value = _prefs.get(_dhikrSelectedPresetKey);
     return value is String && value.isNotEmpty ? value : fallback;
   }
+
+  static const String _husnaLearnedKey = 'husna_learned';
+
+  static Future<void> saveHusnaLearnedNumbers(Set<int> numbers) async {
+    await _prefs.put(_husnaLearnedKey, numbers.toList()..sort());
+  }
+
+  static Set<int> getHusnaLearnedNumbers() {
+    final value = _prefs.get(_husnaLearnedKey);
+    if (value is! List) return <int>{};
+    try {
+      return value.map((e) => (e as num).toInt()).toSet();
+    } catch (_) {
+      return <int>{};
+    }
+  }
 }

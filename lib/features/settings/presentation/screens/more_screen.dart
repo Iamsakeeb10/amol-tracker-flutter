@@ -137,6 +137,12 @@ class MoreScreen extends ConsumerWidget {
                 ),
                 const Divider(),
                 NavRow(
+                  icon: Icons.auto_awesome_outlined,
+                  title: l10n.asmaUlHusna,
+                  onTap: () => context.push(AppRoutes.asmaUlHusna),
+                ),
+                const Divider(),
+                NavRow(
                   icon: Icons.person_outline,
                   title: l10n.profileAndBadges,
                   onTap: () => context.push(AppRoutes.profile),

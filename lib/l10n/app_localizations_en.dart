@@ -1118,6 +1118,67 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dhikrDuplicateName => 'A dhikr with this name already exists.';
 
   @override
+  String get asmaUlHusna => 'Asma ul Husna';
+
+  @override
+  String get husnaSubtitle => '99 Names of Allah';
+
+  @override
+  String husnaLearnedCount(int learned) {
+    return '$learned of 99 learned';
+  }
+
+  @override
+  String get husnaMarkLearned => 'Mark as Learned';
+
+  @override
+  String get husnaMarkNotLearned => 'Unmark';
+
+  @override
+  String get husnaQuiz => 'Quiz Mode';
+
+  @override
+  String get husnaQuizQuestion => 'Which name has this meaning?';
+
+  @override
+  String get husnaQuizCorrect => 'Correct!';
+
+  @override
+  String get husnaQuizWrong => 'Incorrect';
+
+  @override
+  String husnaQuizScore(int score, int total) {
+    return 'Score: $score / $total';
+  }
+
+  @override
+  String get husnaQuizFinished => 'Quiz Complete';
+
+  @override
+  String get husnaNoNamesLearned =>
+      'Learn at least 4 names first to unlock quiz';
+
+  @override
+  String husnaNumber(int number) {
+    return '#$number';
+  }
+
+  @override
+  String get husnaBenefit => 'Reflection';
+
+  @override
+  String get husnaMeaning => 'Meaning';
+
+  @override
+  String get husnaNextQuestion => 'Next';
+
+  @override
+  String get husnaStartQuiz => 'Start Quiz';
+
+  @override
+  String get husnaRetryQuiz => 'Try Again';
+
+  @override
   String get announcementDismiss => 'Understood';
 
   @override

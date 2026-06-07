@@ -1122,6 +1122,66 @@ class AppLocalizationsBn extends AppLocalizations {
   String get dhikrDuplicateName => 'এই নামে একটি জিকির ইতিমধ্যে আছে।';
 
   @override
+  String get asmaUlHusna => 'আসমাউল হুসনা';
+
+  @override
+  String get husnaSubtitle => 'আল্লাহর ৯৯টি নাম';
+
+  @override
+  String husnaLearnedCount(int learned) {
+    return '৯৯টির মধ্যে $learnedটি শিখেছেন';
+  }
+
+  @override
+  String get husnaMarkLearned => 'শিখেছি হিসেবে চিহ্নিত করুন';
+
+  @override
+  String get husnaMarkNotLearned => 'চিহ্ন সরান';
+
+  @override
+  String get husnaQuiz => 'কুইজ মোড';
+
+  @override
+  String get husnaQuizQuestion => 'এই অর্থ কোন নামের?';
+
+  @override
+  String get husnaQuizCorrect => 'সঠিক!';
+
+  @override
+  String get husnaQuizWrong => 'ভুল';
+
+  @override
+  String husnaQuizScore(int score, int total) {
+    return 'স্কোর: $score / $total';
+  }
+
+  @override
+  String get husnaQuizFinished => 'কুইজ সম্পন্ন';
+
+  @override
+  String get husnaNoNamesLearned => 'কুইজ খুলতে আগে কমপক্ষে ৪টি নাম শিখুন';
+
+  @override
+  String husnaNumber(int number) {
+    return '#$number';
+  }
+
+  @override
+  String get husnaBenefit => 'চিন্তা';
+
+  @override
+  String get husnaMeaning => 'অর্থ';
+
+  @override
+  String get husnaNextQuestion => 'পরবর্তী';
+
+  @override
+  String get husnaStartQuiz => 'কুইজ শুরু';
+
+  @override
+  String get husnaRetryQuiz => 'আবার চেষ্টা';
+
+  @override
   String get announcementDismiss => 'বুঝেছি';
 
   @override

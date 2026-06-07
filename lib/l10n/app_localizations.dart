@@ -2144,6 +2144,114 @@ abstract class AppLocalizations {
   /// **'A dhikr with this name already exists.'**
   String get dhikrDuplicateName;
 
+  /// No description provided for @asmaUlHusna.
+  ///
+  /// In en, this message translates to:
+  /// **'Asma ul Husna'**
+  String get asmaUlHusna;
+
+  /// No description provided for @husnaSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'99 Names of Allah'**
+  String get husnaSubtitle;
+
+  /// No description provided for @husnaLearnedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{learned} of 99 learned'**
+  String husnaLearnedCount(int learned);
+
+  /// No description provided for @husnaMarkLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Learned'**
+  String get husnaMarkLearned;
+
+  /// No description provided for @husnaMarkNotLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmark'**
+  String get husnaMarkNotLearned;
+
+  /// No description provided for @husnaQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz Mode'**
+  String get husnaQuiz;
+
+  /// No description provided for @husnaQuizQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Which name has this meaning?'**
+  String get husnaQuizQuestion;
+
+  /// No description provided for @husnaQuizCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct!'**
+  String get husnaQuizCorrect;
+
+  /// No description provided for @husnaQuizWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect'**
+  String get husnaQuizWrong;
+
+  /// No description provided for @husnaQuizScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score: {score} / {total}'**
+  String husnaQuizScore(int score, int total);
+
+  /// No description provided for @husnaQuizFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz Complete'**
+  String get husnaQuizFinished;
+
+  /// No description provided for @husnaNoNamesLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn at least 4 names first to unlock quiz'**
+  String get husnaNoNamesLearned;
+
+  /// No description provided for @husnaNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'#{number}'**
+  String husnaNumber(int number);
+
+  /// No description provided for @husnaBenefit.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflection'**
+  String get husnaBenefit;
+
+  /// No description provided for @husnaMeaning.
+  ///
+  /// In en, this message translates to:
+  /// **'Meaning'**
+  String get husnaMeaning;
+
+  /// No description provided for @husnaNextQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get husnaNextQuestion;
+
+  /// No description provided for @husnaStartQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Quiz'**
+  String get husnaStartQuiz;
+
+  /// No description provided for @husnaRetryQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get husnaRetryQuiz;
+
   /// No description provided for @announcementDismiss.
   ///
   /// In en, this message translates to:

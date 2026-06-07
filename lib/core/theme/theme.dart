@@ -8,10 +8,19 @@ import 'text_styles.dart';
 class AppTheme {
   AppTheme._();
 
-  static ThemeData build(BuildContext context) {
+  static ThemeData? _cachedTheme;
+  static String? _cachedLocaleTag;
+
+  static ThemeData build(BuildContext context, {Locale? locale}) {
+    final localeTag = locale?.toLanguageTag() ?? 'default';
+    if (_cachedTheme != null && _cachedLocaleTag == localeTag) {
+      return _cachedTheme!;
+    }
+
     final base = ThemeData.dark(useMaterial3: true);
 
-    return base.copyWith(
+    _cachedLocaleTag = localeTag;
+    _cachedTheme = base.copyWith(
       scaffoldBackgroundColor: AppColors.emeraldDeep,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.gold,
@@ -107,5 +116,6 @@ class AppTheme {
       ),
       iconTheme: IconThemeData(color: AppColors.textPrimary, size: 20.r),
     );
+    return _cachedTheme!;
   }
 }

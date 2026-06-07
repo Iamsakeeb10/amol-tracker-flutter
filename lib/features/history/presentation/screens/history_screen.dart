@@ -5,17 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../../../core/constants/amal_fields.dart' as amal_const;
 import '../../../../core/router/routes.dart';
-import '../../../../core/constants/default_amal_fields.dart';
-import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
-import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
@@ -66,162 +62,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     });
   }
 
-  List<MockDay> _buildDays({
-    required List<AmalLogModel> logs,
-    required String todayStr,
-    required String accountCreatedHijri,
-    required int daysInMonth,
-    required int maxScore,
-  }) {
-    final byDay = <int, AmalLogModel>{};
-
-    for (final log in logs) {
-      final segs = log.hijriDate.split('-');
-      if (segs.length == 3 &&
-          int.parse(segs[0]) == _hijriYear &&
-          int.parse(segs[1]) == _hijriMonth) {
-        final d = int.parse(segs[2]);
-        byDay[d] = log;
-      }
-    }
-
-    final out = <MockDay>[];
-    for (var d = 1; d <= daysInMonth; d++) {
-      final key = IslamicDateService.storageFromParts(
-        _hijriYear,
-        _hijriMonth,
-        d,
-      );
-
-      // Before account creation — show as blank, no interaction
-      if (key.compareTo(accountCreatedHijri) < 0) {
-        out.add(MockDay(day: d, score: 0, state: DayCompletion.preAccount));
-        continue;
-      }
-
-      final cmp = key.compareTo(todayStr);
-
-      // Future days — locked
-      if (cmp > 0) {
-        out.add(MockDay(day: d, score: 0, state: DayCompletion.future));
-        continue;
-      }
-
-      final log = byDay[d];
-
-      // Today
-      if (key == todayStr) {
-        final score = log?.score ?? 0;
-        DayCompletion todayState = DayCompletion.today;
-        if (log != null) {
-          todayState = _scoreToState(score, hasLog: true, maxScore: maxScore);
-        }
-        out.add(
-          MockDay(
-            day: d,
-            score: score,
-            state: todayState,
-            isEdited: log?.editedAt != null,
-          ),
-        );
-        continue;
-      }
-
-      // Past day — no log means noData (not a failure)
-      if (log == null) {
-        out.add(MockDay(day: d, score: 0, state: DayCompletion.noData));
-        continue;
-      }
-
-      // Past day with a log — classify by score
-      final sc = log.score;
-      out.add(
-        MockDay(
-          day: d,
-          score: sc,
-          state: _scoreToState(sc, hasLog: true, maxScore: maxScore),
-          isEdited: log.editedAt != null,
-        ),
-      );
-    }
-
-    return out;
-  }
-
-  /// Maps a score to the appropriate [DayCompletion] tier.
-  /// Never returns [DayCompletion.miss] for logged days — we use
-  /// [DayCompletion.minimal] at worst so users are never shamed with red.
-  DayCompletion _scoreToState(
-    int score, {
-    required bool hasLog,
-    required int maxScore,
-  }) {
-    if (!hasLog) return DayCompletion.noData;
-    final full = (maxScore * 0.8).round();
-    final partial = (maxScore * 0.5).round();
-    final light = (maxScore * 0.2).round();
-    if (score >= full) return DayCompletion.full;
-    if (score >= partial) return DayCompletion.partial;
-    if (score >= light) return DayCompletion.light;
-    if (score >= 1) return DayCompletion.minimal;
-    return DayCompletion.miss;
-  }
-
-  /// Consistency = days at or above 50% of max score / active past days.
-  int _calcConsistency({
-    required List<MockDay> days,
-    required List<AmalLogModel> logs,
-    required int maxScore,
-  }) {
-    // Active days = days that are not preAccount, future, or today (today is in progress)
-    final activePastDays = days
-        .where(
-          (d) =>
-              d.state != DayCompletion.preAccount &&
-              d.state != DayCompletion.future &&
-              d.state != DayCompletion.today &&
-              d.state !=
-                  DayCompletion.noData, // noData days don't count against user
-        )
-        .length;
-
-    if (activePastDays == 0) return 0;
-
-    final halfScore = (maxScore * 0.5).round();
-    final logged50Plus = logs.where((l) => l.score >= halfScore).length;
-    return ((logged50Plus / activePastDays) * 100).round().clamp(0, 100);
-  }
-
-  ({String id, String label, int misses})? _weakestAmal(
-    List<AmalLogModel> logs,
-    List<amal_const.AmalField> fields,
-    String locale,
-  ) {
-    if (logs.isEmpty || fields.isEmpty) return null;
-    final counts = <String, int>{for (final f in fields) f.id: 0};
-    for (final log in logs) {
-      for (final f in fields) {
-        final isDone = f.type == amal_const.AmalType.numeric
-            ? getNumericValue(log.toggles[f.id], f.maxValue) > 0
-            : (log.toggles[f.id] == true);
-        if (!isDone) {
-          counts[f.id] = (counts[f.id] ?? 0) + 1;
-        }
-      }
-    }
-    String? maxId;
-    var maxC = -1;
-    counts.forEach((id, c) {
-      if (c > maxC) {
-        maxC = c;
-        maxId = id;
-      }
-    });
-    if (maxId == null || maxC <= 0) return null;
-    final field = fields.firstWhere((f) => f.id == maxId);
-    return (id: maxId!, label: field.getLabel(locale), misses: maxC);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -246,20 +86,22 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       bestStreak: user.bestStreak,
       hasSubmittedToday: amal.isSubmitted,
     );
-    final monthAsync = ref.watch(historyMonthProvider(key));
-    final fields = ref.watch(amalFieldsListProvider);
-    final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
     final locale = Localizations.localeOf(context).languageCode;
     final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
-    final accountCreatedHijri =
-        IslamicDateService.islamicDateStringForGregorianDate(
-          user.createdAt.toLocal(),
-        );
+    final summaryAsync = ref.watch(
+      historyMonthSummaryProvider(
+        HistoryMonthSummaryInput(
+          monthKey: key,
+          accountCreatedAt: user.createdAt,
+          locale: locale,
+        ),
+      ),
+    );
     final daysInMonth = HijriCalendar().getDaysInMonth(_hijriYear, _hijriMonth);
 
     return AppScaffold(
       padding: EdgeInsets.zero,
-      body: monthAsync.when(
+      body: summaryAsync.when(
         loading: () => _HistorySkeleton(),
         error: (_, _) => Center(
           child: Padding(
@@ -270,244 +112,236 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             ),
           ),
         ),
-        data: (logs) {
-          final days = _buildDays(
-            logs: logs,
-            todayStr: todayStr,
-            accountCreatedHijri: accountCreatedHijri,
-            daysInMonth: daysInMonth,
-            maxScore: maxScore,
-          );
+        data: (summary) {
+          final days = summary.days;
+          final consistency = summary.consistency;
+          final avgScore = summary.avgScore;
+          final weakest = summary.weakestAmal;
+          final logs = summary.logs;
 
-          final consistency = _calcConsistency(
-            days: days,
-            logs: logs,
-            maxScore: maxScore,
-          );
-
-          // Average score counts only days where a log exists
-          final logsWithScore = logs.where((l) => l.score > 0).toList();
-          final avgScore = logsWithScore.isEmpty
-              ? 0.0
-              : logsWithScore.map((l) => l.score).reduce((a, b) => a + b) /
-                    logsWithScore.length;
-
-          final weakest = _weakestAmal(logs, fields, locale);
-
-          return ListView(
-            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 100.h),
-            children: [
-              // ── Header ──────────────────────────────────────────────
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.history,
-                          style: AppTextStyles.label(
-                            context,
-                          ).copyWith(color: AppColors.gold),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          IslamicDateService.monthYearHeaderBn(
-                            _hijriYear,
-                            _hijriMonth,
+          return CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.history,
+                                  style: AppTextStyles.label(
+                                    context,
+                                  ).copyWith(color: AppColors.gold),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  IslamicDateService.monthYearHeaderBn(
+                                    _hijriYear,
+                                    _hijriMonth,
+                                  ),
+                                  style: AppTextStyles.displayMedium(context),
+                                ),
+                              ],
+                            ),
                           ),
-                          style: AppTextStyles.displayMedium(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _prevMonth,
-                    icon: Icon(
-                      Icons.chevron_left,
-                      color: AppColors.textSecondary,
-                      size: 24.r,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _nextMonth,
-                    icon: Icon(
-                      Icons.chevron_right,
-                      color: AppColors.textSecondary,
-                      size: 24.r,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 6.h),
-
-              // ── Consistency subtitle ─────────────────────────────────
-              Text(
-                l10n.historyConsistency(consistency),
-                style: AppTextStyles.bodyMedium(
-                  context,
-                ).copyWith(color: AppColors.gold),
-              ),
-              SizedBox(height: 16.h),
-
-              // ── Stat cards ───────────────────────────────────────────
-              Row(
-                children: [
-                  Expanded(
-                    child: StatCard(
-                      label: l10n.historyLoggedDays,
-                      value: '${logs.length}',
-                      sublabel: l10n.historyOfDays(daysInMonth),
-                      icon: Icons.check_circle_outline,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: StatCard(
-                      label: l10n.historyAvgScore,
-                      value: logsWithScore.isEmpty
-                          ? '—'
-                          : avgScore.round().toString(),
-                      sublabel: logsWithScore.isEmpty
-                          ? l10n.historyNoLogsYet
-                          : l10n.historyThisMonth,
-                      icon: Icons.analytics_outlined,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12.h),
-              StatCard(
-                label: l10n.historyBestStreak,
-                value: '${displayStreak.bestStreak}',
-                sublabel: l10n.historyDays,
-                icon: Icons.local_fire_department_outlined,
-              ),
-              SizedBox(height: 16.h),
-
-              // ── Calendar ─────────────────────────────────────────────
-              const _DayLabels(),
-              SizedBox(height: 8.h),
-              if (logs.isEmpty)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                  child: Text(
-                    l10n.historyStartLogging,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyMedium(
-                      context,
-                    ).copyWith(color: AppColors.textMuted),
-                  ),
-                ),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  mainAxisSpacing: 8.h,
-                  crossAxisSpacing: 8.w,
-                ),
-                itemCount: days.length,
-                itemBuilder: (_, i) {
-                  final day = days[i];
-                  return CalendarDayCell(
-                    day: day,
-                    onTap: () {
-                      final keyDate = IslamicDateService.storageFromParts(
-                        _hijriYear,
-                        _hijriMonth,
-                        day.day,
-                      );
-                      if (day.state == DayCompletion.future) return;
-                      if (day.state == DayCompletion.preAccount) return;
-                      if (keyDate == todayStr) {
-                        context.go(AppRoutes.home);
-                        return;
-                      }
-                      context.push(AppRoutes.dayDetailPath(keyDate));
-                    },
-                  );
-                },
-              ),
-              SizedBox(height: 12.h),
-
-              // ── Pre-account notice ───────────────────────────────────
-              if (days.any((d) => d.state == DayCompletion.preAccount))
-                Padding(
-                  padding: EdgeInsets.only(bottom: 12.h),
-                  child: CardContainer(
-                    color: AppColors.cardDark,
-                    borderColor: AppColors.cardBorder,
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          size: 16.r,
-                          color: AppColors.textMuted,
-                        ),
-                        SizedBox(width: 8.w),
-                        Expanded(
+                          IconButton(
+                            onPressed: _prevMonth,
+                            icon: Icon(
+                              Icons.chevron_left,
+                              color: AppColors.textSecondary,
+                              size: 24.r,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: _nextMonth,
+                            icon: Icon(
+                              Icons.chevron_right,
+                              color: AppColors.textSecondary,
+                              size: 24.r,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 6.h),
+                      Text(
+                        l10n.historyConsistency(consistency),
+                        style: AppTextStyles.bodyMedium(
+                          context,
+                        ).copyWith(color: AppColors.gold),
+                      ),
+                      SizedBox(height: 16.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: StatCard(
+                              label: l10n.historyLoggedDays,
+                              value: '${logs.length}',
+                              sublabel: l10n.historyOfDays(daysInMonth),
+                              icon: Icons.check_circle_outline,
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: StatCard(
+                              label: l10n.historyAvgScore,
+                              value: summary.hasScoredLogs
+                                  ? avgScore.round().toString()
+                                  : '—',
+                              sublabel: summary.hasScoredLogs
+                                  ? l10n.historyThisMonth
+                                  : l10n.historyNoLogsYet,
+                              icon: Icons.analytics_outlined,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      StatCard(
+                        label: l10n.historyBestStreak,
+                        value: '${displayStreak.bestStreak}',
+                        sublabel: l10n.historyDays,
+                        icon: Icons.local_fire_department_outlined,
+                      ),
+                      SizedBox(height: 16.h),
+                      const _DayLabels(),
+                      SizedBox(height: 8.h),
+                      if (logs.isEmpty)
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
                           child: Text(
-                            'Dim dates are from before your account was created.',
-                            style: AppTextStyles.bodySmall(
+                            l10n.historyStartLogging,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodyMedium(
                               context,
                             ).copyWith(color: AppColors.textMuted),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-
-              // ── Legend ───────────────────────────────────────────────
-              const _Legend(),
-              SizedBox(height: 16.h),
-
-              // ── Motivational tip ─────────────────────────────────────
-              if (logs.isNotEmpty) _buildMotivationalTip(context, days, logs),
-
-              // ── Weakest amal ─────────────────────────────────────────
-              if (weakest != null) ...[
-                SizedBox(height: 12.h),
-                CardContainer(
-                  color: AppColors.warningLight,
-                  borderColor: AppColors.warning.withValues(alpha: 0.3),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.tips_and_updates_outlined,
-                        color: AppColors.warning,
-                        size: 18.r,
-                      ),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.historyWeakestAmal,
-                              style: AppTextStyles.bodyLarge(context).copyWith(
-                                fontSize: 13.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            SizedBox(height: 2.h),
-                            Text(
-                              l10n.historyWeakestAmalDetail(
-                                weakest.label,
-                                weakest.misses,
-                              ),
-                              style: AppTextStyles.bodySmall(
-                                context,
-                              ).copyWith(fontSize: 11.sp),
-                            ),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),
-              ],
+              ),
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                sliver: SliverGrid.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 7,
+                    mainAxisSpacing: 8.h,
+                    crossAxisSpacing: 8.w,
+                  ),
+                  itemCount: days.length,
+                  itemBuilder: (_, i) {
+                    final day = days[i];
+                    return CalendarDayCell(
+                      day: day,
+                      onTap: () {
+                        final keyDate = IslamicDateService.storageFromParts(
+                          _hijriYear,
+                          _hijriMonth,
+                          day.day,
+                        );
+                        if (day.state == DayCompletion.future) return;
+                        if (day.state == DayCompletion.preAccount) return;
+                        if (keyDate == todayStr) {
+                          context.go(AppRoutes.home);
+                          return;
+                        }
+                        context.push(AppRoutes.dayDetailPath(keyDate));
+                      },
+                    );
+                  },
+                ),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (days.any((d) => d.state == DayCompletion.preAccount))
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 12.h),
+                          child: CardContainer(
+                            color: AppColors.cardDark,
+                            borderColor: AppColors.cardBorder,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline_rounded,
+                                  size: 16.r,
+                                  color: AppColors.textMuted,
+                                ),
+                                SizedBox(width: 8.w),
+                                Expanded(
+                                  child: Text(
+                                    'Dim dates are from before your account was created.',
+                                    style: AppTextStyles.bodySmall(
+                                      context,
+                                    ).copyWith(color: AppColors.textMuted),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      const _Legend(),
+                      SizedBox(height: 16.h),
+                      if (logs.isNotEmpty)
+                        _buildMotivationalTip(context, days, logs),
+                      if (weakest != null) ...[
+                        SizedBox(height: 12.h),
+                        CardContainer(
+                          color: AppColors.warningLight,
+                          borderColor:
+                              AppColors.warning.withValues(alpha: 0.3),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.tips_and_updates_outlined,
+                                color: AppColors.warning,
+                                size: 18.r,
+                              ),
+                              SizedBox(width: 10.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      l10n.historyWeakestAmal,
+                                      style: AppTextStyles.bodyLarge(
+                                        context,
+                                      ).copyWith(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2.h),
+                                    Text(
+                                      l10n.historyWeakestAmalDetail(
+                                        weakest.label,
+                                        weakest.misses,
+                                      ),
+                                      style: AppTextStyles.bodySmall(
+                                        context,
+                                      ).copyWith(fontSize: 11.sp),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      SizedBox(height: 100.h),
+                    ],
+                  ),
+                ),
+              ),
             ],
           );
         },

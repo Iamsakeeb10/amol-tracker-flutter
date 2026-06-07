@@ -3,6 +3,7 @@ import 'package:hijri/hijri_calendar.dart';
 
 import 'dua_push_gateway_service.dart';
 import 'islamic_date_service.dart';
+import '../utils/dua_push_debug.dart';
 import '../constants/amal_fields.dart';
 import '../../models/activity_feed_item_model.dart';
 import '../../models/amal_log_model.dart';
@@ -414,21 +415,56 @@ class FirestoreService {
       'createdAt': FieldValue.serverTimestamp(),
     });
 
+    logDuaPushDebug(
+      'dua saved to Firestore: notificationId=${notificationRef.id} '
+      'senderUid=$senderUid recipientUid=$recipientUid',
+    );
+
     try {
+      if (!_duaPushGateway.isConfigured) {
+        logDuaPushDebug(
+          'push not attempted: gateway not configured recipientUid=$recipientUid',
+        );
+        return;
+      }
+
       final recipientUser = await _users.doc(recipientUid).get();
+      if (!recipientUser.exists) {
+        logDuaPushDebug(
+          'push not attempted: recipient user doc missing recipientUid=$recipientUid',
+        );
+        return;
+      }
+
       final recipientToken = (recipientUser.data()?['fcmToken'] as String?)
           ?.trim();
-      if (recipientToken != null && recipientToken.isNotEmpty) {
-        await _duaPushGateway.sendDuaPush(
-          recipientFcmToken: recipientToken,
-          senderUid: senderUid,
-          senderName: senderName,
-          recipientUid: recipientUid,
-          message: message,
-          notificationId: notificationRef.id,
+      if (recipientToken == null || recipientToken.isEmpty) {
+        logDuaPushDebug(
+          'push not attempted: recipient has no fcmToken recipientUid=$recipientUid',
         );
+        return;
       }
-    } catch (_) {
+
+      logDuaPushDebug(
+        'attempting push: recipientUid=$recipientUid tokenLength=${recipientToken.length}',
+      );
+      final sent = await _duaPushGateway.sendDuaPush(
+        recipientFcmToken: recipientToken,
+        senderUid: senderUid,
+        senderName: senderName,
+        recipientUid: recipientUid,
+        message: message,
+        notificationId: notificationRef.id,
+      );
+      logDuaPushDebug(
+        sent
+            ? 'push outcome: sent recipientUid=$recipientUid'
+            : 'push outcome: not sent (gateway returned failure) recipientUid=$recipientUid',
+      );
+    } catch (e, st) {
+      logDuaPushDebug(
+        'push outcome: not sent (exception) recipientUid=$recipientUid error=$e\n$st',
+      );
       // Never block dua write flow if push gateway fails.
     }
   }

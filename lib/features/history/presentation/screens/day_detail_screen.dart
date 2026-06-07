@@ -130,108 +130,129 @@ class DayDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-          body: ListView(
-            padding: EdgeInsets.fromLTRB(
-              0.w,
-              4.h,
-              0.w,
-              showEditFab ? 88.h : 24.h,
-            ),
-            children: [
-              if (weekday.isNotEmpty) ...[
-                Text(
-                  weekday,
-                  style: AppTextStyles.bodyMedium(
-                    context,
-                  ).copyWith(color: AppColors.gold),
-                ),
-                SizedBox(height: 12.h),
-              ],
-              Row(
-                children: [
-                  Expanded(
-                    child: StatCard(
-                      label: l10n.score,
-                      value: '$score',
-                      sublabel: '/$maxScore',
-                      icon: Icons.workspace_premium_outlined,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: StatCard(
-                      label: l10n.dayDetailStreakThatDay,
-                      value: '—',
-                      sublabel: l10n.dayDetailNotStored,
-                      icon: Icons.local_fire_department_outlined,
-                    ),
-                  ),
-                ],
-              ),
-              if (log?.editedAt != null) ...[
-                SizedBox(height: 8.h),
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: EditedBadge(),
-                ),
-              ],
-              SizedBox(height: 16.h),
-              Text(l10n.amal, style: AppTextStyles.headlineMedium(context)),
-              SizedBox(height: 8.h),
-              if (log == null)
-                Padding(
-                  padding: EdgeInsets.only(bottom: 12.h),
-                  child: CardContainer(
-                    color: AppColors.warningLight.withValues(alpha: 0.25),
-                    borderColor: AppColors.warning.withValues(alpha: 0.35),
-                    child: Text(
-                      l10n.dayDetailNoLogForDay,
-                      style: AppTextStyles.bodyMedium(context),
-                    ),
-                  ),
-                ),
-              ...fields.map((field) {
-                final done = field.type == amal_const.AmalType.numeric
-                    ? getNumericValue(log?.toggles[field.id], field.maxValue) >
-                          0
-                    : (log?.toggles[field.id] as bool? ?? false);
-                return Padding(
-                  padding: EdgeInsets.only(bottom: 8.h),
-                  child: AmalRow(
-                    field: field,
-                    locale: locale,
-                    done: done,
-                    numericValue: field.type == amal_const.AmalType.numeric
-                        ? getNumericValue(
-                            log?.toggles[field.id],
-                            field.maxValue,
-                          )
-                        : null,
-                    readOnly: true,
-                  ),
-                );
-              }),
-              if (!showEditFab) ...[
-                SizedBox(height: 14.h),
-                CardContainer(
-                  child: Row(
+          body: CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(0, 4.h, 0, 0),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.lock_outline,
-                        color: AppColors.textMuted,
-                        size: 16.r,
-                      ),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: Text(
-                          l10n.dayDetailLockedPastDays,
-                          style: AppTextStyles.bodyMedium(context),
+                      if (weekday.isNotEmpty) ...[
+                        Text(
+                          weekday,
+                          style: AppTextStyles.bodyMedium(
+                            context,
+                          ).copyWith(color: AppColors.gold),
                         ),
+                        SizedBox(height: 12.h),
+                      ],
+                      Row(
+                        children: [
+                          Expanded(
+                            child: StatCard(
+                              label: l10n.score,
+                              value: '$score',
+                              sublabel: '/$maxScore',
+                              icon: Icons.workspace_premium_outlined,
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: StatCard(
+                              label: l10n.dayDetailStreakThatDay,
+                              value: '—',
+                              sublabel: l10n.dayDetailNotStored,
+                              icon: Icons.local_fire_department_outlined,
+                            ),
+                          ),
+                        ],
                       ),
+                      if (log?.editedAt != null) ...[
+                        SizedBox(height: 8.h),
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: EditedBadge(),
+                        ),
+                      ],
+                      SizedBox(height: 16.h),
+                      Text(
+                        l10n.amal,
+                        style: AppTextStyles.headlineMedium(context),
+                      ),
+                      SizedBox(height: 8.h),
+                      if (log == null)
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 12.h),
+                          child: CardContainer(
+                            color: AppColors.warningLight.withValues(alpha: 0.25),
+                            borderColor:
+                                AppColors.warning.withValues(alpha: 0.35),
+                            child: Text(
+                              l10n.dayDetailNoLogForDay,
+                              style: AppTextStyles.bodyMedium(context),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
-              ],
+              ),
+              SliverList.builder(
+                itemCount: fields.length,
+                itemBuilder: (context, index) {
+                  final field = fields[index];
+                  final done = field.type == amal_const.AmalType.numeric
+                      ? getNumericValue(
+                              log?.toggles[field.id],
+                              field.maxValue,
+                            ) >
+                            0
+                      : (log?.toggles[field.id] as bool? ?? false);
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: AmalRow(
+                      field: field,
+                      locale: locale,
+                      done: done,
+                      numericValue: field.type == amal_const.AmalType.numeric
+                          ? getNumericValue(
+                              log?.toggles[field.id],
+                              field.maxValue,
+                            )
+                          : null,
+                      readOnly: true,
+                    ),
+                  );
+                },
+              ),
+              if (!showEditFab)
+                SliverPadding(
+                  padding: EdgeInsets.only(top: 14.h),
+                  sliver: SliverToBoxAdapter(
+                    child: CardContainer(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.lock_outline,
+                            color: AppColors.textMuted,
+                            size: 16.r,
+                          ),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: Text(
+                              l10n.dayDetailLockedPastDays,
+                              style: AppTextStyles.bodyMedium(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              SliverToBoxAdapter(
+                child: SizedBox(height: showEditFab ? 88.h : 24.h),
+              ),
             ],
           ),
         );

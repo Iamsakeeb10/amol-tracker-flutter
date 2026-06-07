@@ -54,96 +54,124 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
           ],
         ),
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
-        children: [
-          Text(kGroup.name, style: AppTextStyles.displayMedium(context)),
-          SizedBox(height: 4.h),
-          Text(kGroup.description, style: AppTextStyles.bodyMedium(context)),
-          SizedBox(height: 18.h),
-          SectionHeader(title: l10n.inviteCodeUpper),
-          CardContainer.gold(
-            child: Column(
-              children: [
-                Text(
-                  kGroup.inviteCode,
-                  style: AppTextStyles.displayLarge(context).copyWith(
-                    color: AppColors.goldLight,
-                    fontSize: 30.sp,
-                    letterSpacing: 4,
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(0, 4.h, 0, 0),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    kGroup.name,
+                    style: AppTextStyles.displayMedium(context),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    kGroup.description,
+                    style: AppTextStyles.bodyMedium(context),
+                  ),
+                  SizedBox(height: 18.h),
+                  SectionHeader(title: l10n.inviteCodeUpper),
+                  CardContainer.gold(
+                    child: Column(
+                      children: [
+                        Text(
+                          kGroup.inviteCode,
+                          style: AppTextStyles.displayLarge(context).copyWith(
+                            color: AppColors.goldLight,
+                            fontSize: 30.sp,
+                            letterSpacing: 4,
+                          ),
+                        ),
+                        SizedBox(height: 12.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _IconAction(
+                              icon: Icons.copy_rounded,
+                              label: l10n.copy,
+                              onTap: () => Clipboard.setData(
+                                ClipboardData(text: kGroup.inviteCode),
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            _IconAction(
+                              icon: Icons.share_rounded,
+                              label: l10n.share,
+                              onTap: () {},
+                            ),
+                            SizedBox(width: 12.w),
+                            _IconAction(
+                              icon: Icons.refresh_rounded,
+                              label: l10n.refresh,
+                              onTap: () {},
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  SectionHeader(title: l10n.members),
+                ],
+              ),
+            ),
+          ),
+          SliverList.builder(
+            itemCount: kGroup.members.length,
+            itemBuilder: (context, index) => Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: _MemberRow(user: kGroup.members[index]),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 16.h),
+            sliver: SliverToBoxAdapter(
+              child: SectionHeader(title: l10n.groupSettings),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: CardContainer(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+              child: Column(
+                children: [
+                  ToggleRow(
+                    icon: Icons.leaderboard_outlined,
+                    title: l10n.publicLeaderboard,
+                    subtitle: l10n.publicLeaderboardSubtitle,
+                    value: _publicLeaderboard,
+                    onChanged: (v) => setState(() => _publicLeaderboard = v),
+                  ),
+                  const Divider(),
+                  ToggleRow(
+                    icon: Icons.do_not_disturb_on_outlined,
+                    title: l10n.quietHoursActive,
+                    subtitle: l10n.quietHoursActiveSubtitle,
+                    value: _quietHoursActive,
+                    onChanged: (v) => setState(() => _quietHoursActive = v),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 12.h, bottom: 24.h),
+            sliver: SliverToBoxAdapter(
+              child: OutlinedButton.icon(
+                onPressed: () => _confirmDelete(context),
+                icon: Icon(Icons.delete_outline, size: 20.r),
+                label: Text(l10n.deleteGroup),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.danger,
+                  side: BorderSide(
+                    color: AppColors.danger.withValues(alpha: 0.5),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14.r),
                   ),
                 ),
-                SizedBox(height: 12.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _IconAction(
-                      icon: Icons.copy_rounded,
-                      label: l10n.copy,
-                      onTap: () => Clipboard.setData(
-                        ClipboardData(text: kGroup.inviteCode),
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    _IconAction(
-                      icon: Icons.share_rounded,
-                      label: l10n.share,
-                      onTap: () {},
-                    ),
-                    SizedBox(width: 12.w),
-                    _IconAction(
-                      icon: Icons.refresh_rounded,
-                      label: l10n.refresh,
-                      onTap: () {},
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 16.h),
-          SectionHeader(title: l10n.members),
-          ...kGroup.members.map(
-            (m) => Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
-              child: _MemberRow(user: m),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          SectionHeader(title: l10n.groupSettings),
-          CardContainer(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
-            child: Column(
-              children: [
-                ToggleRow(
-                  icon: Icons.leaderboard_outlined,
-                  title: l10n.publicLeaderboard,
-                  subtitle: l10n.publicLeaderboardSubtitle,
-                  value: _publicLeaderboard,
-                  onChanged: (v) => setState(() => _publicLeaderboard = v),
-                ),
-                const Divider(),
-                ToggleRow(
-                  icon: Icons.do_not_disturb_on_outlined,
-                  title: l10n.quietHoursActive,
-                  subtitle: l10n.quietHoursActiveSubtitle,
-                  value: _quietHoursActive,
-                  onChanged: (v) => setState(() => _quietHoursActive = v),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 12.h),
-          OutlinedButton.icon(
-            onPressed: () => _confirmDelete(context),
-            icon: Icon(Icons.delete_outline, size: 20.r),
-            label: Text(l10n.deleteGroup),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.danger,
-              side: BorderSide(color: AppColors.danger.withValues(alpha: 0.5)),
-              padding: EdgeInsets.symmetric(vertical: 14.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14.r),
               ),
             ),
           ),

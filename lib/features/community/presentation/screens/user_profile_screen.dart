@@ -12,6 +12,7 @@ import '../../../../core/services/firestore_service.dart';
 import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/dua_push_debug.dart';
 import '../../../../core/utils/hijri_helper.dart';
 import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -57,6 +58,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   bool _sendingDua = false;
   bool _savingOwnProfile = false;
   late final TextEditingController _nameController;
+  String? _nameSyncedForUid;
 
   @override
   void initState() {
@@ -109,8 +111,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               ),
             );
           }
-          if (_nameController.text.isEmpty) {
-            _nameController.text = user.name;
+          if (_nameSyncedForUid != user.uid) {
+            _nameSyncedForUid = user.uid;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted || _nameSyncedForUid != user.uid) return;
+              _nameController.text = user.name;
+            });
           }
 
           return FutureBuilder<_ProfileData>(
@@ -146,73 +152,90 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         ? l10n.communityMember
                         : user.name.trim());
 
-              return ListView(
-                padding: EdgeInsets.fromLTRB(0, 6.h, 0, 24.h),
-                children: [
-                  Center(
-                    child: AvatarChip(
-                      initial: displayAnonymous
-                          ? '🕌'
-                          : (shownName.isNotEmpty
-                                ? shownName.substring(0, 1).toUpperCase()
-                                : 'A'),
-                      color: displayAnonymous
-                          ? AppColors.emeraldLight
-                          : AppColors.emeraldMid,
-                      size: 76,
-                      ring: true,
-                      fontSize: 28,
+              final compact = MediaQuery.sizeOf(context).width < 340.w;
+              return CustomScrollView(
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(0, 6.h, 0, 0),
+                    sliver: SliverToBoxAdapter(
+                      child: Column(
+                        children: [
+                          Center(
+                            child: AvatarChip(
+                              initial: displayAnonymous
+                                  ? '🕌'
+                                  : (shownName.isNotEmpty
+                                        ? shownName
+                                              .substring(0, 1)
+                                              .toUpperCase()
+                                        : 'A'),
+                              color: displayAnonymous
+                                  ? AppColors.emeraldLight
+                                  : AppColors.emeraldMid,
+                              size: 76,
+                              ring: true,
+                              fontSize: 28,
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            child: Text(
+                              shownName,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.displayMedium(context),
+                            ),
+                          ),
+                          SizedBox(height: 6.h),
+                          Center(
+                            child: StreakBadge(
+                              days: displayStreak.currentStreak,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  SizedBox(height: 12.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Text(
-                      shownName,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.displayMedium(context),
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Center(child: StreakBadge(days: displayStreak.currentStreak)),
-                  SizedBox(height: 14.h),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final compact = constraints.maxWidth < 340.w;
-                      return GridView.count(
+                  SliverPadding(
+                    padding: EdgeInsets.only(top: 14.h),
+                    sliver: SliverGrid(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
                         mainAxisSpacing: 8.h,
                         crossAxisSpacing: 8.w,
                         childAspectRatio: compact ? 1.05 : 1.28,
-                        children: [
-                          StatCard(
-                            label: dateIsToday ? l10n.today : l10n.selected,
-                            value: '$selectedScore',
-                            sublabel: '/$maxScore',
-                            prominent: true,
-                          ),
-                          StatCard(
-                            label: l10n.best,
-                            value: '${displayStreak.bestStreak}',
-                            sublabel: l10n.historyDays,
-                            prominent: true,
-                          ),
-                          StatCard(
-                            label: l10n.avg,
-                            value: '$avgScore',
-                            sublabel: '/$maxScore',
-                            prominent: true,
-                          ),
-                        ],
-                      );
-                    },
+                      ),
+                      delegate: SliverChildListDelegate([
+                        StatCard(
+                          label: dateIsToday ? l10n.today : l10n.selected,
+                          value: '$selectedScore',
+                          sublabel: '/$maxScore',
+                          prominent: true,
+                        ),
+                        StatCard(
+                          label: l10n.best,
+                          value: '${displayStreak.bestStreak}',
+                          sublabel: l10n.historyDays,
+                          prominent: true,
+                        ),
+                        StatCard(
+                          label: l10n.avg,
+                          value: '$avgScore',
+                          sublabel: '/$maxScore',
+                          prominent: true,
+                        ),
+                      ]),
+                    ),
                   ),
-                  SizedBox(height: 16.h),
-                  Text(
+                  SliverPadding(
+                    padding: EdgeInsets.only(top: 16.h, bottom: 24.h),
+                    sliver: SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
                     dateIsToday
                         ? l10n.todaysAmal
                         : l10n.amalOnDate(
@@ -343,6 +366,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       ),
                     ),
                   ],
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               );
             },
@@ -422,12 +449,20 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     setState(() => _sendingDua = true);
     try {
       final today = IslamicDateService.getCurrentIslamicDateString();
+      logDuaPushDebug(
+        'user profile send dua tapped: senderUid=$senderUid '
+        'recipientUid=$recipientUid hijriDate=$today',
+      );
       final exists = await fs.hasSentDuaToday(
         senderUid: senderUid,
         recipientUid: recipientUid,
         hijriDate: today,
       );
       if (exists) {
+        logDuaPushDebug(
+          'send dua aborted: already sent today senderUid=$senderUid '
+          'recipientUid=$recipientUid',
+        );
         if (!context.mounted) return false;
         ScaffoldMessenger.of(
           context,
@@ -440,6 +475,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         recipientUid: recipientUid,
         hijriDate: today,
         message: message,
+      );
+      logDuaPushDebug(
+        'user profile send dua finished (see Firestore/gateway logs for push): '
+        'recipientUid=$recipientUid',
       );
       if (!context.mounted) return false;
       ScaffoldMessenger.of(
@@ -497,27 +536,27 @@ class _DuaSheetState extends State<_DuaSheet> {
                 style: AppTextStyles.headlineMedium(context),
               ),
               SizedBox(height: 12.h),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _kDuaPhrases.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 8.h,
-                  crossAxisSpacing: 8.w,
-                  childAspectRatio: 3.4,
-                ),
-                itemBuilder: (context, index) {
-                  final phrase = _kDuaPhrases[index];
-                  final selected = _selectedPhrase == phrase;
-                  return _DuaPhraseButton(
-                    phrase: phrase,
-                    selected: selected,
-                    onTap: () {
-                      setState(
-                        () => _selectedPhrase = selected ? null : phrase,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final itemWidth = (constraints.maxWidth - 8.w) / 2;
+                  return Wrap(
+                    spacing: 8.w,
+                    runSpacing: 8.h,
+                    children: _kDuaPhrases.map((phrase) {
+                      final selected = _selectedPhrase == phrase;
+                      return SizedBox(
+                        width: itemWidth,
+                        child: _DuaPhraseButton(
+                          phrase: phrase,
+                          selected: selected,
+                          onTap: () {
+                            setState(
+                              () => _selectedPhrase = selected ? null : phrase,
+                            );
+                          },
+                        ),
                       );
-                    },
+                    }).toList(),
                   );
                 },
               ),
@@ -787,48 +826,64 @@ class _UserProfileLoadingShimmer extends StatelessWidget {
     return Shimmer.fromColors(
       baseColor: AppColors.cardDark,
       highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
-      child: ListView(
-        padding: EdgeInsets.fromLTRB(0, 6.h, 0, 24.h),
-        children: [
-          Center(
-            child: Container(
-              width: 76.r,
-              height: 76.r,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(0, 6.h, 0, 0),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 76.r,
+                      height: 76.r,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Center(
+                    child: Container(
+                      width: 160.w,
+                      height: 18.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          SizedBox(height: 12.h),
-          Center(
-            child: Container(
-              width: 160.w,
-              height: 18.h,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8.r),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 14.h),
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 8.h,
+                crossAxisSpacing: 8.w,
+                childAspectRatio: 1.2,
               ),
-            ),
-          ),
-          SizedBox(height: 14.h),
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 8.h,
-            crossAxisSpacing: 8.w,
-            childAspectRatio: 1.2,
-            children: List.generate(
-              3,
-              (_) => Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14.r),
+              delegate: SliverChildBuilderDelegate(
+                (_, __) => Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
                 ),
+                childCount: 3,
               ),
             ),
           ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 16.h, bottom: 24.h),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
           SizedBox(height: 16.h),
           Container(
             width: 110.w,
@@ -876,6 +931,10 @@ class _UserProfileLoadingShimmer extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14.r),
+            ),
+          ),
+                ],
+              ),
             ),
           ),
         ],

@@ -35,32 +35,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  ProviderSubscription<AmalState>? _amalErrorSubscription;
-  String? _listeningUid;
-
-  @override
-  void dispose() {
-    _amalErrorSubscription?.close();
-    super.dispose();
-  }
-
-  void _ensureAmalErrorListener(String uid) {
-    if (_listeningUid == uid) return;
-    _amalErrorSubscription?.close();
-    _listeningUid = uid;
-    _amalErrorSubscription = ref.listenManual<AmalState>(amalProvider(uid), (
-      previous,
-      next,
-    ) {
-      if (!mounted || next.error == null || previous?.error == next.error) {
-        return;
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(next.error!)));
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -95,7 +69,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       amalProvider(uid).select((s) => s.hasAnyDone),
     );
     final amalError = ref.watch(amalProvider(uid).select((s) => s.error));
-    _ensureAmalErrorListener(uid);
+    ref.listen(amalProvider(uid).select((s) => s.error), (previous, next) {
+      if (!mounted || next == null || previous == next) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(next)));
+    });
 
     // Only show banner once we know status; [none] means offline per connectivity_plus.
     final offline =

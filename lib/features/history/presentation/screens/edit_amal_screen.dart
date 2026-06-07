@@ -188,103 +188,128 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
             ),
         ],
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(0.w, 4.h, 0.w, 24.h),
-        children: [
-          CardContainer(
-            color: AppColors.emeraldMid.withValues(alpha: 0.35),
-            borderColor: AppColors.goldBorder.withValues(alpha: 0.45),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, color: AppColors.gold, size: 18.r),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: Text(
-                    isBackfill
-                        ? 'পিছনের দিনের আমল — স্ট্রিক পরিবর্তন হবে না'
-                        : 'স্ট্রিক পরিবর্তন হবে না',
-                    style: AppTextStyles.bodySmall(
-                      context,
-                    ).copyWith(color: AppColors.textPrimary, fontSize: 12.sp),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 14.h),
-          EditAmalProgressCard(
-            done: doneCount,
-            total: fields.length,
-            score: score,
-            maxScore: maxScore,
-          ),
-          if (_error != null) ...[
-            SizedBox(height: 8.h),
-            Text(
-              _error!,
-              style: AppTextStyles.bodySmall(
-                context,
-              ).copyWith(color: AppColors.danger, fontSize: 12.sp),
-            ),
-          ],
-          SizedBox(height: 14.h),
-          Text('আমল', style: AppTextStyles.headlineMedium(context)),
-          SizedBox(height: 8.h),
-          ...fields.map((field) {
-            final pickerMax = amalEditNumericMax(field, _toggles, fields);
-            final numericVal = field.type == AmalType.numeric
-                ? getNumericValue(_toggles[field.id], field.maxValue)
-                : null;
-            final done = field.type == AmalType.numeric
-                ? (numericVal ?? 0) > 0
-                : (_toggles[field.id] as bool? ?? false);
-            return Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
-              child: AmalRow(
-                field: field,
-                locale: locale,
-                done: done,
-                numericValue: numericVal,
-                numericPickerMax: pickerMax,
-                onNumericChanged: _isSaving
-                    ? null
-                    : (v) => _setNumeric(field.id, v, fields),
-                onChanged: _isSaving ? null : (_) => _toggle(field.id, fields),
-              ),
-            );
-          }),
-          SizedBox(height: 14.h),
-          SizedBox(
-            width: double.infinity,
-            height: 50.h,
-            child: ElevatedButton(
-              onPressed: _isSaving || !hasAnyDone
-                  ? null
-                  : () => _onSubmit(fields),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.gold,
-                foregroundColor: AppColors.emeraldDeep,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-              ),
-              child: _isSaving
-                  ? SizedBox(
-                      width: 22.r,
-                      height: 22.r,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.emeraldDeep,
-                      ),
-                    )
-                  : Text(
-                      isBackfill ? 'আমল সংরক্ষণ করুন' : 'আমল আপডেট করুন',
-                      style: AppTextStyles.button(context).copyWith(
-                        color: AppColors.emeraldDeep,
-                        fontWeight: FontWeight.w600,
-                      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(0, 4.h, 0, 0),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CardContainer(
+                    color: AppColors.emeraldMid.withValues(alpha: 0.35),
+                    borderColor: AppColors.goldBorder.withValues(alpha: 0.45),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: AppColors.gold,
+                          size: 18.r,
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(
+                            isBackfill
+                                ? 'পিছনের দিনের আমল — স্ট্রিক পরিবর্তন হবে না'
+                                : 'স্ট্রিক পরিবর্তন হবে না',
+                            style: AppTextStyles.bodySmall(
+                              context,
+                            ).copyWith(
+                              color: AppColors.textPrimary,
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                  SizedBox(height: 14.h),
+                  EditAmalProgressCard(
+                    done: doneCount,
+                    total: fields.length,
+                    score: score,
+                    maxScore: maxScore,
+                  ),
+                  if (_error != null) ...[
+                    SizedBox(height: 8.h),
+                    Text(
+                      _error!,
+                      style: AppTextStyles.bodySmall(
+                        context,
+                      ).copyWith(color: AppColors.danger, fontSize: 12.sp),
+                    ),
+                  ],
+                  SizedBox(height: 14.h),
+                  Text('আমল', style: AppTextStyles.headlineMedium(context)),
+                  SizedBox(height: 8.h),
+                ],
+              ),
+            ),
+          ),
+          SliverList.builder(
+            itemCount: fields.length,
+            itemBuilder: (context, index) {
+              final field = fields[index];
+              final pickerMax = amalEditNumericMax(field, _toggles, fields);
+              final numericVal = field.type == AmalType.numeric
+                  ? getNumericValue(_toggles[field.id], field.maxValue)
+                  : null;
+              final done = field.type == AmalType.numeric
+                  ? (numericVal ?? 0) > 0
+                  : (_toggles[field.id] as bool? ?? false);
+              return Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: AmalRow(
+                  field: field,
+                  locale: locale,
+                  done: done,
+                  numericValue: numericVal,
+                  numericPickerMax: pickerMax,
+                  onNumericChanged: _isSaving
+                      ? null
+                      : (v) => _setNumeric(field.id, v, fields),
+                  onChanged:
+                      _isSaving ? null : (_) => _toggle(field.id, fields),
+                ),
+              );
+            },
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 14.h, bottom: 24.h),
+            sliver: SliverToBoxAdapter(
+              child: SizedBox(
+                width: double.infinity,
+                height: 50.h,
+                child: ElevatedButton(
+                  onPressed: _isSaving || !hasAnyDone
+                      ? null
+                      : () => _onSubmit(fields),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: AppColors.emeraldDeep,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: _isSaving
+                      ? SizedBox(
+                          width: 22.r,
+                          height: 22.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.emeraldDeep,
+                          ),
+                        )
+                      : Text(
+                          isBackfill ? 'আমল সংরক্ষণ করুন' : 'আমল আপডেট করুন',
+                          style: AppTextStyles.button(context).copyWith(
+                            color: AppColors.emeraldDeep,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                ),
+              ),
             ),
           ),
         ],

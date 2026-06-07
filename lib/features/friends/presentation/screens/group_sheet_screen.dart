@@ -51,124 +51,151 @@ class _GroupSheetScreenState extends State<GroupSheetScreen> {
           ],
         ),
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 28.h),
-        children: [
-          SizedBox(
-            height: 44.h,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: 12,
-              separatorBuilder: (_, _) => SizedBox(width: 6.w),
-              itemBuilder: (_, i) {
-                final day = 18 + i;
-                final isToday = day == 24;
-                final selected = _selectedDay == i;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedDay = i),
-                  child: Container(
-                    width: 50.w,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? AppColors.gold
-                          : isToday
-                          ? AppColors.goldCard
-                          : AppColors.cardDark,
-                      borderRadius: BorderRadius.circular(10.r),
-                      border: Border.all(
-                        color: selected
-                            ? AppColors.gold
-                            : isToday
-                            ? AppColors.goldBorder
-                            : AppColors.cardBorder,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '$day',
-                          style: AppTextStyles.bodyLarge(context).copyWith(
-                            fontSize: 13.sp,
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(0, 4.h, 0, 0),
+            sliver: SliverToBoxAdapter(
+              child: SizedBox(
+                height: 44.h,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 12,
+                  separatorBuilder: (_, _) => SizedBox(width: 6.w),
+                  itemBuilder: (_, i) {
+                    final day = 18 + i;
+                    final isToday = day == 24;
+                    final selected = _selectedDay == i;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedDay = i),
+                      child: Container(
+                        width: 50.w,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AppColors.gold
+                              : isToday
+                              ? AppColors.goldCard
+                              : AppColors.cardDark,
+                          borderRadius: BorderRadius.circular(10.r),
+                          border: Border.all(
                             color: selected
-                                ? AppColors.emeraldDeep
-                                : AppColors.textPrimary,
-                            fontWeight: FontWeight.w500,
+                                ? AppColors.gold
+                                : isToday
+                                ? AppColors.goldBorder
+                                : AppColors.cardBorder,
                           ),
                         ),
-                        if (isToday)
-                          Text(
-                            l10n.today,
-                            style: AppTextStyles.bodySmall(context).copyWith(
-                              fontSize: 9.sp,
-                              color: selected
-                                  ? AppColors.emeraldDeep
-                                  : AppColors.gold,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '$day',
+                              style: AppTextStyles.bodyLarge(context).copyWith(
+                                fontSize: 13.sp,
+                                color: selected
+                                    ? AppColors.emeraldDeep
+                                    : AppColors.textPrimary,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                      ],
+                            if (isToday)
+                              Text(
+                                l10n.today,
+                                style: AppTextStyles.bodySmall(
+                                  context,
+                                ).copyWith(
+                                  fontSize: 9.sp,
+                                  color: selected
+                                      ? AppColors.emeraldDeep
+                                      : AppColors.gold,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 14.h),
+            sliver: SliverToBoxAdapter(
+              child: CardContainer.gold(
+                child: Row(
+                  children: [
+                    Icon(Icons.group, color: AppColors.goldLight, size: 20.r),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Text(
+                        l10n.allActiveToday(kGroup.memberCount),
+                        style: AppTextStyles.bodyLarge(
+                          context,
+                        ).copyWith(fontSize: 13.sp),
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
-          SizedBox(height: 14.h),
-          CardContainer.gold(
-            child: Row(
-              children: [
-                Icon(Icons.group, color: AppColors.goldLight, size: 20.r),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: Text(
-                    l10n.allActiveToday(kGroup.memberCount),
-                    style: AppTextStyles.bodyLarge(
-                      context,
-                    ).copyWith(fontSize: 13.sp),
-                  ),
+                    StreakBadge(
+                      days: kGroup.groupStreak,
+                      label: l10n.groupStreak,
+                    ),
+                  ],
                 ),
-                StreakBadge(days: kGroup.groupStreak, label: l10n.groupStreak),
-              ],
+              ),
             ),
           ),
-          SizedBox(height: 14.h),
-          _ColumnHeaders(),
-          SizedBox(height: 8.h),
-          ...kGroup.members.map(
-            (m) => Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
-              child: _MemberSheetCard(user: m),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 14.h),
+            sliver: SliverToBoxAdapter(child: _ColumnHeaders()),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 8.h),
+            sliver: SliverList.builder(
+              itemCount: kGroup.members.length,
+              itemBuilder: (context, index) => Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: _MemberSheetCard(user: kGroup.members[index]),
+              ),
             ),
           ),
-          SizedBox(height: 12.h),
-          const _Legend(),
-          SizedBox(height: 12.h),
-          CardContainer(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.groupAvg,
-                        style: AppTextStyles.bodySmall(
-                          context,
-                        ).copyWith(fontSize: 11.sp),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 12.h),
+            sliver: const SliverToBoxAdapter(child: _Legend()),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 12.h, bottom: 28.h),
+            sliver: SliverToBoxAdapter(
+              child: CardContainer(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.groupAvg,
+                            style: AppTextStyles.bodySmall(
+                              context,
+                            ).copyWith(fontSize: 11.sp),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            '78',
+                            style: AppTextStyles.goldNumeric(
+                              context,
+                            ).copyWith(fontSize: 22.sp),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        '78',
-                        style: AppTextStyles.goldNumeric(
-                          context,
-                        ).copyWith(fontSize: 22.sp),
-                      ),
-                    ],
-                  ),
+                    ),
+                    StreakBadge(
+                      days: kGroup.groupStreak,
+                      label: l10n.historyDays,
+                    ),
+                  ],
                 ),
-                StreakBadge(days: kGroup.groupStreak, label: l10n.historyDays),
-              ],
+              ),
             ),
           ),
         ],

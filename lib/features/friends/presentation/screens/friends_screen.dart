@@ -22,65 +22,92 @@ class FriendsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return AppScaffold(
       padding: EdgeInsets.zero,
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 100.h),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.friendsUpper,
-                      style: AppTextStyles.label(
-                        context,
-                      ).copyWith(color: AppColors.gold),
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+            sliver: SliverToBoxAdapter(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.friendsUpper,
+                          style: AppTextStyles.label(
+                            context,
+                          ).copyWith(color: AppColors.gold),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          l10n.together,
+                          style: AppTextStyles.displayMedium(context),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      l10n.together,
-                      style: AppTextStyles.displayMedium(context),
-                    ),
-                  ],
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: () => context.push(AppRoutes.community),
-                icon: Icon(Icons.add, size: 16.r),
-                label: Text(l10n.invite),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.gold,
-                  foregroundColor: AppColors.emeraldDeep,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(99.r),
                   ),
-                ),
+                  ElevatedButton.icon(
+                    onPressed: () => context.push(AppRoutes.community),
+                    icon: Icon(Icons.add, size: 16.r),
+                    label: Text(l10n.invite),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.gold,
+                      foregroundColor: AppColors.emeraldDeep,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(99.r),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          SizedBox(height: 18.h),
-          SectionHeader(title: l10n.activityFeed),
-          ...kActivities.map(
-            (a) => Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
-              child: _ActivityRow(activity: a),
             ),
           ),
-          SizedBox(height: 18.h),
-          SectionHeader(
-            title: l10n.yourGroup,
-            trailingText: l10n.manage,
-            onTrailingTap: () => context.push(AppRoutes.settings),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 0),
+            sliver: SliverToBoxAdapter(
+              child: SectionHeader(title: l10n.activityFeed),
+            ),
           ),
-          _GroupCard(),
-          SizedBox(height: 18.h),
-          SectionHeader(title: l10n.friendsUpper),
-          ...kFriends.map(
-            (u) => Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
-              child: _FriendCard(user: u),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 0),
+            sliver: SliverList.builder(
+              itemCount: kActivities.length,
+              itemBuilder: (context, index) => Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: _ActivityRow(activity: kActivities[index]),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 0),
+            sliver: SliverToBoxAdapter(
+              child: SectionHeader(
+                title: l10n.yourGroup,
+                trailingText: l10n.manage,
+                onTrailingTap: () => context.push(AppRoutes.settings),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            sliver: const SliverToBoxAdapter(child: _GroupCard()),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 0),
+            sliver: SliverToBoxAdapter(
+              child: SectionHeader(title: l10n.friendsUpper),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 100.h),
+            sliver: SliverList.builder(
+              itemCount: kFriends.length,
+              itemBuilder: (context, index) => Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: _FriendCard(user: kFriends[index]),
+              ),
             ),
           ),
         ],
@@ -158,6 +185,8 @@ class _ActivityRow extends StatelessWidget {
 }
 
 class _GroupCard extends StatelessWidget {
+  const _GroupCard();
+
   @override
   Widget build(BuildContext context) {
     return CardContainer(

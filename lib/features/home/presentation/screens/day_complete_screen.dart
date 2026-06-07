@@ -102,113 +102,140 @@ class _DayCompleteScreenState extends ConsumerState<DayCompleteScreen> {
           ),
           data: (fields) {
             final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
-            return ListView(
-              padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 28.h),
-              children: [
-                SizedBox(height: 8.h),
-                Center(child: _ScoreRing(score: log.score, maxScore: maxScore)),
-                SizedBox(height: 18.h),
-                Text(
-                  'Alhamdulillah',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.displayMedium(context),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  l10n.dayCompleteSubtitle,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyMedium(context),
-                ),
-                SizedBox(height: 12.h),
-                Center(
-                  child: Pill(
-                    text: l10n.pointsEarned(log.score),
-                    icon: Icons.bolt,
-                  ),
-                ),
-                SizedBox(height: 22.h),
-                CardContainer(
-                  color: AppColors.goldCard,
-                  borderColor: AppColors.goldBorder,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.format_quote,
-                            color: AppColors.goldLight,
-                            size: 16.r,
-                          ),
-                          SizedBox(width: 6.w),
-                          Text(
-                            l10n.hadithOfDay,
-                            style: AppTextStyles.label(
-                              context,
-                            ).copyWith(color: AppColors.gold),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8.h),
-                      if (_hadith != null)
-                        Text(_hadith!, style: AppTextStyles.bodyLarge(context))
-                      else if (_hadithError != null)
+            return CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(8.w, 8.h, 8.w, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      children: [
+                        Center(
+                          child: _ScoreRing(score: log.score, maxScore: maxScore),
+                        ),
+                        SizedBox(height: 18.h),
                         Text(
-                          _hadithError!,
-                          style: AppTextStyles.bodyMedium(
-                            context,
-                          ).copyWith(color: AppColors.textMuted),
-                        )
-                      else
-                        const _HadithLoadingShimmer(),
-                    ],
+                          'Alhamdulillah',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.displayMedium(context),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          l10n.dayCompleteSubtitle,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodyMedium(context),
+                        ),
+                        SizedBox(height: 12.h),
+                        Center(
+                          child: Pill(
+                            text: l10n.pointsEarned(log.score),
+                            icon: Icons.bolt,
+                          ),
+                        ),
+                        SizedBox(height: 22.h),
+                        CardContainer(
+                          color: AppColors.goldCard,
+                          borderColor: AppColors.goldBorder,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.format_quote,
+                                    color: AppColors.goldLight,
+                                    size: 16.r,
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    l10n.hadithOfDay,
+                                    style: AppTextStyles.label(
+                                      context,
+                                    ).copyWith(color: AppColors.gold),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8.h),
+                              if (_hadith != null)
+                                Text(
+                                  _hadith!,
+                                  style: AppTextStyles.bodyLarge(context),
+                                )
+                              else if (_hadithError != null)
+                                Text(
+                                  _hadithError!,
+                                  style: AppTextStyles.bodyMedium(
+                                    context,
+                                  ).copyWith(color: AppColors.textMuted),
+                                )
+                              else
+                                const _HadithLoadingShimmer(),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        Text(
+                          l10n.todaysSummary,
+                          style: AppTextStyles.headlineMedium(context),
+                        ),
+                        SizedBox(height: 8.h),
+                      ],
+                    ),
                   ),
                 ),
-                SizedBox(height: 16.h),
-                Text(
-                  l10n.todaysSummary,
-                  style: AppTextStyles.headlineMedium(context),
+                SliverPadding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w),
+                  sliver: SliverList.builder(
+                    itemCount: fields.length,
+                    itemBuilder: (context, index) {
+                      final field = fields[index];
+                      final numericValue = field.type == AmalType.numeric
+                          ? getNumericValue(
+                              log.toggles[field.id],
+                              field.maxValue,
+                            )
+                          : null;
+                      final done = field.type == AmalType.numeric
+                          ? numericValue! > 0
+                          : (log.toggles[field.id] as bool? ?? false);
+                      final earned = field.type == AmalType.numeric
+                          ? ((numericValue! / field.maxValue) * field.points)
+                                .round()
+                          : (done ? field.points : 0);
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 8.h),
+                        child: _SummaryRow(
+                          field: field,
+                          locale: locale,
+                          done: done,
+                          numericValue: numericValue,
+                          earnedPoints: earned,
+                        ),
+                      );
+                    },
+                  ),
                 ),
-                SizedBox(height: 8.h),
-                ...fields.map((field) {
-                  final numericValue = field.type == AmalType.numeric
-                      ? getNumericValue(log.toggles[field.id], field.maxValue)
-                      : null;
-                  final done = field.type == AmalType.numeric
-                      ? numericValue! > 0
-                      : (log.toggles[field.id] as bool? ?? false);
-                  final earned = field.type == AmalType.numeric
-                      ? ((numericValue! / field.maxValue) * field.points).round()
-                      : (done ? field.points : 0);
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 8.h),
-                    child: _SummaryRow(
-                      field: field,
-                      locale: locale,
-                      done: done,
-                      numericValue: numericValue,
-                      earnedPoints: earned,
-                    ),
-                  );
-                }),
-                SizedBox(height: 18.h),
-                SizedBox(
-                  height: 50.h,
-                  child: ElevatedButton(
-                    onPressed: () => _goHome(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.gold,
-                      foregroundColor: AppColors.emeraldDeep,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                    ),
-                    child: Text(
-                      l10n.backToHome,
-                      style: AppTextStyles.button(context).copyWith(
-                        color: AppColors.emeraldDeep,
-                        fontWeight: FontWeight.w600,
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(8.w, 18.h, 8.w, 28.h),
+                  sliver: SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 50.h,
+                      child: ElevatedButton(
+                        onPressed: () => _goHome(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          foregroundColor: AppColors.emeraldDeep,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                        ),
+                        child: Text(
+                          l10n.backToHome,
+                          style: AppTextStyles.button(context).copyWith(
+                            color: AppColors.emeraldDeep,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ),

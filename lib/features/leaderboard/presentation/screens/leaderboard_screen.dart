@@ -65,112 +65,147 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           style: AppTextStyles.headlineMedium(context),
         ),
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
-        children: [
-          _Tabs(
-            value: _periodIndex,
-            options: periods,
-            onChanged: (i) => setState(() => _periodIndex = i),
-          ),
-          SizedBox(height: 16.h),
-          data.when(
-            skipLoadingOnRefresh: false,
-            skipLoadingOnReload: false,
-            data: (entries) {
-              if (entries.isEmpty) {
-                return CardContainer(
-                  child: Text(
-                    l10n.leaderboardBeFirstToday,
-                    style: AppTextStyles.bodyLarge(context),
-                  ),
-                );
-              }
-              final top3 = entries.take(3).toList();
-              final nudge = _buildNudge(entries, authUid);
-              final userIndex = authUid == null
-                  ? -1
-                  : entries.indexWhere((u) => u.uid == authUid);
-              final pinnedUser = userIndex >= 0 ? entries[userIndex] : null;
-
-              return Column(
-                children: [
-                  _Podium(top3: top3, displayName: _displayName),
-                  SizedBox(height: 18.h),
-                  ...entries.asMap().entries.map((e) {
-                    final rank = e.key + 1;
-                    final user = e.value;
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 8.h),
-                      child: _RankRow(
-                        rank: rank,
-                        user: user,
-                        statLabel: _statLabel(),
-                        displayName: _displayName(user),
-                        isYou: user.uid == authUid,
-                        maxScore: entries.first.score,
-                        onTap: () => context.push(
-                          '${AppRoutes.userProfile}/${user.uid}',
-                        ),
-                      ),
-                    );
-                  }),
-                  if (pinnedUser != null && userIndex >= 3) ...[
-                    SizedBox(height: 8.h),
-                    CardContainer.gold(
-                      child: Row(
-                        children: [
-                          Icon(Icons.push_pin_outlined, color: AppColors.gold),
-                          SizedBox(width: 8.w),
-                          Expanded(
-                            child: Text(
-                              l10n.leaderboardYourRank(
-                                userIndex + 1,
-                                pinnedUser.score,
-                                _statLabel(),
-                              ),
-                              style: AppTextStyles.bodyMedium(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  SizedBox(height: 16.h),
-                  CardContainer.gold(
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.star_rounded,
-                          color: AppColors.goldLight,
-                          size: 20.r,
-                        ),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: Text(
-                            nudge,
-                            style: AppTextStyles.bodyLarge(
-                              context,
-                            ).copyWith(fontSize: 13.sp),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-            loading: _buildLoading,
-            error: (error, _) => CardContainer(
-              child: Text(
-                l10n.leaderboardLoadFailed,
-                style: AppTextStyles.bodyMedium(context),
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(0, 4.h, 0, 0),
+            sliver: SliverToBoxAdapter(
+              child: _Tabs(
+                value: _periodIndex,
+                options: periods,
+                onChanged: (i) => setState(() => _periodIndex = i),
               ),
             ),
           ),
+          SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+          ...data.when(
+            skipLoadingOnRefresh: false,
+            skipLoadingOnReload: false,
+            data: (entries) => _buildDataSlivers(
+              context,
+              entries: entries,
+              authUid: authUid,
+              l10n: l10n,
+            ),
+            loading: () => [SliverToBoxAdapter(child: _buildLoading())],
+            error: (error, _) => [
+              SliverToBoxAdapter(
+                child: CardContainer(
+                  child: Text(
+                    l10n.leaderboardLoadFailed,
+                    style: AppTextStyles.bodyMedium(context),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(child: SizedBox(height: 24.h)),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildDataSlivers(
+    BuildContext context, {
+    required List<LeaderboardEntry> entries,
+    required String? authUid,
+    required AppLocalizations l10n,
+  }) {
+    if (entries.isEmpty) {
+      return [
+        SliverToBoxAdapter(
+          child: CardContainer(
+            child: Text(
+              l10n.leaderboardBeFirstToday,
+              style: AppTextStyles.bodyLarge(context),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    final top3 = entries.take(3).toList();
+    final nudge = _buildNudge(entries, authUid);
+    final userIndex =
+        authUid == null ? -1 : entries.indexWhere((u) => u.uid == authUid);
+    final pinnedUser = userIndex >= 0 ? entries[userIndex] : null;
+    final maxScore = entries.first.score;
+    final statLabel = _statLabel();
+
+    return [
+      SliverToBoxAdapter(
+        child: _Podium(top3: top3, displayName: _displayName),
+      ),
+      SliverToBoxAdapter(child: SizedBox(height: 18.h)),
+      SliverPadding(
+        padding: EdgeInsets.zero,
+        sliver: SliverList.builder(
+          itemCount: entries.length,
+          itemBuilder: (context, index) {
+            final user = entries[index];
+            return Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: _RankRow(
+                rank: index + 1,
+                user: user,
+                statLabel: statLabel,
+                displayName: _displayName(user),
+                isYou: user.uid == authUid,
+                maxScore: maxScore,
+                onTap: () =>
+                    context.push('${AppRoutes.userProfile}/${user.uid}'),
+              ),
+            );
+          },
+        ),
+      ),
+      if (pinnedUser != null && userIndex >= 3) ...[
+        SliverToBoxAdapter(child: SizedBox(height: 8.h)),
+        SliverToBoxAdapter(
+          child: CardContainer.gold(
+            child: Row(
+              children: [
+                Icon(Icons.push_pin_outlined, color: AppColors.gold),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    l10n.leaderboardYourRank(
+                      userIndex + 1,
+                      pinnedUser.score,
+                      statLabel,
+                    ),
+                    style: AppTextStyles.bodyMedium(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+      SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+      SliverToBoxAdapter(
+        child: CardContainer.gold(
+          child: Row(
+            children: [
+              Icon(
+                Icons.star_rounded,
+                color: AppColors.goldLight,
+                size: 20.r,
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  nudge,
+                  style: AppTextStyles.bodyLarge(
+                    context,
+                  ).copyWith(fontSize: 13.sp),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ];
   }
 
   Widget _buildLoading() {

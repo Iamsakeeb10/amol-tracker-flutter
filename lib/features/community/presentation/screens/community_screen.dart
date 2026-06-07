@@ -121,28 +121,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     final notifier = ref.read(communitySheetProvider.notifier);
     final currentUser = ref.watch(currentUserProvider).asData?.value;
     final connectivity = ref.watch(connectivityListProvider);
-    final dates = _buildDateOptions(count: 7);
-    final accountCreatedHijri = currentUser == null
-        ? null
-        : () {
-            final createdAtLocal = currentUser.createdAt.toLocal();
-            final nowBd = IslamicDateService.nowInBD();
-            final createdOnCurrentGregorianDay =
-                createdAtLocal.year == nowBd.year &&
-                createdAtLocal.month == nowBd.month &&
-                createdAtLocal.day == nowBd.day;
-
-            // New accounts created "today" should not be counted as misses for
-            // earlier dates because the global Hijri -1 correction can map
-            // today's Gregorian date to the previous Hijri day.
-            if (createdOnCurrentGregorianDay) {
-              return IslamicDateService.getCurrentIslamicDateStringSafe();
-            }
-
-            return IslamicDateService.islamicDateStringForGregorianDate(
-              createdAtLocal,
-            );
-          }();
+    final dates = ref.watch(communityRecentDatesProvider);
+    final accountCreatedHijri = ref.watch(communityAccountCreatedHijriProvider);
     final isPreAccountDate =
         accountCreatedHijri != null &&
         state.selectedDate.compareTo(accountCreatedHijri) < 0;
@@ -158,12 +138,17 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             fields,
           );
 
-    if (_searchController.text != state.searchQuery) {
-      _searchController.value = TextEditingValue(
-        text: state.searchQuery,
-        selection: TextSelection.collapsed(offset: state.searchQuery.length),
-      );
-    }
+    ref.listen(communitySheetProvider.select((s) => s.searchQuery), (
+      _,
+      query,
+    ) {
+      if (_searchController.text != query) {
+        _searchController.value = TextEditingValue(
+          text: query,
+          selection: TextSelection.collapsed(offset: query.length),
+        );
+      }
+    });
 
     final activeRowKeys = <String>[
       if (ownRow != null || ownPlaceholder != null)
@@ -864,12 +849,6 @@ class _SheetLoadingShimmer extends StatelessWidget {
       ),
     );
   }
-}
-
-List<String> _buildDateOptions({required int count}) {
-  return IslamicDateService.recentHijriStoragesFromBangladeshCalendar(
-    count: count,
-  );
 }
 
 AmalLogModel _buildOwnPlaceholder(

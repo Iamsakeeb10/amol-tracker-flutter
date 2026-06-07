@@ -9,6 +9,7 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/badge_model.dart';
 import '../../../../providers/badge_celebration_provider.dart';
+import '../../../../providers/device_tier_provider.dart';
 
 class BadgeCelebrationHost extends ConsumerWidget {
   const BadgeCelebrationHost({super.key, required this.child});
@@ -18,6 +19,7 @@ class BadgeCelebrationHost extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final celebration = ref.watch(badgeCelebrationProvider);
+    final reduceMotion = ref.watch(reduceMotionProvider);
     BadgeDefinition? badge;
     final badgeId = celebration.currentBadgeId;
     if (badgeId != null) {
@@ -36,6 +38,7 @@ class BadgeCelebrationHost extends ConsumerWidget {
         if (badge != null)
           _BadgeCelebrationOverlay(
             badge: badge,
+            reduceMotion: reduceMotion,
             onComplete: () {
               ref
                   .read(badgeCelebrationProvider.notifier)
@@ -50,10 +53,12 @@ class BadgeCelebrationHost extends ConsumerWidget {
 class _BadgeCelebrationOverlay extends StatefulWidget {
   const _BadgeCelebrationOverlay({
     required this.badge,
+    required this.reduceMotion,
     required this.onComplete,
   });
 
   final BadgeDefinition badge;
+  final bool reduceMotion;
   final VoidCallback onComplete;
 
   @override
@@ -76,8 +81,13 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    )..forward();
+      duration: Duration(
+        milliseconds: widget.reduceMotion ? 1 : 2200,
+      ),
+    );
+    if (!widget.reduceMotion) {
+      _controller.forward();
+    }
 
     // Bake the curve into a tween so Curves.transform is called once per frame
     // at the Animation level, not inside build()
@@ -151,6 +161,35 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
       ),
     );
 
+    if (widget.reduceMotion) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _finish,
+        child: ColoredBox(
+          color: AppColors.emeraldDeep.withValues(alpha: 0.94),
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  titleText,
+                  SizedBox(height: 24.h),
+                  Icon(widget.badge.icon, size: 72.r, color: AppColors.gold),
+                  SizedBox(height: 16.h),
+                  badgeTitleText,
+                  SizedBox(height: 10.h),
+                  descText,
+                  SizedBox(height: 18.h),
+                  tapHint,
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: _finish,
@@ -159,7 +198,6 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Burst painter — only repaints itself
             Align(
               alignment: Alignment.topCenter,
               child: LayoutBuilder(
@@ -180,8 +218,6 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
                 },
               ),
             ),
-
-            // Static text + animated icon — icon animates, text does not
             Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -190,8 +226,6 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
                   children: [
                     titleText,
                     SizedBox(height: 24.h),
-
-                    // Only the icon scale + glow rebuilds
                     AnimatedBuilder(
                       animation: _scaleAnim,
                       builder: (context, child) {

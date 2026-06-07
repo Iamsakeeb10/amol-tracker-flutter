@@ -31,6 +31,13 @@ final profileRecentLogsProvider =
           .getRecentLogs(user.uid, limit: limit);
     });
 
+final profileMonthAvgScoreProvider = Provider.autoDispose<int>((ref) {
+  final logs = ref.watch(profileRecentLogsProvider(30)).asData?.value ?? [];
+  if (logs.isEmpty) return 0;
+  return (logs.map((e) => e.score).reduce((a, b) => a + b) / logs.length)
+      .round();
+});
+
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -48,8 +55,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final user = ref.watch(currentUserProvider).asData?.value;
     final weekLogs =
         ref.watch(profileRecentLogsProvider(7)).asData?.value ?? [];
-    final monthLogs =
-        ref.watch(profileRecentLogsProvider(30)).asData?.value ?? [];
+    final averageScore = ref.watch(profileMonthAvgScoreProvider);
 
     if (authUser == null || user == null) {
       return AppScaffold(
@@ -60,13 +66,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final initial = user.name.trim().isEmpty
         ? '?'
         : user.name.trim().substring(0, 1).toUpperCase();
-    final averageScore = monthLogs.isEmpty
-        ? 0
-        : (monthLogs.map((e) => e.score).reduce((a, b) => a + b) /
-                  monthLogs.length)
-              .round();
     final fields = ref.watch(amalFieldsListProvider);
     final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+    final compact = MediaQuery.sizeOf(context).width < 340.w;
 
     return AppScaffold(
       appBar: AppBar(
@@ -77,147 +79,179 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         title: Text(l10n.profile, style: AppTextStyles.headlineMedium(context)),
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
-        children: [
-          Center(
-            child: AvatarChip(
-              initial: user.isAnonymousDisplay ? '🕌' : initial,
-              color: AppColors.gold,
-              size: 88,
-              ring: true,
-              fontSize: 34,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12.w),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Align(
-                  alignment: Alignment.center,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40.w),
-                    child: Text(
-                      user.name.trim().isEmpty ? l10n.displayName : user.name,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.displayMedium(context),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(0, 4.h, 0, 0),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  Center(
+                    child: AvatarChip(
+                      initial: user.isAnonymousDisplay ? '🕌' : initial,
+                      color: AppColors.gold,
+                      size: 88,
+                      ring: true,
+                      fontSize: 34,
                     ),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    onPressed: () =>
-                        _showEditNameDialog(authUser.uid, user.name),
-                    tooltip: l10n.displayName,
-                    icon: Icon(Icons.edit_rounded, color: AppColors.gold),
+                  SizedBox(height: 12.h),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12.w),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 40.w),
+                            child: Text(
+                              user.name.trim().isEmpty
+                                  ? l10n.displayName
+                                  : user.name,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.displayMedium(context),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                            onPressed: () =>
+                                _showEditNameDialog(authUser.uid, user.name),
+                            tooltip: l10n.displayName,
+                            icon: Icon(
+                              Icons.edit_rounded,
+                              color: AppColors.gold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  SizedBox(height: 4.h),
+                  Text(
+                    l10n.memberSince(user.createdAt.year),
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodyMedium(context),
+                  ),
+                  SizedBox(height: 12.h),
+                  Center(child: StreakBadge(days: user.currentStreak)),
+                ],
+              ),
             ),
           ),
-          SizedBox(height: 4.h),
-          Text(
-            l10n.memberSince(user.createdAt.year),
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium(context),
-          ),
-          SizedBox(height: 12.h),
-          Center(child: StreakBadge(days: user.currentStreak)),
-          SizedBox(height: 18.h),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 340.w;
-              return GridView.count(
+          SliverPadding(
+            padding: EdgeInsets.only(top: 18.h),
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 8.h,
                 crossAxisSpacing: 8.w,
                 childAspectRatio: compact ? 1.02 : 1.28,
+              ),
+              delegate: SliverChildListDelegate([
+                StatCard(
+                  label: l10n.streak,
+                  value: '${user.currentStreak}',
+                  sublabel: l10n.historyDays,
+                  prominent: true,
+                ),
+                StatCard(
+                  label: l10n.best,
+                  value: '${user.bestStreak}',
+                  sublabel: l10n.historyDays,
+                  prominent: true,
+                ),
+                StatCard(
+                  label: l10n.avg,
+                  value: '$averageScore',
+                  sublabel: '/$maxScore',
+                  prominent: true,
+                ),
+              ]),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 18.h),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  StatCard(
-                    label: l10n.streak,
-                    value: '${user.currentStreak}',
-                    sublabel: l10n.historyDays,
-                    prominent: true,
+                  Text(
+                    l10n.thisWeek,
+                    style: AppTextStyles.headlineMedium(context),
                   ),
-                  StatCard(
-                    label: l10n.best,
-                    value: '${user.bestStreak}',
-                    sublabel: l10n.historyDays,
-                    prominent: true,
-                  ),
-                  StatCard(
-                    label: l10n.avg,
-                    value: '$averageScore',
-                    sublabel: '/$maxScore',
-                    prominent: true,
+                  SizedBox(height: 8.h),
+                  _WeekChart(
+                    logs: weekLogs,
+                    createdAt: user.createdAt,
+                    maxScore: maxScore,
                   ),
                 ],
-              );
-            },
-          ),
-          SizedBox(height: 18.h),
-          Text(l10n.thisWeek, style: AppTextStyles.headlineMedium(context)),
-          SizedBox(height: 8.h),
-          _WeekChart(
-            logs: weekLogs,
-            createdAt: user.createdAt,
-            maxScore: maxScore,
-          ),
-          SizedBox(height: 18.h),
-          CardContainer(
-            child: SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
-              value: user.isAnonymousDisplay,
-              onChanged: _isSavingPrivacy
-                  ? null
-                  : (value) => _saveAnonymous(authUser.uid, value),
-              title: Text(
-                l10n.showAnonymousCommunity,
-                style: AppTextStyles.bodyLarge(context),
-              ),
-              subtitle: Text(
-                user.isAnonymousDisplay
-                    ? l10n.anonymousEnabled
-                    : l10n.realNameVisible,
-                style: AppTextStyles.bodySmall(context),
               ),
             ),
           ),
-          SizedBox(height: 18.h),
-          Text(l10n.badges, style: AppTextStyles.headlineMedium(context)),
-          SizedBox(height: 8.h),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final compact = constraints.maxWidth < 340.w;
-              return GridView.count(
+          SliverPadding(
+            padding: EdgeInsets.only(top: 18.h),
+            sliver: SliverToBoxAdapter(
+              child: CardContainer(
+                child: SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  value: user.isAnonymousDisplay,
+                  onChanged: _isSavingPrivacy
+                      ? null
+                      : (value) => _saveAnonymous(authUser.uid, value),
+                  title: Text(
+                    l10n.showAnonymousCommunity,
+                    style: AppTextStyles.bodyLarge(context),
+                  ),
+                  subtitle: Text(
+                    user.isAnonymousDisplay
+                        ? l10n.anonymousEnabled
+                        : l10n.realNameVisible,
+                    style: AppTextStyles.bodySmall(context),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 18.h),
+            sliver: SliverToBoxAdapter(
+              child: Text(
+                l10n.badges,
+                style: AppTextStyles.headlineMedium(context),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 8.h, bottom: 24.h),
+            sliver: SliverGrid.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 10.h,
                 crossAxisSpacing: 10.w,
                 childAspectRatio: compact ? 1.05 : 1.5,
-                children: kBadgeDefinitions.map((b) {
-                  final unlocked = user.badges.contains(b.id);
-                  final progress = _badgeProgress(
-                    b,
-                    user.currentStreak,
-                    unlocked,
-                  );
-                  return BadgeTile(
-                    badge: b,
-                    unlocked: unlocked,
-                    progress: progress,
-                  );
-                }).toList(),
-              );
-            },
+              ),
+              itemCount: kBadgeDefinitions.length,
+              itemBuilder: (context, index) {
+                final badge = kBadgeDefinitions[index];
+                final unlocked = user.badges.contains(badge.id);
+                final progress = _badgeProgress(
+                  badge,
+                  user.currentStreak,
+                  unlocked,
+                );
+                return BadgeTile(
+                  badge: badge,
+                  unlocked: unlocked,
+                  progress: progress,
+                );
+              },
+            ),
           ),
         ],
       ),

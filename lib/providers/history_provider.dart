@@ -1,10 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hijri/hijri_calendar.dart';
 
 import '../core/services/islamic_date_service.dart';
 import '../core/services/local_storage_service.dart';
 import '../core/utils/amal_edit_debug.dart';
+import '../core/utils/history_month_calculator.dart';
+import '../core/utils/score_calculator.dart';
+import '../core/constants/default_amal_fields.dart';
 import '../models/amal_log_model.dart';
 import '../models/user_model.dart';
+import 'amal_fields_provider.dart';
 import 'auth_provider.dart';
 
 class HistoryMonthKey {
@@ -50,6 +55,68 @@ final historyMonthProvider =
 ) async {
   final fs = ref.read(firestoreServiceProvider);
   return fs.getMonthLogs(key.uid, key.hijriYear, key.hijriMonth);
+});
+
+class HistoryMonthSummaryInput {
+  const HistoryMonthSummaryInput({
+    required this.monthKey,
+    required this.accountCreatedAt,
+    required this.locale,
+  });
+
+  final HistoryMonthKey monthKey;
+  final DateTime accountCreatedAt;
+  final String locale;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HistoryMonthSummaryInput &&
+          monthKey == other.monthKey &&
+          accountCreatedAt == other.accountCreatedAt &&
+          locale == other.locale;
+
+  @override
+  int get hashCode => Object.hash(monthKey, accountCreatedAt, locale);
+}
+
+/// Pre-computed calendar days and month stats for history screen.
+final historyMonthSummaryProvider =
+    Provider.autoDispose.family<AsyncValue<HistoryMonthSummary>, HistoryMonthSummaryInput>((
+  ref,
+  input,
+) {
+  final logsAsync = ref.watch(historyMonthProvider(input.monthKey));
+  final fields = ref.watch(amalFieldsListProvider);
+  final maxScore =
+      getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+  final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
+  final accountCreatedHijri =
+      IslamicDateService.islamicDateStringForGregorianDate(
+        input.accountCreatedAt.toLocal(),
+      );
+  final daysInMonth = HijriCalendar().getDaysInMonth(
+    input.monthKey.hijriYear,
+    input.monthKey.hijriMonth,
+  );
+
+  return logsAsync.when(
+    data: (logs) => AsyncData(
+      HistoryMonthCalculator.compute(
+        logs: logs,
+        fields: fields,
+        hijriYear: input.monthKey.hijriYear,
+        hijriMonth: input.monthKey.hijriMonth,
+        todayStr: todayStr,
+        accountCreatedHijri: accountCreatedHijri,
+        daysInMonth: daysInMonth,
+        maxScore: maxScore,
+        locale: input.locale,
+      ),
+    ),
+    loading: () => const AsyncLoading(),
+    error: (error, stack) => AsyncError(error, stack),
+  );
 });
 
 class DayLogKey {

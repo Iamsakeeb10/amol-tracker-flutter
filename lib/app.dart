@@ -68,7 +68,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: AppTheme.build(context),
+      theme: AppTheme.build(context, locale: locale),
       builder: (context, child) {
         return MediaQuery(
           data: MediaQueryData.fromView(

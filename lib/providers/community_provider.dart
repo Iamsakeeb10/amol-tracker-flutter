@@ -9,6 +9,32 @@ import '../models/activity_feed_item_model.dart';
 import '../models/amal_log_model.dart';
 import 'auth_provider.dart';
 
+/// Recent Hijri date tabs for the community sheet (cached per provider lifecycle).
+final communityRecentDatesProvider = Provider<List<String>>((ref) {
+  return IslamicDateService.recentHijriStoragesFromBangladeshCalendar(
+    count: 7,
+  );
+});
+
+/// Account creation Hijri date used to hide pre-account community misses.
+final communityAccountCreatedHijriProvider = Provider<String?>((ref) {
+  final currentUser = ref.watch(currentUserProvider).asData?.value;
+  if (currentUser == null) return null;
+
+  final createdAtLocal = currentUser.createdAt.toLocal();
+  final nowBd = IslamicDateService.nowInBD();
+  final createdOnCurrentGregorianDay =
+      createdAtLocal.year == nowBd.year &&
+      createdAtLocal.month == nowBd.month &&
+      createdAtLocal.day == nowBd.day;
+
+  if (createdOnCurrentGregorianDay) {
+    return IslamicDateService.getCurrentIslamicDateStringSafe();
+  }
+
+  return IslamicDateService.islamicDateStringForGregorianDate(createdAtLocal);
+});
+
 class CommunitySheetState {
   const CommunitySheetState({
     required this.selectedDate,

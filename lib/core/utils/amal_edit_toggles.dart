@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/amal_log_model.dart';
+import '../../providers/amal_provider.dart';
 import '../../providers/community_provider.dart';
 import '../../providers/history_provider.dart';
 import '../../providers/leaderboard_provider.dart';
@@ -112,9 +113,10 @@ void invalidateAfterAmalEdit(WidgetRef ref, String uid, String hijriDate) {
 
   ref.read(amalLogRefreshProvider.notifier).bump();
   ref.invalidate(weeklyLeaderboardProvider);
-  final today = IslamicDateService.getCurrentIslamicDateString();
+  final today = IslamicDateService.getCurrentIslamicDateStringSafe();
   if (hijriDate == today) {
     ref.invalidate(dailyLeaderboardProvider);
+    ref.invalidate(amalProvider(uid));
   }
 
   ref.read(communitySheetProvider.notifier).reloadSelectedDateIfNeeded(hijriDate);

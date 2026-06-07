@@ -500,7 +500,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dayDetailNoLogForDay => 'No log was submitted for this Hijri day.';
 
   @override
-  String get dayDetailLockedPastDays => 'Locked - past days cannot be edited.';
+  String get dayDetailLockedPastDays =>
+      'Locked — days before you joined cannot be edited.';
+
+  @override
+  String get editDayAmal => 'Edit this day\'s amal';
+
+  @override
+  String get dayDetailTodayGoHome => 'Go to Home to log today\'s amal.';
+
+  @override
+  String get dayDetailGoToHome => 'Go to Home';
+
+  @override
+  String get editTodayAmal => 'Edit today\'s amal';
 
   @override
   String memberSince(Object year) {

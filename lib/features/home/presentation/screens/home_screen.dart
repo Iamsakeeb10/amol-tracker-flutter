@@ -15,10 +15,12 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../models/amal_log_model.dart';
 import '../../../../models/user_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/history_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../shared/widgets/amal_fields_list_section.dart';
 import '../../../../shared/widgets/amal_row.dart';
@@ -86,6 +88,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       hasSubmittedToday: isSubmitted,
     );
     final isNewUser = user.lastLogDate.trim().isEmpty && !isSubmitted;
+    final todayHijri = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final submittedLog = ref.watch(
+      amalProvider(uid).select((s) => s.submittedLog),
+    );
+    ref.watch(amalLogRefreshProvider);
 
     return AppScaffold(
       padding: EdgeInsets.zero,
@@ -158,7 +165,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             SizedBox(height: 14.h),
-            Text(l10n.todaysAmal, style: AppTextStyles.headlineMedium(context)),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.todaysAmal,
+                    style: AppTextStyles.headlineMedium(context),
+                  ),
+                ),
+                _SubmittedAmalIconButton(
+                  icon: Icons.check_circle,
+                  tooltip: l10n.markAllDone,
+                  iconColor: AppColors.success,
+                ),
+                SizedBox(width: 8.w),
+                _SubmittedAmalIconButton(
+                  icon: Icons.edit_outlined,
+                  tooltip: l10n.editTodayAmal,
+                  onPressed: submittedLog == null
+                      ? null
+                      : () => _onEditTodayAmal(
+                          context,
+                          uid: uid,
+                          todayHijri: todayHijri,
+                          log: submittedLog,
+                        ),
+                ),
+              ],
+            ),
             SizedBox(height: 6.h),
             ..._buildAmalFieldSection(
               uid: uid,
@@ -297,6 +331,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _onEditTodayAmal(
+    BuildContext context, {
+    required String uid,
+    required String todayHijri,
+    required AmalLogModel log,
+  }) async {
+    await context.push(AppRoutes.editAmalPath(todayHijri), extra: log);
+    if (!mounted) return;
+    ref.invalidate(amalProvider(uid));
   }
 
   Future<void> _onSubmit(
@@ -506,6 +551,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class _SubmittedAmalIconButton extends StatelessWidget {
+  const _SubmittedAmalIconButton({
+    required this.icon,
+    required this.tooltip,
+    this.iconColor = AppColors.gold,
+    this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final Color iconColor;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12.r),
+          child: Container(
+            width: 40.r,
+            height: 40.r,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.goldCard,
+              border: Border.all(color: AppColors.goldBorder),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(icon, color: iconColor, size: 20.r),
+          ),
+        ),
+      ),
     );
   }
 }

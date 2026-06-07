@@ -502,7 +502,20 @@ class AppLocalizationsBn extends AppLocalizations {
   String get dayDetailNoLogForDay => 'এই হিজরি দিনের জন্য কোনো লগ সাবমিট হয়নি।';
 
   @override
-  String get dayDetailLockedPastDays => 'লকড - আগের দিনগুলো এডিট করা যাবে না।';
+  String get dayDetailLockedPastDays =>
+      'লকড — অ্যাকাউন্ট তৈরি হওয়ার আগের দিনগুলো এডিট করা যাবে না।';
+
+  @override
+  String get editDayAmal => 'এই দিনের আমল সম্পাদনা করুন';
+
+  @override
+  String get dayDetailTodayGoHome => 'আজকের আমল লগ করতে হোম স্ক্রীনে যান';
+
+  @override
+  String get dayDetailGoToHome => 'হোমে যান';
+
+  @override
+  String get editTodayAmal => 'আজকের আমল সম্পাদনা করুন';
 
   @override
   String memberSince(Object year) {

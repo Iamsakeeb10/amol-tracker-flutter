@@ -983,8 +983,32 @@ abstract class AppLocalizations {
   /// No description provided for @dayDetailLockedPastDays.
   ///
   /// In en, this message translates to:
-  /// **'Locked - past days cannot be edited.'**
+  /// **'Locked — days before you joined cannot be edited.'**
   String get dayDetailLockedPastDays;
+
+  /// No description provided for @editDayAmal.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit this day\'s amal'**
+  String get editDayAmal;
+
+  /// No description provided for @dayDetailTodayGoHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Home to log today\'s amal.'**
+  String get dayDetailTodayGoHome;
+
+  /// No description provided for @dayDetailGoToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Home'**
+  String get dayDetailGoToHome;
+
+  /// No description provided for @editTodayAmal.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit today\'s amal'**
+  String get editTodayAmal;
 
   /// No description provided for @memberSince.
   ///

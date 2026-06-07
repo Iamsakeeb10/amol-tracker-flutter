@@ -39,6 +39,7 @@ class DayDetailScreen extends ConsumerWidget {
       );
     }
 
+    ref.watch(amalLogRefreshProvider);
     final asyncLog = ref.watch(
       dayDetailLogProvider(DayLogKey(uid: authUser.uid, hijriDate: hijriDate)),
     );
@@ -60,8 +61,10 @@ class DayDetailScreen extends ConsumerWidget {
         final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
         final score = log?.score ?? 0;
         final editableDay = editableAsync.asData?.value;
+        final editableResolved = editableAsync.hasValue;
         final showEditFab = editableDay?.canEdit ?? false;
-        final logForEdit = editableDay?.existingLog;
+        final isTodayNotSubmitted = editableDay?.isTodayNotSubmitted ?? false;
+        final logForEdit = log ?? editableDay?.existingLog;
         if (kDebugMode) {
           logAmalEditDebug(
             'DayDetail hijriDate=$hijriDate hasLog=${log != null} '
@@ -80,7 +83,7 @@ class DayDetailScreen extends ConsumerWidget {
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: showEditFab
               ? Tooltip(
-                  message: 'এই দিনের আমল সম্পাদনা করুন',
+                  message: l10n.editDayAmal,
                   child: FloatingActionButton(
                     onPressed: () => context.push(
                       AppRoutes.editAmalPath(hijriDate),
@@ -106,28 +109,29 @@ class DayDetailScreen extends ConsumerWidget {
               style: AppTextStyles.headlineMedium(context),
             ),
             actions: [
-              Padding(
-                padding: EdgeInsets.only(right: 16.w),
-                child: Center(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardDark,
-                      borderRadius: BorderRadius.circular(99.r),
-                      border: Border.all(color: AppColors.cardBorder),
-                    ),
-                    child: Text(
-                      l10n.readOnly,
-                      style: AppTextStyles.label(
-                        context,
-                      ).copyWith(fontSize: 10.sp, color: AppColors.textMuted),
+              if (editableResolved && !showEditFab)
+                Padding(
+                  padding: EdgeInsets.only(right: 16.w),
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 4.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardDark,
+                        borderRadius: BorderRadius.circular(99.r),
+                        border: Border.all(color: AppColors.cardBorder),
+                      ),
+                      child: Text(
+                        l10n.readOnly,
+                        style: AppTextStyles.label(
+                          context,
+                        ).copyWith(fontSize: 10.sp, color: AppColors.textMuted),
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
           body: CustomScrollView(
@@ -226,27 +230,76 @@ class DayDetailScreen extends ConsumerWidget {
                   );
                 },
               ),
-              if (!showEditFab)
+              if (editableResolved && !showEditFab)
                 SliverPadding(
                   padding: EdgeInsets.only(top: 14.h),
                   sliver: SliverToBoxAdapter(
                     child: CardContainer(
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.lock_outline,
-                            color: AppColors.textMuted,
-                            size: 16.r,
-                          ),
-                          SizedBox(width: 10.w),
-                          Expanded(
-                            child: Text(
-                              l10n.dayDetailLockedPastDays,
-                              style: AppTextStyles.bodyMedium(context),
+                      child: isTodayNotSubmitted
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.home_outlined,
+                                      color: AppColors.gold,
+                                      size: 16.r,
+                                    ),
+                                    SizedBox(width: 10.w),
+                                    Expanded(
+                                      child: Text(
+                                        l10n.dayDetailTodayGoHome,
+                                        style: AppTextStyles.bodyMedium(context),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 12.h),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton(
+                                    onPressed: () => context.go(AppRoutes.home),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: AppColors.gold,
+                                      side: const BorderSide(
+                                        color: AppColors.goldBorder,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12.r),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 11.h,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      l10n.dayDetailGoToHome,
+                                      style: AppTextStyles.button(context)
+                                          .copyWith(
+                                            color: AppColors.gold,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                Icon(
+                                  Icons.lock_outline,
+                                  color: AppColors.textMuted,
+                                  size: 16.r,
+                                ),
+                                SizedBox(width: 10.w),
+                                Expanded(
+                                  child: Text(
+                                    l10n.dayDetailLockedPastDays,
+                                    style: AppTextStyles.bodyMedium(context),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
                     ),
                   ),
                 ),

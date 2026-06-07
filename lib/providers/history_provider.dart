@@ -158,12 +158,19 @@ final dayDetailLogProvider =
   return null;
 });
 
-/// Whether a past Hijri day can be opened in the editor (with or without a log).
+/// Whether a Hijri day can be opened in the editor (with or without a log).
 class EditableDayState {
-  const EditableDayState({required this.canEdit, this.existingLog});
+  const EditableDayState({
+    required this.canEdit,
+    this.existingLog,
+    this.isTodayNotSubmitted = false,
+  });
 
   final bool canEdit;
   final AmalLogModel? existingLog;
+
+  /// True when viewing today before the user has submitted from Home.
+  final bool isTodayNotSubmitted;
 }
 
 AmalLogModel? _logFromHive(String uid, String hijriDate) {
@@ -176,7 +183,7 @@ AmalLogModel? _logFromHive(String uid, String hijriDate) {
   return null;
 }
 
-/// Past Hijri day within 6-day BD window (excludes today). Log optional (backfill).
+/// Hijri day edit eligibility since account creation. Log optional (backfill).
 final editableDayProvider =
     FutureProvider.autoDispose.family<EditableDayState, String>((
   ref,
@@ -202,22 +209,11 @@ final editableDayProvider =
     return denied;
   }
 
-  final bdNow = IslamicDateService.nowInBD();
   final today = IslamicDateService.getCurrentIslamicDateStringSafe();
-  final editableDays =
-      IslamicDateService.editableHijriStoragesBeforeToday(today);
+  logAmalEditDebug('hijriDate=$hijriDate today=$today');
 
-  logAmalEditDebug(
-    'hijriDate=$hijriDate today=$today bdNow=$bdNow '
-    'editableWindow=$editableDays',
-  );
-
-  if (hijriDate == today) {
-    logAmalEditDebug('hijriDate=$hijriDate deny=is_today_use_home');
-    return denied;
-  }
-  if (!IslamicDateService.isWithinEditWindow(hijriDate, today, 6)) {
-    logAmalEditDebug('hijriDate=$hijriDate deny=outside_6_hijri_days');
+  if (hijriDate.compareTo(today) > 0) {
+    logAmalEditDebug('hijriDate=$hijriDate deny=future_date');
     return denied;
   }
 
@@ -239,6 +235,14 @@ final editableDayProvider =
     logAmalEditDebug('hijriDate=$hijriDate firestore_error=$e');
   }
   log ??= _logFromHive(user.uid, hijriDate);
+
+  if (hijriDate == today && log == null) {
+    logAmalEditDebug('hijriDate=$hijriDate deny=today_not_submitted');
+    return const EditableDayState(
+      canEdit: false,
+      isTodayNotSubmitted: true,
+    );
+  }
 
   logAmalEditDebug(
     'hijriDate=$hijriDate allow_edit hasLog=${log != null} '

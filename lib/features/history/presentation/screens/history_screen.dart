@@ -87,7 +87,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       hasSubmittedToday: amal.isSubmitted,
     );
     final locale = Localizations.localeOf(context).languageCode;
-    final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
+    ref.watch(amalLogRefreshProvider);
     final summaryAsync = ref.watch(
       historyMonthSummaryProvider(
         HistoryMonthSummaryInput(
@@ -247,10 +247,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         );
                         if (day.state == DayCompletion.future) return;
                         if (day.state == DayCompletion.preAccount) return;
-                        if (keyDate == todayStr) {
-                          context.go(AppRoutes.home);
-                          return;
-                        }
                         context.push(AppRoutes.dayDetailPath(keyDate));
                       },
                     );

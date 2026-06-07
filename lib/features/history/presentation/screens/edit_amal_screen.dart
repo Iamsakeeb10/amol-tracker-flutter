@@ -24,7 +24,7 @@ class EditAmalScreen extends ConsumerStatefulWidget {
 
   final String hijriDate;
 
-  /// Null = backfill a missed day within the 6-day Hijri window.
+  /// Null = backfill a missed day since account creation.
   final AmalLogModel? existingLog;
 
   @override

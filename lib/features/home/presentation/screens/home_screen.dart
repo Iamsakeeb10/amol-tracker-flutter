@@ -56,24 +56,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final locale = Localizations.localeOf(context).languageCode;
     final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
     final doneCount = ref.watch(amalProvider(uid).select((s) => s.doneCount));
-    final totalScore = ref.watch(
-      amalProvider(uid).select((s) => s.totalScore),
-    );
+    final totalScore = ref.watch(amalProvider(uid).select((s) => s.totalScore));
     final isSubmitted = ref.watch(
       amalProvider(uid).select((s) => s.isSubmitted),
     );
     final isAmalLoading = ref.watch(
       amalProvider(uid).select((s) => s.isLoading),
     );
-    final hasAnyDone = ref.watch(
-      amalProvider(uid).select((s) => s.hasAnyDone),
-    );
+    final hasAnyDone = ref.watch(amalProvider(uid).select((s) => s.hasAnyDone));
     final amalError = ref.watch(amalProvider(uid).select((s) => s.error));
     ref.listen(amalProvider(uid).select((s) => s.error), (previous, next) {
       if (!mounted || next == null || previous == next) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(next)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next)));
     });
 
     // Only show banner once we know status; [none] means offline per connectivity_plus.
@@ -97,7 +91,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return AppScaffold(
       padding: EdgeInsets.zero,
       body: ListView(
-        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, showSaveFab ? 112.h : 96.h),
+        padding: EdgeInsets.fromLTRB(
+          20.w,
+          8.h,
+          20.w,
+          showSaveFab ? 112.h : 96.h,
+        ),
         children: [
           if (offline)
             Padding(
@@ -224,9 +223,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   label: Text(
                     hasAnyDone ? l10n.deselectAll : l10n.markAllDone,
                     style: AppTextStyles.button(context).copyWith(
-                      color: hasAnyDone
-                          ? AppColors.warning
-                          : AppColors.gold,
+                      color: hasAnyDone ? AppColors.warning : AppColors.gold,
                       fontWeight: FontWeight.w600,
                       fontSize: 12.sp,
                     ),

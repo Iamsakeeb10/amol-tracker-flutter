@@ -218,6 +218,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get save => 'সেভ করুন';
 
   @override
+  String get saveFabLabel => 'সেভ';
+
+  @override
   String get alerts => 'অ্যালার্ট';
 
   @override

@@ -488,6 +488,12 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get save;
 
+  /// No description provided for @saveFabLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveFabLabel;
+
   /// No description provided for @alerts.
   ///
   /// In en, this message translates to:

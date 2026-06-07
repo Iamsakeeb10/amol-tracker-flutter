@@ -82,6 +82,7 @@
     }
   },
   "save": "সেভ করুন",
+  "saveFabLabel": "সেভ",
   "alerts": "অ্যালার্ট",
   "markAllRead": "সবগুলো রিড",
   "failedLoadNotifications": "নোটিফিকেশন লোড করা যায়নি।",

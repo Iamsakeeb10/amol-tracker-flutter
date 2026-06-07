@@ -82,6 +82,7 @@
     }
   },
   "save": "Save",
+  "saveFabLabel": "Save",
   "alerts": "Alerts",
   "markAllRead": "Mark all read",
   "failedLoadNotifications": "Failed to load notifications.",

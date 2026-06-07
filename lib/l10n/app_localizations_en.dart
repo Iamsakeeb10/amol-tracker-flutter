@@ -218,6 +218,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
+  String get saveFabLabel => 'Save';
+
+  @override
   String get alerts => 'Alerts';
 
   @override

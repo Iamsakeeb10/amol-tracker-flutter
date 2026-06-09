@@ -83,6 +83,8 @@ class NotificationService {
   List<String> _hadithList = const [];
 
   bool _initialized = false;
+  bool _isRescheduling = false;
+  bool _pendingReschedule = false;
   StreamSubscription<String>? _onTokenRefreshSub;
   StreamSubscription<RemoteMessage>? _onMessageSub;
   StreamSubscription<RemoteMessage>? _onMessageOpenedSub;
@@ -138,7 +140,11 @@ class NotificationService {
       _dispatchDeepLink(localPayload);
     }
 
-    await _setupFcm();
+    try {
+      await _setupFcm();
+    } catch (_) {
+      // FCM is network-dependent; adhan scheduling must still proceed.
+    }
     await _safeRescheduleAll();
     _initialized = true;
   }
@@ -253,26 +259,30 @@ class NotificationService {
   - No auth, missing token, or missing user doc: no-op.
   */
   Future<void> _syncFcmToken() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    final token = await _messaging.getToken();
-    if (token == null || token.isEmpty) return;
-    final userRef = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid);
-    final userSnap = await userRef.get();
-    if (!userSnap.exists) return;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      final token = await _messaging.getToken();
+      if (token == null || token.isEmpty) return;
+      final userRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid);
+      final userSnap = await userRef.get();
+      if (!userSnap.exists) return;
 
-    final previousOwnerUid = LocalStorageService.getPref<String>(
-      _fcmOwnerUidKey,
-      '',
-    );
-    if (previousOwnerUid.isNotEmpty && previousOwnerUid != user.uid) {
-      await _clearFcmTokenOnUserDoc(previousOwnerUid);
+      final previousOwnerUid = LocalStorageService.getPref<String>(
+        _fcmOwnerUidKey,
+        '',
+      );
+      if (previousOwnerUid.isNotEmpty && previousOwnerUid != user.uid) {
+        await _clearFcmTokenOnUserDoc(previousOwnerUid);
+      }
+
+      await userRef.set({'fcmToken': token}, SetOptions(merge: true));
+      await LocalStorageService.setPref(_fcmOwnerUidKey, user.uid);
+    } catch (_) {
+      // Network/auth failures must not block local notification scheduling.
     }
-
-    await userRef.set({'fcmToken': token}, SetOptions(merge: true));
-    await LocalStorageService.setPref(_fcmOwnerUidKey, user.uid);
   }
 
   Future<void> scheduleAll() async {
@@ -357,7 +367,19 @@ class NotificationService {
   }
 
   Future<void> rescheduleAll() async {
-    await scheduleAll();
+    if (_isRescheduling) {
+      _pendingReschedule = true;
+      return;
+    }
+    do {
+      _pendingReschedule = false;
+      _isRescheduling = true;
+      try {
+        await scheduleAll();
+      } finally {
+        _isRescheduling = false;
+      }
+    } while (_pendingReschedule);
   }
 
   Future<void> cancelLocalSchedules() async {

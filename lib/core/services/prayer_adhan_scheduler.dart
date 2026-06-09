@@ -127,6 +127,7 @@ class PrayerAdhanScheduler {
     required TimeOfDay quietFrom,
     required TimeOfDay quietTo,
   }) async {
+    await cancelAll(localNotifications);
     final offset = offsetMinutes;
     final now = tz.TZDateTime.now(_bdTz);
     final bdNow = IslamicDateService.nowInBD();

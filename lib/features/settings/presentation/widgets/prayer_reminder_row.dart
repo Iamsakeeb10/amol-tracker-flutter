@@ -109,6 +109,7 @@ class PrayerReminderRow extends StatelessWidget {
     required this.onToggle,
     required this.onPickTime,
     this.onReset,
+    this.interactionsEnabled = true,
   });
 
   final IconData icon;
@@ -119,6 +120,7 @@ class PrayerReminderRow extends StatelessWidget {
   final ValueChanged<bool> onToggle;
   final VoidCallback onPickTime;
   final VoidCallback? onReset;
+  final bool interactionsEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +133,7 @@ class PrayerReminderRow extends StatelessWidget {
         children: [
           Expanded(
             child: InkWell(
-              onTap: onPickTime,
+              onTap: interactionsEnabled ? onPickTime : null,
               borderRadius: BorderRadius.circular(AppRadius.md.r),
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 4.w),
@@ -204,7 +206,7 @@ class PrayerReminderRow extends StatelessWidget {
           ),
           Switch.adaptive(
             value: enabled,
-            onChanged: onToggle,
+            onChanged: interactionsEnabled ? onToggle : null,
             activeThumbColor: AppColors.emeraldDeep,
             activeTrackColor: AppColors.gold,
           ),

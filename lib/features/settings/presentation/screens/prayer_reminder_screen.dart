@@ -40,8 +40,10 @@ class PrayerReminderScreen extends ConsumerWidget {
   Future<void> _pickPrayerTime(
     BuildContext context,
     WidgetRef ref,
-    String prayer,
-  ) async {
+    String prayer, {
+    required bool interactionsEnabled,
+  }) async {
+    if (!interactionsEnabled) return;
     final notifier = ref.read(prayerAdhanProvider.notifier);
     final selected = await showBdTimePicker(
       context: context,
@@ -56,6 +58,7 @@ class PrayerReminderScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(prayerAdhanProvider);
     final notifier = ref.read(prayerAdhanProvider.notifier);
+    final interactionsEnabled = !state.isMutating;
     final times = IslamicDateService.getPrayerTimesForToday();
     final locale = Localizations.localeOf(context).toString();
 
@@ -116,9 +119,15 @@ class PrayerReminderScreen extends ConsumerWidget {
                           reminderTime: notifier.reminderTimeToday(key),
                           enabled: state.enabled[key] ?? false,
                           usesCustomTime: usesCustom,
+                          interactionsEnabled: interactionsEnabled,
                           onToggle: (v) => notifier.setEnabled(key, v),
-                          onPickTime: () => _pickPrayerTime(context, ref, key),
-                          onReset: usesCustom
+                          onPickTime: () => _pickPrayerTime(
+                            context,
+                            ref,
+                            key,
+                            interactionsEnabled: interactionsEnabled,
+                          ),
+                          onReset: usesCustom && interactionsEnabled
                               ? () => notifier.clearCustomTime(key)
                               : null,
                         );
@@ -155,7 +164,9 @@ class PrayerReminderScreen extends ConsumerWidget {
                       ),
                       selected: selected,
                       isLast: isLast,
-                      onTap: () => notifier.setOffset(offset),
+                      onTap: interactionsEnabled
+                          ? () => notifier.setOffset(offset)
+                          : () {},
                     );
                   }).toList(),
                 ),

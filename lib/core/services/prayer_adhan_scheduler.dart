@@ -24,6 +24,7 @@ class PrayerAdhanScheduler {
   static String enabledKey(String prayer) => 'adhan_${prayer}_enabled';
   static String hourKey(String prayer) => 'adhan_${prayer}_hour';
   static String minuteKey(String prayer) => 'adhan_${prayer}_min';
+  static String customTimeKey(String prayer) => 'adhan_${prayer}_custom_time';
 
   bool isEnabled(String prayer) =>
       LocalStorageService.getPref<bool>(enabledKey(prayer), false);
@@ -37,6 +38,18 @@ class PrayerAdhanScheduler {
   bool hasCustomTime(String prayer) => getCustomTime(prayer) != null;
 
   TimeOfDay? getCustomTime(String prayer) {
+    final bundled = LocalStorageService.getPref<List<dynamic>?>(
+      customTimeKey(prayer),
+      null,
+    );
+    if (bundled != null && bundled.length == 2) {
+      final hour = bundled[0];
+      final minute = bundled[1];
+      if (hour is int && minute is int) {
+        return TimeOfDay(hour: hour, minute: minute);
+      }
+    }
+
     final hour = LocalStorageService.getPref<int?>(hourKey(prayer), null);
     final minute = LocalStorageService.getPref<int?>(minuteKey(prayer), null);
     if (hour == null || minute == null) return null;
@@ -52,11 +65,16 @@ class PrayerAdhanScheduler {
   }
 
   Future<void> setCustomTime(String prayer, TimeOfDay value) async {
+    await LocalStorageService.setPref(
+      customTimeKey(prayer),
+      <int>[value.hour, value.minute],
+    );
     await LocalStorageService.setPref(hourKey(prayer), value.hour);
     await LocalStorageService.setPref(minuteKey(prayer), value.minute);
   }
 
   Future<void> clearCustomTime(String prayer) async {
+    await LocalStorageService.deletePref(customTimeKey(prayer));
     await LocalStorageService.deletePref(hourKey(prayer));
     await LocalStorageService.deletePref(minuteKey(prayer));
   }

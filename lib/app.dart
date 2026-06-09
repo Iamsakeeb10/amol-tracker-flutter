@@ -30,25 +30,34 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _router = buildAppRouter();
-    NotificationService.instance.initialize(
-      onDeepLink: (route) {
-        if (!mounted) return;
-        _router.go(route);
-      },
-    );
+    unawaited(_initNotifications());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(ref.read(appBootstrapProvider.future));
     });
   }
 
+  Future<void> _initNotifications() async {
+    await NotificationService.instance.initialize(
+      onDeepLink: (route) {
+        if (!mounted) return;
+        _router.go(route);
+      },
+    );
+  }
+
+  Future<void> _onAppResumed() async {
+    await NotificationService.instance.rescheduleAll();
+    if (!mounted) return;
+    ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
+    ref.read(amalFieldsProvider.notifier).refreshIfStale();
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      NotificationService.instance.rescheduleAll();
-      ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
-      ref.read(amalFieldsProvider.notifier).refreshIfStale();
+      unawaited(_onAppResumed());
     }
   }
 

@@ -10,6 +10,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../constants/prayer_adhan_constants.dart';
 import '../router/routes.dart';
 import '../utils/fcm_notification_display.dart';
 import 'hadith_asset_service.dart';
@@ -87,6 +88,27 @@ class NotificationService {
   StreamSubscription<RemoteMessage>? _onMessageOpenedSub;
   void Function(String route)? _onDeepLink;
 
+  /// Pending adhan alarms after the most recent [scheduleAll].
+  int get lastAdhanPendingCount =>
+      PrayerAdhanScheduler.instance.lastPendingCount;
+
+  Future<bool> canScheduleExactAlarms() async {
+    final android = _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android == null) return true;
+    return await android.canScheduleExactNotifications() ?? false;
+  }
+
+  Future<void> requestExactAlarmsPermission() async {
+    final android = _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    await android?.requestExactAlarmsPermission();
+  }
+
   Future<void> initialize({void Function(String route)? onDeepLink}) async {
     _onDeepLink = onDeepLink;
     if (_initialized) {
@@ -106,6 +128,7 @@ class NotificationService {
       onDidReceiveNotificationResponse: _onLocalResponse,
     );
     await _ensureLocalNotificationPermission();
+    await _ensureAdhanNotificationChannel();
     await _loadHadith();
 
     final launchDetails = await _localNotifications
@@ -263,11 +286,15 @@ class NotificationService {
     if (isStreakEnabled) await _scheduleStreakWarning();
     await _scheduleJumuah();
     await _scheduleHadithNotifications();
-    await PrayerAdhanScheduler.instance.scheduleAll(
-      localNotifications: _localNotifications,
-      quietFrom: quietFrom,
-      quietTo: quietTo,
-    );
+    try {
+      await PrayerAdhanScheduler.instance.scheduleAll(
+        localNotifications: _localNotifications,
+        quietFrom: quietFrom,
+        quietTo: quietTo,
+      );
+    } catch (_) {
+      // Never block other reminders if adhan scheduling fails.
+    }
   }
 
   Future<void> _cancelUrgencyIfLoggedToday() async {
@@ -305,6 +332,28 @@ class NotificationService {
     if (ios != null) {
       await ios.requestPermissions(alert: true, badge: true, sound: true);
     }
+  }
+
+  Future<void> _ensureAdhanNotificationChannel() async {
+    final android = _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android == null) return;
+
+    const androidSound = RawResourceAndroidNotificationSound('azan_one');
+    await android.createNotificationChannel(
+      const AndroidNotificationChannel(
+        PrayerAdhanConstants.androidChannelId,
+        PrayerAdhanConstants.androidChannelName,
+        description: PrayerAdhanConstants.androidChannelDescription,
+        importance: Importance.max,
+        playSound: true,
+        sound: androidSound,
+        enableVibration: true,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
+      ),
+    );
   }
 
   Future<void> rescheduleAll() async {

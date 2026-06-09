@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -13,7 +14,12 @@ class PrayerAdhanScheduler {
 
   static final PrayerAdhanScheduler instance = PrayerAdhanScheduler._();
 
+  static final tz.Location _bdTz = tz.getLocation('Asia/Dhaka');
+
   static const String offsetKey = 'adhan_offset_minutes';
+
+  /// Pending adhan alarms registered after the last [scheduleAll] call.
+  int lastPendingCount = 0;
 
   static String enabledKey(String prayer) => 'adhan_${prayer}_enabled';
   static String hourKey(String prayer) => 'adhan_${prayer}_hour';
@@ -21,6 +27,9 @@ class PrayerAdhanScheduler {
 
   bool isEnabled(String prayer) =>
       LocalStorageService.getPref<bool>(enabledKey(prayer), false);
+
+  bool get hasAnyPrayerEnabled =>
+      PrayerAdhanConstants.prayerKeys.any(isEnabled);
 
   int get offsetMinutes =>
       LocalStorageService.getPref<int>(offsetKey, 0);
@@ -74,6 +83,17 @@ class PrayerAdhanScheduler {
     }
   }
 
+  Future<int> countPendingAdhan(FlutterLocalNotificationsPlugin plugin) async {
+    final pending = await plugin.pendingNotificationRequests();
+    return pending
+        .where(
+          (request) =>
+              request.id >= PrayerAdhanConstants.minNotificationId &&
+              request.id <= PrayerAdhanConstants.maxNotificationId,
+        )
+        .length;
+  }
+
   /*
   Purpose:
   Schedule per-prayer adhan local notifications for the next 7 days.
@@ -108,7 +128,7 @@ class PrayerAdhanScheduler {
     required TimeOfDay quietTo,
   }) async {
     final offset = offsetMinutes;
-    final now = tz.TZDateTime.now(tz.local);
+    final now = tz.TZDateTime.now(_bdTz);
     final bdNow = IslamicDateService.nowInBD();
 
     for (var dayOffset = 0;
@@ -133,7 +153,7 @@ class PrayerAdhanScheduler {
         }
 
         final scheduledDate = tz.TZDateTime(
-          tz.local,
+          _bdTz,
           targetDate.year,
           targetDate.month,
           targetDate.day,
@@ -154,6 +174,13 @@ class PrayerAdhanScheduler {
           scheduledDate: scheduledDate,
         );
       }
+    }
+
+    lastPendingCount = await countPendingAdhan(localNotifications);
+    if (kDebugMode && hasAnyPrayerEnabled && lastPendingCount == 0) {
+      debugPrint(
+        'PrayerAdhanScheduler: enabled prayers but no pending adhan alarms',
+      );
     }
   }
 
@@ -194,57 +221,81 @@ class PrayerAdhanScheduler {
     required String body,
     required tz.TZDateTime scheduledDate,
   }) async {
-    final details = _adhanNotificationDetails(body: body);
-    try {
-      await plugin.zonedSchedule(
-        id,
-        title,
-        body,
-        scheduledDate,
-        details,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    const scheduleModes = [
+      AndroidScheduleMode.alarmClock,
+      AndroidScheduleMode.exactAllowWhileIdle,
+      AndroidScheduleMode.inexactAllowWhileIdle,
+    ];
+
+    for (final useCustomSound in [true, false]) {
+      final details = _adhanNotificationDetails(
+        body: body,
+        useCustomSound: useCustomSound,
       );
-    } on PlatformException catch (e) {
-      if (e.code != 'exact_alarms_not_permitted') rethrow;
-      await plugin.zonedSchedule(
-        id,
-        title,
-        body,
-        scheduledDate,
-        details,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      );
-    } catch (_) {
-      // Never block other prayer slots on a single failure.
+
+      for (final mode in scheduleModes) {
+        try {
+          await plugin.zonedSchedule(
+            id,
+            title,
+            body,
+            scheduledDate,
+            details,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            androidScheduleMode: mode,
+          );
+          return;
+        } on PlatformException catch (e) {
+          if (e.code == 'invalid_sound' && useCustomSound) {
+            break;
+          }
+          if (e.code == 'exact_alarms_not_permitted') {
+            continue;
+          }
+          _logScheduleFailure(e.code, e.message);
+        } catch (e, stackTrace) {
+          _logScheduleFailure(e.toString(), stackTrace.toString());
+        }
+      }
     }
   }
 
-  NotificationDetails _adhanNotificationDetails({required String body}) {
+  void _logScheduleFailure(String code, String? detail) {
+    if (kDebugMode) {
+      debugPrint(
+        'PrayerAdhanScheduler: failed to schedule notification ($code) '
+        '${detail ?? ''}',
+      );
+    }
+  }
+
+  NotificationDetails _adhanNotificationDetails({
+    required String body,
+    bool useCustomSound = true,
+  }) {
     const androidSound = RawResourceAndroidNotificationSound('azan_one');
     return NotificationDetails(
       android: AndroidNotificationDetails(
-        'prayer_adhan',
-        'নামাযের আযান রিমাইন্ডার',
-        channelDescription: 'প্রতিটি ওয়াক্তের আযানের রিমাইন্ডার',
+        PrayerAdhanConstants.androidChannelId,
+        PrayerAdhanConstants.androidChannelName,
+        channelDescription: PrayerAdhanConstants.androidChannelDescription,
         importance: Importance.max,
         priority: Priority.max,
         icon: '@mipmap/ic_launcher',
         playSound: true,
-        sound: androidSound,
+        sound: useCustomSound ? androidSound : null,
         enableVibration: true,
-        category: AndroidNotificationCategory.alarm,
+        category: AndroidNotificationCategory.reminder,
         visibility: NotificationVisibility.public,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
         styleInformation: BigTextStyleInformation(body),
       ),
-      iOS: const DarwinNotificationDetails(
+      iOS: DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
-        sound: 'azan_one.mp3',
+        sound: useCustomSound ? 'azan_one.mp3' : null,
         presentBanner: true,
         presentList: true,
         interruptionLevel: InterruptionLevel.timeSensitive,

@@ -138,6 +138,21 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String get prayerAdhanReliabilityTitle =>
+      'ব্যাকগ্রাউন্ড রিমাইন্ডারের জন্য সেটআপ প্রয়োজন';
+
+  @override
+  String get prayerAdhanReliabilityBody =>
+      'অ্যাপ বন্ধ থাকলেও আযান রিমাইন্ডার পেতে সঠিক অ্যালার্ম অনুমতি দিন। নির্ভরযোগ্য ডেলিভারির জন্য ব্যাটারি অপ্টিমাইজেশন বন্ধ করুন।';
+
+  @override
+  String get prayerAdhanAllowExactAlarms => 'সঠিক অ্যালার্ম অনুমতি দিন';
+
+  @override
+  String get prayerAdhanDisableBatteryOptimization =>
+      'ব্যাটারি অপ্টিমাইজেশন বন্ধ করুন';
+
+  @override
   String get prayerFajr => 'ফজর';
 
   @override

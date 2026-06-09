@@ -137,6 +137,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get prayerAdhanReliabilityTitle => 'Background reminders need setup';
+
+  @override
+  String get prayerAdhanReliabilityBody =>
+      'Allow exact alarms so adhan reminders fire when the app is closed. Also disable battery optimization for reliable delivery.';
+
+  @override
+  String get prayerAdhanAllowExactAlarms => 'Allow exact alarms';
+
+  @override
+  String get prayerAdhanDisableBatteryOptimization =>
+      'Disable battery optimization';
+
+  @override
   String get prayerFajr => 'Fajr';
 
   @override

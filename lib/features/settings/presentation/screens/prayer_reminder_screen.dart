@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -50,7 +48,7 @@ class PrayerReminderScreen extends ConsumerWidget {
       initialTime: notifier.baseTimeToday(prayer),
     );
     if (selected == null) return;
-    unawaited(notifier.setCustomTime(prayer, selected));
+    await notifier.setCustomTime(prayer, selected);
   }
 
   @override
@@ -121,7 +119,7 @@ class PrayerReminderScreen extends ConsumerWidget {
                           onToggle: (v) => notifier.setEnabled(key, v),
                           onPickTime: () => _pickPrayerTime(context, ref, key),
                           onReset: usesCustom
-                              ? () => unawaited(notifier.clearCustomTime(key))
+                              ? () => notifier.clearCustomTime(key)
                               : null,
                         );
                       },

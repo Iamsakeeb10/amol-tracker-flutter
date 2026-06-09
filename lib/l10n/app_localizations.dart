@@ -338,6 +338,30 @@ abstract class AppLocalizations {
   /// **'{minutes} min before'**
   String prayerAdhanMinutesBefore(Object minutes);
 
+  /// No description provided for @prayerAdhanReliabilityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Background reminders need setup'**
+  String get prayerAdhanReliabilityTitle;
+
+  /// No description provided for @prayerAdhanReliabilityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow exact alarms so adhan reminders fire when the app is closed. Also disable battery optimization for reliable delivery.'**
+  String get prayerAdhanReliabilityBody;
+
+  /// No description provided for @prayerAdhanAllowExactAlarms.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow exact alarms'**
+  String get prayerAdhanAllowExactAlarms;
+
+  /// No description provided for @prayerAdhanDisableBatteryOptimization.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable battery optimization'**
+  String get prayerAdhanDisableBatteryOptimization;
+
   /// No description provided for @prayerFajr.
   ///
   /// In en, this message translates to:

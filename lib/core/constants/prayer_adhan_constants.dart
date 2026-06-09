@@ -29,4 +29,18 @@ class PrayerAdhanConstants {
 
   static const List<int> offsetOptions = [0, -5, -10, -15];
   static const int daysAhead = 7;
+
+  /// Lowest adhan notification id (fajr base).
+  static const int minNotificationId = 100;
+
+  /// Highest adhan notification id (isha base + daysAhead - 1).
+  static const int maxNotificationId = 146;
+
+  /// Android notification channel for adhan reminders (v2 resets stale channels).
+  static const String androidChannelId = 'prayer_adhan_v2';
+
+  static const String androidChannelName = 'নামাযের আযান রিমাইন্ডার';
+
+  static const String androidChannelDescription =
+      'প্রতিটি ওয়াক্তের আযানের রিমাইন্ডার';
 }

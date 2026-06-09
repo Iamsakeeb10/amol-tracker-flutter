@@ -91,6 +91,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         >();
     await ios?.requestPermissions(alert: true, badge: true, sound: true);
     await android?.requestNotificationsPermission();
+    await android?.requestExactAlarmsPermission();
     await NotificationService.instance.initialize();
     await NotificationService.instance.scheduleAll();
     if (mounted) {

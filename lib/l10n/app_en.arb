@@ -50,6 +50,10 @@
       "minutes": {}
     }
   },
+  "prayerAdhanReliabilityTitle": "Background reminders need setup",
+  "prayerAdhanReliabilityBody": "Allow exact alarms so adhan reminders fire when the app is closed. Also disable battery optimization for reliable delivery.",
+  "prayerAdhanAllowExactAlarms": "Allow exact alarms",
+  "prayerAdhanDisableBatteryOptimization": "Disable battery optimization",
   "prayerFajr": "Fajr",
   "prayerDhuhr": "Dhuhr",
   "prayerAsr": "Asr",

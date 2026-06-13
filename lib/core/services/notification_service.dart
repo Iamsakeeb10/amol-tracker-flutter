@@ -13,6 +13,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../constants/prayer_adhan_constants.dart';
 import '../router/routes.dart';
 import '../utils/fcm_notification_display.dart';
+import '../utils/quiet_hours_helper.dart';
 import 'hadith_asset_service.dart';
 import 'islamic_date_service.dart';
 import 'local_storage_service.dart';
@@ -319,7 +320,7 @@ class NotificationService {
 
   Future<void> _safeRescheduleAll() async {
     try {
-      await scheduleAll();
+      await rescheduleAll();
     } catch (_) {
       // Never crash app startup due to platform scheduling quirks.
     }
@@ -506,12 +507,11 @@ class NotificationService {
   }
 
   bool _isSuppressedByQuietHours(TimeOfDay scheduled) {
-    final from = quietFrom.hour * 60 + quietFrom.minute;
-    final to = quietTo.hour * 60 + quietTo.minute;
-    final value = scheduled.hour * 60 + scheduled.minute;
-    if (from == to) return false;
-    if (from < to) return value >= from && value < to;
-    return value >= from || value < to;
+    return QuietHoursHelper.isSuppressed(
+      scheduled,
+      from: quietFrom,
+      to: quietTo,
+    );
   }
 
   tz.TZDateTime _nextTimeOutsideQuietHours(tz.TZDateTime scheduled) {

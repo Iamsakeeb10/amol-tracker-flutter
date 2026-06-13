@@ -11,6 +11,7 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/prayer_adhan_offset_label.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../providers/notification_provider.dart';
 import '../../../../providers/prayer_adhan_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -40,10 +41,8 @@ class PrayerReminderScreen extends ConsumerWidget {
   Future<void> _pickPrayerTime(
     BuildContext context,
     WidgetRef ref,
-    String prayer, {
-    required bool interactionsEnabled,
-  }) async {
-    if (!interactionsEnabled) return;
+    String prayer,
+  ) async {
     final notifier = ref.read(prayerAdhanProvider.notifier);
     final selected = await showBdTimePicker(
       context: context,
@@ -57,8 +56,11 @@ class PrayerReminderScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(prayerAdhanProvider);
+    // Rebuild when quiet hours change so suppression labels stay accurate.
+    ref.watch(
+      notificationPrefsProvider.select((prefs) => (prefs.quietFrom, prefs.quietTo)),
+    );
     final notifier = ref.read(prayerAdhanProvider.notifier);
-    final interactionsEnabled = !state.isMutating;
     final times = IslamicDateService.getPrayerTimesForToday();
     final locale = Localizations.localeOf(context).toString();
 
@@ -119,15 +121,13 @@ class PrayerReminderScreen extends ConsumerWidget {
                           reminderTime: notifier.reminderTimeToday(key),
                           enabled: state.enabled[key] ?? false,
                           usesCustomTime: usesCustom,
-                          interactionsEnabled: interactionsEnabled,
+                          isSaving: state.savingPrayers.contains(key),
+                          suppressedByQuietHours:
+                              notifier.isReminderSuppressedToday(key),
+                          quietHoursLabel: l10n.quietHoursActive,
                           onToggle: (v) => notifier.setEnabled(key, v),
-                          onPickTime: () => _pickPrayerTime(
-                            context,
-                            ref,
-                            key,
-                            interactionsEnabled: interactionsEnabled,
-                          ),
-                          onReset: usesCustom && interactionsEnabled
+                          onPickTime: () => _pickPrayerTime(context, ref, key),
+                          onReset: usesCustom
                               ? () => notifier.clearCustomTime(key)
                               : null,
                         );
@@ -164,9 +164,7 @@ class PrayerReminderScreen extends ConsumerWidget {
                       ),
                       selected: selected,
                       isLast: isLast,
-                      onTap: interactionsEnabled
-                          ? () => notifier.setOffset(offset)
-                          : () {},
+                      onTap: () => notifier.setOffset(offset),
                     );
                   }).toList(),
                 ),

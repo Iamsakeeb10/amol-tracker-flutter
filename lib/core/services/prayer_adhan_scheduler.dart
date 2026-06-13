@@ -6,6 +6,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../constants/prayer_adhan_constants.dart';
 import '../utils/prayer_adhan_time_helper.dart';
+import '../utils/quiet_hours_helper.dart';
 import 'islamic_date_service.dart';
 import 'local_storage_service.dart';
 
@@ -167,7 +168,11 @@ class PrayerAdhanScheduler {
           targetDate: targetDate,
           scheduler: this,
         );
-        if (_isSuppressedByQuietHours(reminder, quietFrom, quietTo)) {
+        if (QuietHoursHelper.isSuppressed(
+          reminder,
+          from: quietFrom,
+          to: quietTo,
+        )) {
           continue;
         }
 
@@ -218,19 +223,6 @@ class PrayerAdhanScheduler {
       return '$name নামাযের সময় (${offset.abs()} মিনিট আগে)$customSuffix';
     }
     return '$name নামাযের সময় ($offset মিনিট পরে)$customSuffix';
-  }
-
-  bool _isSuppressedByQuietHours(
-    TimeOfDay scheduled,
-    TimeOfDay from,
-    TimeOfDay to,
-  ) {
-    final fromMin = from.hour * 60 + from.minute;
-    final toMin = to.hour * 60 + to.minute;
-    final value = scheduled.hour * 60 + scheduled.minute;
-    if (fromMin == toMin) return false;
-    if (fromMin < toMin) return value >= fromMin && value < toMin;
-    return value >= fromMin || value < toMin;
   }
 
   Future<void> _safeZonedSchedule({

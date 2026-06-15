@@ -289,7 +289,67 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navCommunity => 'Community';
 
   @override
+  String get navDua => 'Dua';
+
+  @override
   String get navMore => 'More';
+
+  @override
+  String get duaTitle => 'Duas';
+
+  @override
+  String get duaFavoritesTab => 'Favourites';
+
+  @override
+  String get duaCategoriesTab => 'Topics';
+
+  @override
+  String get duaAllTab => 'All Duas';
+
+  @override
+  String get duaSearchHint => 'Search duas...';
+
+  @override
+  String get duaReference => 'Reference';
+
+  @override
+  String get duaTransliteration => 'Transliteration';
+
+  @override
+  String get duaTranslation => 'Translation';
+
+  @override
+  String get duaNoFavorites =>
+      'No favourites yet.\nTap ★ on any dua to save it.';
+
+  @override
+  String get duaNoResults => 'No results found';
+
+  @override
+  String get duaFavAdded => 'Added to favourites';
+
+  @override
+  String get duaFavRemoved => 'Removed from favourites';
+
+  @override
+  String get duaFavAdd => 'Add to favourites';
+
+  @override
+  String get duaFavRemove => 'Remove from favourites';
+
+  @override
+  String get duaCopy => 'Copy';
+
+  @override
+  String get duaShare => 'Share';
+
+  @override
+  String get duaCopied => 'Copied to clipboard';
+
+  @override
+  String duaPageCounter(int current, int total) {
+    return '$current / $total';
+  }
 
   @override
   String routeNotFound(String path) {

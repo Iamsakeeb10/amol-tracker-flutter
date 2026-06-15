@@ -25,6 +25,7 @@ class AppRoutes {
   static const community = '/community';
   static const userProfile = '/community/user-profile';
 
+  static const dua = '/dua';
   static const more = '/more';
   static const leaderboard = '/leaderboard';
   static const notifications = '/notifications';

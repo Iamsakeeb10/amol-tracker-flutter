@@ -626,11 +626,125 @@ abstract class AppLocalizations {
   /// **'Community'**
   String get navCommunity;
 
+  /// No description provided for @navDua.
+  ///
+  /// In en, this message translates to:
+  /// **'Dua'**
+  String get navDua;
+
   /// No description provided for @navMore.
   ///
   /// In en, this message translates to:
   /// **'More'**
   String get navMore;
+
+  /// No description provided for @duaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Duas'**
+  String get duaTitle;
+
+  /// No description provided for @duaFavoritesTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Favourites'**
+  String get duaFavoritesTab;
+
+  /// No description provided for @duaCategoriesTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Topics'**
+  String get duaCategoriesTab;
+
+  /// No description provided for @duaAllTab.
+  ///
+  /// In en, this message translates to:
+  /// **'All Duas'**
+  String get duaAllTab;
+
+  /// No description provided for @duaSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search duas...'**
+  String get duaSearchHint;
+
+  /// No description provided for @duaReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference'**
+  String get duaReference;
+
+  /// No description provided for @duaTransliteration.
+  ///
+  /// In en, this message translates to:
+  /// **'Transliteration'**
+  String get duaTransliteration;
+
+  /// No description provided for @duaTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get duaTranslation;
+
+  /// No description provided for @duaNoFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'No favourites yet.\nTap ★ on any dua to save it.'**
+  String get duaNoFavorites;
+
+  /// No description provided for @duaNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get duaNoResults;
+
+  /// No description provided for @duaFavAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to favourites'**
+  String get duaFavAdded;
+
+  /// No description provided for @duaFavRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from favourites'**
+  String get duaFavRemoved;
+
+  /// No description provided for @duaFavAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favourites'**
+  String get duaFavAdd;
+
+  /// No description provided for @duaFavRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favourites'**
+  String get duaFavRemove;
+
+  /// No description provided for @duaCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get duaCopy;
+
+  /// No description provided for @duaShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get duaShare;
+
+  /// No description provided for @duaCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get duaCopied;
+
+  /// No description provided for @duaPageCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {total}'**
+  String duaPageCounter(int current, int total);
 
   /// No description provided for @routeNotFound.
   ///

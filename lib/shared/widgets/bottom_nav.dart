@@ -19,6 +19,7 @@ class ScaffoldWithBottomNav extends ConsumerWidget {
     if (location.startsWith('/home')) return 0;
     if (location.startsWith('/history')) return 1;
     if (location.startsWith('/community')) return 2;
+    if (location.startsWith('/dua')) return 3;
     if (location.startsWith('/more') ||
         location.startsWith('/profile') ||
         location.startsWith('/notifications') ||
@@ -28,7 +29,7 @@ class ScaffoldWithBottomNav extends ConsumerWidget {
         location.startsWith('/syllabus') ||
         location.startsWith('/dhikr') ||
         location.startsWith('/asma-ul-husna')) {
-      return 3;
+      return 4;
     }
     return 0;
   }
@@ -42,6 +43,8 @@ class ScaffoldWithBottomNav extends ConsumerWidget {
       case 2:
         context.go(AppRoutes.community);
       case 3:
+        context.go(AppRoutes.dua);
+      case 4:
         context.go(AppRoutes.more);
     }
   }
@@ -87,6 +90,11 @@ class _BottomNavBar extends StatelessWidget {
         Icons.grid_view_outlined,
         Icons.grid_view_rounded,
         l10n.navCommunity,
+      ),
+      _NavItem(
+        Icons.menu_book_outlined,
+        Icons.menu_book_rounded,
+        l10n.navDua,
       ),
       _NavItem(Icons.menu, Icons.menu_open, l10n.navMore),
     ];

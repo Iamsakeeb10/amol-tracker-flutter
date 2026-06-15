@@ -291,7 +291,66 @@ class AppLocalizationsBn extends AppLocalizations {
   String get navCommunity => 'কমিউনিটি';
 
   @override
+  String get navDua => 'দোয়া';
+
+  @override
   String get navMore => 'আরও';
+
+  @override
+  String get duaTitle => 'দোয়াসমূহ';
+
+  @override
+  String get duaFavoritesTab => 'পছন্দ';
+
+  @override
+  String get duaCategoriesTab => 'বিষয়';
+
+  @override
+  String get duaAllTab => 'সব দোয়া';
+
+  @override
+  String get duaSearchHint => 'দোয়া খুঁজুন...';
+
+  @override
+  String get duaReference => 'রেফারেন্স';
+
+  @override
+  String get duaTransliteration => 'উচ্চারণ';
+
+  @override
+  String get duaTranslation => 'অনুবাদ';
+
+  @override
+  String get duaNoFavorites => 'এখনও পছন্দ নেই।\nযেকোনো দোয়ায় ★ চাপুন।';
+
+  @override
+  String get duaNoResults => 'কোনো ফলাফল পাওয়া যায়নি';
+
+  @override
+  String get duaFavAdded => 'পছন্দে যোগ হয়েছে';
+
+  @override
+  String get duaFavRemoved => 'পছন্দ থেকে সরানো হয়েছে';
+
+  @override
+  String get duaFavAdd => 'পছন্দে যোগ করুন';
+
+  @override
+  String get duaFavRemove => 'পছন্দ থেকে সরান';
+
+  @override
+  String get duaCopy => 'কপি';
+
+  @override
+  String get duaShare => 'শেয়ার';
+
+  @override
+  String get duaCopied => 'ক্লিপবোর্ডে কপি হয়েছে';
+
+  @override
+  String duaPageCounter(int current, int total) {
+    return '$current / $total';
+  }
 
   @override
   String routeNotFound(String path) {

@@ -7,6 +7,7 @@ import '../../../../core/theme/text_styles.dart';
 import '../../models/dua_models.dart';
 import '../../providers/dua_provider.dart';
 import '../widgets/dua_category_card.dart';
+import '../widgets/dua_tab_scroll.dart';
 import 'dua_sub_categories_screen.dart';
 
 class DuaCategoriesTab extends ConsumerStatefulWidget {
@@ -44,22 +45,25 @@ class _DuaCategoriesTabState extends ConsumerState<DuaCategoriesTab>
           style: AppTextStyles.bodyMedium(context),
         ),
       ),
-      data: (categories) => GridView.builder(
-        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 100.h),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          mainAxisSpacing: 16.h,
-          crossAxisSpacing: 12.w,
-          childAspectRatio: 0.72,
-        ),
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          return DuaCategoryCard(
-            category: category,
-            onTap: () => _openCategory(category),
-          );
-        },
+      data: (categories) => DuaTabScrollView(
+        slivers: [
+          SliverGrid.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisSpacing: 16.h,
+              crossAxisSpacing: 12.w,
+              childAspectRatio: 0.72,
+            ),
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              return DuaCategoryCard(
+                category: category,
+                onTap: () => _openCategory(category),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

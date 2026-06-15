@@ -7,6 +7,7 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../providers/dua_provider.dart';
 import '../widgets/dua_sub_category_row.dart';
+import '../widgets/dua_tab_scroll.dart';
 import 'dua_reader_screen.dart';
 
 class DuaFavoritesTab extends ConsumerStatefulWidget {
@@ -50,51 +51,59 @@ class _DuaFavoritesTabState extends ConsumerState<DuaFavoritesTab>
       ),
       data: (duas) {
         if (duas.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32.w),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.star_outline_rounded,
-                    size: 48.r,
-                    color: AppColors.textMuted,
+          return DuaTabScrollView(
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.star_outline_rounded,
+                        size: 48.r,
+                        color: AppColors.textMuted,
+                      ),
+                      SizedBox(height: 12.h),
+                      Text(
+                        l10n.duaNoFavorites,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 12.h),
-                  Text(
-                    l10n.duaNoFavorites,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      color: AppColors.textSecondary,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+            ],
           );
         }
 
         final ids = duas.map((d) => d.duaId).toList(growable: false);
 
-        return ListView.builder(
-          padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 100.h),
-          itemCount: duas.length,
-          itemExtent: 72.h,
-          itemBuilder: (context, index) {
-            final dua = duas[index];
-            return DuaListRow(
-              index: index + 1,
-              title: dua.title,
-              onTap: () => _openReader(ids, index),
-              trailing: Icon(
-                Icons.star_rounded,
-                color: AppColors.gold,
-                size: 18.r,
-              ),
-            );
-          },
+        return DuaTabScrollView(
+          slivers: [
+            SliverList.builder(
+              addAutomaticKeepAlives: false,
+              itemCount: duas.length,
+              itemBuilder: (context, index) {
+                final dua = duas[index];
+                return DuaListRow(
+                  index: index + 1,
+                  title: dua.title,
+                  onTap: () => _openReader(ids, index),
+                  trailing: Icon(
+                    Icons.star_rounded,
+                    color: AppColors.gold,
+                    size: 18.r,
+                  ),
+                );
+              },
+            ),
+          ],
         );
       },
     );

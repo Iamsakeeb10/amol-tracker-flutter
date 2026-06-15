@@ -19,6 +19,53 @@ class DuaCategoriesTab extends ConsumerStatefulWidget {
 
 class _DuaCategoriesTabState extends ConsumerState<DuaCategoriesTab>
     with AutomaticKeepAliveClientMixin {
+  static const _importanceOrder = <String, int>{
+    'morning-and-evening': 0,
+    'salah': 1,
+    'ablution-and-bath': 2,
+    'adhaan-and-iqamah': 3,
+    'mosque': 4,
+    'witr-and-other': 5,
+    'sleep': 6,
+    'food': 7,
+    'home': 8,
+    'cloths': 9,
+    'toilet': 10,
+    'evil-protection': 11,
+    'forgiveness': 12,
+    'manners': 13,
+    'gathering': 14,
+    'when-to-say-what': 15,
+    'fasting': 16,
+    'eid': 17,
+    'sacrifice': 18,
+    'hajj-and-umrah': 19,
+    'travel': 20,
+    'anxiety': 21,
+    'danger': 22,
+    'sickness': 23,
+    'jinndiseases': 24,
+    'marriage': 25,
+    'family': 26,
+    'debt': 27,
+    'grave-funeral': 28,
+    'animals': 29,
+    'rainnature': 30,
+    'condemnationpraise': 31,
+    'quranic-dua': 32,
+    '40-rabbana-duas': 33,
+    'prophets-dua': 34,
+    'duas-of-hadith': 35,
+    'duas-of-sahaba': 36,
+    'masnun-duas': 37,
+    'greatest-name-of-allah': 38,
+    'other-duas': 39,
+    'duas-importance': 40,
+    'duas-excellence': 41,
+    'time-of-dua': 42,
+    'dua-acceptance': 43,
+  };
+
   @override
   bool get wantKeepAlive => true;
 
@@ -45,26 +92,35 @@ class _DuaCategoriesTabState extends ConsumerState<DuaCategoriesTab>
           style: AppTextStyles.bodyMedium(context),
         ),
       ),
-      data: (categories) => DuaTabScrollView(
-        slivers: [
-          SliverGrid.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: 16.h,
-              crossAxisSpacing: 12.w,
-              childAspectRatio: 0.72,
+      data: (categories) {
+        final sorted = [...categories]
+          ..sort((a, b) {
+            final ia = _importanceOrder[a.url] ?? 999;
+            final ib = _importanceOrder[b.url] ?? 999;
+            return ia.compareTo(ib);
+          });
+
+        return DuaTabScrollView(
+          slivers: [
+            SliverGrid.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 16.h,
+                crossAxisSpacing: 12.w,
+                childAspectRatio: 0.72,
+              ),
+              itemCount: sorted.length,
+              itemBuilder: (context, index) {
+                final category = sorted[index];
+                return DuaCategoryCard(
+                  category: category,
+                  onTap: () => _openCategory(category),
+                );
+              },
             ),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              return DuaCategoryCard(
-                category: category,
-                onTap: () => _openCategory(category),
-              );
-            },
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 }

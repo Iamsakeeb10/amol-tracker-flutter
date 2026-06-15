@@ -76,13 +76,13 @@ class DuaCategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.lg.r),
+      borderRadius: BorderRadius.circular(AppRadius.xl.r),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           CardContainer(
-            padding: EdgeInsets.all(16.r),
-            radius: AppRadius.lg,
+            padding: EdgeInsets.all(12.r),
+            radius: AppRadius.xl,
             color: AppColors.goldCard,
             borderColor: AppColors.goldBorder,
             onTap: onTap,
@@ -92,7 +92,7 @@ class DuaCategoryCard extends StatelessWidget {
                 child: Icon(
                   DuaCategoryIcons.resolve(category.icon),
                   color: AppColors.gold,
-                  size: 32.r,
+                  size: 40.r,
                 ),
               ),
             ),
@@ -104,7 +104,7 @@ class DuaCategoryCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.bodySmall(context).copyWith(
-              fontSize: 11.sp,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w500,
               height: 1.3,
             ),

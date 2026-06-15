@@ -6,9 +6,22 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../models/dua_models.dart';
 
-/// Maps bundled category icon filenames to Material icons.
+/// Maps bundled category icon filenames to Material icons and optional PNG assets.
 class DuaCategoryIcons {
   DuaCategoryIcons._();
+
+  static const assetDir = 'assets/images/dua_categories';
+
+  /// Base name without extension, e.g. `sleep.svg` → `sleep`.
+  static String baseName(String iconFile) {
+    final dot = iconFile.lastIndexOf('.');
+    return dot > 0 ? iconFile.substring(0, dot) : iconFile;
+  }
+
+  /// PNG path using the same base name as the bundled icon filename.
+  static String pngAssetPath(String iconFile) {
+    return '$assetDir/${baseName(iconFile)}.png';
+  }
 
   static const _iconMap = <String, IconData>{
     'dua_s_importance.svg': Icons.auto_awesome_outlined,
@@ -23,7 +36,7 @@ class DuaCategoryIcons {
     'adhaan_iqamah.svg': Icons.volume_up_outlined,
     'ablution_bath.svg': Icons.water_drop_outlined,
     'mosque.svg': Icons.mosque_outlined,
-    'salah.svg': Icons.mosque_outlined,
+    'salah.svg': Icons.pan_tool_alt,
     'witr_other.svg': Icons.nightlight_outlined,
     'grave_funeral.svg': Icons.favorite_border_rounded,
     'fasting.svg': Icons.nights_stay_outlined,
@@ -53,12 +66,44 @@ class DuaCategoryIcons {
     'masnun_duas.svg': Icons.format_quote_outlined,
     'other_duas.svg': Icons.more_horiz_rounded,
     'when_to_say_what.svg': Icons.event_note_outlined,
-    'eid.svg': Icons.celebration_outlined,
+    'eid.svg': Icons.emoji_events_outlined,
     '40_rabbana_duas.svg': Icons.format_list_numbered_rounded,
   };
 
   static IconData resolve(String iconFile) {
     return _iconMap[iconFile] ?? Icons.menu_book_outlined;
+  }
+}
+
+/// Renders a category icon from PNG when available, otherwise Material icon.
+class DuaCategoryIcon extends StatelessWidget {
+  const DuaCategoryIcon({
+    super.key,
+    required this.iconFile,
+    this.size,
+    this.color = AppColors.gold,
+  });
+
+  final String iconFile;
+  final double? size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolvedSize = size ?? 50.r;
+
+    return Image.asset(
+      DuaCategoryIcons.pngAssetPath(iconFile),
+      width: resolvedSize,
+      height: resolvedSize,
+      fit: BoxFit.contain,
+      gaplessPlayback: true,
+      errorBuilder: (_, __, ___) => Icon(
+        DuaCategoryIcons.resolve(iconFile),
+        color: color,
+        size: resolvedSize,
+      ),
+    );
   }
 }
 
@@ -88,13 +133,7 @@ class DuaCategoryCard extends StatelessWidget {
             onTap: onTap,
             child: AspectRatio(
               aspectRatio: 1,
-              child: Center(
-                child: Icon(
-                  DuaCategoryIcons.resolve(category.icon),
-                  color: AppColors.gold,
-                  size: 40.r,
-                ),
-              ),
+              child: Center(child: DuaCategoryIcon(iconFile: category.icon)),
             ),
           ),
           SizedBox(height: 8.h),

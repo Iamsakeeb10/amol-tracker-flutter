@@ -76,6 +76,18 @@ class _DuaCategoriesTabState extends ConsumerState<DuaCategoriesTab>
     );
   }
 
+  /// Keeps each cell square on top with uniform spacing below the label.
+  double _categoryCellAspectRatio(BuildContext context) {
+    final spacing = DuaCategoryCard.gridSpacing.r;
+    final labelHeight = DuaCategoryCard.labelHeight(context);
+    final horizontalPadding = 10.w * 2;
+    final crossGaps = spacing * 2;
+    final cellWidth =
+        (MediaQuery.sizeOf(context).width - horizontalPadding - crossGaps) / 3;
+    final cellHeight = cellWidth + spacing + labelHeight;
+    return cellWidth / cellHeight;
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -102,9 +114,9 @@ class _DuaCategoriesTabState extends ConsumerState<DuaCategoriesTab>
             SliverGrid.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                mainAxisSpacing: 16.h,
-                crossAxisSpacing: 12.w,
-                childAspectRatio: 0.68,
+                mainAxisSpacing: DuaCategoryCard.gridSpacing.r,
+                crossAxisSpacing: DuaCategoryCard.gridSpacing.r,
+                childAspectRatio: _categoryCellAspectRatio(context),
               ),
               itemCount: sorted.length,
               itemBuilder: (context, index) {

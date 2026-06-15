@@ -114,6 +114,11 @@ class DuaCategoryCard extends StatelessWidget {
     required this.onTap,
   });
 
+  /// Shared spacing for grid gaps and icon-to-label gap.
+  static const gridSpacing = 12.0;
+
+  static double labelHeight(BuildContext context) => 13.sp * 1.35 * 2;
+
   final DuaCategory category;
   final VoidCallback onTap;
 
@@ -123,30 +128,32 @@ class DuaCategoryCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.xl.r),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CardContainer(
-            padding: EdgeInsets.all(12.r),
-            radius: AppRadius.xl,
-            color: AppColors.goldCard,
-            borderColor: AppColors.goldBorder,
-            onTap: onTap,
-            child: AspectRatio(
-              aspectRatio: 1,
+          Expanded(
+            child: CardContainer(
+              padding: EdgeInsets.all(12.r),
+              radius: AppRadius.xl,
+              color: AppColors.goldCard,
+              borderColor: AppColors.goldBorder,
+              onTap: onTap,
               child: Center(child: DuaCategoryIcon(iconFile: category.icon)),
             ),
           ),
-          SizedBox(height: 8.h),
-          Text(
-            category.name,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.bodyMedium(context).copyWith(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary.withOpacity(0.9),
-              height: 1.35,
+          SizedBox(height: gridSpacing.r),
+          SizedBox(
+            height: labelHeight(context),
+            child: Text(
+              category.name,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.bodyMedium(context).copyWith(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary.withOpacity(0.9),
+                height: 1.35,
+              ),
             ),
           ),
         ],

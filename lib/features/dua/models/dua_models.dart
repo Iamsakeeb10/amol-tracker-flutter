@@ -71,9 +71,15 @@ class DuaModel {
 
   bool get hasArabic => arabic.trim().isNotEmpty;
   bool get hasTransliteration => transliteration.trim().isNotEmpty;
-  bool get hasTranslation => translation.trim().isNotEmpty;
+  bool get hasTranslation => displayTranslation.isNotEmpty;
   bool get hasIntroduction => introduction.trim().isNotEmpty;
   bool get hasAudio => audio.trim().isNotEmpty;
+
+  /// First paragraph of [translation] only (text before `\n\n`).
+  String get displayTranslation {
+    final split = translation.split('\n\n');
+    return split.first.trim();
+  }
 
   factory DuaModel.fromJson(Map<String, dynamic> json) {
     return DuaModel(
@@ -102,8 +108,8 @@ class DuaModel {
       buffer.writeln(transliteration);
       buffer.writeln();
     }
-    if (translation.isNotEmpty) {
-      buffer.writeln(translation);
+    if (displayTranslation.isNotEmpty) {
+      buffer.writeln(displayTranslation);
       buffer.writeln();
     }
     if (reference.isNotEmpty) {

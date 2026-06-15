@@ -6,6 +6,7 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../models/dua_models.dart';
+import 'dua_floating_audio_button.dart';
 
 class DuaPage extends StatelessWidget {
   const DuaPage({super.key, required this.dua});
@@ -17,17 +18,21 @@ class DuaPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 32.h),
+      padding: EdgeInsets.fromLTRB(
+        20.w,
+        8.h,
+        20.w,
+        duaPageScrollBottomPadding(hasAudio: dua.hasAudio),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (dua.hasIntroduction) ...[
             Text(
               dua.introduction,
-              style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
-                height: 1.6,
-              ),
+              style: AppTextStyles.bodyMedium(
+                context,
+              ).copyWith(color: AppColors.textSecondary, height: 1.6),
             ),
             SizedBox(height: 20.h),
           ],
@@ -54,7 +59,7 @@ class DuaPage extends StatelessWidget {
           if (dua.hasTranslation) ...[
             _TranslationBlock(
               label: l10n.duaTranslation,
-              text: dua.translation,
+              text: dua.displayTranslation,
             ),
             SizedBox(height: 16.h),
           ],
@@ -64,7 +69,11 @@ class DuaPage extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.bookmark_outline_rounded, color: AppColors.gold, size: 18.r),
+                  Icon(
+                    Icons.bookmark_outline_rounded,
+                    color: AppColors.gold,
+                    size: 18.r,
+                  ),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Column(
@@ -72,10 +81,9 @@ class DuaPage extends StatelessWidget {
                       children: [
                         Text(
                           l10n.duaReference,
-                          style: AppTextStyles.label(context).copyWith(
-                            color: AppColors.gold,
-                            fontSize: 10.sp,
-                          ),
+                          style: AppTextStyles.label(
+                            context,
+                          ).copyWith(color: AppColors.gold, fontSize: 10.sp),
                         ),
                         SizedBox(height: 2.h),
                         Text(
@@ -124,17 +132,14 @@ class _TranslationBlock extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: AppTextStyles.label(context).copyWith(
-                    color: AppColors.gold,
-                    fontSize: 10.sp,
-                  ),
+                  style: AppTextStyles.label(
+                    context,
+                  ).copyWith(color: AppColors.gold, fontSize: 10.sp),
                 ),
                 SizedBox(height: 6.h),
                 Text(
                   text,
-                  style: AppTextStyles.bodyLarge(context).copyWith(
-                    height: 1.6,
-                  ),
+                  style: AppTextStyles.bodyLarge(context).copyWith(height: 1.6),
                 ),
               ],
             ),

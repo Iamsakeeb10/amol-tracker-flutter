@@ -6,10 +6,12 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/bengali_numeral_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../models/dua_models.dart';
 import '../../providers/dua_provider.dart';
+import '../widgets/dua_floating_audio_button.dart';
 import '../widgets/dua_page.dart';
 
 /// Swipeable dua reader — reusable from favorites, categories, or quick nav.
@@ -76,6 +78,14 @@ class _DuaReaderScreenState extends ConsumerState<DuaReaderScreen> {
     await SharePlus.instance.share(
       ShareParams(text: dua.shareText(), subject: dua.title),
     );
+  }
+
+  String _pageCounterText(BuildContext context, int current, int total) {
+    final l10n = AppLocalizations.of(context)!;
+    if (Localizations.localeOf(context).languageCode == 'bn') {
+      return '${toBengaliNumeral(current)} / ${toBengaliNumeral(total)}';
+    }
+    return l10n.duaPageCounter(current, total);
   }
 
   @override
@@ -159,29 +169,49 @@ class _DuaReaderScreenState extends ConsumerState<DuaReaderScreen> {
             );
           }
 
-          return Column(
+          final currentDua = duas[_currentIndex];
+
+          return Stack(
             children: [
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                color: AppColors.goldCard,
-                child: Text(
-                  l10n.duaPageCounter(_currentIndex + 1, duas.length),
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.label(context).copyWith(
-                    color: AppColors.gold,
-                    fontSize: 12.sp,
+              Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                    color: AppColors.goldCard,
+                    child: Text(
+                      _pageCounterText(
+                        context,
+                        _currentIndex + 1,
+                        duas.length,
+                      ),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.label(context).copyWith(
+                        color: AppColors.gold,
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: duas.length,
+                      onPageChanged: (index) =>
+                          setState(() => _currentIndex = index),
+                      itemBuilder: (context, index) => DuaPage(dua: duas[index]),
+                    ),
+                  ),
+                ],
+              ),
+              if (currentDua.hasAudio)
+                Positioned(
+                  right: kDuaFloatingAudioButtonMargin.w,
+                  bottom: kDuaFloatingAudioButtonMargin.h,
+                  child: DuaFloatingAudioButton(
+                    key: ValueKey(currentDua.duaId),
+                    audioUrl: '$kDuaAudioBaseUrl${currentDua.audio}',
                   ),
                 ),
-              ),
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: duas.length,
-                  onPageChanged: (index) => setState(() => _currentIndex = index),
-                  itemBuilder: (context, index) => DuaPage(dua: duas[index]),
-                ),
-              ),
             ],
           );
         },

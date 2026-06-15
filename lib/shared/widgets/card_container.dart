@@ -74,11 +74,7 @@ class CardContainer extends StatelessWidget {
     );
 
     if (onTap != null && hitSlop != null) {
-      card = HitSlopWrapper(
-        hitSlop: hitSlop,
-        onTap: onTap!,
-        child: card,
-      );
+      card = HitSlopWrapper(hitSlop: hitSlop, onTap: onTap!, child: card);
     }
 
     if (boxShadow != null && boxShadow!.isNotEmpty) {

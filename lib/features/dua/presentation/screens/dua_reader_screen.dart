@@ -107,15 +107,7 @@ class _DuaReaderScreenState extends ConsumerState<DuaReaderScreen> {
             if (duas.isEmpty || _currentIndex >= duas.length) {
               return Text(l10n.duaTitle, style: AppTextStyles.headlineMedium(context));
             }
-            return Text(
-              duas[_currentIndex].title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.bodyLarge(context).copyWith(
-                fontWeight: FontWeight.w600,
-                fontSize: 14.sp,
-              ),
-            );
+            return null;
           },
           orElse: () => Text(l10n.duaTitle, style: AppTextStyles.headlineMedium(context)),
         ),
@@ -179,17 +171,32 @@ class _DuaReaderScreenState extends ConsumerState<DuaReaderScreen> {
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                     color: AppColors.goldCard,
-                    child: Text(
-                      _pageCounterText(
-                        context,
-                        _currentIndex + 1,
-                        duas.length,
-                      ),
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.label(context).copyWith(
-                        color: AppColors.gold,
-                        fontSize: 12.sp,
-                      ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            currentDua.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.bodyLarge(context).copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          _pageCounterText(
+                            context,
+                            _currentIndex + 1,
+                            duas.length,
+                          ),
+                          style: AppTextStyles.label(context).copyWith(
+                            color: AppColors.gold,
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Expanded(

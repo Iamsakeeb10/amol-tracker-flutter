@@ -103,10 +103,11 @@ class DuaCategoryCard extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.bodySmall(context).copyWith(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w500,
-              height: 1.3,
+            style: AppTextStyles.bodyMedium(context).copyWith(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary.withOpacity(0.9),
+              height: 1.35,
             ),
           ),
         ],

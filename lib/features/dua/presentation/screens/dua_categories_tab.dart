@@ -107,7 +107,7 @@ class _DuaCategoriesTabState extends ConsumerState<DuaCategoriesTab>
                 crossAxisCount: 3,
                 mainAxisSpacing: 16.h,
                 crossAxisSpacing: 12.w,
-                childAspectRatio: 0.72,
+                childAspectRatio: 0.68,
               ),
               itemCount: sorted.length,
               itemBuilder: (context, index) {

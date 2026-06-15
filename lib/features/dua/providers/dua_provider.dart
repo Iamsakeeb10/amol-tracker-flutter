@@ -108,18 +108,23 @@ final duaFavoritesProvider =
   (ref) => DuaFavoritesNotifier(),
 );
 
-final favoriteDuasProvider = FutureProvider<List<DuaModel>>((ref) async {
+final favoriteDuasProvider = Provider<List<DuaModel>>((ref) {
   final favorites = ref.watch(duaFavoritesProvider);
   if (favorites.isEmpty) return const [];
 
-  final map = await ref.watch(duasMapProvider.future);
-  final result = <DuaModel>[];
-  for (final id in favorites) {
-    final dua = map[id];
-    if (dua != null) {
-      result.add(dua);
-    }
-  }
-  result.sort((a, b) => a.duaId.compareTo(b.duaId));
-  return result;
+  final mapAsync = ref.watch(duasMapProvider);
+  return mapAsync.maybeWhen(
+    data: (map) {
+      final result = <DuaModel>[];
+      for (final id in favorites) {
+        final dua = map[id];
+        if (dua != null) {
+          result.add(dua);
+        }
+      }
+      result.sort((a, b) => a.duaId.compareTo(b.duaId));
+      return result;
+    },
+    orElse: () => const [],
+  );
 });

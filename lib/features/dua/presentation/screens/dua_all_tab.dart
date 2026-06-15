@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../providers/dua_provider.dart';
@@ -31,9 +30,7 @@ class DuaAllTab extends ConsumerWidget {
     final duasAsync = ref.watch(duasListProvider);
 
     return duasAsync.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.gold),
-      ),
+      loading: () => const SizedBox.shrink(),
       error: (_, _) => Center(
         child: Text(
           l10n.duaNoResults,

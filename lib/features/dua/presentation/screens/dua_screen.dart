@@ -9,6 +9,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import 'dua_all_tab.dart';
 import 'dua_categories_tab.dart';
 import 'dua_favorites_tab.dart';
+import '../../providers/dua_provider.dart';
 
 class DuaScreen extends ConsumerStatefulWidget {
   const DuaScreen({super.key});
@@ -36,6 +37,11 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
     _tabController.addListener(_onTabChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(duaCategoriesProvider.future);
+      ref.read(duaSubCategoriesProvider.future);
+      ref.read(duasMapProvider.future);
+    });
   }
 
   void _onTabChanged() {

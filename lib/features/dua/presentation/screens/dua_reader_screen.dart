@@ -142,9 +142,7 @@ class _DuaReaderScreenState extends ConsumerState<DuaReaderScreen> {
         ),
       ),
       body: duasAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.gold),
-        ),
+        loading: () => const SizedBox.shrink(),
         error: (_, _) => Center(
           child: Text(
             l10n.duaNoResults,

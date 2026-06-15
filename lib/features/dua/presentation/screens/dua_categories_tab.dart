@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../models/dua_models.dart';
 import '../../providers/dua_provider.dart';
@@ -83,9 +82,7 @@ class _DuaCategoriesTabState extends ConsumerState<DuaCategoriesTab>
     final categoriesAsync = ref.watch(duaCategoriesProvider);
 
     return categoriesAsync.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.gold),
-      ),
+      loading: () => const SizedBox.shrink(),
       error: (_, _) => Center(
         child: Text(
           'Failed to load categories',

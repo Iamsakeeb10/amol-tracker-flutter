@@ -6,16 +6,23 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../models/dua_models.dart';
+import '../../providers/dua_reader_settings_provider.dart';
 import 'dua_floating_audio_button.dart';
 
 class DuaPage extends StatelessWidget {
-  const DuaPage({super.key, required this.dua});
+  const DuaPage({
+    super.key,
+    required this.dua,
+    this.settings = const DuaReaderSettings(),
+  });
 
   final DuaModel dua;
+  final DuaReaderSettings settings;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final scale = settings.textScale;
 
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
@@ -27,12 +34,16 @@ class DuaPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (dua.hasIntroduction) ...[
+          if (settings.showIntroduction && dua.hasIntroduction) ...[
             Text(
               dua.introduction,
               style: AppTextStyles.bodyMedium(
                 context,
-              ).copyWith(color: AppColors.textSecondary, height: 1.6),
+              ).copyWith(
+                color: AppColors.textSecondary,
+                height: 1.6,
+                fontSize: 13.5.sp * scale,
+              ),
             ),
             SizedBox(height: 20.h),
           ],
@@ -42,28 +53,30 @@ class DuaPage extends StatelessWidget {
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,
               style: AppTextStyles.headlineMedium(context).copyWith(
-                fontSize: 22.sp,
+                fontSize: 22.sp * scale,
                 height: 1.8,
                 fontWeight: FontWeight.w600,
               ),
             ),
             SizedBox(height: 20.h),
           ],
-          if (dua.hasTransliteration) ...[
+          if (settings.showTransliteration && dua.hasTransliteration) ...[
             _TranslationBlock(
               label: l10n.duaTransliteration,
               text: dua.transliteration,
+              textScale: scale,
             ),
             SizedBox(height: 16.h),
           ],
-          if (dua.hasTranslation) ...[
+          if (settings.showTranslation && dua.hasTranslation) ...[
             _TranslationBlock(
               label: l10n.duaTranslation,
               text: dua.displayTranslation,
+              textScale: scale,
             ),
             SizedBox(height: 16.h),
           ],
-          if (dua.reference.isNotEmpty) ...[
+          if (settings.showReference && dua.reference.isNotEmpty) ...[
             CardContainer.gold(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
               child: Row(
@@ -83,7 +96,10 @@ class DuaPage extends StatelessWidget {
                           l10n.duaReference,
                           style: AppTextStyles.label(
                             context,
-                          ).copyWith(color: AppColors.gold, fontSize: 10.sp),
+                          ).copyWith(
+                            color: AppColors.gold,
+                            fontSize: 10.sp * scale,
+                          ),
                         ),
                         SizedBox(height: 2.h),
                         Text(
@@ -91,6 +107,7 @@ class DuaPage extends StatelessWidget {
                           style: AppTextStyles.bodySmall(context).copyWith(
                             color: AppColors.textSecondary,
                             height: 1.4,
+                            fontSize: 12.sp * scale,
                           ),
                         ),
                       ],
@@ -107,10 +124,15 @@ class DuaPage extends StatelessWidget {
 }
 
 class _TranslationBlock extends StatelessWidget {
-  const _TranslationBlock({required this.label, required this.text});
+  const _TranslationBlock({
+    required this.label,
+    required this.text,
+    required this.textScale,
+  });
 
   final String label;
   final String text;
+  final double textScale;
 
   @override
   Widget build(BuildContext context) {
@@ -134,12 +156,18 @@ class _TranslationBlock extends StatelessWidget {
                   label,
                   style: AppTextStyles.label(
                     context,
-                  ).copyWith(color: AppColors.gold, fontSize: 10.sp),
+                  ).copyWith(
+                    color: AppColors.gold,
+                    fontSize: 10.sp * textScale,
+                  ),
                 ),
                 SizedBox(height: 6.h),
                 Text(
                   text,
-                  style: AppTextStyles.bodyLarge(context).copyWith(height: 1.6),
+                  style: AppTextStyles.bodyLarge(context).copyWith(
+                    height: 1.6,
+                    fontSize: 15.sp * textScale,
+                  ),
                 ),
               ],
             ),

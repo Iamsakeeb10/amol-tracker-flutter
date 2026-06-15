@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants/amal_fields.dart';
@@ -8,6 +9,7 @@ import '../core/constants/amal_fields_config.dart';
 import '../core/constants/default_amal_fields.dart';
 import '../core/services/amal_fields_service.dart';
 import '../core/services/local_storage_service.dart';
+import 'auth_provider.dart';
 
 final amalFieldsProvider =
     AsyncNotifierProvider<AmalFieldsNotifier, List<AmalField>>(
@@ -36,16 +38,30 @@ class AmalFieldsNotifier extends AsyncNotifier<List<AmalField>> {
   Timer? _metaDebounce;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _metaSub;
 
+  bool _hasFirestoreAccess() => FirebaseAuth.instance.currentUser != null;
+
   @override
   Future<List<AmalField>> build() async {
     _restorePrefs();
     final link = ref.keepAlive();
     ref.onDispose(() {
       link.close();
-      _metaDebounce?.cancel();
-      _metaSub?.cancel();
+      _stopMetaListener();
     });
-    _listenMetaDocument();
+    ref.listen<AsyncValue<User?>>(authStateProvider, (previous, next) {
+      final wasAuthed = previous?.asData?.value != null;
+      final isAuthed = next.asData?.value != null;
+      if (isAuthed == wasAuthed) return;
+      if (isAuthed) {
+        _listenMetaDocument();
+        unawaited(_refreshInBackground());
+      } else {
+        _stopMetaListener();
+      }
+    });
+    if (_hasFirestoreAccess()) {
+      _listenMetaDocument();
+    }
 
     final hiveFields = _readHiveFields();
     if (hiveFields.isNotEmpty) {
@@ -93,6 +109,7 @@ class AmalFieldsNotifier extends AsyncNotifier<List<AmalField>> {
 
   /// On app resume: 1 meta read; full reload only if version or TTL requires it.
   Future<void> refreshIfStale() async {
+    if (!_hasFirestoreAccess()) return;
     if (_sessionFields == null || _sessionFields!.isEmpty) {
       await forceRefresh();
       return;
@@ -132,29 +149,39 @@ class AmalFieldsNotifier extends AsyncNotifier<List<AmalField>> {
     }
   }
 
-  void _listenMetaDocument() {
+  void _stopMetaListener() {
+    _metaDebounce?.cancel();
     _metaSub?.cancel();
+    _metaSub = null;
+  }
+
+  void _listenMetaDocument() {
+    if (!_hasFirestoreAccess()) return;
+    _stopMetaListener();
     final service = ref.read(amalFieldsServiceProvider);
-    _metaSub = service.metaRef.snapshots().listen((snap) {
-      final raw = snap.data()?[AmalFieldsConfig.metaVersionField];
-      final version = raw is num ? raw.toInt() : null;
-      if (version == null || version == _cachedVersion) return;
-      if (_cachedVersion < 0) {
-        _cachedVersion = version;
-        final storedVersion = LocalStorageService.getPref(
-          AmalFieldsConfig.prefVersionKey,
-          -1,
-        );
-        if (storedVersion != version) {
-          unawaited(_refreshInBackground());
+    _metaSub = service.metaRef.snapshots().listen(
+      (snap) {
+        final raw = snap.data()?[AmalFieldsConfig.metaVersionField];
+        final version = raw is num ? raw.toInt() : null;
+        if (version == null || version == _cachedVersion) return;
+        if (_cachedVersion < 0) {
+          _cachedVersion = version;
+          final storedVersion = LocalStorageService.getPref(
+            AmalFieldsConfig.prefVersionKey,
+            -1,
+          );
+          if (storedVersion != version) {
+            unawaited(_refreshInBackground());
+          }
+          return;
         }
-        return;
-      }
-      _metaDebounce?.cancel();
-      _metaDebounce = Timer(AmalFieldsConfig.metaDebounce, () {
-        unawaited(_refreshInBackground());
-      });
-    });
+        _metaDebounce?.cancel();
+        _metaDebounce = Timer(AmalFieldsConfig.metaDebounce, () {
+          unawaited(_refreshInBackground());
+        });
+      },
+      onError: (_) => _stopMetaListener(),
+    );
   }
 
   bool _isSessionTtlExpired() {
@@ -184,11 +211,14 @@ class AmalFieldsNotifier extends AsyncNotifier<List<AmalField>> {
       } catch (_) {}
     }
 
-    var remoteVersion = await service.fetchMetaVersion(
-      source: forceServer ? Source.server : Source.cache,
-    );
-    if (!forceServer && remoteVersion == null) {
-      remoteVersion = await service.fetchMetaVersion(source: Source.server);
+    int? remoteVersion;
+    if (_hasFirestoreAccess()) {
+      remoteVersion = await service.fetchMetaVersion(
+        source: forceServer ? Source.server : Source.cache,
+      );
+      if (!forceServer && remoteVersion == null) {
+        remoteVersion = await service.fetchMetaVersion(source: Source.server);
+      }
     }
 
     final storedVersion = LocalStorageService.getPref(
@@ -206,6 +236,10 @@ class AmalFieldsNotifier extends AsyncNotifier<List<AmalField>> {
       return _sessionFields!;
     }
 
+    if (!_hasFirestoreAccess()) {
+      return _fallbackFields();
+    }
+
     try {
       final fields = await service.loadFields(source: Source.server);
       if (fields.isEmpty) return _fallbackFields();
@@ -217,6 +251,7 @@ class AmalFieldsNotifier extends AsyncNotifier<List<AmalField>> {
   }
 
   Future<void> _refreshInBackground() async {
+    if (!_hasFirestoreAccess()) return;
     try {
       final service = ref.read(amalFieldsServiceProvider);
       final remoteVersion = await service.fetchMetaVersion();

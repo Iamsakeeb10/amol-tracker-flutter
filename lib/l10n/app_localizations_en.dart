@@ -352,6 +352,54 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get duaReaderOptions => 'Reading options';
+
+  @override
+  String get duaReaderTextSize => 'Text size';
+
+  @override
+  String get duaReaderTextSizeNormal => 'Normal';
+
+  @override
+  String get duaReaderTextSizeMedium => 'Medium';
+
+  @override
+  String get duaReaderTextSizeLarge => 'Large';
+
+  @override
+  String get duaReaderShowIntroduction => 'Introduction';
+
+  @override
+  String get duaReaderShowTransliteration => 'Transliteration';
+
+  @override
+  String get duaReaderShowTranslation => 'Translation';
+
+  @override
+  String get duaReaderShowReference => 'Reference';
+
+  @override
+  String get duaReaderFocusMode => 'Focus mode';
+
+  @override
+  String get duaReaderFocusModeExit => 'Exit focus mode';
+
+  @override
+  String get duaReaderPrevious => 'Previous dua';
+
+  @override
+  String get duaReaderNext => 'Next dua';
+
+  @override
+  String get duaReaderMore => 'More options';
+
+  @override
+  String get duaReaderTextSizeDecrease => 'Decrease text size';
+
+  @override
+  String get duaReaderTextSizeIncrease => 'Increase text size';
+
+  @override
   String routeNotFound(String path) {
     return 'Route not found: $path';
   }

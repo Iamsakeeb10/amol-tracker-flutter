@@ -6,10 +6,11 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../providers/dua_provider.dart';
+import '../widgets/dua_reader_options_sheet.dart';
 import 'dua_all_tab.dart';
 import 'dua_categories_tab.dart';
 import 'dua_favorites_tab.dart';
-import '../../providers/dua_provider.dart';
 
 class DuaScreen extends ConsumerStatefulWidget {
   const DuaScreen({super.key});
@@ -20,7 +21,9 @@ class DuaScreen extends ConsumerStatefulWidget {
 
 class _DuaScreenState extends ConsumerState<DuaScreen>
     with SingleTickerProviderStateMixin {
-  static const _searchAnimDuration = Duration(milliseconds: 200);
+  static const _searchAnimDuration = Duration(milliseconds: 280);
+  static const _searchAnimCurve = Curves.easeOutCubic;
+  static const _searchAnimReverseCurve = Curves.easeInCubic;
 
   late final TabController _tabController;
   final _searchController = TextEditingController();
@@ -28,6 +31,8 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
 
   int _tabIndex = 1;
   bool _searchOpen = false;
+  bool _pendingSearchOpen = false;
+  bool _searchTransitioning = false;
   String _searchQuery = '';
 
   bool get _onAllDuasTab => _tabIndex == 2;
@@ -48,30 +53,233 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
     if (_tabController.indexIsChanging) return;
     final nextIndex = _tabController.index;
     if (nextIndex != _tabIndex) {
-      if (nextIndex != 2) _closeSearch(silent: true);
+      if (nextIndex != 2) {
+        _closeSearch(silent: true);
+        _pendingSearchOpen = false;
+      }
       setState(() => _tabIndex = nextIndex);
+      if (nextIndex == 2 && _pendingSearchOpen) {
+        _pendingSearchOpen = false;
+        _openSearch();
+      }
     }
   }
 
   void _openSearch() {
+    if (_searchTransitioning) return;
+    _searchTransitioning = true;
     setState(() => _searchOpen = true);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _searchFocusNode.requestFocus();
+    Future<void>.delayed(_searchAnimDuration, () {
+      if (!mounted) return;
+      _searchTransitioning = false;
+      if (_searchOpen) _searchFocusNode.requestFocus();
     });
   }
 
-  void _closeSearch({bool silent = false}) {
-    _searchController.clear();
-    _searchFocusNode.unfocus();
-    if (!silent && mounted) {
-      setState(() {
-        _searchOpen = false;
-        _searchQuery = '';
-      });
+  void _openSearchFromAnyTab() {
+    if (!_onAllDuasTab) {
+      _pendingSearchOpen = true;
+      _tabController.animateTo(2);
+      return;
+    }
+    _openSearch();
+  }
+
+  void _onSearchAction() {
+    if (_showSearchField) {
+      _closeSearch();
     } else {
+      _openSearchFromAnyTab();
+    }
+  }
+
+  bool get _showSearchField => _searchOpen && _onAllDuasTab;
+
+  Widget _buildAppBarTitle(AppLocalizations l10n) {
+    final titleStyle = AppTextStyles.headlineMedium(
+      context,
+    ).copyWith(fontSize: 17.5.sp, fontWeight: FontWeight.w600, height: 1);
+    const titleHeightBehavior = TextHeightBehavior(
+      applyHeightToFirstAscent: false,
+      applyHeightToLastDescent: false,
+    );
+
+    return SizedBox(
+      height: 42.h,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          AnimatedSize(
+            duration: _searchAnimDuration,
+            curve: _searchAnimCurve,
+            alignment: Alignment.centerLeft,
+            clipBehavior: Clip.hardEdge,
+            child: _showSearchField
+                ? const SizedBox.shrink()
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.menu_book_rounded,
+                        size: 22.r,
+                        color: AppColors.gold,
+                      ),
+                      SizedBox(width: 8.w),
+                    ],
+                  ),
+          ),
+          Expanded(
+            child: SizedBox(
+              height: 42.h,
+              child: AnimatedSwitcher(
+                duration: _searchAnimDuration,
+                switchInCurve: _searchAnimCurve,
+                switchOutCurve: _searchAnimReverseCurve,
+                layoutBuilder: (currentChild, previousChildren) {
+                  return Stack(
+                    alignment: Alignment.centerLeft,
+                    fit: StackFit.expand,
+                    clipBehavior: Clip.hardEdge,
+                    children: [
+                      ...previousChildren,
+                      if (currentChild != null) currentChild,
+                    ],
+                  );
+                },
+                transitionBuilder: (child, animation) {
+                  final slideAnimation =
+                      Tween<Offset>(
+                        begin: const Offset(0.04, 0),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: _searchAnimCurve,
+                          reverseCurve: _searchAnimReverseCurve,
+                        ),
+                      );
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: slideAnimation,
+                      child: child,
+                    ),
+                  );
+                },
+                child: _showSearchField
+                    ? Align(
+                        key: const ValueKey('dua_search_field'),
+                        alignment: Alignment.centerLeft,
+                        child: TextField(
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          onChanged: _onSearchChanged,
+                          textInputAction: TextInputAction.search,
+                          style: AppTextStyles.bodyLarge(
+                            context,
+                          ).copyWith(fontSize: 15.sp, height: 1),
+                          strutStyle: const StrutStyle(
+                            height: 1,
+                            forceStrutHeight: true,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: l10n.duaSearchHint,
+                            hintStyle: AppTextStyles.bodyMedium(
+                              context,
+                            ).copyWith(height: 1),
+                            border: InputBorder.none,
+                            isDense: true,
+                            isCollapsed: true,
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 10.h,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Align(
+                        key: const ValueKey('dua_title'),
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          l10n.duaTitle,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: titleStyle,
+                          textHeightBehavior: titleHeightBehavior,
+                          strutStyle: const StrutStyle(
+                            height: 0,
+                            forceStrutHeight: true,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildActions(AppLocalizations l10n) {
+    return [
+      IconButton(
+        tooltip: l10n.duaReaderOptions,
+        icon: Icon(Icons.tune_rounded, size: 20.r),
+        onPressed: () => showDuaReaderOptionsSheet(context),
+      ),
+      IconButton(
+        tooltip: _showSearchField ? l10n.cancel : l10n.duaSearchHint,
+        onPressed: _onSearchAction,
+        icon: AnimatedSwitcher(
+          duration: _searchAnimDuration,
+          switchInCurve: _searchAnimCurve,
+          switchOutCurve: _searchAnimReverseCurve,
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.82, end: 1).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: _searchAnimCurve,
+                    reverseCurve: _searchAnimReverseCurve,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          child: Icon(
+            _showSearchField ? Icons.close_rounded : Icons.search_rounded,
+            key: ValueKey(_showSearchField),
+            size: 22.r,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  void _closeSearch({bool silent = false}) {
+    if (silent) {
+      _searchController.clear();
+      _searchFocusNode.unfocus();
       _searchOpen = false;
       _searchQuery = '';
+      _searchTransitioning = false;
+      return;
     }
+
+    if (_searchTransitioning) return;
+    _searchTransitioning = true;
+    setState(() => _searchOpen = false);
+    Future<void>.delayed(_searchAnimDuration, () {
+      if (!mounted) return;
+      _searchTransitioning = false;
+      _searchController.clear();
+      _searchFocusNode.unfocus();
+      if (_searchQuery.isNotEmpty) {
+        setState(() => _searchQuery = '');
+      }
+    });
   }
 
   void _onSearchChanged(String value) {
@@ -96,56 +304,11 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
     return AppScaffold(
       padding: EdgeInsets.zero,
       appBar: AppBar(
-        centerTitle: !_searchOpen,
+        centerTitle: false,
         automaticallyImplyLeading: false,
         toolbarHeight: 42.h,
-        title: AnimatedSwitcher(
-          duration: _searchAnimDuration,
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.easeIn,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
-          child: _searchOpen
-              ? TextField(
-                  key: const ValueKey('dua_search_field'),
-                  controller: _searchController,
-                  focusNode: _searchFocusNode,
-                  onChanged: _onSearchChanged,
-                  style: AppTextStyles.bodyLarge(context).copyWith(
-                    fontSize: 15.sp,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: l10n.duaSearchHint,
-                    hintStyle: AppTextStyles.bodyMedium(context),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8.h),
-                  ),
-                )
-              : Text(
-                  l10n.duaTitle,
-                  key: const ValueKey('dua_title'),
-                  style: AppTextStyles.headlineMedium(context).copyWith(
-                    fontSize: 17.5.sp,
-                    fontWeight: FontWeight.w600,
-                    height: 1.15,
-                  ),
-                ),
-        ),
-        actions: _onAllDuasTab
-            ? [
-                IconButton(
-                  tooltip: _searchOpen ? l10n.cancel : l10n.duaSearchHint,
-                  icon: Icon(
-                    _searchOpen ? Icons.close_rounded : Icons.search_rounded,
-                    size: 22.r,
-                  ),
-                  onPressed: _searchOpen ? _closeSearch : _openSearch,
-                ),
-              ]
-            : null,
+        title: _buildAppBarTitle(l10n),
+        actions: _buildActions(l10n),
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(42.h),
           child: DecoratedBox(

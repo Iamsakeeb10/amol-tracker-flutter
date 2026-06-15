@@ -746,6 +746,102 @@ abstract class AppLocalizations {
   /// **'{current} / {total}'**
   String duaPageCounter(int current, int total);
 
+  /// No description provided for @duaReaderOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading options'**
+  String get duaReaderOptions;
+
+  /// No description provided for @duaReaderTextSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get duaReaderTextSize;
+
+  /// No description provided for @duaReaderTextSizeNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get duaReaderTextSizeNormal;
+
+  /// No description provided for @duaReaderTextSizeMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get duaReaderTextSizeMedium;
+
+  /// No description provided for @duaReaderTextSizeLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get duaReaderTextSizeLarge;
+
+  /// No description provided for @duaReaderShowIntroduction.
+  ///
+  /// In en, this message translates to:
+  /// **'Introduction'**
+  String get duaReaderShowIntroduction;
+
+  /// No description provided for @duaReaderShowTransliteration.
+  ///
+  /// In en, this message translates to:
+  /// **'Transliteration'**
+  String get duaReaderShowTransliteration;
+
+  /// No description provided for @duaReaderShowTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get duaReaderShowTranslation;
+
+  /// No description provided for @duaReaderShowReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference'**
+  String get duaReaderShowReference;
+
+  /// No description provided for @duaReaderFocusMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus mode'**
+  String get duaReaderFocusMode;
+
+  /// No description provided for @duaReaderFocusModeExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit focus mode'**
+  String get duaReaderFocusModeExit;
+
+  /// No description provided for @duaReaderPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous dua'**
+  String get duaReaderPrevious;
+
+  /// No description provided for @duaReaderNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next dua'**
+  String get duaReaderNext;
+
+  /// No description provided for @duaReaderMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get duaReaderMore;
+
+  /// No description provided for @duaReaderTextSizeDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease text size'**
+  String get duaReaderTextSizeDecrease;
+
+  /// No description provided for @duaReaderTextSizeIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase text size'**
+  String get duaReaderTextSizeIncrease;
+
   /// No description provided for @routeNotFound.
   ///
   /// In en, this message translates to:

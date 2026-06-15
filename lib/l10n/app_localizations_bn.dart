@@ -353,6 +353,54 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String get duaReaderOptions => 'পড়ার সেটিংস';
+
+  @override
+  String get duaReaderTextSize => 'টেক্সট সাইজ';
+
+  @override
+  String get duaReaderTextSizeNormal => 'সাধারণ';
+
+  @override
+  String get duaReaderTextSizeMedium => 'মাঝারি';
+
+  @override
+  String get duaReaderTextSizeLarge => 'বড়';
+
+  @override
+  String get duaReaderShowIntroduction => 'ভূমিকা';
+
+  @override
+  String get duaReaderShowTransliteration => 'উচ্চারণ';
+
+  @override
+  String get duaReaderShowTranslation => 'অনুবাদ';
+
+  @override
+  String get duaReaderShowReference => 'রেফারেন্স';
+
+  @override
+  String get duaReaderFocusMode => 'ফোকাস মোড';
+
+  @override
+  String get duaReaderFocusModeExit => 'ফোকাস মোড বন্ধ';
+
+  @override
+  String get duaReaderPrevious => 'আগের দোয়া';
+
+  @override
+  String get duaReaderNext => 'পরের দোয়া';
+
+  @override
+  String get duaReaderMore => 'আরও অপশন';
+
+  @override
+  String get duaReaderTextSizeDecrease => 'টেক্সট ছোট করুন';
+
+  @override
+  String get duaReaderTextSizeIncrease => 'টেক্সট বড় করুন';
+
+  @override
   String routeNotFound(String path) {
     return 'রুট পাওয়া যায়নি: $path';
   }

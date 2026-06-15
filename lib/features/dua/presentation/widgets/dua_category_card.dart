@@ -90,7 +90,7 @@ class DuaCategoryIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedSize = size ?? 40.r;
+    final resolvedSize = size ?? 45.r;
 
     return Image.asset(
       DuaCategoryIcons.pngAssetPath(iconFile),

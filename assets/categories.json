@@ -1,0 +1,266 @@
+[
+  {
+    "name": "দুয়ার গুরুত্ব",
+    "url": "duas-importance",
+    "icon": "dua_s_importance.svg",
+    "meta": "৭টি উপবিভাগ"
+  },
+  {
+    "name": "দুয়ার ফজিলত",
+    "url": "duas-excellence",
+    "icon": "dua_s_excellence.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "দুয়ার সময়",
+    "url": "time-of-dua",
+    "icon": "time_of_dua.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "দুয়া কবুল",
+    "url": "dua-acceptance",
+    "icon": "dua_acceptance.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "সকাল ও সন্ধ্যা",
+    "url": "morning-and-evening",
+    "icon": "morning_evening.svg",
+    "meta": "৩টি উপবিভাগ"
+  },
+  {
+    "name": "ঘুম",
+    "url": "sleep",
+    "icon": "sleep.svg",
+    "meta": "২টি উপবিভাগ"
+  },
+  {
+    "name": "পোশাক",
+    "url": "cloths",
+    "icon": "cloths.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "বাড়ি",
+    "url": "home",
+    "icon": "home.svg",
+    "meta": "২টি উপবিভাগ"
+  },
+  {
+    "name": "টয়লেট",
+    "url": "toilet",
+    "icon": "toilet.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "আযান ও ইকামত",
+    "url": "adhaan-and-iqamah",
+    "icon": "adhaan_iqamah.svg",
+    "meta": "৪টি উপবিভাগ"
+  },
+  {
+    "name": "ওযু ও গোসল",
+    "url": "ablution-and-bath",
+    "icon": "ablution_bath.svg",
+    "meta": "২টি উপবিভাগ"
+  },
+  {
+    "name": "মসজিদ",
+    "url": "mosque",
+    "icon": "mosque.svg",
+    "meta": "৫টি উপবিভাগ"
+  },
+  {
+    "name": "সালাত",
+    "url": "salah",
+    "icon": "salah.svg",
+    "meta": "১৭টি উপবিভাগ"
+  },
+  {
+    "name": "বিতর ও অন্যান্য",
+    "url": "witr-and-other",
+    "icon": "witr_other.svg",
+    "meta": "৬টি উপবিভাগ"
+  },
+  {
+    "name": "কবর / জানাজা",
+    "url": "grave-funeral",
+    "icon": "grave_funeral.svg",
+    "meta": "৫টি উপবিভাগ"
+  },
+  {
+    "name": "রোজা",
+    "url": "fasting",
+    "icon": "fasting.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "সফর",
+    "url": "travel",
+    "icon": "travel.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "হজ্জ ও উমরাহ",
+    "url": "hajj-and-umrah",
+    "icon": "hajj_umrah.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "কুরবানি",
+    "url": "sacrifice",
+    "icon": "sacrifice.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "শয়তান থেকে রক্ষা",
+    "url": "evil-protection",
+    "icon": "evil_protection.svg",
+    "meta": "৬টি উপবিভাগ"
+  },
+  {
+    "name": "ক্ষমা প্রার্থনা",
+    "url": "forgiveness",
+    "icon": "forgiveness.svg",
+    "meta": "৪টি উপবিভাগ"
+  },
+  {
+    "name": "বিবাহ",
+    "url": "marriage",
+    "icon": "marriage.svg",
+    "meta": "৩টি উপবিভাগ"
+  },
+  {
+    "name": "পারিবারিক",
+    "url": "family",
+    "icon": "family.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "ঋণ",
+    "url": "debt",
+    "icon": "debt.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "দুশ্চিন্তা",
+    "url": "anxiety",
+    "icon": "anxiety.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "বিপদ",
+    "url": "danger",
+    "icon": "danger.svg",
+    "meta": "৪টি উপবিভাগ"
+  },
+  {
+    "name": "নিন্দা/প্রশংসা",
+    "url": "condemnationpraise",
+    "icon": "condemnation_praise.svg",
+    "meta": "২টি উপবিভাগ"
+  },
+  {
+    "name": "শিষ্টাচার",
+    "url": "manners",
+    "icon": "manners.svg",
+    "meta": "৭টি উপবিভাগ"
+  },
+  {
+    "name": "মজলিস",
+    "url": "gathering",
+    "icon": "gathering.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "খাদ্য ও পানীয়",
+    "url": "food",
+    "icon": "food.svg",
+    "meta": "৬টি উপবিভাগ"
+  },
+  {
+    "name": "পশু-পাখি",
+    "url": "animals",
+    "icon": "animals.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "বৃষ্টি/প্রকৃতি",
+    "url": "rainnature",
+    "icon": "rain_nature.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "অসুস্থতা",
+    "url": "sickness",
+    "icon": "sickness.svg",
+    "meta": "৩টি উপবিভাগ"
+  },
+  {
+    "name": "জীন/রোগ-ব্যাধি",
+    "url": "jinndiseases",
+    "icon": "jinn_diseases.svg",
+    "meta": "২টি উপবিভাগ"
+  },
+  {
+    "name": "কুরআনি দুয়া",
+    "url": "quranic-dua",
+    "icon": "quranic_dua.svg",
+    "meta": "৪টি উপবিভাগ"
+  },
+  {
+    "name": "আল্লাহর শ্রেষ্ঠ নাম",
+    "url": "greatest-name-of-allah",
+    "icon": "greatest_name_of_allah.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "নবী রাসূলদের দুয়া",
+    "url": "prophets-dua",
+    "icon": "prophet_s_dua.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "হাদীসের দুয়া",
+    "url": "duas-of-hadith",
+    "icon": "duas_of_hadith.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "সাহাবীদের দুয়া",
+    "url": "duas-of-sahaba",
+    "icon": "duas_of_sahaba.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "মাসনুন দুয়া",
+    "url": "masnun-duas",
+    "icon": "masnun_duas.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "বিবিধ দুয়া",
+    "url": "other-duas",
+    "icon": "other_duas.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "কখন কি বলতে হয়",
+    "url": "when-to-say-what",
+    "icon": "when_to_say_what.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "ঈদ",
+    "url": "eid",
+    "icon": "eid.svg",
+    "meta": "১টি উপবিভাগ"
+  },
+  {
+    "name": "৪০ রব্বানা দুয়া",
+    "url": "40-rabbana-duas",
+    "icon": "40_rabbana_duas.svg",
+    "meta": "১টি উপবিভাগ"
+  }
+]

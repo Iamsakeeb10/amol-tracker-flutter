@@ -293,8 +293,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         SizedBox(height: 12.h),
                         CardContainer(
                           color: AppColors.warningLight,
-                          borderColor:
-                              AppColors.warning.withValues(alpha: 0.3),
+                          borderColor: AppColors.warning.withValues(alpha: 0.3),
                           child: Row(
                             children: [
                               Icon(
@@ -309,12 +308,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                   children: [
                                     Text(
                                       l10n.historyWeakestAmal,
-                                      style: AppTextStyles.bodyLarge(
-                                        context,
-                                      ).copyWith(
-                                        fontSize: 13.sp,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                      style: AppTextStyles.bodyLarge(context)
+                                          .copyWith(
+                                            fontSize: 13.sp,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                     ),
                                     SizedBox(height: 2.h),
                                     Text(

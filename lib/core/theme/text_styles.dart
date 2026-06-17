@@ -61,18 +61,15 @@ class AppTextStyles {
     double? height,
     double letterSpacing = 0,
   }) {
-    final style = TextStyle(
+    return _displayFont(
+      context,
+      locale: locale,
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
       height: height,
       letterSpacing: letterSpacing,
-      decoration: TextDecoration.none,
     );
-    if (_isBn(context, locale: locale)) {
-      return GoogleFonts.notoSansBengali(textStyle: style);
-    }
-    return GoogleFonts.dmSans(textStyle: style);
   }
 
   static TextStyle displayLarge(BuildContext context, {Locale? locale}) =>
@@ -165,7 +162,7 @@ class AppTextStyles {
           fontSize: 11.sp,
           fontWeight: FontWeight.w500,
           color: AppColors.textMuted,
-          letterSpacing: 1.4,
+          letterSpacing: _isBn(context, locale: locale) ? 0 : 1.4,
         );
       });
 

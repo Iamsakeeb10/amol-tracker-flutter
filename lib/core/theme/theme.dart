@@ -21,7 +21,7 @@ class AppTheme {
     final isBn = locale?.languageCode == 'bn';
     final baseTextTheme = isBn
         ? GoogleFonts.notoSansBengaliTextTheme(base.textTheme)
-        : GoogleFonts.dmSansTextTheme(base.textTheme);
+        : GoogleFonts.plusJakartaSansTextTheme(base.textTheme);
 
     _cachedLocaleTag = localeTag;
     _cachedTheme = base.copyWith(

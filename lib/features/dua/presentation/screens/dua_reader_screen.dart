@@ -36,6 +36,14 @@ class _DuaReaderScreenState extends ConsumerState<DuaReaderScreen> {
   late int _currentIndex;
   bool _focusMode = false;
 
+  double get _actionIconSize => 24.r;
+
+  ButtonStyle get _actionIconStyle => IconButton.styleFrom(
+        padding: EdgeInsets.all(10.r),
+        minimumSize: Size(44.r, 44.r),
+        tapTargetSize: MaterialTapTargetSize.padded,
+      );
+
   @override
   void initState() {
     super.initState();
@@ -217,26 +225,32 @@ class _DuaReaderScreenState extends ConsumerState<DuaReaderScreen> {
       const DuaReaderFontControlButton(),
       IconButton(
         tooltip: l10n.duaCopy,
-        icon: Icon(Icons.copy_outlined, size: 20.r),
+        style: _actionIconStyle,
+        icon: Icon(Icons.copy_outlined, size: _actionIconSize),
         onPressed: () => _copyDua(dua),
       ),
       IconButton(
         tooltip: l10n.duaShare,
-        icon: Icon(Icons.share_outlined, size: 20.r),
+        style: _actionIconStyle,
+        icon: Icon(Icons.share_outlined, size: _actionIconSize),
         onPressed: () => _shareDua(dua),
       ),
       IconButton(
         tooltip: isFavorite ? l10n.duaFavRemove : l10n.duaFavAdd,
+        style: _actionIconStyle,
         icon: Icon(
           isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
           color: isFavorite ? AppColors.gold : null,
-          size: 22.r,
+          size: _actionIconSize,
         ),
         onPressed: () => _toggleFavorite(dua),
       ),
       PopupMenuButton<String>(
         tooltip: l10n.duaReaderMore,
-        icon: Icon(Icons.more_vert_rounded, size: 22.r),
+        padding: EdgeInsets.all(10.r),
+        constraints: BoxConstraints(minWidth: 44.r, minHeight: 44.r),
+        iconSize: _actionIconSize,
+        icon: Icon(Icons.more_vert_rounded, size: _actionIconSize),
         onSelected: (action) => _handleMoreMenuAction(action, dua, duas),
         itemBuilder: (context) => _buildMoreMenuItems(l10n, duas),
       ),
@@ -255,7 +269,8 @@ class _DuaReaderScreenState extends ConsumerState<DuaReaderScreen> {
       padding: EdgeInsets.zero,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, size: 22.r),
+          style: _actionIconStyle,
+          icon: Icon(Icons.arrow_back, size: _actionIconSize),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: duasAsync.maybeWhen(

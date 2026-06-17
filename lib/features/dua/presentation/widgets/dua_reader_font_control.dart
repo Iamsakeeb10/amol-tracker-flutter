@@ -60,7 +60,12 @@ class DuaReaderFontControlButton extends ConsumerWidget {
 
     return IconButton(
       tooltip: l10n.duaReaderTextSize,
-      icon: Icon(Icons.format_size_rounded, size: 20.r),
+      style: IconButton.styleFrom(
+        padding: EdgeInsets.all(10.r),
+        minimumSize: Size(44.r, 44.r),
+        tapTargetSize: MaterialTapTargetSize.padded,
+      ),
+      icon: Icon(Icons.format_size_rounded, size: 24.r),
       onPressed: () => showDuaReaderFontControl(context),
     );
   }

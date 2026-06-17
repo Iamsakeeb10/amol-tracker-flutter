@@ -37,6 +37,14 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
 
   bool get _onAllDuasTab => _tabIndex == 2;
 
+  double get _actionIconSize => 24.r;
+
+  ButtonStyle get _actionIconStyle => IconButton.styleFrom(
+        padding: EdgeInsets.all(10.r),
+        minimumSize: Size(44.r, 44.r),
+        tapTargetSize: MaterialTapTargetSize.padded,
+      );
+
   @override
   void initState() {
     super.initState();
@@ -121,7 +129,7 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
                     children: [
                       Icon(
                         Icons.menu_book_rounded,
-                        size: 22.r,
+                        size: _actionIconSize,
                         color: AppColors.gold,
                       ),
                       SizedBox(width: 8.w),
@@ -223,11 +231,13 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
     return [
       IconButton(
         tooltip: l10n.duaReaderOptions,
-        icon: Icon(Icons.tune_rounded, size: 20.r),
+        style: _actionIconStyle,
+        icon: Icon(Icons.tune_rounded, size: _actionIconSize),
         onPressed: () => showDuaReaderOptionsSheet(context),
       ),
       IconButton(
         tooltip: _showSearchField ? l10n.cancel : l10n.duaSearchHint,
+        style: _actionIconStyle,
         onPressed: _onSearchAction,
         icon: AnimatedSwitcher(
           duration: _searchAnimDuration,
@@ -251,7 +261,7 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
           child: Icon(
             _showSearchField ? Icons.close_rounded : Icons.search_rounded,
             key: ValueKey(_showSearchField),
-            size: 22.r,
+            size: _actionIconSize,
           ),
         ),
       ),

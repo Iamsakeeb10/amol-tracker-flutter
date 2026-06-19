@@ -2,7 +2,6 @@ class QuranConstants {
   QuranConstants._();
 
   static const arabicFontFamily = 'DigitalKhattIndopak';
-  static const totalPages = 604;
   static const totalSurahs = 114;
 
   static const translatorKhan = 'khan';

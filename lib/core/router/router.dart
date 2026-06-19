@@ -43,7 +43,6 @@ import '../../features/asma_ul_husna/presentation/screens/asma_ul_husna_screen.d
 import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
 import '../../features/dua/presentation/screens/dua_screen.dart';
 import '../../features/hijri_calendar/presentation/screens/hijri_calendar_screen.dart';
-import '../../features/quran/presentation/screens/quran_mushaf_reader_screen.dart';
 import '../../features/quran/presentation/screens/quran_screen.dart';
 import '../../features/quran/presentation/screens/quran_surah_scroll_screen.dart';
 import '../../features/syllabus/presentation/screens/course_detail_screen.dart';
@@ -210,14 +209,6 @@ GoRouter buildAppRouter() {
         path: AppRoutes.quran,
         name: 'quran',
         builder: (_, _) => const QuranScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.quranReader,
-        name: 'quranReader',
-        builder: (_, state) {
-          final page = int.tryParse(state.uri.queryParameters['page'] ?? '') ?? 1;
-          return QuranMushafReaderScreen(initialPage: page);
-        },
       ),
       GoRoute(
         path: AppRoutes.quranSurahScrollPattern,

@@ -21,11 +21,6 @@ class QuranReadingPrefsNotifier extends StateNotifier<QuranReadingPrefs> {
     await LocalStorageService.setPref(_prefsKey, state.toJson());
   }
 
-  Future<void> setLastPage(int page) async {
-    state = state.copyWith(lastPage: page.clamp(1, 604));
-    await _persist();
-  }
-
   Future<void> setTranslator(QuranTranslator translator) async {
     state = state.copyWith(translator: translator);
     await _persist();
@@ -50,11 +45,6 @@ class QuranReadingPrefsNotifier extends StateNotifier<QuranReadingPrefs> {
 
   Future<void> setShowTranslation(bool value) async {
     state = state.copyWith(showTranslation: value);
-    await _persist();
-  }
-
-  Future<void> setReadingMode(QuranReadingMode mode) async {
-    state = state.copyWith(readingMode: mode);
     await _persist();
   }
 }

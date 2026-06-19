@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -304,10 +306,9 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
     context.push(AppRoutes.quranSurahScrollPath(surah.id));
   }
 
-  Future<void> _playSurah(QuranSurah surah) async {
-    await ref.read(quranAudioProvider.notifier).playSurah(surah);
-    if (!mounted) return;
+  void _playSurah(QuranSurah surah) {
     context.push(AppRoutes.quranSurahScrollPath(surah.id));
+    unawaited(ref.read(quranAudioProvider.notifier).playSurah(surah));
   }
 }
 

@@ -104,20 +104,10 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
             onPressed: () => showTranslationPanel(context),
             icon: Icon(Icons.translate_outlined, size: 22.r),
           ),
-          IconButton(
-            onPressed: () async {
-              final surah = await ref.read(
-                quranSurahByIdProvider(widget.surahId).future,
-              );
-              if (surah == null) return;
-              await ref.read(quranAudioProvider.notifier).playSurah(surah);
-            },
-            icon: Icon(Icons.play_arrow_rounded, size: 24.r, color: AppColors.gold),
-          ),
         ],
       ),
       bottomNavigationBar: const QuranAudioMiniBar(),
-      floatingActionButton: audio.isActive
+      floatingActionButton: audio.isActive && audio.surahId == widget.surahId
           ? null
           : FloatingActionButton(
               backgroundColor: AppColors.emeraldMid,

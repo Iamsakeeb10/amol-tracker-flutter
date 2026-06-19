@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/colors.dart';
@@ -7,8 +8,9 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../constants/quran_text_styles.dart';
 import '../../models/quran_surah.dart';
+import '../../providers/quran_audio_provider.dart';
 
-class SurahListTile extends StatelessWidget {
+class SurahListTile extends ConsumerWidget {
   const SurahListTile({
     super.key,
     required this.surah,
@@ -21,9 +23,24 @@ class SurahListTile extends StatelessWidget {
   final VoidCallback onPlay;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final languageCode = Localizations.localeOf(context).languageCode;
+    final audio = ref.watch(quranAudioProvider);
+    final notifier = ref.read(quranAudioProvider.notifier);
+
+    final isThisSurah = audio.surahId == surah.id;
+    final isLoading = isThisSurah && audio.isLoading;
+    final isPlaying = isThisSurah && audio.isPlaying;
+
+    void onPlayTap() {
+      if (isThisSurah && (audio.isActive || audio.isLoading)) {
+        if (audio.isLoading) return;
+        notifier.togglePlayPause();
+        return;
+      }
+      onPlay();
+    }
 
     return CardContainer(
       onTap: onTap,
@@ -98,16 +115,32 @@ class SurahListTile extends StatelessWidget {
           ),
           SizedBox(width: 16.w),
           GestureDetector(
-            onTap: onPlay,
+            onTap: onPlayTap,
             behavior: HitTestBehavior.opaque,
             child: SizedBox(
-              width: 28.r,
-              height: 28.r,
+              width: 32.r,
+              height: 32.r,
               child: Center(
-                child: Icon(
-                  Icons.play_circle_outline,
-                  color: AppColors.gold,
-                  size: 28.r,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: isLoading
+                      ? SizedBox(
+                          key: const ValueKey('loading'),
+                          width: 22.r,
+                          height: 22.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.gold,
+                          ),
+                        )
+                      : Icon(
+                          isPlaying
+                              ? Icons.pause_circle_outline
+                              : Icons.play_circle_outline,
+                          key: ValueKey(isPlaying),
+                          color: AppColors.gold,
+                          size: 28.r,
+                        ),
                 ),
               ),
             ),

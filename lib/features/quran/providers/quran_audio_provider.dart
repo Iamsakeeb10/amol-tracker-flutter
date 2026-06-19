@@ -53,7 +53,8 @@ class QuranAudioNotifier extends StateNotifier<QuranAudioState> {
       isLoading: true,
       hasError: false,
       isPlaying: false,
-      surahName: surah.nameEn,
+      surahName: surah.nameTransliteration,
+      surahNameBn: surah.nameBn,
       totalAyahs: surah.ayahCount,
     );
 
@@ -63,7 +64,7 @@ class QuranAudioNotifier extends StateNotifier<QuranAudioState> {
         surahId: surah.id,
         ayah: startAyah,
         totalAyahs: surah.ayahCount,
-        surahName: surah.nameEn,
+        surahName: surah.nameTransliteration,
         qariId: prefs.qari,
       );
       state = state.copyWith(isLoading: false, isPlaying: true);

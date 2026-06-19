@@ -4284,6 +4284,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load this audio lesson.'**
   String get syllabusAudioLoadFailed;
+
+  /// No description provided for @quranTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quran'**
+  String get quranTitle;
+
+  /// No description provided for @quranSurahList.
+  ///
+  /// In en, this message translates to:
+  /// **'Surahs'**
+  String get quranSurahList;
+
+  /// No description provided for @quranReader.
+  ///
+  /// In en, this message translates to:
+  /// **'Mushaf Reader'**
+  String get quranReader;
+
+  /// No description provided for @quranMeccan.
+  ///
+  /// In en, this message translates to:
+  /// **'Meccan'**
+  String get quranMeccan;
+
+  /// No description provided for @quranMedinan.
+  ///
+  /// In en, this message translates to:
+  /// **'Medinan'**
+  String get quranMedinan;
+
+  /// No description provided for @quranAyahs.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Ayahs'**
+  String quranAyahs(int count);
+
+  /// No description provided for @quranPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page}'**
+  String quranPage(int page);
+
+  /// No description provided for @quranJuz.
+  ///
+  /// In en, this message translates to:
+  /// **'Juz {juz}'**
+  String quranJuz(int juz);
+
+  /// No description provided for @quranTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get quranTranslation;
+
+  /// No description provided for @quranSelectTranslator.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Translator'**
+  String get quranSelectTranslator;
+
+  /// No description provided for @quranSelectQari.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Qari'**
+  String get quranSelectQari;
+
+  /// No description provided for @quranTranslatorKhan.
+  ///
+  /// In en, this message translates to:
+  /// **'Muhiuddin Khan'**
+  String get quranTranslatorKhan;
+
+  /// No description provided for @quranTranslatorSahih.
+  ///
+  /// In en, this message translates to:
+  /// **'Sahih International'**
+  String get quranTranslatorSahih;
+
+  /// No description provided for @quranSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search surahs...'**
+  String get quranSearchHint;
+
+  /// No description provided for @quranContinueReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue from page {page}'**
+  String quranContinueReading(int page);
+
+  /// No description provided for @quranOpenReader.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get quranOpenReader;
+
+  /// No description provided for @quranFontSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Arabic text size'**
+  String get quranFontSize;
+
+  /// No description provided for @quranNoTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation hidden or unavailable'**
+  String get quranNoTranslation;
+
+  /// No description provided for @quranAyahLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayah {ayah}'**
+  String quranAyahLabel(int ayah);
 }
 
 class _AppLocalizationsDelegate

@@ -869,5 +869,50 @@
 
   "syllabusBookmarkedFilter": "Bookmarked",
   "syllabusBookmarksEmpty": "No bookmarked lessons yet.",
-  "syllabusAudioLoadFailed": "Could not load this audio lesson."
+  "syllabusAudioLoadFailed": "Could not load this audio lesson.",
+
+  "quranTitle": "Quran",
+  "quranSurahList": "Surahs",
+  "quranReader": "Mushaf Reader",
+  "quranMeccan": "Meccan",
+  "quranMedinan": "Medinan",
+  "quranAyahs": "{count} Ayahs",
+  "@quranAyahs": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "quranPage": "Page {page}",
+  "@quranPage": {
+    "placeholders": {
+      "page": {"type": "int"}
+    }
+  },
+  "quranJuz": "Juz {juz}",
+  "@quranJuz": {
+    "placeholders": {
+      "juz": {"type": "int"}
+    }
+  },
+  "quranTranslation": "Translation",
+  "quranSelectTranslator": "Select Translator",
+  "quranSelectQari": "Select Qari",
+  "quranTranslatorKhan": "Muhiuddin Khan",
+  "quranTranslatorSahih": "Sahih International",
+  "quranSearchHint": "Search surahs...",
+  "quranContinueReading": "Continue from page {page}",
+  "@quranContinueReading": {
+    "placeholders": {
+      "page": {"type": "int"}
+    }
+  },
+  "quranOpenReader": "Open",
+  "quranFontSize": "Arabic text size",
+  "quranNoTranslation": "Translation hidden or unavailable",
+  "quranAyahLabel": "Ayah {ayah}",
+  "@quranAyahLabel": {
+    "placeholders": {
+      "ayah": {"type": "int"}
+    }
+  }
 }

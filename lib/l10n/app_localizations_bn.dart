@@ -2290,4 +2290,71 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get syllabusAudioLoadFailed => 'অডিও লেসন লোড করা যায়নি।';
+
+  @override
+  String get quranTitle => 'কুরআন';
+
+  @override
+  String get quranSurahList => 'সূরাসমূহ';
+
+  @override
+  String get quranReader => 'মুসহাফ পাঠ';
+
+  @override
+  String get quranMeccan => 'মাক্কী';
+
+  @override
+  String get quranMedinan => 'মাদানী';
+
+  @override
+  String quranAyahs(int count) {
+    return '$count আয়াত';
+  }
+
+  @override
+  String quranPage(int page) {
+    return 'পৃষ্ঠা $page';
+  }
+
+  @override
+  String quranJuz(int juz) {
+    return 'পারা $juz';
+  }
+
+  @override
+  String get quranTranslation => 'অনুবাদ';
+
+  @override
+  String get quranSelectTranslator => 'অনুবাদক নির্বাচন';
+
+  @override
+  String get quranSelectQari => 'ক্বারী নির্বাচন';
+
+  @override
+  String get quranTranslatorKhan => 'মুহিউদ্দীন খান';
+
+  @override
+  String get quranTranslatorSahih => 'সহীহ ইন্টারন্যাশনাল';
+
+  @override
+  String get quranSearchHint => 'সূরা খুঁজুন...';
+
+  @override
+  String quranContinueReading(int page) {
+    return 'পৃষ্ঠা $page থেকে চালিয়ে যান';
+  }
+
+  @override
+  String get quranOpenReader => 'খুলুন';
+
+  @override
+  String get quranFontSize => 'আরবি টেক্সট সাইজ';
+
+  @override
+  String get quranNoTranslation => 'অনুবাদ লুকানো বা উপলব্ধ নয়';
+
+  @override
+  String quranAyahLabel(int ayah) {
+    return 'আয়াত $ayah';
+  }
 }

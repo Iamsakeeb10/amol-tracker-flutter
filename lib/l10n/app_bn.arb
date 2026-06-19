@@ -866,5 +866,25 @@
 
   "syllabusBookmarkedFilter": "বুকমার্ক",
   "syllabusBookmarksEmpty": "এখনো কোনো বুকমার্ক নেই।",
-  "syllabusAudioLoadFailed": "অডিও লেসন লোড করা যায়নি।"
+  "syllabusAudioLoadFailed": "অডিও লেসন লোড করা যায়নি।",
+
+  "quranTitle": "কুরআন",
+  "quranSurahList": "সূরাসমূহ",
+  "quranReader": "মুসহাফ পাঠ",
+  "quranMeccan": "মাক্কী",
+  "quranMedinan": "মাদানী",
+  "quranAyahs": "{count} আয়াত",
+  "quranPage": "পৃষ্ঠা {page}",
+  "quranJuz": "পারা {juz}",
+  "quranTranslation": "অনুবাদ",
+  "quranSelectTranslator": "অনুবাদক নির্বাচন",
+  "quranSelectQari": "ক্বারী নির্বাচন",
+  "quranTranslatorKhan": "মুহিউদ্দীন খান",
+  "quranTranslatorSahih": "সহীহ ইন্টারন্যাশনাল",
+  "quranSearchHint": "সূরা খুঁজুন...",
+  "quranContinueReading": "পৃষ্ঠা {page} থেকে চালিয়ে যান",
+  "quranOpenReader": "খুলুন",
+  "quranFontSize": "আরবি টেক্সট সাইজ",
+  "quranNoTranslation": "অনুবাদ লুকানো বা উপলব্ধ নয়",
+  "quranAyahLabel": "আয়াত {ayah}"
 }

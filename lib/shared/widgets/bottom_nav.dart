@@ -26,6 +26,7 @@ class ScaffoldWithBottomNav extends ConsumerWidget {
         location.startsWith('/leaderboard') ||
         location.startsWith('/settings') ||
         location.startsWith('/hijri-calendar') ||
+        location.startsWith('/quran') ||
         location.startsWith('/syllabus') ||
         location.startsWith('/dhikr') ||
         location.startsWith('/asma-ul-husna')) {

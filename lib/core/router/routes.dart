@@ -39,6 +39,12 @@ class AppRoutes {
   static const asmaUlHusna = '/asma-ul-husna';
   static const hijriCalendar = '/hijri-calendar';
 
+  static const quran = '/quran';
+  static const quranReader = '/quran/reader';
+  static const quranSurahScrollPattern = '/quran/surah/:surahId';
+
+  static String quranSurahScrollPath(int surahId) => '/quran/surah/$surahId';
+
   static const syllabus = '/syllabus';
   static const courseDetailPattern = '/syllabus/courses/:courseId';
 

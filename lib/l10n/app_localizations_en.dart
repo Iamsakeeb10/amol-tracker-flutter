@@ -2287,4 +2287,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syllabusAudioLoadFailed => 'Could not load this audio lesson.';
+
+  @override
+  String get quranTitle => 'Quran';
+
+  @override
+  String get quranSurahList => 'Surahs';
+
+  @override
+  String get quranReader => 'Mushaf Reader';
+
+  @override
+  String get quranMeccan => 'Meccan';
+
+  @override
+  String get quranMedinan => 'Medinan';
+
+  @override
+  String quranAyahs(int count) {
+    return '$count Ayahs';
+  }
+
+  @override
+  String quranPage(int page) {
+    return 'Page $page';
+  }
+
+  @override
+  String quranJuz(int juz) {
+    return 'Juz $juz';
+  }
+
+  @override
+  String get quranTranslation => 'Translation';
+
+  @override
+  String get quranSelectTranslator => 'Select Translator';
+
+  @override
+  String get quranSelectQari => 'Select Qari';
+
+  @override
+  String get quranTranslatorKhan => 'Muhiuddin Khan';
+
+  @override
+  String get quranTranslatorSahih => 'Sahih International';
+
+  @override
+  String get quranSearchHint => 'Search surahs...';
+
+  @override
+  String quranContinueReading(int page) {
+    return 'Continue from page $page';
+  }
+
+  @override
+  String get quranOpenReader => 'Open';
+
+  @override
+  String get quranFontSize => 'Arabic text size';
+
+  @override
+  String get quranNoTranslation => 'Translation hidden or unavailable';
+
+  @override
+  String quranAyahLabel(int ayah) {
+    return 'Ayah $ayah';
+  }
 }

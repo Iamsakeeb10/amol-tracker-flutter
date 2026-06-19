@@ -8,6 +8,12 @@ import '../constants/quran_constants.dart';
 
 typedef QuranPlaybackCallback = void Function(int surahId, int ayah, bool completed);
 
+typedef QuranPlayerStateCallback = void Function({
+  required bool playing,
+  required bool isBuffering,
+  required bool isReady,
+});
+
 AudioHandler? _cachedAudioHandler;
 
 class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
@@ -27,6 +33,10 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   String _surahName = '';
   String _qariId = QuranConstants.defaultQariId;
   QuranPlaybackCallback? onAyahChanged;
+  QuranPlayerStateCallback? onPlayerStateChanged;
+
+  /// Whether playback should proceed. Set to false on pause, true on play/playAyah.
+  bool _shouldPlay = true;
 
   Future<void> _init() async {
     playbackState.add(
@@ -66,6 +76,14 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
         ),
       );
 
+      onPlayerStateChanged?.call(
+        playing: state.playing,
+        isBuffering: state.processingState == ProcessingState.loading ||
+            state.processingState == ProcessingState.buffering,
+        isReady: state.processingState == ProcessingState.ready ||
+            state.processingState == ProcessingState.completed,
+      );
+
       if (state.processingState == ProcessingState.completed) {
         unawaited(_onAyahCompleted());
       }
@@ -97,7 +115,9 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
     }
   }
 
-  Future<void> playAyah({
+  /// Internal core method. Loads and plays the ayah only if [_shouldPlay] is true.
+  /// Call [playAyah] from external APIs (which always sets [_shouldPlay] = true first).
+  Future<void> _setupAndPlay({
     required int surahId,
     required int ayah,
     required int totalAyahs,
@@ -134,7 +154,27 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
     onAyahChanged?.call(surahId, ayah, false);
 
     await _player.setUrl(url);
-    await _player.play();
+    if (_shouldPlay) {
+      await _player.play();
+    }
+  }
+
+  /// Starts playback of a specific ayah. Always plays regardless of prior pause state.
+  Future<void> playAyah({
+    required int surahId,
+    required int ayah,
+    required int totalAyahs,
+    required String surahName,
+    required String qariId,
+  }) async {
+    _shouldPlay = true;
+    await _setupAndPlay(
+      surahId: surahId,
+      ayah: ayah,
+      totalAyahs: totalAyahs,
+      surahName: surahName,
+      qariId: qariId,
+    );
   }
 
   Future<void> _onAyahCompleted() async {
@@ -144,7 +184,9 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
       await stop();
       return;
     }
-    await playAyah(
+    // Use _setupAndPlay instead of playAyah so the _shouldPlay flag is respected.
+    // This prevents auto-advance from restarting playback after the user paused.
+    await _setupAndPlay(
       surahId: _surahId,
       ayah: _ayah + 1,
       totalAyahs: _totalAyahs,
@@ -156,18 +198,21 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   @override
   Future<void> play() async {
     await _ready;
+    _shouldPlay = true;
     await _player.play();
   }
 
   @override
   Future<void> pause() async {
     await _ready;
+    _shouldPlay = false;
     await _player.pause();
   }
 
   @override
   Future<void> stop() async {
     await _ready;
+    _shouldPlay = false;
     await _player.stop();
     await super.stop();
   }

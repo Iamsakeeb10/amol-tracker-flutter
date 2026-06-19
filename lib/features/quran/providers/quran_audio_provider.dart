@@ -29,17 +29,49 @@ class QuranAudioNotifier extends StateNotifier<QuranAudioState> {
     _handler = handler as QuranAudioHandler;
     if (!_initialized) {
       _handler!.onAyahChanged = _onAyahChanged;
+      _handler!.onPlayerStateChanged = _onPlayerStateChanged;
       _initialized = true;
     }
     return _handler!;
   }
 
+  void _onPlayerStateChanged({
+    required bool playing,
+    required bool isBuffering,
+    required bool isReady,
+  }) {
+    if (!state.isActive && !state.isLoading) return;
+
+    final bool? nextLoading;
+    if (isBuffering) {
+      nextLoading = true;
+    } else if (isReady) {
+      nextLoading = false;
+    } else {
+      nextLoading = null;
+    }
+
+    state = state.copyWith(
+      isPlaying: playing,
+      isLoading: nextLoading ?? state.isLoading,
+      hasError: false,
+    );
+  }
+
   void _onAyahChanged(int surahId, int ayah, bool completed) {
+    if (completed) {
+      state = state.copyWith(
+        surahId: surahId,
+        ayah: ayah,
+        isPlaying: false,
+        isLoading: false,
+        hasError: false,
+      );
+      return;
+    }
     state = state.copyWith(
       surahId: surahId,
       ayah: ayah,
-      isPlaying: !completed,
-      isLoading: false,
       hasError: false,
     );
   }
@@ -67,7 +99,6 @@ class QuranAudioNotifier extends StateNotifier<QuranAudioState> {
         surahName: surah.nameTransliteration,
         qariId: prefs.qari,
       );
-      state = state.copyWith(isLoading: false, isPlaying: true);
     } catch (error, stackTrace) {
       debugPrint('Quran audio failed: $error');
       debugPrint('$stackTrace');
@@ -85,13 +116,10 @@ class QuranAudioNotifier extends StateNotifier<QuranAudioState> {
     final handler = await _ensureHandler();
     if (state.isPlaying) {
       await handler.pause();
-      state = state.copyWith(isPlaying: false);
       return;
     }
     if (state.isActive) {
       await handler.play();
-      state = state.copyWith(isPlaying: true, hasError: false);
-      return;
     }
   }
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/colors.dart';
 import 'quran_constants.dart';
 
-/// Arabic mushaf text styles using the bundled [DigitalKhattIndopak] font.
+/// Arabic mushaf text styles using the bundled [IndopakNastaleeq] font.
 ///
 /// Do not build these from [AppTextStyles] — Google Fonts sets `package:
 /// google_fonts` on those styles, which prevents app-bundled fonts from loading

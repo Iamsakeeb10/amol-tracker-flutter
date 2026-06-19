@@ -72,7 +72,7 @@ class AyahCardWidget extends ConsumerWidget {
               ayah.textAr,
               style: QuranTextStyles.arabic(
                 fontSize: baseSize,
-                height: 2.0,
+                height: 2.3,
               ),
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,

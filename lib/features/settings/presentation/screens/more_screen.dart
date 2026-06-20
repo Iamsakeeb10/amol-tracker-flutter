@@ -151,6 +151,12 @@ class MoreScreen extends ConsumerWidget {
                 ),
                 const Divider(),
                 NavRow(
+                  icon: Icons.menu_book_outlined,
+                  title: l10n.navDua,
+                  onTap: () => context.push(AppRoutes.dua),
+                ),
+                const Divider(),
+                NavRow(
                   icon: Icons.auto_stories_outlined,
                   title: l10n.quranTitle,
                   onTap: () => context.push(AppRoutes.quran),

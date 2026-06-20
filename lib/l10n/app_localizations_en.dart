@@ -295,6 +295,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navMore => 'More';
 
   @override
+  String get quickNavSection => 'Quick Navigation';
+
+  @override
+  String get morningEveningDua => 'Morning & Evening Dua';
+
+  @override
   String get duaTitle => 'Duas';
 
   @override

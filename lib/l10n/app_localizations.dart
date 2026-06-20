@@ -638,6 +638,18 @@ abstract class AppLocalizations {
   /// **'More'**
   String get navMore;
 
+  /// No description provided for @quickNavSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Navigation'**
+  String get quickNavSection;
+
+  /// No description provided for @morningEveningDua.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning & Evening Dua'**
+  String get morningEveningDua;
+
   /// No description provided for @duaTitle.
   ///
   /// In en, this message translates to:

@@ -116,7 +116,9 @@ GoRouter buildAppRouter() {
           GoRoute(
             path: AppRoutes.dua,
             name: 'dua',
-            builder: (_, _) => const DuaScreen(),
+            builder: (_, state) => DuaScreen(
+              initialCategoryUrl: state.extra as String?,
+            ),
           ),
           GoRoute(
             path: AppRoutes.more,

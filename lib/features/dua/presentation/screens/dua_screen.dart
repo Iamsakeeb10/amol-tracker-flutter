@@ -7,14 +7,18 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/bottom_tab_back_button.dart';
+import '../../models/dua_models.dart';
 import '../../providers/dua_provider.dart';
 import '../widgets/dua_reader_options_sheet.dart';
 import 'dua_all_tab.dart';
 import 'dua_categories_tab.dart';
 import 'dua_favorites_tab.dart';
+import 'dua_sub_categories_screen.dart';
 
 class DuaScreen extends ConsumerStatefulWidget {
-  const DuaScreen({super.key});
+  const DuaScreen({super.key, this.initialCategoryUrl});
+
+  final String? initialCategoryUrl;
 
   @override
   ConsumerState<DuaScreen> createState() => _DuaScreenState();
@@ -35,6 +39,7 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
   bool _pendingSearchOpen = false;
   bool _searchTransitioning = false;
   String _searchQuery = '';
+  bool _initialCategoryHandled = false;
 
   bool get _onAllDuasTab => _tabIndex == 2;
 
@@ -55,7 +60,37 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
       ref.read(duaCategoriesProvider.future);
       ref.read(duaSubCategoriesProvider.future);
       ref.read(duasMapProvider.future);
+      _openInitialCategoryIfNeeded();
     });
+  }
+
+  Future<void> _openInitialCategoryIfNeeded() async {
+    final categoryUrl = widget.initialCategoryUrl?.trim();
+    if (categoryUrl == null || categoryUrl.isEmpty || _initialCategoryHandled) {
+      return;
+    }
+    _initialCategoryHandled = true;
+
+    try {
+      final categories = await ref.read(duaCategoriesProvider.future);
+      DuaCategory? category;
+      for (final item in categories) {
+        if (item.url == categoryUrl) {
+          category = item;
+          break;
+        }
+      }
+      if (!mounted || category == null) return;
+
+      final resolvedCategory = category;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => DuaSubCategoriesScreen(category: resolvedCategory),
+        ),
+      );
+    } catch (_) {
+      // Keep the main dua screen visible if category navigation fails.
+    }
   }
 
   void _onTabChanged() {

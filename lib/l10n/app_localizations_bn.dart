@@ -297,6 +297,12 @@ class AppLocalizationsBn extends AppLocalizations {
   String get navMore => 'আরও';
 
   @override
+  String get quickNavSection => 'দ্রুত নেভিগেশন';
+
+  @override
+  String get morningEveningDua => 'সকাল ও সন্ধ্যার দোয়া';
+
+  @override
   String get duaTitle => 'দোয়াসমূহ';
 
   @override

@@ -10,6 +10,7 @@ import '../../../../shared/widgets/card_container.dart';
 import 'home_editing_amal_sliver.dart';
 import 'home_header.dart';
 import 'home_progress_card.dart';
+import 'home_quick_nav_section.dart';
 import 'home_submitted_amal_sliver.dart';
 import 'home_welcome_card.dart';
 import 'home_widgets.dart';
@@ -158,6 +159,8 @@ class HomeScrollBody extends ConsumerWidget {
                         hasAnyDone: hasAnyDone,
                         onRetryFields: onRetryFields,
                       ),
+                    SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+                    const HomeQuickNavSection(),
                   ],
                 ),
               ),

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../constants/quran_constants.dart';
-import '../../models/quran_reading_prefs.dart';
 import '../../providers/quran_mushaf_provider.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
 import 'mushaf/mushaf_translation_strip.dart';
@@ -26,34 +25,42 @@ class MushafPageView extends ConsumerStatefulWidget {
 
 class _MushafPageViewState extends ConsumerState<MushafPageView> {
   PageController? _pageController;
-  int _currentPage = 1;
+  late final ValueNotifier<int> _pageNotifier;
+  late final ValueNotifier<int> _juzNotifier;
   int _totalPages = QuranConstants.mushafPageCount;
-  int _currentJuz = 1;
   bool _overlayVisible = false;
   Timer? _persistDebounce;
+  Timer? _prefetchDebounce;
 
   @override
   void initState() {
     super.initState();
     final prefs = ref.read(quranReadingPrefsProvider);
-    _currentPage = prefs.lastMushafPage.clamp(1, QuranConstants.mushafPageCount);
-    widget.onPageChanged(_currentPage);
+    final initialPage =
+        prefs.lastMushafPage.clamp(1, QuranConstants.mushafPageCount);
+    _pageNotifier = ValueNotifier(initialPage);
+    _juzNotifier = ValueNotifier(1);
+    widget.onPageChanged(initialPage);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _loadJuzForPage(_currentPage);
-      _prefetchAdjacentPages(_currentPage);
+      warmMushafResources(ref, centerPage: initialPage);
+      _loadJuzForPage(initialPage);
     });
   }
 
   @override
   void dispose() {
     _persistDebounce?.cancel();
+    _prefetchDebounce?.cancel();
+    _pageNotifier.dispose();
+    _juzNotifier.dispose();
     _pageController?.dispose();
     super.dispose();
   }
 
   void _ensureController(int totalPages) {
-    final initialPage = _currentPage.clamp(1, totalPages) - 1;
+    final currentPage = _pageNotifier.value;
+    final initialPage = currentPage.clamp(1, totalPages) - 1;
     if (_pageController != null &&
         _pageController!.hasClients &&
         _totalPages == totalPages) {
@@ -66,9 +73,9 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
 
   void _onPageChanged(int index) {
     final page = index + 1;
-    if (_currentPage == page) return;
+    if (_pageNotifier.value == page) return;
 
-    setState(() => _currentPage = page);
+    _pageNotifier.value = page;
     widget.onPageChanged(page);
 
     _persistDebounce?.cancel();
@@ -77,41 +84,34 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
     });
 
     _loadJuzForPage(page);
-    _prefetchAdjacentPages(page);
-  }
 
-  void _prefetchAdjacentPages(int page) {
-    final translator = ref.read(quranReadingPrefsProvider).translator.dbKey;
-    for (final adjacent in [page - 1, page + 1]) {
-      if (adjacent < 1 || adjacent > _totalPages) continue;
-      unawaited(
-        ref.read(
-          quranMushafPageProvider(MushafPageQuery(page: adjacent)).future,
-        ),
-      );
-      unawaited(
-        ref.read(
-          quranMushafPageAyahsProvider(
-            MushafPageAyahsQuery(page: adjacent, translator: translator),
-          ).future,
-        ),
-      );
-    }
+    _prefetchDebounce?.cancel();
+    _prefetchDebounce = Timer(const Duration(milliseconds: 200), () {
+      if (!mounted) return;
+      warmMushafResources(ref, centerPage: page, radius: 3);
+    });
   }
 
   Future<void> _loadJuzForPage(int page) async {
-    final pageData = await ref.read(
-      quranMushafPageProvider(MushafPageQuery(page: page)).future,
-    );
+    final pageData = ref.read(mushafPageCacheProvider)[page];
+    if (pageData != null) {
+      _juzNotifier.value = pageData.juz;
+      return;
+    }
+
+    await ref.read(mushafPageCacheProvider.notifier).ensurePage(page);
     if (!mounted) return;
-    setState(() => _currentJuz = pageData.juz);
+    final loaded = ref.read(mushafPageCacheProvider)[page];
+    if (loaded != null) {
+      _juzNotifier.value = loaded.juz;
+    }
   }
 
   void _jumpToPage(int page) {
     final clamped = page.clamp(1, _totalPages);
     final controller = _pageController;
     if (controller == null || !controller.hasClients) {
-      setState(() => _currentPage = clamped);
+      _pageNotifier.value = clamped;
       widget.onPageChanged(clamped);
       return;
     }
@@ -133,67 +133,85 @@ class _MushafPageViewState extends ConsumerState<MushafPageView> {
       quranReadingPrefsProvider.select((prefs) => prefs.showTranslation),
     );
 
-    return pageCountAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(
+    final totalPages =
+        pageCountAsync.asData?.value ?? QuranConstants.mushafPageCount;
+
+    if (pageCountAsync.hasError) {
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(error.toString()),
+            Text(pageCountAsync.error.toString()),
             TextButton(
               onPressed: () => ref.invalidate(quranPageCountProvider),
               child: const Text('Retry'),
             ),
           ],
         ),
-      ),
-      data: (totalPages) {
-        _ensureController(totalPages);
+      );
+    }
 
-        return Column(
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Directionality(
-                    textDirection: TextDirection.rtl,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: totalPages,
-                      onPageChanged: _onPageChanged,
-                      allowImplicitScrolling: true,
-                      itemBuilder: (context, index) {
-                        final page = index + 1;
-                        return MushafPageWidget(
-                          key: ValueKey('mushaf-page-$page'),
-                          pageNumber: page,
-                        );
-                      },
-                    ),
+    _ensureController(totalPages);
+
+    return Column(
+      children: [
+        Expanded(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: totalPages,
+                  onPageChanged: _onPageChanged,
+                  allowImplicitScrolling: true,
+                  physics: const PageScrollPhysics(
+                    parent: ClampingScrollPhysics(),
                   ),
-                  MushafOverlayControls(
-                    currentPage: _currentPage,
-                    totalPages: totalPages,
-                    currentJuz: _currentJuz,
-                    visible: _overlayVisible,
-                    onToggleVisibility: _toggleOverlay,
-                    onJumpToPage: _jumpToPage,
-                    onInteraction: () {},
-                  ),
-                ],
+                  itemBuilder: (context, index) {
+                    return MushafPageWidget(
+                      key: ValueKey('mushaf-page-${index + 1}'),
+                      pageNumber: index + 1,
+                    );
+                  },
+                ),
               ),
-            ),
-            AnimatedSize(
+              ValueListenableBuilder<int>(
+                valueListenable: _pageNotifier,
+                builder: (context, currentPage, _) {
+                  return ValueListenableBuilder<int>(
+                    valueListenable: _juzNotifier,
+                    builder: (context, currentJuz, _) {
+                      return MushafOverlayControls(
+                        currentPage: currentPage,
+                        totalPages: totalPages,
+                        currentJuz: currentJuz,
+                        visible: _overlayVisible,
+                        onToggleVisibility: _toggleOverlay,
+                        onJumpToPage: _jumpToPage,
+                        onInteraction: () {},
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        ValueListenableBuilder<int>(
+          valueListenable: _pageNotifier,
+          builder: (context, currentPage, _) {
+            return AnimatedSize(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
               child: showTranslation
-                  ? MushafTranslationStrip(pageNumber: _currentPage)
+                  ? MushafTranslationStrip(pageNumber: currentPage)
                   : const SizedBox.shrink(),
-            ),
-          ],
-        );
-      },
+            );
+          },
+        ),
+      ],
     );
   }
 }

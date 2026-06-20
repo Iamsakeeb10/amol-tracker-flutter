@@ -7,7 +7,7 @@ import '../../../models/mushaf_layout_info.dart';
 import '../../../utils/mushaf_line_layout.dart';
 
 /// One fixed-height mushaf line row with RTL text and user-controlled scaling.
-class MushafLineSlot extends StatelessWidget {
+class MushafLineSlot extends StatefulWidget {
   const MushafLineSlot({
     super.key,
     required this.line,
@@ -20,14 +20,72 @@ class MushafLineSlot extends StatelessWidget {
   final MushafPaperTheme? paperTheme;
 
   @override
+  State<MushafLineSlot> createState() => _MushafLineSlotState();
+}
+
+class _MushafLineSlotState extends State<MushafLineSlot> {
+  MushafLineMetrics? _metrics;
+  TextSpan? _textSpan;
+  double? _cachedWidth;
+  double? _cachedHeight;
+  double? _cachedFontScale;
+  int? _cachedPaperColor;
+  String? _cachedLineKey;
+
+  void _resolveLayout({
+    required double maxWidth,
+    required double maxHeight,
+    required TextScaler textScaler,
+    required MushafPaperTheme theme,
+  }) {
+    final lineKey = '${widget.line.lineNumber}:${widget.line.text}';
+    final paperColor = theme.paper.toARGB32();
+    if (_metrics != null &&
+        _cachedWidth == maxWidth &&
+        _cachedHeight == maxHeight &&
+        _cachedFontScale == widget.fontScale &&
+        _cachedPaperColor == paperColor &&
+        _cachedLineKey == lineKey) {
+      return;
+    }
+
+    _cachedWidth = maxWidth;
+    _cachedHeight = maxHeight;
+    _cachedFontScale = widget.fontScale;
+    _cachedPaperColor = paperColor;
+    _cachedLineKey = lineKey;
+
+    final contentWidth = widget.line.isSurahName
+        ? maxWidth - (MushafTheme.surahBannerPaddingHForScale(widget.fontScale) * 2).w
+        : maxWidth;
+
+    _metrics = MushafLineLayout.resolveLineMetrics(
+      line: widget.line,
+      maxWidth: contentWidth,
+      maxHeight: maxHeight,
+      userScale: widget.fontScale,
+      textScaler: textScaler,
+      includeBanner: widget.line.isSurahName,
+    );
+
+    _textSpan = MushafLineLayout.buildTextSpan(
+      line: widget.line,
+      fontSize: _metrics!.fontSize,
+      textColor: theme.ink,
+      ayahMarkerColor: theme.ayahMarker,
+      surahTitleColor: theme.surahTitle,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (line.text.trim().isEmpty) {
+    if (widget.line.text.trim().isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final theme = paperTheme ?? MushafTheme.paperThemes.first;
+    final theme = widget.paperTheme ?? MushafTheme.paperThemes.first;
     final textScaler = MediaQuery.textScalerOf(context);
-    final bannerPadH = MushafTheme.surahBannerPaddingHForScale(fontScale);
+    final bannerPadH = MushafTheme.surahBannerPaddingHForScale(widget.fontScale);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -37,28 +95,16 @@ class MushafLineSlot extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final alignment = Alignment.center;
-
-        final contentWidth = line.isSurahName
-            ? maxWidth - (bannerPadH * 2).w
-            : maxWidth;
-
-        final metrics = MushafLineLayout.resolveLineMetrics(
-          line: line,
-          maxWidth: contentWidth,
+        _resolveLayout(
+          maxWidth: maxWidth,
           maxHeight: maxHeight,
-          userScale: fontScale,
           textScaler: textScaler,
-          includeBanner: line.isSurahName,
+          theme: theme,
         );
 
-        final textSpan = MushafLineLayout.buildTextSpan(
-          line: line,
-          fontSize: metrics.fontSize,
-          textColor: theme.ink,
-          ayahMarkerColor: theme.ayahMarker,
-          surahTitleColor: theme.surahTitle,
-        );
+        final metrics = _metrics!;
+        final textSpan = _textSpan!;
+        const alignment = Alignment.center;
 
         return RepaintBoundary(
           child: ClipRect(
@@ -68,11 +114,11 @@ class MushafLineSlot extends StatelessWidget {
               child: Align(
                 alignment: alignment,
                 child: _MushafLineText(
-                  line: line,
+                  line: widget.line,
                   textSpan: textSpan,
                   textScaler: textScaler,
                   alignment: alignment,
-                  banner: line.isSurahName,
+                  banner: widget.line.isSurahName,
                   bannerPadH: bannerPadH,
                   verticalScale: metrics.verticalScale,
                   surahTitleColor: theme.surahTitle,

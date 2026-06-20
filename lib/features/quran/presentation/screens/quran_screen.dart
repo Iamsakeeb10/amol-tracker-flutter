@@ -13,6 +13,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/bottom_tab_back_button.dart';
 import '../../models/quran_surah.dart';
 import '../../providers/quran_audio_provider.dart';
+import '../../providers/quran_mushaf_provider.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
 import '../../providers/quran_surah_provider.dart';
 import '../../utils/quran_tap_targets.dart';
@@ -55,6 +56,9 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
         ? _QuranViewMode.mushafReader
         : _QuranViewMode.surahList;
     _mushafCurrentPage = prefs.lastMushafPage;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      warmMushafResources(ref, centerPage: _mushafCurrentPage);
+    });
   }
 
   @override
@@ -127,9 +131,22 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
         : _QuranViewMode.surahList;
 
     setState(() => _viewMode = nextMode);
+    if (nextMode == _QuranViewMode.mushafReader) {
+      warmMushafResources(ref, centerPage: _mushafCurrentPage);
+    }
     await ref
         .read(quranReadingPrefsProvider.notifier)
         .setMushafReaderMode(nextMode == _QuranViewMode.mushafReader);
+  }
+
+  String _mushafAppBarTitle(AppLocalizations l10n) {
+    final pageLabel = l10n.quranPage(_mushafCurrentPage);
+    final surah =
+        ref.watch(mushafPrimarySurahForPageProvider(_mushafCurrentPage));
+    if (surah == null) return pageLabel;
+
+    final languageCode = Localizations.localeOf(context).languageCode;
+    return '${surah.displayName(languageCode)} · $pageLabel';
   }
 
   void _openMushafAtLastPage() {
@@ -137,6 +154,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
       _viewMode = _QuranViewMode.mushafReader;
       _mushafCurrentPage = ref.read(quranReadingPrefsProvider).lastMushafPage;
     });
+    warmMushafResources(ref, centerPage: _mushafCurrentPage);
     unawaited(
       ref.read(quranReadingPrefsProvider.notifier).setMushafReaderMode(true),
     );
@@ -153,7 +171,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
 
     final isMushaf = _viewMode == _QuranViewMode.mushafReader;
     final titleText = isMushaf
-        ? l10n.quranPage(_mushafCurrentPage)
+        ? _mushafAppBarTitle(l10n)
         : l10n.quranTitle;
     const titleIcon = Icons.auto_stories_rounded;
 

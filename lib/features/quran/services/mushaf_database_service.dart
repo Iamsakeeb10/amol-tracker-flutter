@@ -16,6 +16,7 @@ class MushafDatabaseService {
 
   final Database _layoutDb;
   final Database _wordsDb;
+  Map<int, int>? _surahStartPagesCache;
 
   static Future<MushafDatabaseService> open() async {
     final layoutPath = await _resolveDbPath(_layoutAssetPath, _layoutFileName);
@@ -153,6 +154,8 @@ class MushafDatabaseService {
   }
 
   Future<Map<int, int>> getAllSurahStartPages() async {
+    if (_surahStartPagesCache != null) return _surahStartPagesCache!;
+
     final wordRows = await _wordsDb.query(
       'words',
       columns: ['id', 'surah'],
@@ -166,25 +169,36 @@ class MushafDatabaseService {
       orderBy: 'page_number ASC',
     );
 
+    final pageRanges = pageRows
+        .map((row) {
+          final pageNumber = parseMushafInt(row['page_number']);
+          final first = parseMushafInt(row['first_word_id']);
+          final last = parseMushafInt(row['last_word_id']);
+          if (pageNumber == null || first == null || last == null) return null;
+          return (page: pageNumber, first: first, last: last);
+        })
+        .whereType<({int page, int first, int last})>()
+        .toList(growable: false);
+
     final startPages = <int, int>{};
     for (final row in wordRows) {
       final surahId = parseMushafInt(row['surah']);
       final wordId = parseMushafInt(row['id']);
       if (surahId == null || wordId == null) continue;
-      for (final page in pageRows) {
-        final first = parseMushafInt(page['first_word_id']);
-        final last = parseMushafInt(page['last_word_id']);
-        if (first == null || last == null) continue;
-        if (wordId >= first && wordId <= last) {
-          final pageNumber = parseMushafInt(page['page_number']);
-          if (pageNumber == null) continue;
-          final existing = startPages[surahId];
-          if (existing == null || pageNumber < existing) {
-            startPages[surahId] = pageNumber;
-          }
+
+      int? minPage;
+      for (final range in pageRanges) {
+        if (wordId < range.first || wordId > range.last) continue;
+        if (minPage == null || range.page < minPage) {
+          minPage = range.page;
         }
       }
+      if (minPage != null) {
+        startPages[surahId] = minPage;
+      }
     }
+
+    _surahStartPagesCache = startPages;
     return startPages;
   }
 

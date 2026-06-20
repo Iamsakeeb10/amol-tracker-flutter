@@ -123,7 +123,13 @@ class _MushafOverlayControlsState extends ConsumerState<MushafOverlayControls> {
                         ],
                       ),
                     ),
-                    const Spacer(),
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: widget.onToggleVisibility,
+                        child: const SizedBox.expand(),
+                      ),
+                    ),
                     _OverlayBar(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,

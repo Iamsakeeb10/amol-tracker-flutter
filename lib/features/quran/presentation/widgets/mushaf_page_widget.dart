@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shimmer/shimmer.dart';
 
-import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../constants/mushaf_theme.dart';
@@ -14,7 +12,7 @@ import 'mushaf/mushaf_line_slot.dart';
 import 'mushaf/mushaf_page_frame.dart';
 
 /// Single mushaf page (610-page Indo-Pak 15-line layout).
-class MushafPageWidget extends ConsumerWidget {
+class MushafPageWidget extends ConsumerStatefulWidget {
   const MushafPageWidget({
     super.key,
     required this.pageNumber,
@@ -23,23 +21,57 @@ class MushafPageWidget extends ConsumerWidget {
   final int pageNumber;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final prefs = ref.watch(quranReadingPrefsProvider);
-    final fontScale = prefs.arabicFontScale;
-    final paperTheme = MushafTheme.themeAt(prefs.mushafBgIndex);
-    final pageAsync = ref.watch(
-      quranMushafPageProvider(MushafPageQuery(page: pageNumber)),
+  ConsumerState<MushafPageWidget> createState() => _MushafPageWidgetState();
+}
+
+class _MushafPageWidgetState extends ConsumerState<MushafPageWidget>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _ensurePage();
+  }
+
+  @override
+  void didUpdateWidget(MushafPageWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.pageNumber != widget.pageNumber) {
+      _ensurePage();
+    }
+  }
+
+  void _ensurePage() {
+    ref.read(mushafPageCacheProvider.notifier).ensurePage(widget.pageNumber);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    final fontScale = ref.watch(
+      quranReadingPrefsProvider.select((prefs) => prefs.arabicFontScale),
+    );
+    final mushafBgIndex = ref.watch(
+      quranReadingPrefsProvider.select((prefs) => prefs.mushafBgIndex),
+    );
+    final paperTheme = MushafTheme.themeAt(mushafBgIndex);
+    final pageData = ref.watch(
+      mushafPageCacheProvider.select((cache) => cache[widget.pageNumber]),
     );
 
-    return pageAsync.when(
-      loading: () => _MushafPageSkeleton(paperTheme: paperTheme),
-      error: (error, _) => _MushafPageError(
-        message: error.toString(),
-        onRetry: () => ref.invalidate(
-          quranMushafPageProvider(MushafPageQuery(page: pageNumber)),
-        ),
-      ),
-      data: (pageData) => _MushafPageContent(
+    if (pageData == null) {
+      return _MushafPagePlaceholder(
+        pageNumber: widget.pageNumber,
+        fontScale: fontScale,
+        paperTheme: paperTheme,
+      );
+    }
+
+    return RepaintBoundary(
+      child: _MushafPageContent(
         pageData: pageData,
         fontScale: fontScale,
         paperTheme: paperTheme,
@@ -120,79 +152,34 @@ class _MushafPageContent extends StatelessWidget {
   }
 }
 
-class _MushafPageSkeleton extends StatelessWidget {
-  const _MushafPageSkeleton({required this.paperTheme});
+/// Empty page shell shown while local DB data is read — no spinner or shimmer.
+class _MushafPagePlaceholder extends StatelessWidget {
+  const _MushafPagePlaceholder({
+    required this.pageNumber,
+    required this.fontScale,
+    required this.paperTheme,
+  });
 
+  final int pageNumber;
+  final double fontScale;
   final MushafPaperTheme paperTheme;
 
   @override
   Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: paperTheme.paperBorder.withValues(alpha: 0.4),
-      highlightColor: paperTheme.paper,
-      child: DecoratedBox(
-        decoration: MushafTheme.pageDecoration(
-          borderRadius: 0,
-          paperColor: paperTheme.paper,
-          fullBleed: true,
-        ),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            MushafTheme.pageInnerPaddingH.w,
-            MushafTheme.pageInnerPaddingTop.h,
-            MushafTheme.pageInnerPaddingH.w,
-            0,
-          ),
-          child: Column(
-            children: List.generate(
-              15,
-              (index) => Expanded(
-                child: Container(
-                  margin: EdgeInsets.symmetric(vertical: 2.h),
-                  color: paperTheme.paperBorder.withValues(alpha: 0.25),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+    final innerPad = MushafTheme.innerPaddingHForScale(fontScale);
+    final innerTop = MushafTheme.innerPaddingTopForScale(fontScale);
 
-class _MushafPageError extends StatelessWidget {
-  const _MushafPageError({
-    required this.message,
-    required this.onRetry,
-  });
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(24.w),
+    return MushafPageFrame(
+      pageNumber: pageNumber,
+      fontScale: fontScale,
+      paperTheme: paperTheme,
+      body: Padding(
+        padding: EdgeInsets.fromLTRB(innerPad.w, innerTop.h, innerPad.w, 0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline_rounded, color: AppColors.gold, size: 36.r),
-            SizedBox(height: 12.h),
-            Text(
-              message,
-              style: AppTextStyles.bodyMedium(context),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16.h),
-            TextButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded),
-              label: Text(l10n.husnaRetryQuiz),
-            ),
-          ],
+          children: List.generate(
+            15,
+            (_) => const Expanded(child: SizedBox.shrink()),
+          ),
         ),
       ),
     );

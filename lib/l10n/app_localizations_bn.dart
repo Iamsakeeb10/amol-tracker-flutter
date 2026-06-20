@@ -2357,4 +2357,21 @@ class AppLocalizationsBn extends AppLocalizations {
   String quranAyahLabel(int ayah) {
     return 'আয়াত $ayah';
   }
+
+  @override
+  String get quranJumpToPage => 'পৃষ্ঠায় যান';
+
+  @override
+  String get quranJumpToSurah => 'সূরায় যান';
+
+  @override
+  String get quranMushafMode => 'মুসহাফ দেখুন';
+
+  @override
+  String get quranSurahMode => 'সূরার তালিকা';
+
+  @override
+  String quranPageOf(int page, int total) {
+    return 'পৃষ্ঠা $page / $total';
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:riverpod/legacy.dart';
 
 import '../../../core/services/local_storage_service.dart';
+import '../constants/quran_constants.dart';
 import '../models/quran_reading_prefs.dart';
 
 const _prefsKey = 'quran_reading_prefs';
@@ -45,6 +46,19 @@ class QuranReadingPrefsNotifier extends StateNotifier<QuranReadingPrefs> {
 
   Future<void> setShowTranslation(bool value) async {
     state = state.copyWith(showTranslation: value);
+    await _persist();
+  }
+
+  Future<void> setLastMushafPage(int page) async {
+    final clamped = page.clamp(1, QuranConstants.mushafPageCount);
+    if (state.lastMushafPage == clamped) return;
+    state = state.copyWith(lastMushafPage: clamped);
+    await _persist();
+  }
+
+  Future<void> setMushafReaderMode(bool enabled) async {
+    if (state.mushafReaderMode == enabled) return;
+    state = state.copyWith(mushafReaderMode: enabled);
     await _persist();
   }
 }

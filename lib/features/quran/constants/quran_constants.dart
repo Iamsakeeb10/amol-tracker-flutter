@@ -2,7 +2,9 @@ class QuranConstants {
   QuranConstants._();
 
   static const arabicFontFamily = 'IndopakNastaleeq';
+  static const mushafFontFamily = 'QpcNastaleeq';
   static const totalSurahs = 114;
+  static const mushafPageCount = 610;
 
   static const translatorKhan = 'khan';
   static const translatorSahih = 'sahih';

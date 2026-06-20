@@ -17,9 +17,10 @@ class QuranTextStyles {
     double height = 2.0,
     FontWeight fontWeight = FontWeight.w400,
     Color? backgroundColor,
+    String? fontFamily,
   }) {
     return TextStyle(
-      fontFamily: QuranConstants.arabicFontFamily,
+      fontFamily: fontFamily ?? QuranConstants.arabicFontFamily,
       fontSize: fontSize,
       height: height,
       color: color,
@@ -28,4 +29,32 @@ class QuranTextStyles {
       decoration: TextDecoration.none,
     );
   }
+
+  /// Mushaf page text — uses [QpcNastaleeq] for ornate ayah-end marker glyphs.
+  ///
+  /// [height] defaults to `null` so Flutter uses the font's own ascent/descent
+  /// metrics. Forcing a tight [TextStyle.height] clips Nastaleeq diacritics.
+  static TextStyle mushaf({
+    required double fontSize,
+    Color color = AppColors.textPrimary,
+    FontWeight fontWeight = FontWeight.w400,
+    double? height,
+  }) {
+    return TextStyle(
+      fontFamily: QuranConstants.mushafFontFamily,
+      fontSize: fontSize,
+      height: height,
+      color: color,
+      fontWeight: fontWeight,
+      decoration: TextDecoration.none,
+      leadingDistribution: TextLeadingDistribution.proportional,
+    );
+  }
+
+  /// Line metrics tuned for QPC / Indo-Pak Nastaleeq mushaf fonts.
+  static const textHeightBehavior = TextHeightBehavior(
+    applyHeightToFirstAscent: false,
+    applyHeightToLastDescent: false,
+    leadingDistribution: TextLeadingDistribution.proportional,
+  );
 }

@@ -110,6 +110,8 @@ flutter:
     - assets/sub_categories.json
     - assets/duas.json
     - assets/quran_complete.sqlite
+    - assets/qpc-nastaleeq-15-lines.db
+    - assets/qpc-nastaleeq.db
 
   fonts:
     - family: DigitalKhattIndopak
@@ -118,6 +120,9 @@ flutter:
     - family: IndopakNastaleeq
       fonts:
         - asset: assets/fonts/indopak-nastaleeq.ttf
+    - family: QpcNastaleeq
+      fonts:
+        - asset: assets/fonts/qpc-nastaleeq.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

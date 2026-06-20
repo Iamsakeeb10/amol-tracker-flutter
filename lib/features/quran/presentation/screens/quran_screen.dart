@@ -12,8 +12,13 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../models/quran_surah.dart';
 import '../../providers/quran_audio_provider.dart';
+import '../../providers/quran_reading_prefs_provider.dart';
 import '../../providers/quran_surah_provider.dart';
+import '../widgets/mushaf_page_view.dart';
+import '../widgets/quran_audio_mini_bar.dart';
 import '../widgets/surah_list_tile.dart';
+
+enum _QuranViewMode { surahList, mushafReader }
 
 class QuranScreen extends ConsumerStatefulWidget {
   const QuranScreen({super.key});
@@ -33,6 +38,8 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
   bool _searchOpen = false;
   bool _searchTransitioning = false;
   String _searchQuery = '';
+  late _QuranViewMode _viewMode;
+  int _mushafCurrentPage = 1;
 
   double get _actionIconSize => 24.r;
 
@@ -41,6 +48,16 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
         minimumSize: Size(44.r, 44.r),
         tapTargetSize: MaterialTapTargetSize.padded,
       );
+
+  @override
+  void initState() {
+    super.initState();
+    final prefs = ref.read(quranReadingPrefsProvider);
+    _viewMode = prefs.mushafReaderMode
+        ? _QuranViewMode.mushafReader
+        : _QuranViewMode.surahList;
+    _mushafCurrentPage = prefs.lastMushafPage;
+  }
 
   @override
   void dispose() {
@@ -104,6 +121,29 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
     setState(() => _searchQuery = trimmed);
   }
 
+  Future<void> _toggleViewMode() async {
+    if (_searchOpen) _closeSearch();
+
+    final nextMode = _viewMode == _QuranViewMode.surahList
+        ? _QuranViewMode.mushafReader
+        : _QuranViewMode.surahList;
+
+    setState(() => _viewMode = nextMode);
+    await ref
+        .read(quranReadingPrefsProvider.notifier)
+        .setMushafReaderMode(nextMode == _QuranViewMode.mushafReader);
+  }
+
+  void _openMushafAtLastPage() {
+    setState(() {
+      _viewMode = _QuranViewMode.mushafReader;
+      _mushafCurrentPage = ref.read(quranReadingPrefsProvider).lastMushafPage;
+    });
+    unawaited(
+      ref.read(quranReadingPrefsProvider.notifier).setMushafReaderMode(true),
+    );
+  }
+
   Widget _buildAppBarTitle(AppLocalizations l10n) {
     final titleStyle = AppTextStyles.headlineMedium(
       context,
@@ -112,6 +152,14 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
       applyHeightToFirstAscent: false,
       applyHeightToLastDescent: false,
     );
+
+    final isMushaf = _viewMode == _QuranViewMode.mushafReader;
+    final titleText = isMushaf
+        ? l10n.quranPage(_mushafCurrentPage)
+        : l10n.quranTitle;
+    final titleIcon = isMushaf
+        ? Icons.auto_stories_rounded
+        : Icons.menu_book_rounded;
 
     return SizedBox(
       height: 42.h,
@@ -123,13 +171,13 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
             curve: _searchAnimCurve,
             alignment: Alignment.centerLeft,
             clipBehavior: Clip.hardEdge,
-            child: _searchOpen
+            child: _searchOpen || isMushaf
                 ? const SizedBox.shrink()
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.menu_book_rounded,
+                        titleIcon,
                         size: _actionIconSize,
                         color: AppColors.gold,
                       ),
@@ -174,7 +222,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
                     ),
                   );
                 },
-                child: _searchOpen
+                child: _searchOpen && !isMushaf
                     ? Align(
                         key: const ValueKey('quran_search_field'),
                         alignment: Alignment.centerLeft,
@@ -205,18 +253,34 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
                         ),
                       )
                     : Align(
-                        key: const ValueKey('quran_title'),
+                        key: ValueKey(
+                          isMushaf ? 'quran_mushaf_title' : 'quran_title',
+                        ),
                         alignment: Alignment.centerLeft,
-                        child: Text(
-                          l10n.quranTitle,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: titleStyle,
-                          textHeightBehavior: titleHeightBehavior,
-                          strutStyle: const StrutStyle(
-                            height: 0,
-                            forceStrutHeight: true,
-                          ),
+                        child: Row(
+                          children: [
+                            if (isMushaf) ...[
+                              Icon(
+                                titleIcon,
+                                size: _actionIconSize,
+                                color: AppColors.gold,
+                              ),
+                              SizedBox(width: 8.w),
+                            ],
+                            Expanded(
+                              child: Text(
+                                titleText,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: titleStyle,
+                                textHeightBehavior: titleHeightBehavior,
+                                strutStyle: const StrutStyle(
+                                  height: 0,
+                                  forceStrutHeight: true,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
               ),
@@ -232,6 +296,8 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
     final l10n = AppLocalizations.of(context)!;
     final surahsAsync = ref.watch(quranSurahListProvider);
     final surahs = surahsAsync.asData?.value;
+    final prefs = ref.watch(quranReadingPrefsProvider);
+    final isMushaf = _viewMode == _QuranViewMode.mushafReader;
 
     return AppScaffold(
       padding: EdgeInsets.zero,
@@ -244,9 +310,9 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
         title: _buildAppBarTitle(l10n),
         actions: [
           IconButton(
-            tooltip: _searchOpen ? l10n.cancel : l10n.quranSearchHint,
+            tooltip: isMushaf ? l10n.quranSurahMode : l10n.quranMushafMode,
             style: _actionIconStyle,
-            onPressed: _onSearchAction,
+            onPressed: _toggleViewMode,
             icon: AnimatedSwitcher(
               duration: _searchAnimDuration,
               switchInCurve: _searchAnimCurve,
@@ -267,38 +333,84 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
                 );
               },
               child: Icon(
-                _searchOpen ? Icons.close_rounded : Icons.search_rounded,
-                key: ValueKey(_searchOpen),
+                isMushaf
+                    ? Icons.format_list_bulleted_rounded
+                    : Icons.auto_stories_rounded,
+                key: ValueKey(isMushaf),
                 size: _actionIconSize,
               ),
             ),
           ),
+          if (!isMushaf)
+            IconButton(
+              tooltip: _searchOpen ? l10n.cancel : l10n.quranSearchHint,
+              style: _actionIconStyle,
+              onPressed: _onSearchAction,
+              icon: AnimatedSwitcher(
+                duration: _searchAnimDuration,
+                switchInCurve: _searchAnimCurve,
+                switchOutCurve: _searchAnimReverseCurve,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: Tween<double>(begin: 0.82, end: 1).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: _searchAnimCurve,
+                          reverseCurve: _searchAnimReverseCurve,
+                        ),
+                      ),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Icon(
+                  _searchOpen ? Icons.close_rounded : Icons.search_rounded,
+                  key: ValueKey(_searchOpen),
+                  size: _actionIconSize,
+                ),
+              ),
+            ),
         ],
       ),
-      body: surahsAsync.when(
-        loading: () => surahs == null
-            ? const SizedBox.shrink()
-            : _SurahListView(
-                surahs: _filterSurahs(surahs),
+      bottomNavigationBar: const QuranAudioMiniBar(),
+      body: isMushaf
+          ? MushafPageView(
+              onPageChanged: (page) {
+                if (_mushafCurrentPage != page) {
+                  setState(() => _mushafCurrentPage = page);
+                }
+              },
+            )
+          : surahsAsync.when(
+              loading: () => surahs == null
+                  ? const SizedBox.shrink()
+                  : _SurahListView(
+                      surahs: _filterSurahs(surahs),
+                      lastMushafPage: prefs.lastMushafPage,
+                      onContinueReading: _openMushafAtLastPage,
+                      onTap: _openSurah,
+                      onPlay: _playSurah,
+                    ),
+              error: (error, _) => Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20.w),
+                  child: Text(
+                    error.toString(),
+                    style: AppTextStyles.bodyMedium(context),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              data: (allSurahs) => _SurahListView(
+                surahs: _filterSurahs(allSurahs),
+                lastMushafPage: prefs.lastMushafPage,
+                onContinueReading: _openMushafAtLastPage,
                 onTap: _openSurah,
                 onPlay: _playSurah,
               ),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.w),
-            child: Text(
-              error.toString(),
-              style: AppTextStyles.bodyMedium(context),
-              textAlign: TextAlign.center,
             ),
-          ),
-        ),
-        data: (allSurahs) => _SurahListView(
-          surahs: _filterSurahs(allSurahs),
-          onTap: _openSurah,
-          onPlay: _playSurah,
-        ),
-      ),
     );
   }
 
@@ -315,28 +427,96 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
 class _SurahListView extends StatelessWidget {
   const _SurahListView({
     required this.surahs,
+    required this.lastMushafPage,
+    required this.onContinueReading,
     required this.onTap,
     required this.onPlay,
   });
 
   final List<QuranSurah> surahs;
+  final int lastMushafPage;
+  final VoidCallback onContinueReading;
   final ValueChanged<QuranSurah> onTap;
   final ValueChanged<QuranSurah> onPlay;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final showContinueBanner = lastMushafPage > 1;
+
     return ListView.separated(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 100.h),
-      itemCount: surahs.length,
+      itemCount: surahs.length + (showContinueBanner ? 1 : 0),
       separatorBuilder: (_, __) => SizedBox(height: 8.h),
       itemBuilder: (context, index) {
-        final surah = surahs[index];
+        if (showContinueBanner && index == 0) {
+          return _ContinueReadingBanner(
+            label: l10n.quranContinueReading(lastMushafPage),
+            actionLabel: l10n.quranOpenReader,
+            onTap: onContinueReading,
+          );
+        }
+
+        final surahIndex = showContinueBanner ? index - 1 : index;
+        final surah = surahs[surahIndex];
         return SurahListTile(
           surah: surah,
           onTap: () => onTap(surah),
           onPlay: () => onPlay(surah),
         );
       },
+    );
+  }
+}
+
+class _ContinueReadingBanner extends StatelessWidget {
+  const _ContinueReadingBanner({
+    required this.label,
+    required this.actionLabel,
+    required this.onTap,
+  });
+
+  final String label;
+  final String actionLabel;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.lg.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: AppColors.gold.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(AppRadius.lg.r),
+          border: Border.all(color: AppColors.gold.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.auto_stories_rounded, color: AppColors.gold, size: 22.r),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTextStyles.bodyMedium(context).copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Text(
+              actionLabel,
+              style: AppTextStyles.label(context).copyWith(
+                color: AppColors.gold,
+                letterSpacing: 0.4,
+              ),
+            ),
+            SizedBox(width: 4.w),
+            Icon(Icons.chevron_right_rounded, color: AppColors.gold, size: 20.r),
+          ],
+        ),
+      ),
     );
   }
 }

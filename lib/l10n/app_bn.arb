@@ -886,5 +886,16 @@
   "quranOpenReader": "খুলুন",
   "quranFontSize": "আরবি টেক্সট সাইজ",
   "quranNoTranslation": "অনুবাদ লুকানো বা উপলব্ধ নয়",
-  "quranAyahLabel": "আয়াত {ayah}"
+  "quranAyahLabel": "আয়াত {ayah}",
+  "quranJumpToPage": "পৃষ্ঠায় যান",
+  "quranJumpToSurah": "সূরায় যান",
+  "quranMushafMode": "মুসহাফ দেখুন",
+  "quranSurahMode": "সূরার তালিকা",
+  "quranPageOf": "পৃষ্ঠা {page} / {total}",
+  "@quranPageOf": {
+    "placeholders": {
+      "page": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  }
 }

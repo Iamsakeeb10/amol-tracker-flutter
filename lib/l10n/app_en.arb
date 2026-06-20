@@ -914,5 +914,16 @@
     "placeholders": {
       "ayah": {"type": "int"}
     }
+  },
+  "quranJumpToPage": "Jump to page",
+  "quranJumpToSurah": "Jump to surah",
+  "quranMushafMode": "Mushaf view",
+  "quranSurahMode": "Surah list",
+  "quranPageOf": "Page {page} of {total}",
+  "@quranPageOf": {
+    "placeholders": {
+      "page": {"type": "int"},
+      "total": {"type": "int"}
+    }
   }
 }

@@ -4398,6 +4398,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ayah {ayah}'**
   String quranAyahLabel(int ayah);
+
+  /// No description provided for @quranJumpToPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to page'**
+  String get quranJumpToPage;
+
+  /// No description provided for @quranJumpToSurah.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to surah'**
+  String get quranJumpToSurah;
+
+  /// No description provided for @quranMushafMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mushaf view'**
+  String get quranMushafMode;
+
+  /// No description provided for @quranSurahMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Surah list'**
+  String get quranSurahMode;
+
+  /// No description provided for @quranPageOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {total}'**
+  String quranPageOf(int page, int total);
 }
 
 class _AppLocalizationsDelegate

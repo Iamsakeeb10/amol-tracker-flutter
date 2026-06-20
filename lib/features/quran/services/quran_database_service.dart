@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../models/mushaf_layout_info.dart';
 import '../models/quran_ayah.dart';
 import '../models/quran_surah.dart';
 
@@ -77,6 +78,41 @@ class QuranDatabaseService {
     return rows.map(QuranAyah.fromMap).toList(growable: false);
   }
 
+  /// Loads ayahs (with translation) for explicit surah:ayah keys on a mushaf page.
+  Future<List<QuranAyah>> getAyahsForKeys(
+    List<MushafAyahKey> keys, {
+    required String translator,
+  }) async {
+    if (keys.isEmpty) return const [];
+
+    final conditions =
+        keys.map((_) => '(a.surah = ? AND a.ayah = ?)').join(' OR ');
+    final args = <Object?>[translator];
+    for (final key in keys) {
+      args.add(key.surah);
+      args.add(key.ayah);
+    }
+
+    final rows = await _db.rawQuery('''
+      SELECT
+        a.surah,
+        a.ayah,
+        a.text,
+        a.page,
+        a.juz,
+        t.text AS translation
+      FROM ayat a
+      LEFT JOIN translations t
+        ON t.surah = a.surah
+       AND t.ayah = a.ayah
+       AND t.translator = ?
+      WHERE $conditions
+      ORDER BY a.surah ASC, a.ayah ASC
+    ''', args);
+
+    return rows.map(QuranAyah.fromMap).toList(growable: false);
+  }
+
   Future<List<QuranAyah>> getAyahsForSurah(
     int surahId, {
     required String translator,
@@ -118,6 +154,35 @@ class QuranDatabaseService {
       ),
     );
     return value;
+  }
+
+  Future<int> getPageCount() async {
+    final value = Sqflite.firstIntValue(
+      await _db.rawQuery('SELECT MAX(page) AS max_page FROM ayat'),
+    );
+    return value ?? 604;
+  }
+
+  Future<List<int>> getSurahStartsOnPage(int page) async {
+    final rows = await _db.rawQuery(
+      '''
+      SELECT DISTINCT surah
+      FROM ayat
+      WHERE page = ? AND ayah = 1
+      ORDER BY surah ASC
+      ''',
+      [page],
+    );
+    return rows.map((row) => row['surah']! as int).toList(growable: false);
+  }
+
+  Future<int?> getJuzForAyah(int surah, int ayah) async {
+    return Sqflite.firstIntValue(
+      await _db.rawQuery(
+        'SELECT juz FROM ayat WHERE surah = ? AND ayah = ? LIMIT 1',
+        [surah, ayah],
+      ),
+    );
   }
 
   Future<void> close() => _db.close();

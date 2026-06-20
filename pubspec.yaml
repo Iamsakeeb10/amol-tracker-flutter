@@ -114,18 +114,9 @@ flutter:
     - assets/qpc-nastaleeq.db
 
   fonts:
-    - family: DigitalKhattIndopak
-      fonts:
-        - asset: assets/fonts/digital-khatt-indopak.otf
-    - family: IndopakNastaleeq
-      fonts:
-        - asset: assets/fonts/indopak-nastaleeq.ttf
-    - family: QpcNastaleeq
-      fonts:
-        - asset: assets/fonts/qpc-nastaleeq.ttf
     - family: UthmanicHafs
       fonts:
-        - asset: assets/fonts/uthmanic-hafs.ttf
+        - asset: assets/fonts/kfgqpc-hafs.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

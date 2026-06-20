@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'quran/models/quran_ayah.dart';
 import 'quran/quran_database.dart';
 
-/// Minimal reader that pairs Indopak Nastaleeq with the ayah SQLite edition.
+/// Minimal reader that pairs Uthmanic Hafs with the ayah SQLite edition.
 ///
 /// Follows [fonts.quran.ws Recipe 1](https://fonts.quran.ws/usage): Unicode text
 /// fonts render ayah text directly — set RTL direction, Nastaleeq family, and
@@ -11,7 +11,7 @@ import 'quran/quran_database.dart';
 class QuranTestApp extends StatelessWidget {
   const QuranTestApp({super.key});
 
-  static const _fontFamily = 'IndopakNastaleeq';
+  static const _fontFamily = 'UthmanicHafs';
 
   /// Matches the web guide: `font-size: 2rem; line-height: 2.3`.
   static const _quranTextStyle = TextStyle(

@@ -12,6 +12,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/bottom_tab_back_button.dart';
 import '../../models/quran_surah.dart';
+import '../../constants/quran_constants.dart';
 import '../../providers/quran_audio_provider.dart';
 import '../../providers/quran_mushaf_provider.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
@@ -52,13 +53,19 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
   void initState() {
     super.initState();
     final prefs = ref.read(quranReadingPrefsProvider);
-    _viewMode = prefs.mushafReaderMode
+    _viewMode = QuranConstants.mushafModeEnabled && prefs.mushafReaderMode
         ? _QuranViewMode.mushafReader
         : _QuranViewMode.surahList;
     _mushafCurrentPage = prefs.lastMushafPage;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      warmMushafResources(ref, centerPage: _mushafCurrentPage);
-    });
+    if (QuranConstants.mushafModeEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        warmMushafResources(ref, centerPage: _mushafCurrentPage);
+      });
+    } else if (prefs.mushafReaderMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(quranReadingPrefsProvider.notifier).setMushafReaderMode(false);
+      });
+    }
   }
 
   @override
@@ -124,6 +131,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
   }
 
   Future<void> _toggleViewMode() async {
+    if (!QuranConstants.mushafModeEnabled) return;
     if (_searchOpen) _closeSearch();
 
     final nextMode = _viewMode == _QuranViewMode.surahList
@@ -150,6 +158,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
   }
 
   void _openMushafAtLastPage() {
+    if (!QuranConstants.mushafModeEnabled) return;
     setState(() {
       _viewMode = _QuranViewMode.mushafReader;
       _mushafCurrentPage = ref.read(quranReadingPrefsProvider).lastMushafPage;
@@ -169,7 +178,9 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
       applyHeightToLastDescent: false,
     );
 
-    final isMushaf = _viewMode == _QuranViewMode.mushafReader;
+    final isMushaf =
+        QuranConstants.mushafModeEnabled &&
+        _viewMode == _QuranViewMode.mushafReader;
     final titleText = isMushaf
         ? _mushafAppBarTitle(l10n)
         : l10n.quranTitle;
@@ -311,7 +322,9 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
     final surahsAsync = ref.watch(quranSurahListProvider);
     final surahs = surahsAsync.asData?.value;
     final prefs = ref.watch(quranReadingPrefsProvider);
-    final isMushaf = _viewMode == _QuranViewMode.mushafReader;
+    final isMushaf =
+        QuranConstants.mushafModeEnabled &&
+        _viewMode == _QuranViewMode.mushafReader;
 
     return AppScaffold(
       padding: EdgeInsets.zero,
@@ -325,38 +338,39 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
         leading: const BottomTabBackButton(fallbackRoute: AppRoutes.more),
         title: _buildAppBarTitle(l10n),
         actions: [
-          IconButton(
-            tooltip: isMushaf ? l10n.quranSurahMode : l10n.quranMushafMode,
-            style: _actionIconStyle,
-            onPressed: _toggleViewMode,
-            icon: AnimatedSwitcher(
-              duration: _searchAnimDuration,
-              switchInCurve: _searchAnimCurve,
-              switchOutCurve: _searchAnimReverseCurve,
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: ScaleTransition(
-                    scale: Tween<double>(begin: 0.82, end: 1).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: _searchAnimCurve,
-                        reverseCurve: _searchAnimReverseCurve,
+          if (QuranConstants.mushafModeEnabled)
+            IconButton(
+              tooltip: isMushaf ? l10n.quranSurahMode : l10n.quranMushafMode,
+              style: _actionIconStyle,
+              onPressed: _toggleViewMode,
+              icon: AnimatedSwitcher(
+                duration: _searchAnimDuration,
+                switchInCurve: _searchAnimCurve,
+                switchOutCurve: _searchAnimReverseCurve,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: Tween<double>(begin: 0.82, end: 1).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: _searchAnimCurve,
+                          reverseCurve: _searchAnimReverseCurve,
+                        ),
                       ),
+                      child: child,
                     ),
-                    child: child,
-                  ),
-                );
-              },
-              child: Icon(
-                isMushaf
-                    ? Icons.format_list_bulleted_rounded
-                    : Icons.auto_stories_rounded,
-                key: ValueKey(isMushaf),
-                size: _actionIconSize,
+                  );
+                },
+                child: Icon(
+                  isMushaf
+                      ? Icons.format_list_bulleted_rounded
+                      : Icons.auto_stories_rounded,
+                  key: ValueKey(isMushaf),
+                  size: _actionIconSize,
+                ),
               ),
             ),
-          ),
           if (!isMushaf)
             IconButton(
               tooltip: _searchOpen ? l10n.cancel : l10n.quranSearchHint,
@@ -404,6 +418,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
                   ? const SizedBox.shrink()
                   : _SurahListView(
                       surahs: _filterSurahs(surahs),
+                      showContinueBanner: QuranConstants.mushafModeEnabled,
                       lastMushafPage: prefs.lastMushafPage,
                       onContinueReading: _openMushafAtLastPage,
                       onTap: _openSurah,
@@ -421,6 +436,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
               ),
               data: (allSurahs) => _SurahListView(
                 surahs: _filterSurahs(allSurahs),
+                showContinueBanner: QuranConstants.mushafModeEnabled,
                 lastMushafPage: prefs.lastMushafPage,
                 onContinueReading: _openMushafAtLastPage,
                 onTap: _openSurah,
@@ -443,6 +459,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
 class _SurahListView extends StatelessWidget {
   const _SurahListView({
     required this.surahs,
+    required this.showContinueBanner,
     required this.lastMushafPage,
     required this.onContinueReading,
     required this.onTap,
@@ -450,6 +467,7 @@ class _SurahListView extends StatelessWidget {
   });
 
   final List<QuranSurah> surahs;
+  final bool showContinueBanner;
   final int lastMushafPage;
   final VoidCallback onContinueReading;
   final ValueChanged<QuranSurah> onTap;
@@ -458,14 +476,14 @@ class _SurahListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final showContinueBanner = lastMushafPage > 1;
+    final showBanner = showContinueBanner && lastMushafPage > 1;
 
     return ListView.separated(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 100.h),
-      itemCount: surahs.length + (showContinueBanner ? 1 : 0),
+      itemCount: surahs.length + (showBanner ? 1 : 0),
       separatorBuilder: (_, __) => SizedBox(height: 8.h),
       itemBuilder: (context, index) {
-        if (showContinueBanner && index == 0) {
+        if (showBanner && index == 0) {
           return _ContinueReadingBanner(
             label: l10n.quranContinueReading(lastMushafPage),
             actionLabel: l10n.quranOpenReader,
@@ -473,7 +491,7 @@ class _SurahListView extends StatelessWidget {
           );
         }
 
-        final surahIndex = showContinueBanner ? index - 1 : index;
+        final surahIndex = showBanner ? index - 1 : index;
         final surah = surahs[surahIndex];
         return SurahListTile(
           surah: surah,

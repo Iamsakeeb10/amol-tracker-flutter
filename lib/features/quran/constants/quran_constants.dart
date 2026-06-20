@@ -1,8 +1,15 @@
 class QuranConstants {
   QuranConstants._();
 
-  static const arabicFontFamily = 'IndopakNastaleeq';
-  static const mushafFontFamily = 'QpcNastaleeq';
+  static const arabicFontFamily = 'UthmanicHafs';
+  static const mushafFontFamily = arabicFontFamily;
+
+  /// Toggle mushaf page reader in the Quran tab (hidden until QPC/Tanzil issues are resolved).
+  static const mushafModeEnabled = false;
+
+  /// QPC Nastaleeq mushaf databases embed ayah ornaments and superscript alef
+  /// that only exist in [QpcNastaleeq]. Other fonts render them as ◌ placeholders.
+  static const mushafUsesQpcOrnaments = false;
   static const totalSurahs = 114;
   static const mushafPageCount = 610;
 
@@ -41,10 +48,7 @@ class QuranConstants {
   ];
 
   static QuranQari qariById(String id) {
-    return qaris.firstWhere(
-      (q) => q.id == id,
-      orElse: () => qaris.first,
-    );
+    return qaris.firstWhere((q) => q.id == id, orElse: () => qaris.first);
   }
 
   static String everyAyahUrl({

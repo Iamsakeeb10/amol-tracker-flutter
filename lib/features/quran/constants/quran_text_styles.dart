@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/colors.dart';
 import 'quran_constants.dart';
 
-/// Arabic mushaf text styles using the bundled [IndopakNastaleeq] font.
+/// Arabic text styles using the bundled [UthmanicHafs] font for Uthmani script.
 ///
 /// Do not build these from [AppTextStyles] — Google Fonts sets `package:
 /// google_fonts` on those styles, which prevents app-bundled fonts from loading
@@ -30,10 +30,10 @@ class QuranTextStyles {
     );
   }
 
-  /// Mushaf page text — uses [QpcNastaleeq] for ornate ayah-end marker glyphs.
+  /// Mushaf page text — uses [UthmanicHafs] for Uthmani script and diacritics.
   ///
   /// [height] defaults to `null` so Flutter uses the font's own ascent/descent
-  /// metrics. Forcing a tight [TextStyle.height] clips Nastaleeq diacritics.
+  /// metrics. Forcing a tight [TextStyle.height] clips Arabic diacritics.
   static TextStyle mushaf({
     required double fontSize,
     Color color = AppColors.textPrimary,
@@ -51,7 +51,7 @@ class QuranTextStyles {
     );
   }
 
-  /// Line metrics tuned for QPC / Indo-Pak Nastaleeq mushaf fonts.
+  /// Line metrics tuned for Uthmanic Hafs mushaf rendering.
   static const textHeightBehavior = TextHeightBehavior(
     applyHeightToFirstAscent: false,
     applyHeightToLastDescent: false,

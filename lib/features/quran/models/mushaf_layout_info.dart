@@ -141,35 +141,64 @@ class MushafLineSegment {
   final bool isAyahEnd;
 }
 
-/// Default ornate ayah-end frame glyph (PUA) used by QPC Nastaleeq.
-const mushafDefaultAyahEndGlyph = '\uF6AB';
+/// Default ornate ayah-end frame glyph used by QPC Nastaleeq.
+const mushafDefaultAyahEndGlyph = '\uFDAB';
 
 final _arabicIndicDigitPattern = RegExp(r'^[٠-٩]+$');
-final _ayahEndGlyphPattern = RegExp(r'[\uF600-\uF6FF]');
+
+/// Ornate ayah-end frames in QPC mushaf databases (Arabic Presentation Forms-A
+/// and legacy PUA slots used by QPC Nastaleeq).
+final _qpcOrnamentPattern = RegExp(r'[\uFD30-\uFDF5\uF600-\uF6FF]');
 
 bool isMushafAyahEndMarkerText(String text) {
   if (text.isEmpty) return false;
-  if (_ayahEndGlyphPattern.hasMatch(text)) return true;
+  if (_qpcOrnamentPattern.hasMatch(text)) return true;
   return _arabicIndicDigitPattern.hasMatch(text);
 }
 
-String normalizeMushafAyahEndText(String text) {
+String normalizeMushafAyahEndText(String text, {required bool useQpcOrnaments}) {
   if (text.isEmpty) return text;
-  if (_ayahEndGlyphPattern.hasMatch(text)) return text;
-  if (_arabicIndicDigitPattern.hasMatch(text)) {
-    return '$text$mushafDefaultAyahEndGlyph';
+  if (useQpcOrnaments) {
+    if (_qpcOrnamentPattern.hasMatch(text)) return text;
+    if (_arabicIndicDigitPattern.hasMatch(text)) {
+      return '$text$mushafDefaultAyahEndGlyph';
+    }
+    return text;
   }
-  return text;
+  return text.replaceAll(_qpcOrnamentPattern, '');
 }
 
-List<MushafLineSegment> buildMushafLineSegments(List<MushafWord> words) {
+/// QPC Nastaleeq encodes silent letters with marks absent from Tanzil Uthmani
+/// (e.g. U+0658 after sukun in كَفَرُوْ٘ا). [UthmanicHafs] renders those as ◌.
+final _qpcOnlyCombiningPattern = RegExp(r'[\u0653-\u0658\u06E0-\u06E8]');
+
+/// Removes QPC-only code points that [UthmanicHafs] cannot render.
+String normalizeMushafWordTextForUnicodeFont(String text) {
+  if (text.isEmpty) return text;
+  return text
+      .replaceAll(_qpcOrnamentPattern, '')
+      .replaceAll(_qpcOnlyCombiningPattern, '')
+      .replaceAll('\u0670', '')
+      .replaceAll('\u00A0', ' ');
+}
+
+List<MushafLineSegment> buildMushafLineSegments(
+  List<MushafWord> words, {
+  bool useQpcOrnaments = false,
+}) {
   if (words.isEmpty) return const [];
 
   final segments = <MushafLineSegment>[];
   for (final word in words) {
     final isAyahEnd = isMushafAyahEndMarkerText(word.text);
-    final text =
-        isAyahEnd ? normalizeMushafAyahEndText(word.text) : word.text;
+    final text = isAyahEnd
+        ? normalizeMushafAyahEndText(
+            word.text,
+            useQpcOrnaments: useQpcOrnaments,
+          )
+        : useQpcOrnaments
+            ? word.text
+            : normalizeMushafWordTextForUnicodeFont(word.text);
     if (text.isEmpty) continue;
 
     segments.add(

@@ -123,6 +123,9 @@ flutter:
     - family: QpcNastaleeq
       fonts:
         - asset: assets/fonts/qpc-nastaleeq.ttf
+    - family: UthmanicHafs
+      fonts:
+        - asset: assets/fonts/uthmanic-hafs.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

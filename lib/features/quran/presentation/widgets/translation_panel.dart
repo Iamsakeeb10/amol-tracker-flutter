@@ -8,6 +8,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/toggle_row.dart';
 import '../../models/quran_reading_prefs.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
+import '../../utils/quran_tap_targets.dart';
 
 Future<void> showTranslationPanel(BuildContext context) {
   return showModalBottomSheet<void>(
@@ -85,73 +86,119 @@ class TranslationPanel extends ConsumerWidget {
                 ),
               ],
             ),
+            SizedBox(height: 12.h),
+            _FontSizeRow(
+              icon: Icons.format_size_rounded,
+              label: l10n.quranFontSize,
+              scale: prefs.arabicFontScale,
+              minScale: 0.8,
+              maxScale: 1.6,
+              onDecrease: notifier.decreaseFontScale,
+              onIncrease: notifier.increaseFontScale,
+            ),
             SizedBox(height: 8.h),
-            Row(
-              children: [
-                Container(
-                  width: 34.r,
-                  height: 34.r,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.cardBorder,
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Icon(
-                    Icons.format_size_rounded,
-                    size: 16.r,
-                    color: AppColors.gold,
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Text(
-                    l10n.quranFontSize,
-                    style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 14.sp),
-                  ),
-                ),
-                IconButton(
-                  tooltip: l10n.duaReaderTextSizeDecrease,
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.all(8.r),
-                  constraints: BoxConstraints(minWidth: 36.r, minHeight: 36.r),
-                  icon: Icon(
-                    Icons.remove_rounded,
-                    size: 22.r,
-                    color: prefs.arabicFontScale > 0.8
-                        ? AppColors.textPrimary
-                        : AppColors.textMuted,
-                  ),
-                  onPressed:
-                      prefs.arabicFontScale > 0.8 ? notifier.decreaseFontScale : null,
-                ),
-                Text(
-                  '${(prefs.arabicFontScale * 100).round()}%',
-                  style: AppTextStyles.bodyLarge(context).copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13.sp,
-                    color: AppColors.gold,
-                  ),
-                ),
-                IconButton(
-                  tooltip: l10n.duaReaderTextSizeIncrease,
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.all(8.r),
-                  constraints: BoxConstraints(minWidth: 36.r, minHeight: 36.r),
-                  icon: Icon(
-                    Icons.add_rounded,
-                    size: 22.r,
-                    color: prefs.arabicFontScale < 1.6
-                        ? AppColors.textPrimary
-                        : AppColors.textMuted,
-                  ),
-                  onPressed:
-                      prefs.arabicFontScale < 1.6 ? notifier.increaseFontScale : null,
-                ),
-              ],
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: AppColors.gold,
+                inactiveTrackColor: AppColors.gold.withValues(alpha: 0.2),
+                thumbColor: AppColors.gold,
+                overlayColor: AppColors.gold.withValues(alpha: 0.15),
+              ),
+              child: Slider(
+                value: prefs.arabicFontScale,
+                min: 0.8,
+                max: 1.6,
+                divisions: 10,
+                label: '${(prefs.arabicFontScale * 100).round()}%',
+                onChanged: notifier.setArabicFontScale,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            _FontSizeRow(
+              icon: Icons.subtitles_outlined,
+              label: l10n.quranTranslationFontSize,
+              scale: prefs.translationFontScale,
+              minScale: 0.8,
+              maxScale: 1.4,
+              onDecrease: notifier.decreaseTranslationFontScale,
+              onIncrease: notifier.increaseTranslationFontScale,
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FontSizeRow extends StatelessWidget {
+  const _FontSizeRow({
+    required this.icon,
+    required this.label,
+    required this.scale,
+    required this.minScale,
+    required this.maxScale,
+    required this.onDecrease,
+    required this.onIncrease,
+  });
+
+  final IconData icon;
+  final String label;
+  final double scale;
+  final double minScale;
+  final double maxScale;
+  final VoidCallback onDecrease;
+  final VoidCallback onIncrease;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 34.r,
+          height: 34.r,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.cardBorder,
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Icon(icon, size: 16.r, color: AppColors.gold),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Text(
+            label,
+            style: AppTextStyles.bodyLarge(context).copyWith(fontSize: 14.sp),
+          ),
+        ),
+        IconButton(
+          tooltip: AppLocalizations.of(context)!.duaReaderTextSizeDecrease,
+          style: QuranTapTargets.iconButtonStyle(),
+          icon: Icon(
+            Icons.remove_rounded,
+            size: 22.r,
+            color: scale > minScale ? AppColors.textPrimary : AppColors.textMuted,
+          ),
+          onPressed: scale > minScale ? onDecrease : null,
+        ),
+        Text(
+          '${(scale * 100).round()}%',
+          style: AppTextStyles.bodyLarge(context).copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 13.sp,
+            color: AppColors.gold,
+          ),
+        ),
+        IconButton(
+          tooltip: AppLocalizations.of(context)!.duaReaderTextSizeIncrease,
+          style: QuranTapTargets.iconButtonStyle(),
+          icon: Icon(
+            Icons.add_rounded,
+            size: 22.r,
+            color: scale < maxScale ? AppColors.textPrimary : AppColors.textMuted,
+          ),
+          onPressed: scale < maxScale ? onIncrease : null,
+        ),
+      ],
     );
   }
 }

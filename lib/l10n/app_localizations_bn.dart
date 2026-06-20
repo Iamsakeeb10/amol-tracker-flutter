@@ -2374,4 +2374,19 @@ class AppLocalizationsBn extends AppLocalizations {
   String quranPageOf(int page, int total) {
     return 'পৃষ্ঠা $page / $total';
   }
+
+  @override
+  String get quranTranslationFontSize => 'অনুবাদ টেক্সট সাইজ';
+
+  @override
+  String get quranPageTheme => 'পৃষ্ঠার থিম';
+
+  @override
+  String get quranJumpToAyah => 'আয়াতে যান';
+
+  @override
+  String get quranJumpToAyahHint => 'আয়াত নম্বর লিখুন';
+
+  @override
+  String get quranAyahCopied => 'আয়াত ক্লিপবোর্ডে কপি হয়েছে';
 }

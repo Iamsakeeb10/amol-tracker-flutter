@@ -44,6 +44,32 @@ class QuranReadingPrefsNotifier extends StateNotifier<QuranReadingPrefs> {
     await _persist();
   }
 
+  Future<void> setArabicFontScale(double value) async {
+    final next = value.clamp(0.8, 1.6);
+    if (state.arabicFontScale == next) return;
+    state = state.copyWith(arabicFontScale: next);
+    await _persist();
+  }
+
+  Future<void> increaseTranslationFontScale() async {
+    final next = (state.translationFontScale + 0.08).clamp(0.8, 1.4);
+    state = state.copyWith(translationFontScale: next);
+    await _persist();
+  }
+
+  Future<void> decreaseTranslationFontScale() async {
+    final next = (state.translationFontScale - 0.08).clamp(0.8, 1.4);
+    state = state.copyWith(translationFontScale: next);
+    await _persist();
+  }
+
+  Future<void> setTranslationFontScale(double value) async {
+    final next = value.clamp(0.8, 1.4);
+    if (state.translationFontScale == next) return;
+    state = state.copyWith(translationFontScale: next);
+    await _persist();
+  }
+
   Future<void> setShowTranslation(bool value) async {
     state = state.copyWith(showTranslation: value);
     await _persist();
@@ -59,6 +85,26 @@ class QuranReadingPrefsNotifier extends StateNotifier<QuranReadingPrefs> {
   Future<void> setMushafReaderMode(bool enabled) async {
     if (state.mushafReaderMode == enabled) return;
     state = state.copyWith(mushafReaderMode: enabled);
+    await _persist();
+  }
+
+  Future<void> setMushafBgIndex(int index) async {
+    final clamped = index.clamp(0, 5);
+    if (state.mushafBgIndex == clamped) return;
+    state = state.copyWith(mushafBgIndex: clamped);
+    await _persist();
+  }
+
+  Future<void> setLastReadAyah(int surahId, int ayah) async {
+    if (ayah <= 0) return;
+    final current = state.lastReadAyahBySurah[surahId];
+    if (current == ayah) return;
+    state = state.copyWith(
+      lastReadAyahBySurah: {
+        ...state.lastReadAyahBySurah,
+        surahId: ayah,
+      },
+    );
     await _persist();
   }
 }

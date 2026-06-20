@@ -9,6 +9,7 @@ import '../../../../shared/widgets/card_container.dart';
 import '../../constants/quran_text_styles.dart';
 import '../../models/quran_surah.dart';
 import '../../providers/quran_audio_provider.dart';
+import '../../utils/quran_tap_targets.dart';
 
 class SurahListTile extends ConsumerWidget {
   const SurahListTile({
@@ -118,8 +119,8 @@ class SurahListTile extends ConsumerWidget {
             onTap: onPlayTap,
             behavior: HitTestBehavior.opaque,
             child: SizedBox(
-              width: 32.r,
-              height: 32.r,
+              width: QuranTapTargets.minSize.r,
+              height: QuranTapTargets.minSize.r,
               child: Center(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),

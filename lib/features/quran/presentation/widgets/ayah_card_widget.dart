@@ -14,19 +14,31 @@ class AyahCardWidget extends ConsumerWidget {
     required this.ayah,
     required this.highlighted,
     this.onTap,
+    this.onLongPress,
   });
 
   final QuranAyah ayah;
   final bool highlighted;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final prefs = ref.watch(quranReadingPrefsProvider);
-    final baseSize = 22.sp * prefs.arabicFontScale;
+    final arabicFontScale = ref.watch(
+      quranReadingPrefsProvider.select((prefs) => prefs.arabicFontScale),
+    );
+    final translationFontScale = ref.watch(
+      quranReadingPrefsProvider.select((prefs) => prefs.translationFontScale),
+    );
+    final showTranslation = ref.watch(
+      quranReadingPrefsProvider.select((prefs) => prefs.showTranslation),
+    );
+    final baseSize = 22.sp * arabicFontScale;
+    final translationSize = 14.sp * translationFontScale;
 
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(AppRadius.lg.r),
       child: Container(
         width: double.infinity,
@@ -77,7 +89,7 @@ class AyahCardWidget extends ConsumerWidget {
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,
             ),
-            if (prefs.showTranslation &&
+            if (showTranslation &&
                 (ayah.translation?.trim().isNotEmpty ?? false)) ...[
               SizedBox(height: 12.h),
               Text(
@@ -85,6 +97,7 @@ class AyahCardWidget extends ConsumerWidget {
                 style: AppTextStyles.bodyMedium(context).copyWith(
                   color: AppColors.textSecondary,
                   height: 1.5,
+                  fontSize: translationSize,
                 ),
               ),
             ],

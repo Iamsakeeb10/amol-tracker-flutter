@@ -12,10 +12,12 @@ class MushafLineSlot extends StatelessWidget {
     super.key,
     required this.line,
     required this.fontScale,
+    this.paperTheme,
   });
 
   final MushafRenderedLine line;
   final double fontScale;
+  final MushafPaperTheme? paperTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +25,7 @@ class MushafLineSlot extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final theme = paperTheme ?? MushafTheme.paperThemes.first;
     final textScaler = MediaQuery.textScalerOf(context);
     final bannerPadH = MushafTheme.surahBannerPaddingHForScale(fontScale);
 
@@ -34,9 +37,7 @@ class MushafLineSlot extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final alignment = line.isCentered
-            ? Alignment.center
-            : Alignment.centerRight;
+        final alignment = Alignment.center;
 
         final contentWidth = line.isSurahName
             ? maxWidth - (bannerPadH * 2).w
@@ -54,9 +55,9 @@ class MushafLineSlot extends StatelessWidget {
         final textSpan = MushafLineLayout.buildTextSpan(
           line: line,
           fontSize: metrics.fontSize,
-          textColor: MushafTheme.ink,
-          ayahMarkerColor: MushafTheme.ayahMarker,
-          surahTitleColor: MushafTheme.surahTitle,
+          textColor: theme.ink,
+          ayahMarkerColor: theme.ayahMarker,
+          surahTitleColor: theme.surahTitle,
         );
 
         return RepaintBoundary(
@@ -74,6 +75,7 @@ class MushafLineSlot extends StatelessWidget {
                   banner: line.isSurahName,
                   bannerPadH: bannerPadH,
                   verticalScale: metrics.verticalScale,
+                  surahTitleColor: theme.surahTitle,
                 ),
               ),
             ),
@@ -92,6 +94,7 @@ class _MushafLineText extends StatelessWidget {
     required this.alignment,
     required this.bannerPadH,
     required this.verticalScale,
+    required this.surahTitleColor,
     this.banner = false,
   });
 
@@ -101,14 +104,13 @@ class _MushafLineText extends StatelessWidget {
   final Alignment alignment;
   final double bannerPadH;
   final double verticalScale;
+  final Color surahTitleColor;
   final bool banner;
 
   @override
   Widget build(BuildContext context) {
-    final isCentered = alignment == Alignment.center;
-
-    Widget richText = RichText(
-      textAlign: isCentered ? TextAlign.center : TextAlign.right,
+    final richText = RichText(
+      textAlign: TextAlign.center,
       textDirection: TextDirection.rtl,
       textScaler: textScaler,
       textHeightBehavior: QuranTextStyles.textHeightBehavior,
@@ -118,29 +120,33 @@ class _MushafLineText extends StatelessWidget {
       text: textSpan,
     );
 
+    Widget richTextWidget = richText;
+
     if (banner) {
-      richText = Container(
+      richTextWidget = Container(
         padding: EdgeInsets.symmetric(
           horizontal: bannerPadH.w,
           vertical: MushafTheme.surahBannerPaddingV.h,
         ),
-        decoration: MushafTheme.surahBannerDecoration(),
-        child: richText,
+        decoration: MushafTheme.surahBannerDecoration(
+          borderColor: surahTitleColor,
+        ),
+        child: richTextWidget,
       );
     }
 
     if (verticalScale > 1.005) {
-      richText = Transform(
+      richTextWidget = Transform(
         transform: Matrix4.diagonal3Values(1, verticalScale, 1),
         alignment: alignment,
-        child: richText,
+        child: richTextWidget,
       );
     }
 
     return Semantics(
       label: line.text,
       excludeSemantics: true,
-      child: richText,
+      child: richTextWidget,
     );
   }
 }

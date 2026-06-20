@@ -10,10 +10,12 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../shared/widgets/bottom_tab_back_button.dart';
 import '../../models/quran_surah.dart';
 import '../../providers/quran_audio_provider.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
 import '../../providers/quran_surah_provider.dart';
+import '../../utils/quran_tap_targets.dart';
 import '../widgets/mushaf_page_view.dart';
 import '../widgets/quran_audio_mini_bar.dart';
 import '../widgets/surah_list_tile.dart';
@@ -43,11 +45,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
 
   double get _actionIconSize => 24.r;
 
-  ButtonStyle get _actionIconStyle => IconButton.styleFrom(
-        padding: EdgeInsets.all(10.r),
-        minimumSize: Size(44.r, 44.r),
-        tapTargetSize: MaterialTapTargetSize.padded,
-      );
+  ButtonStyle get _actionIconStyle => QuranTapTargets.iconButtonStyle();
 
   @override
   void initState() {
@@ -157,9 +155,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
     final titleText = isMushaf
         ? l10n.quranPage(_mushafCurrentPage)
         : l10n.quranTitle;
-    final titleIcon = isMushaf
-        ? Icons.auto_stories_rounded
-        : Icons.menu_book_rounded;
+    const titleIcon = Icons.auto_stories_rounded;
 
     return SizedBox(
       height: 42.h,
@@ -301,12 +297,14 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
 
     return AppScaffold(
       padding: EdgeInsets.zero,
+      handleExitBack: false,
       appBar: AppBar(
         centerTitle: false,
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         toolbarHeight: 42.h,
+        leading: const BottomTabBackButton(fallbackRoute: AppRoutes.more),
         title: _buildAppBarTitle(l10n),
         actions: [
           IconButton(

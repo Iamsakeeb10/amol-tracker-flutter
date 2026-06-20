@@ -8,6 +8,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../constants/quran_constants.dart';
 import '../../providers/quran_audio_provider.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
+import '../../utils/quran_tap_targets.dart';
 import 'qari_selector_sheet.dart';
 
 class QuranAudioMiniBar extends ConsumerWidget {
@@ -82,11 +83,12 @@ class QuranAudioMiniBar extends ConsumerWidget {
                     ),
                   ),
                   IconButton(
+                    style: QuranTapTargets.iconButtonStyle(),
                     onPressed: audio.isLoading ? null : notifier.previousAyah,
                     icon: Icon(Icons.skip_previous_rounded, size: 26.r),
-                    visualDensity: VisualDensity.compact,
                   ),
                   IconButton(
+                    style: QuranTapTargets.iconButtonStyle(),
                     onPressed: audio.isLoading ? null : notifier.togglePlayPause,
                     icon: audio.isLoading
                         ? SizedBox(
@@ -104,22 +106,21 @@ class QuranAudioMiniBar extends ConsumerWidget {
                             color: AppColors.gold,
                             size: 36.r,
                           ),
-                    visualDensity: VisualDensity.compact,
                   ),
                   IconButton(
+                    style: QuranTapTargets.iconButtonStyle(),
                     onPressed: audio.isLoading ? null : notifier.nextAyah,
                     icon: Icon(Icons.skip_next_rounded, size: 26.r),
-                    visualDensity: VisualDensity.compact,
                   ),
                   IconButton(
+                    style: QuranTapTargets.iconButtonStyle(),
                     onPressed: () => showQariSelectorSheet(context),
                     icon: Icon(Icons.person_outline_rounded, size: 22.r),
-                    visualDensity: VisualDensity.compact,
                   ),
                   IconButton(
+                    style: QuranTapTargets.iconButtonStyle(),
                     onPressed: audio.isLoading ? null : notifier.stop,
                     icon: Icon(Icons.close_rounded, size: 22.r),
-                    visualDensity: VisualDensity.compact,
                   ),
                 ],
               ),

@@ -5,61 +5,53 @@ import '../../../constants/mushaf_theme.dart';
 import '../../../constants/quran_text_styles.dart';
 import '../../../utils/mushaf_formatters.dart';
 
-/// Cream paper card with optional footer page number — mimics a printed mushaf page.
+/// Full-bleed mushaf page with paper background and optional footer page number.
 class MushafPageFrame extends StatelessWidget {
   const MushafPageFrame({
     super.key,
     required this.pageNumber,
     required this.body,
-    this.outerPaddingH = MushafTheme.pageOuterPaddingH,
     this.fontScale = 1.0,
+    this.paperTheme,
   });
 
   final int pageNumber;
   final Widget body;
-  final double outerPaddingH;
   final double fontScale;
+  final MushafPaperTheme? paperTheme;
 
   @override
   Widget build(BuildContext context) {
-    final radius = MushafTheme.pageBorderRadius.r;
+    final theme = paperTheme ?? MushafTheme.paperThemes.first;
     final footerHeight = MushafTheme.pageFooterHeightForScale(fontScale);
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        outerPaddingH.w,
-        MushafTheme.pageOuterPaddingV.h,
-        outerPaddingH.w,
-        MushafTheme.pageOuterPaddingV.h,
+    return DecoratedBox(
+      decoration: MushafTheme.pageDecoration(
+        borderRadius: 0,
+        paperColor: theme.paper,
+        fullBleed: true,
       ),
-      child: DecoratedBox(
-        decoration: MushafTheme.pageDecoration(borderRadius: radius),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(radius),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            children: [
-              Expanded(child: body),
-              SizedBox(
-                height: footerHeight.h,
-                child: Center(
-                  child: Semantics(
-                    label: mushafArabicIndicDigits(pageNumber),
-                    child: Text(
-                      mushafArabicIndicDigits(pageNumber),
-                      style: QuranTextStyles.mushaf(
-                        fontSize: MushafTheme.pageNumberFontSize.sp,
-                        color: MushafTheme.pageNumber,
-                      ),
-                      textHeightBehavior: QuranTextStyles.textHeightBehavior,
-                      textDirection: TextDirection.rtl,
-                    ),
+      child: Column(
+        children: [
+          Expanded(child: body),
+          SizedBox(
+            height: footerHeight.h,
+            child: Center(
+              child: Semantics(
+                label: mushafArabicIndicDigits(pageNumber),
+                child: Text(
+                  mushafArabicIndicDigits(pageNumber),
+                  style: QuranTextStyles.mushaf(
+                    fontSize: MushafTheme.pageNumberFontSize.sp,
+                    color: theme.pageNumber,
                   ),
+                  textHeightBehavior: QuranTextStyles.textHeightBehavior,
+                  textDirection: TextDirection.rtl,
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

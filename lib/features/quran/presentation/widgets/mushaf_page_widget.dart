@@ -24,15 +24,15 @@ class MushafPageWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fontScale = ref.watch(
-      quranReadingPrefsProvider.select((prefs) => prefs.arabicFontScale),
-    );
+    final prefs = ref.watch(quranReadingPrefsProvider);
+    final fontScale = prefs.arabicFontScale;
+    final paperTheme = MushafTheme.themeAt(prefs.mushafBgIndex);
     final pageAsync = ref.watch(
       quranMushafPageProvider(MushafPageQuery(page: pageNumber)),
     );
 
     return pageAsync.when(
-      loading: () => const _MushafPageSkeleton(),
+      loading: () => _MushafPageSkeleton(paperTheme: paperTheme),
       error: (error, _) => _MushafPageError(
         message: error.toString(),
         onRetry: () => ref.invalidate(
@@ -42,6 +42,7 @@ class MushafPageWidget extends ConsumerWidget {
       data: (pageData) => _MushafPageContent(
         pageData: pageData,
         fontScale: fontScale,
+        paperTheme: paperTheme,
       ),
     );
   }
@@ -51,10 +52,12 @@ class _MushafPageContent extends StatelessWidget {
   const _MushafPageContent({
     required this.pageData,
     required this.fontScale,
+    required this.paperTheme,
   });
 
   final QuranMushafPageData pageData;
   final double fontScale;
+  final MushafPaperTheme paperTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +79,6 @@ class _MushafPageContent extends StatelessWidget {
     final blankLineCount = slotCount - lines.length;
 
     final innerPad = MushafTheme.innerPaddingHForScale(fontScale);
-    final outerPad = MushafTheme.outerPaddingHForScale(fontScale);
     final innerTop = MushafTheme.innerPaddingTopForScale(fontScale);
 
     return Semantics(
@@ -85,8 +87,8 @@ class _MushafPageContent extends StatelessWidget {
         textDirection: TextDirection.rtl,
         child: MushafPageFrame(
           pageNumber: pageData.page,
-          outerPaddingH: outerPad,
           fontScale: fontScale,
+          paperTheme: paperTheme,
           body: Padding(
             padding: EdgeInsets.fromLTRB(
               innerPad.w,
@@ -99,9 +101,12 @@ class _MushafPageContent extends StatelessWidget {
                 for (final line in lines)
                   Expanded(
                     child: MushafLineSlot(
-                      key: ValueKey('${pageData.page}-${line.lineNumber}-$fontScale'),
+                      key: ValueKey(
+                        '${pageData.page}-${line.lineNumber}-$fontScale-${paperTheme.paper.toARGB32()}',
+                      ),
                       line: line,
                       fontScale: fontScale,
+                      paperTheme: paperTheme,
                     ),
                   ),
                 for (var i = 0; i < blankLineCount; i++)
@@ -116,37 +121,35 @@ class _MushafPageContent extends StatelessWidget {
 }
 
 class _MushafPageSkeleton extends StatelessWidget {
-  const _MushafPageSkeleton();
+  const _MushafPageSkeleton({required this.paperTheme});
+
+  final MushafPaperTheme paperTheme;
 
   @override
   Widget build(BuildContext context) {
-    final radius = MushafTheme.pageBorderRadius.r;
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        MushafTheme.pageOuterPaddingH.w,
-        MushafTheme.pageOuterPaddingV.h,
-        MushafTheme.pageOuterPaddingH.w,
-        MushafTheme.pageOuterPaddingV.h,
-      ),
-      child: Shimmer.fromColors(
-        baseColor: MushafTheme.paperBorder.withValues(alpha: 0.4),
-        highlightColor: MushafTheme.paper,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: MushafTheme.paper,
-            borderRadius: BorderRadius.circular(radius),
+    return Shimmer.fromColors(
+      baseColor: paperTheme.paperBorder.withValues(alpha: 0.4),
+      highlightColor: paperTheme.paper,
+      child: DecoratedBox(
+        decoration: MushafTheme.pageDecoration(
+          borderRadius: 0,
+          paperColor: paperTheme.paper,
+          fullBleed: true,
+        ),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            MushafTheme.pageInnerPaddingH.w,
+            MushafTheme.pageInnerPaddingTop.h,
+            MushafTheme.pageInnerPaddingH.w,
+            0,
           ),
-          child: Padding(
-            padding: EdgeInsets.all(12.w),
-            child: Column(
-              children: List.generate(
-                15,
-                (index) => Expanded(
-                  child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 2.h),
-                    color: MushafTheme.paperBorder.withValues(alpha: 0.25),
-                  ),
+          child: Column(
+            children: List.generate(
+              15,
+              (index) => Expanded(
+                child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 2.h),
+                  color: paperTheme.paperBorder.withValues(alpha: 0.25),
                 ),
               ),
             ),

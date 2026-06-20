@@ -4428,6 +4428,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Page {page} of {total}'**
   String quranPageOf(int page, int total);
+
+  /// No description provided for @quranTranslationFontSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation text size'**
+  String get quranTranslationFontSize;
+
+  /// No description provided for @quranPageTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Page theme'**
+  String get quranPageTheme;
+
+  /// No description provided for @quranJumpToAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to ayah'**
+  String get quranJumpToAyah;
+
+  /// No description provided for @quranJumpToAyahHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter ayah number'**
+  String get quranJumpToAyahHint;
+
+  /// No description provided for @quranAyahCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayah copied to clipboard'**
+  String get quranAyahCopied;
 }
 
 class _AppLocalizationsDelegate

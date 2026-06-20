@@ -19,6 +19,7 @@ import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/community_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../shared/widgets/bottom_tab_back_button.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/community_row_card.dart';
 import '../../../../shared/widgets/section_header.dart';
@@ -163,14 +164,30 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.communityUpper,
-              style: AppTextStyles.label(
-                context,
-              ).copyWith(color: AppColors.gold),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const BottomTabBackButton(),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.communityUpper,
+                        style: AppTextStyles.label(
+                          context,
+                        ).copyWith(color: AppColors.gold),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        l10n.community,
+                        style: AppTextStyles.displayMedium(context),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 2.h),
-            Text(l10n.community, style: AppTextStyles.displayMedium(context)),
             SizedBox(height: 12.h),
             Container(
               padding: EdgeInsets.all(3.r),

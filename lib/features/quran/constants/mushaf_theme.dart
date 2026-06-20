@@ -1,14 +1,91 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/colors.dart';
+
+/// Named mushaf paper theme with background and ink colors.
+class MushafPaperTheme {
+  const MushafPaperTheme({
+    required this.paper,
+    required this.ink,
+    required this.surahTitle,
+    required this.ayahMarker,
+    required this.pageNumber,
+    required this.paperBorder,
+  });
+
+  final Color paper;
+  final Color ink;
+  final Color surahTitle;
+  final Color ayahMarker;
+  final Color pageNumber;
+  final Color paperBorder;
+}
+
 /// Visual and layout tokens for the line-based mushaf reader.
 abstract final class MushafTheme {
-  // Paper & ink
-  static const paper = Color(0xFFFFF8EE);
-  static const paperBorder = Color(0xFFD4C4A8);
-  static const ink = Color(0xFF1A1A1A);
-  static const surahTitle = Color(0xFF2D4A3E);
-  static const ayahMarker = Color(0xFF2D4A3E);
-  static const pageNumber = Color(0xFF6B5E4E);
+  // Paper & ink (app emerald default)
+  static const paper = AppColors.emeraldMid;
+  static const paperBorder = AppColors.emeraldLight;
+  static const ink = AppColors.textPrimary;
+  static const surahTitle = AppColors.gold;
+  static const ayahMarker = AppColors.gold;
+  static const pageNumber = AppColors.textSecondary;
+
+  /// User-selectable paper themes (background + ink pairs).
+  static const paperThemes = <MushafPaperTheme>[
+    MushafPaperTheme(
+      paper: AppColors.emeraldMid,
+      ink: AppColors.textPrimary,
+      surahTitle: AppColors.gold,
+      ayahMarker: AppColors.gold,
+      pageNumber: AppColors.textSecondary,
+      paperBorder: AppColors.emeraldLight,
+    ),
+    MushafPaperTheme(
+      paper: Color(0xFFFFFFFF),
+      ink: Color(0xFF1A1A1A),
+      surahTitle: Color(0xFF2D4A3E),
+      ayahMarker: Color(0xFF2D4A3E),
+      pageNumber: Color(0xFF6B5E4E),
+      paperBorder: Color(0xFFD4C4A8),
+    ),
+    MushafPaperTheme(
+      paper: Color(0xFFF5EBDC),
+      ink: Color(0xFF1A1A1A),
+      surahTitle: Color(0xFF2D4A3E),
+      ayahMarker: Color(0xFF2D4A3E),
+      pageNumber: Color(0xFF6B5E4E),
+      paperBorder: Color(0xFFD4C4A8),
+    ),
+    MushafPaperTheme(
+      paper: Color(0xFFF0F4EB),
+      ink: Color(0xFF1A1A1A),
+      surahTitle: Color(0xFF2D4A3E),
+      ayahMarker: Color(0xFF2D4A3E),
+      pageNumber: Color(0xFF6B5E4E),
+      paperBorder: Color(0xFFC8D4BC),
+    ),
+    MushafPaperTheme(
+      paper: Color(0xFF2B2620),
+      ink: Color(0xFFEAE0D0),
+      surahTitle: Color(0xFFC8B89A),
+      ayahMarker: Color(0xFFC8B89A),
+      pageNumber: Color(0xFF9A8E7E),
+      paperBorder: Color(0xFF4A4238),
+    ),
+    MushafPaperTheme(
+      paper: Color(0xFF1A1A2E),
+      ink: Color(0xFFE8E8F0),
+      surahTitle: Color(0xFFB8B8D0),
+      ayahMarker: Color(0xFFB8B8D0),
+      pageNumber: Color(0xFF8888A0),
+      paperBorder: Color(0xFF2E2E48),
+    ),
+  ];
+
+  static MushafPaperTheme themeAt(int index) {
+    return paperThemes[index.clamp(0, paperThemes.length - 1)];
+  }
 
   // Layout
   static const pageBorderRadius = 6.0;
@@ -85,11 +162,20 @@ abstract final class MushafTheme {
     return 0.985 + t * 0.015;
   }
 
-  static BoxDecoration pageDecoration({required double borderRadius}) {
+  static BoxDecoration pageDecoration({
+    required double borderRadius,
+    Color? paperColor,
+    Color? borderColor,
+    bool fullBleed = false,
+  }) {
+    if (fullBleed) {
+      return BoxDecoration(color: paperColor ?? paper);
+    }
+
     return BoxDecoration(
-      color: paper,
+      color: paperColor ?? paper,
       borderRadius: BorderRadius.circular(borderRadius),
-      border: Border.all(color: paperBorder, width: 1),
+      border: Border.all(color: borderColor ?? paperBorder, width: 1),
       boxShadow: [
         BoxShadow(
           color: Colors.black.withValues(alpha: pageShadowOpacity),
@@ -100,11 +186,12 @@ abstract final class MushafTheme {
     );
   }
 
-  static BoxDecoration surahBannerDecoration() {
+  static BoxDecoration surahBannerDecoration({Color? borderColor}) {
+    final color = borderColor ?? surahTitle;
     return BoxDecoration(
       border: Border(
-        top: BorderSide(color: surahTitle, width: surahBannerBorderWidth),
-        bottom: BorderSide(color: surahTitle, width: surahBannerBorderWidth),
+        top: BorderSide(color: color, width: surahBannerBorderWidth),
+        bottom: BorderSide(color: color, width: surahBannerBorderWidth),
       ),
     );
   }

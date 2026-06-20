@@ -8,9 +8,11 @@ import 'quran_reading_prefs_provider.dart';
 final quranSurahAyahsProvider =
     FutureProvider.family<List<QuranAyah>, int>((ref, surahId) async {
   final db = await ref.watch(quranDatabaseProvider.future);
-  final prefs = ref.watch(quranReadingPrefsProvider);
+  final translator = ref.watch(
+    quranReadingPrefsProvider.select((prefs) => prefs.translator),
+  );
   return db.getAyahsForSurah(
     surahId,
-    translator: prefs.translator.dbKey,
+    translator: translator.dbKey,
   );
 });

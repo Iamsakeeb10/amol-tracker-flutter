@@ -2371,4 +2371,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String quranPageOf(int page, int total) {
     return 'Page $page of $total';
   }
+
+  @override
+  String get quranTranslationFontSize => 'Translation text size';
+
+  @override
+  String get quranPageTheme => 'Page theme';
+
+  @override
+  String get quranJumpToAyah => 'Jump to ayah';
+
+  @override
+  String get quranJumpToAyahHint => 'Enter ayah number';
+
+  @override
+  String get quranAyahCopied => 'Ayah copied to clipboard';
 }

@@ -7,7 +7,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../constants/mushaf_theme.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
+import '../../utils/quran_tap_targets.dart';
 import 'mushaf_jump_sheet.dart';
 import 'translation_panel.dart';
 
@@ -91,35 +93,42 @@ class _MushafOverlayControlsState extends ConsumerState<MushafOverlayControls> {
           child: AnimatedOpacity(
             opacity: widget.visible ? 1 : 0,
             duration: const Duration(milliseconds: 220),
-            child: Column(
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                _OverlayBar(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '${l10n.quranJuz(widget.currentJuz)} · ${l10n.quranPageOf(widget.currentPage, widget.totalPages)}',
-                          style: AppTextStyles.bodyLarge(context).copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: l10n.quranTranslation,
-                        onPressed: () => _handleInteraction(
-                          () => showTranslationPanel(context),
-                        ),
-                        icon: Icon(Icons.translate_outlined, size: 22.r),
-                      ),
-                    ],
-                  ),
+                ColoredBox(
+                  color: Colors.black.withValues(alpha: 0.5),
                 ),
-                const Spacer(),
-                _OverlayBar(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
+                Column(
+                  children: [
+                    _OverlayBar(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '${l10n.quranJuz(widget.currentJuz)} · ${l10n.quranPageOf(widget.currentPage, widget.totalPages)}',
+                              style: AppTextStyles.bodyLarge(context).copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: l10n.settings,
+                            style: QuranTapTargets.iconButtonStyle(),
+                            onPressed: () => _handleInteraction(
+                              () => showTranslationPanel(context),
+                            ),
+                            icon: Icon(Icons.settings_outlined, size: 22.r),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    _OverlayBar(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
                           activeTrackColor: AppColors.gold,
@@ -176,8 +185,38 @@ class _MushafOverlayControlsState extends ConsumerState<MushafOverlayControls> {
                       SizedBox(height: 8.h),
                       Row(
                         children: [
+                          Icon(
+                            Icons.palette_outlined,
+                            size: 18.r,
+                            color: AppColors.gold.withValues(alpha: 0.85),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            l10n.quranPageTheme,
+                            style: AppTextStyles.bodySmall(context),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          for (var i = 0; i < MushafTheme.paperThemes.length; i++)
+                            _PaperThemeSwatch(
+                              theme: MushafTheme.paperThemes[i],
+                              selected: prefs.mushafBgIndex == i,
+                              onTap: () => _handleInteraction(
+                                () => notifier.setMushafBgIndex(i),
+                              ),
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: 8.h),
+                      Row(
+                        children: [
                           IconButton(
                             tooltip: l10n.duaReaderTextSizeDecrease,
+                            style: QuranTapTargets.iconButtonStyle(),
                             onPressed: prefs.arabicFontScale > 0.8
                                 ? () => _handleInteraction(
                                       () => notifier.decreaseFontScale(),
@@ -194,6 +233,7 @@ class _MushafOverlayControlsState extends ConsumerState<MushafOverlayControls> {
                           ),
                           IconButton(
                             tooltip: l10n.duaReaderTextSizeIncrease,
+                            style: QuranTapTargets.iconButtonStyle(),
                             onPressed: prefs.arabicFontScale < 1.6
                                 ? () => _handleInteraction(
                                       () => notifier.increaseFontScale(),
@@ -216,8 +256,10 @@ class _MushafOverlayControlsState extends ConsumerState<MushafOverlayControls> {
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -239,18 +281,78 @@ class _OverlayBar extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 12.h),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.emeraldDeep.withValues(alpha: 0.92),
-            AppColors.emeraldDeep.withValues(alpha: 0.75),
-          ],
+        color: AppColors.emeraldDeep,
+        border: Border(
+          top: BorderSide(
+            color: AppColors.gold.withValues(alpha: 0.25),
+            width: 1,
+          ),
+          bottom: BorderSide(
+            color: AppColors.gold.withValues(alpha: 0.25),
+            width: 1,
+          ),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: SafeArea(
         bottom: false,
         child: child,
+      ),
+    );
+  }
+}
+
+class _PaperThemeSwatch extends StatelessWidget {
+  const _PaperThemeSwatch({
+    required this.theme,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final MushafPaperTheme theme;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          width: QuranTapTargets.minSize.r,
+          height: QuranTapTargets.minSize.r,
+          child: Center(
+            child: Container(
+              width: 32.r,
+              height: 32.r,
+              decoration: BoxDecoration(
+                color: theme.paper,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: selected ? AppColors.gold : theme.paperBorder,
+                  width: selected ? 2.5.r : 1.r,
+                ),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: AppColors.gold.withValues(alpha: 0.35),
+                          blurRadius: 6,
+                        ),
+                      ]
+                    : null,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

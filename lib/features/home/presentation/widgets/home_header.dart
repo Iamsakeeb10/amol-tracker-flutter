@@ -9,6 +9,7 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/notification_provider.dart';
+import '../../../../shared/widgets/bottom_tab_back_button.dart';
 
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key, required this.streak});
@@ -34,6 +35,7 @@ class HomeHeader extends ConsumerWidget {
           SizedBox(height: 2.h),
           Row(
             children: [
+              const BottomTabBackButton(),
               Expanded(
                 child: Text(
                   IslamicDateService.weekdayToday(languageCode: locale),

@@ -13,6 +13,7 @@ import '../../../../providers/auth_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../providers/syllabus_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../shared/widgets/bottom_tab_back_button.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
@@ -47,6 +48,7 @@ class MoreScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
+              const BottomTabBackButton(),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

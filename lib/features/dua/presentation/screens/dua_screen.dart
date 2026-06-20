@@ -6,6 +6,7 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../shared/widgets/bottom_tab_back_button.dart';
 import '../../providers/dua_provider.dart';
 import '../widgets/dua_reader_options_sheet.dart';
 import 'dua_all_tab.dart';
@@ -317,6 +318,7 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
         centerTitle: false,
         automaticallyImplyLeading: false,
         toolbarHeight: 42.h,
+        leading: const BottomTabBackButton(),
         title: _buildAppBarTitle(l10n),
         actions: _buildActions(l10n),
         bottom: PreferredSize(

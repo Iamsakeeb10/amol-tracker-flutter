@@ -17,6 +17,7 @@ import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../shared/mock/mock_data.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../shared/widgets/bottom_tab_back_button.dart';
 import '../../../../shared/widgets/calendar_day_cell.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
@@ -129,6 +130,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     children: [
                       Row(
                         children: [
+                          const BottomTabBackButton(),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

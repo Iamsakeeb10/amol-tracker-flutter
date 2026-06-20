@@ -6,24 +6,30 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../constants/quran_text_styles.dart';
 import '../../models/quran_ayah.dart';
+import '../../providers/quran_audio_provider.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
 
 class AyahCardWidget extends ConsumerWidget {
   const AyahCardWidget({
     super.key,
+    required this.surahId,
     required this.ayah,
-    required this.highlighted,
     this.onTap,
     this.onLongPress,
   });
 
+  final int surahId;
   final QuranAyah ayah;
-  final bool highlighted;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final highlighted = ref.watch(
+      quranAudioProvider.select(
+        (state) => state.surahId == surahId && state.ayah == ayah.ayah,
+      ),
+    );
     final arabicFontScale = ref.watch(
       quranReadingPrefsProvider.select((prefs) => prefs.arabicFontScale),
     );

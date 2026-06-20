@@ -116,7 +116,19 @@ class QuranDatabaseService {
   Future<List<QuranAyah>> getAyahsForSurah(
     int surahId, {
     required String translator,
+    bool includeTranslation = true,
   }) async {
+    if (!includeTranslation) {
+      final rows = await _db.query(
+        'ayat',
+        columns: ['surah', 'ayah', 'text', 'page', 'juz'],
+        where: 'surah = ?',
+        whereArgs: [surahId],
+        orderBy: 'ayah ASC',
+      );
+      return rows.map(QuranAyah.fromMap).toList(growable: false);
+    }
+
     final rows = await _db.rawQuery('''
       SELECT
         a.surah,

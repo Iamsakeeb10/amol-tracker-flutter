@@ -15,6 +15,7 @@ import '../../models/quran_surah.dart';
 import '../../constants/quran_constants.dart';
 import '../../providers/quran_audio_provider.dart';
 import '../../providers/quran_mushaf_provider.dart';
+import '../../providers/quran_performance_provider.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
 import '../../providers/quran_surah_provider.dart';
 import '../../utils/quran_tap_targets.dart';
@@ -66,6 +67,10 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
         ref.read(quranReadingPrefsProvider.notifier).setMushafReaderMode(false);
       });
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(ref.read(quranSurahListProvider.future));
+    });
   }
 
   @override
@@ -170,6 +175,9 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
   }
 
   Widget _buildAppBarTitle(AppLocalizations l10n) {
+    final perf = ref.watch(quranPerformanceProvider);
+    final animDuration =
+        perf.reduceMotion ? Duration.zero : _searchAnimDuration;
     final titleStyle = AppTextStyles.headlineMedium(
       context,
     ).copyWith(fontSize: 17.5.sp, fontWeight: FontWeight.w600, height: 1);
@@ -192,7 +200,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           AnimatedSize(
-            duration: _searchAnimDuration,
+            duration: animDuration,
             curve: _searchAnimCurve,
             alignment: Alignment.centerLeft,
             clipBehavior: Clip.hardEdge,
@@ -214,7 +222,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
             child: SizedBox(
               height: 42.h,
               child: AnimatedSwitcher(
-                duration: _searchAnimDuration,
+                duration: animDuration,
                 switchInCurve: _searchAnimCurve,
                 switchOutCurve: _searchAnimReverseCurve,
                 layoutBuilder: (currentChild, previousChildren) {
@@ -229,6 +237,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
                   );
                 },
                 transitionBuilder: (child, animation) {
+                  if (perf.reduceMotion) return child;
                   final slideAnimation = Tween<Offset>(
                     begin: const Offset(0.04, 0),
                     end: Offset.zero,
@@ -319,6 +328,9 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final perf = ref.watch(quranPerformanceProvider);
+    final animDuration =
+        perf.reduceMotion ? Duration.zero : _searchAnimDuration;
     final surahsAsync = ref.watch(quranSurahListProvider);
     final surahs = surahsAsync.asData?.value;
     final prefs = ref.watch(quranReadingPrefsProvider);
@@ -344,10 +356,11 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
               style: _actionIconStyle,
               onPressed: _toggleViewMode,
               icon: AnimatedSwitcher(
-                duration: _searchAnimDuration,
+                duration: animDuration,
                 switchInCurve: _searchAnimCurve,
                 switchOutCurve: _searchAnimReverseCurve,
                 transitionBuilder: (child, animation) {
+                  if (perf.reduceMotion) return child;
                   return FadeTransition(
                     opacity: animation,
                     child: ScaleTransition(
@@ -377,10 +390,11 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
               style: _actionIconStyle,
               onPressed: _onSearchAction,
               icon: AnimatedSwitcher(
-                duration: _searchAnimDuration,
+                duration: animDuration,
                 switchInCurve: _searchAnimCurve,
                 switchOutCurve: _searchAnimReverseCurve,
                 transitionBuilder: (child, animation) {
+                  if (perf.reduceMotion) return child;
                   return FadeTransition(
                     opacity: animation,
                     child: ScaleTransition(

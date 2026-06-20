@@ -13,6 +13,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../models/quran_ayah.dart';
 import '../../models/quran_audio_state.dart';
 import '../../providers/quran_audio_provider.dart';
+import '../../providers/quran_performance_provider.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
 import '../../providers/quran_surah_ayahs_provider.dart';
 import '../../providers/quran_surah_provider.dart';
@@ -258,7 +259,12 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
     final languageCode = Localizations.localeOf(context).languageCode;
     final surahAsync = ref.watch(quranSurahByIdProvider(widget.surahId));
     final ayahsAsync = ref.watch(quranSurahAyahsProvider(widget.surahId));
-    final audio = ref.watch(quranAudioProvider);
+    final perf = ref.watch(quranPerformanceProvider);
+    final showFloatingAudioButton = !ref.watch(
+      quranAudioProvider.select(
+        (state) => state.isActive && state.surahId == widget.surahId,
+      ),
+    );
 
     ref.listen<AsyncValue<List<QuranAyah>>>(
       quranSurahAyahsProvider(widget.surahId),
@@ -274,9 +280,6 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
         unawaited(_scrollToAyah(next.ayah));
       });
     });
-
-    final showFloatingAudioButton =
-        !(audio.isActive && audio.surahId == widget.surahId);
 
     return AppScaffold(
       padding: EdgeInsets.zero,
@@ -325,7 +328,18 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
       ),
       bottomNavigationBar: const QuranAudioMiniBar(),
       body: ayahsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => ListView.builder(
+          padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
+          itemCount: 6,
+          itemBuilder: (context, index) => Container(
+            height: 96.h,
+            margin: EdgeInsets.only(bottom: 10.h),
+            decoration: BoxDecoration(
+              color: AppColors.cardDark,
+              borderRadius: BorderRadius.circular(AppRadius.lg.r),
+            ),
+          ),
+        ),
         error: (error, _) => Center(child: Text(error.toString())),
         data: (ayahs) {
           return Stack(
@@ -340,16 +354,14 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
                     showFloatingAudioButton: showFloatingAudioButton,
                   ),
                 ),
-                cacheExtent: 1200,
+                cacheExtent: perf.surahScrollCacheExtent,
                 itemCount: ayahs.length,
                 itemBuilder: (context, index) {
                   final ayah = ayahs[index];
                   return AyahCardWidget(
                     key: _keyForAyah(ayah.ayah),
+                    surahId: widget.surahId,
                     ayah: ayah,
-                    highlighted:
-                        audio.surahId == widget.surahId &&
-                            audio.ayah == ayah.ayah,
                     onTap: () async {
                       final surah = await ref.read(
                         quranSurahByIdProvider(widget.surahId).future,

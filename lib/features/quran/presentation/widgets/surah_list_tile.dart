@@ -9,6 +9,7 @@ import '../../../../shared/widgets/card_container.dart';
 import '../../constants/quran_text_styles.dart';
 import '../../models/quran_surah.dart';
 import '../../providers/quran_audio_provider.dart';
+import '../../providers/quran_performance_provider.dart';
 import '../../utils/quran_tap_targets.dart';
 
 class SurahListTile extends ConsumerWidget {
@@ -27,16 +28,32 @@ class SurahListTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final languageCode = Localizations.localeOf(context).languageCode;
-    final audio = ref.watch(quranAudioProvider);
+    final perf = ref.watch(quranPerformanceProvider);
+    final isThisSurah = ref.watch(
+      quranAudioProvider.select((state) => state.surahId == surah.id),
+    );
+    final isLoading = ref.watch(
+      quranAudioProvider.select(
+        (state) => state.surahId == surah.id && state.isLoading,
+      ),
+    );
+    final isPlaying = ref.watch(
+      quranAudioProvider.select(
+        (state) => state.surahId == surah.id && state.isPlaying,
+      ),
+    );
+    final isActive = ref.watch(
+      quranAudioProvider.select(
+        (state) => state.surahId == surah.id && state.isActive,
+      ),
+    );
     final notifier = ref.read(quranAudioProvider.notifier);
-
-    final isThisSurah = audio.surahId == surah.id;
-    final isLoading = isThisSurah && audio.isLoading;
-    final isPlaying = isThisSurah && audio.isPlaying;
+    final switcherDuration =
+        perf.reduceMotion ? Duration.zero : const Duration(milliseconds: 200);
 
     void onPlayTap() {
-      if (isThisSurah && (audio.isActive || audio.isLoading)) {
-        if (audio.isLoading) return;
+      if (isThisSurah && (isActive || isLoading)) {
+        if (isLoading) return;
         notifier.togglePlayPause();
         return;
       }
@@ -123,7 +140,7 @@ class SurahListTile extends ConsumerWidget {
               height: QuranTapTargets.minSize.r,
               child: Center(
                 child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
+                  duration: switcherDuration,
                   child: isLoading
                       ? SizedBox(
                           key: const ValueKey('loading'),

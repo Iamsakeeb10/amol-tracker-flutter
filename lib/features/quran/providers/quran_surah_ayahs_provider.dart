@@ -11,8 +11,12 @@ final quranSurahAyahsProvider =
   final translator = ref.watch(
     quranReadingPrefsProvider.select((prefs) => prefs.translator),
   );
+  final showTranslation = ref.watch(
+    quranReadingPrefsProvider.select((prefs) => prefs.showTranslation),
+  );
   return db.getAyahsForSurah(
     surahId,
     translator: translator.dbKey,
+    includeTranslation: showTranslation,
   );
 });

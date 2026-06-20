@@ -8,7 +8,6 @@ import 'core/router/router.dart';
 import 'core/services/notification_service.dart';
 import 'core/theme/theme.dart';
 import 'features/badges/presentation/widgets/badge_celebration_overlay.dart';
-import 'features/quran/providers/quran_surah_provider.dart';
 import 'features/syllabus/presentation/widgets/lms_level_up_overlay.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/amal_fields_provider.dart';
@@ -35,7 +34,6 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(ref.read(appBootstrapProvider.future));
-      unawaited(ref.read(quranSurahListProvider.future));
     });
   }
 

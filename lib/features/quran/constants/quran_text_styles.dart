@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/colors.dart';
 import 'quran_constants.dart';
 
-/// Arabic text styles using the bundled [UthmanicHafs] font for Uthmani script.
+/// Arabic text styles using the bundled [ScheherazadeNew] font for Uthmani script.
 ///
 /// Do not build these from [AppTextStyles] — Google Fonts sets `package:
 /// google_fonts` on those styles, which prevents app-bundled fonts from loading
@@ -11,10 +11,11 @@ import 'quran_constants.dart';
 class QuranTextStyles {
   QuranTextStyles._();
 
+  /// Ayah list / surah scroll Arabic — raw Tanzil text, no code-point rewriting.
   static TextStyle arabic({
     required double fontSize,
     Color color = AppColors.textPrimary,
-    double height = 2.0,
+    double height = QuranConstants.arabicLineHeight,
     FontWeight fontWeight = FontWeight.w400,
     Color? backgroundColor,
     String? fontFamily,
@@ -27,10 +28,11 @@ class QuranTextStyles {
       fontWeight: fontWeight,
       backgroundColor: backgroundColor,
       decoration: TextDecoration.none,
+      leadingDistribution: TextLeadingDistribution.proportional,
     );
   }
 
-  /// Mushaf page text — uses [UthmanicHafs] for Uthmani script and diacritics.
+  /// Mushaf page text — uses [ScheherazadeNew] for Uthmani script and diacritics.
   ///
   /// [height] defaults to `null` so Flutter uses the font's own ascent/descent
   /// metrics. Forcing a tight [TextStyle.height] clips Arabic diacritics.
@@ -51,7 +53,7 @@ class QuranTextStyles {
     );
   }
 
-  /// Line metrics tuned for Uthmanic Hafs mushaf rendering.
+  /// Line metrics tuned for Scheherazade New mushaf rendering.
   static const textHeightBehavior = TextHeightBehavior(
     applyHeightToFirstAscent: false,
     applyHeightToLastDescent: false,

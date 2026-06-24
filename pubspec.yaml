@@ -114,6 +114,9 @@ flutter:
     - assets/qpc-nastaleeq.db
 
   fonts:
+    - family: ScheherazadeNew
+      fonts:
+        - asset: assets/fonts/ScheherazadeNew-Regular.ttf
     - family: UthmanicHafs
       fonts:
         - asset: assets/fonts/kfgqpc-hafs.ttf

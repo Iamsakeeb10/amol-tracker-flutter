@@ -274,10 +274,7 @@ MushafRenderedLine _renderLine(
         final word = wordsById[id];
         if (word != null) lineWords.add(word);
       }
-      final segments = buildMushafLineSegments(
-        lineWords,
-        useQpcOrnaments: QuranConstants.mushafUsesQpcOrnaments,
-      );
+      final segments = buildMushafLineSegments(lineWords);
       return MushafRenderedLine(
         lineNumber: line.lineNumber,
         lineType: line.lineType,

@@ -141,9 +141,6 @@ class MushafLineSegment {
   final bool isAyahEnd;
 }
 
-/// Default ornate ayah-end frame glyph used by QPC Nastaleeq.
-const mushafDefaultAyahEndGlyph = '\uFDAB';
-
 final _arabicIndicDigitPattern = RegExp(r'^[٠-٩]+$');
 
 /// Ornate ayah-end frames in QPC mushaf databases (Arabic Presentation Forms-A
@@ -156,50 +153,15 @@ bool isMushafAyahEndMarkerText(String text) {
   return _arabicIndicDigitPattern.hasMatch(text);
 }
 
-String normalizeMushafAyahEndText(String text, {required bool useQpcOrnaments}) {
-  if (text.isEmpty) return text;
-  if (useQpcOrnaments) {
-    if (_qpcOrnamentPattern.hasMatch(text)) return text;
-    if (_arabicIndicDigitPattern.hasMatch(text)) {
-      return '$text$mushafDefaultAyahEndGlyph';
-    }
-    return text;
-  }
-  return text.replaceAll(_qpcOrnamentPattern, '');
-}
-
-/// QPC Nastaleeq encodes silent letters with marks absent from Tanzil Uthmani
-/// (e.g. U+0658 after sukun in كَفَرُوْ٘ا). [UthmanicHafs] renders those as ◌.
-final _qpcOnlyCombiningPattern = RegExp(r'[\u0653-\u0658\u06E0-\u06E8]');
-
-/// Removes QPC-only code points that [UthmanicHafs] cannot render.
-String normalizeMushafWordTextForUnicodeFont(String text) {
-  if (text.isEmpty) return text;
-  return text
-      .replaceAll(_qpcOrnamentPattern, '')
-      .replaceAll(_qpcOnlyCombiningPattern, '')
-      .replaceAll('\u0670', '')
-      .replaceAll('\u00A0', ' ');
-}
-
-List<MushafLineSegment> buildMushafLineSegments(
-  List<MushafWord> words, {
-  bool useQpcOrnaments = false,
-}) {
+List<MushafLineSegment> buildMushafLineSegments(List<MushafWord> words) {
   if (words.isEmpty) return const [];
 
   final segments = <MushafLineSegment>[];
   for (final word in words) {
-    final isAyahEnd = isMushafAyahEndMarkerText(word.text);
-    final text = isAyahEnd
-        ? normalizeMushafAyahEndText(
-            word.text,
-            useQpcOrnaments: useQpcOrnaments,
-          )
-        : useQpcOrnaments
-            ? word.text
-            : normalizeMushafWordTextForUnicodeFont(word.text);
+    final text = word.text;
     if (text.isEmpty) continue;
+
+    final isAyahEnd = isMushafAyahEndMarkerText(text);
 
     segments.add(
       MushafLineSegment(

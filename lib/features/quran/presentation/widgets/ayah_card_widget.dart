@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../constants/quran_constants.dart';
 import '../../constants/quran_text_styles.dart';
 import '../../models/quran_ayah.dart';
 import '../../providers/quran_audio_provider.dart';
@@ -39,7 +40,7 @@ class AyahCardWidget extends ConsumerWidget {
     final showTranslation = ref.watch(
       quranReadingPrefsProvider.select((prefs) => prefs.showTranslation),
     );
-    final baseSize = 22.sp * arabicFontScale;
+    final baseSize = QuranConstants.arabicBaseFontSize.sp * arabicFontScale;
     final translationSize = 14.sp * translationFontScale;
 
     return InkWell(
@@ -87,7 +88,7 @@ class AyahCardWidget extends ConsumerWidget {
             SizedBox(height: 10.h),
             Text(
               ayah.textAr,
-              style: QuranTextStyles.arabic(fontSize: baseSize, height: 2.3),
+              style: QuranTextStyles.arabic(fontSize: baseSize),
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,
             ),

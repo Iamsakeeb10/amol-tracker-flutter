@@ -117,9 +117,6 @@ flutter:
     - family: ScheherazadeNew
       fonts:
         - asset: assets/fonts/ScheherazadeNew-Regular.ttf
-    - family: UthmanicHafs
-      fonts:
-        - asset: assets/fonts/kfgqpc-hafs.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

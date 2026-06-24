@@ -33,20 +33,19 @@ class _QiblaScreenState extends State<QiblaScreen> {
   }
 
   Future<void> _bootstrap() async {
-    setState(() => _state = _State.loading);
     final status = await Permission.location.status;
     if (status.isPermanentlyDenied) {
-      setState(() => _state = _State.permissionPermanent);
+      if (mounted) setState(() => _state = _State.permissionPermanent);
       return;
     }
     if (!status.isGranted) {
       final result = await Permission.location.request();
       if (result.isPermanentlyDenied) {
-        setState(() => _state = _State.permissionPermanent);
+        if (mounted) setState(() => _state = _State.permissionPermanent);
         return;
       }
       if (!result.isGranted) {
-        setState(() => _state = _State.permissionDenied);
+        if (mounted) setState(() => _state = _State.permissionDenied);
         return;
       }
     }
@@ -54,21 +53,39 @@ class _QiblaScreenState extends State<QiblaScreen> {
   }
 
   Future<void> _locate() async {
-    setState(() => _state = _State.loading);
     try {
-      final pos = await Geolocator.getCurrentPosition(
+      // 1. Try last known position for instant load
+      final lastPos = await Geolocator.getLastKnownPosition();
+      if (lastPos != null && mounted) {
+        setState(() {
+          _qiblahBearing = Qibla.qibla(Coordinates(lastPos.latitude, lastPos.longitude));
+          _state = _State.ready;
+        });
+      }
+
+      // If we still don't have a position, show loader
+      if (lastPos == null && mounted) {
+        setState(() => _state = _State.loading);
+      }
+
+      // 2. Fetch current position for accuracy
+      final currentPos = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 15),
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 5),
         ),
       );
-      final bearing = Qibla.qibla(Coordinates(pos.latitude, pos.longitude));
-      setState(() {
-        _qiblahBearing = bearing;
-        _state = _State.ready;
-      });
+      
+      if (mounted) {
+        setState(() {
+          _qiblahBearing = Qibla.qibla(Coordinates(currentPos.latitude, currentPos.longitude));
+          _state = _State.ready;
+        });
+      }
     } catch (_) {
-      setState(() => _state = _State.permissionDenied);
+      if (_qiblahBearing == null && mounted) {
+        setState(() => _state = _State.permissionDenied);
+      }
     }
   }
 

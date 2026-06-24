@@ -168,7 +168,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get prayerIsha => 'ইশা';
 
   @override
-  String get quietHours => 'কোয়ায়েট আওয়ার';
+  String get quietHours => 'নোটিফিকেশন বিরতি';
 
   @override
   String get showOnLeaderboard => 'আমাকে লিডারবোর্ডে দেখান';
@@ -1040,7 +1040,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get publicLeaderboardSubtitle => 'সব মেম্বার র‍্যাঙ্ক দেখতে পারবে';
 
   @override
-  String get quietHoursActive => 'কোয়ায়েট আওয়ার চালু';
+  String get quietHoursActive => 'নোটিফিকেশন বিরতি সময় চালু';
 
   @override
   String get quietHoursActiveSubtitle => 'রাতে নোটিফিকেশন মিউট থাকবে';

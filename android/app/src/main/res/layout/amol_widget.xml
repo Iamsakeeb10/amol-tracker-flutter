@@ -37,12 +37,11 @@
             android:paddingTop="2dp"
             android:paddingBottom="2dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🔥"
-                android:textSize="10sp"
-                android:includeFontPadding="false"/>
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:src="@drawable/widget_ic_fire"
+                android:scaleType="fitCenter"/>
 
             <TextView
                 android:id="@+id/widget_streak_value"

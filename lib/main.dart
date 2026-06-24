@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,6 +13,7 @@ import 'app.dart';
 import 'core/services/local_storage_service.dart';
 import 'core/theme/colors.dart';
 import 'core/utils/fcm_notification_display.dart';
+import 'features/widget/home_widget_service.dart';
 import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
@@ -32,6 +35,8 @@ Future<void> main() async {
   );
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await LocalStorageService.initialize();
+  // Immediately push hijri date + cached streak to widget (no auth needed).
+  unawaited(HomeWidgetService.quickPreloadWidget());
 
   runApp(const ProviderScope(child: _RootApp()));
 }

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Circular progress drawable for the widget ProgressBar.
+  Uses a layer-list with ring shapes.
+  Layer 0: dark track ring (useLevel=false — always full circle).
+  Layer 1: gold arc progress (id=progress, useLevel=true — driven by ProgressBar).
+  The rotate element starts the arc from the top (12 o'clock = -90°).
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Dark background track ring (always visible) -->
+    <item>
+        <shape
+            android:shape="ring"
+            android:innerRadiusRatio="2.5"
+            android:thicknessRatio="10"
+            android:useLevel="false">
+            <solid android:color="#1F5C3E"/>
+        </shape>
+    </item>
+
+    <!-- Gold progress arc — level controlled by ProgressBar, rotated to start at top -->
+    <item android:id="@android:id/progress">
+        <rotate
+            android:fromDegrees="-90"
+            android:toDegrees="270"
+            android:pivotX="50%"
+            android:pivotY="50%">
+            <shape
+                android:shape="ring"
+                android:innerRadiusRatio="2.5"
+                android:thicknessRatio="10"
+                android:useLevel="true">
+                <solid android:color="#E8C96A"/>
+            </shape>
+        </rotate>
+    </item>
+
+</layer-list>

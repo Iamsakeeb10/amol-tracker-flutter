@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -133,6 +135,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _resetAnnouncementSessionForUser(nextUser.uid);
       }
       _scheduleAnnouncementShow();
+
+      // Push widget update immediately with the now-resolved streak.
+      // The home screen already has correct data at this point — no need
+      // to wait for amalProvider's internal async chain.
+      final resolvedStreak = resolveDisplayedStreakValues(
+        currentStreak: nextUser.currentStreak,
+        bestStreak: nextUser.bestStreak,
+        hasSubmittedToday:
+            ref.read(amalProvider(nextUser.uid).select((s) => s.isSubmitted)),
+      ).currentStreak;
+      unawaited(
+        ref
+            .read(amalProvider(nextUser.uid).notifier)
+            .refreshWidgetData(streakOverride: resolvedStreak),
+      );
     });
     ref.listen(announcementsProvider, (previous, next) {
       if (!next.hasValue) return;

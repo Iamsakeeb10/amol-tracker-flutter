@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Foreground arc for circular progress (the gold arc) -->
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromDegrees="-90"
+    android:toDegrees="270"
+    android:pivotX="50%"
+    android:pivotY="50%">
+    <shape
+        android:shape="ring"
+        android:innerRadiusRatio="2.8"
+        android:thicknessRatio="12"
+        android:useLevel="true">
+        <solid android:color="#E8C96A"/>
+    </shape>
+</rotate>

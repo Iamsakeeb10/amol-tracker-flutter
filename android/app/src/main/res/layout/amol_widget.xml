@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  2×2 Home Widget (compact square ~146dp).
+  Header: [আমল ট্র্যাকার] [🔥 streak] [date]
+  Center: 80dp ring with X/Y overlay
+  Root: wrap_content height — never expands to fill launcher host frame.
+  All text: maxLines=1 + ellipsize=end to prevent wrapping.
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
@@ -11,214 +18,195 @@
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
 
+    <!-- ── HEADER: 🔥 streak (left) | date (right) ──────────────────── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/widget_app_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="আমল ট্র্যাকার"
-            android:textColor="#E8C96A"
-            android:textSize="12sp"
-            android:textStyle="bold"/>
-
-        <TextView
-            android:id="@+id/widget_hijri_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="তারিখ"
-            android:textColor="#FFFFFF80"
-            android:textSize="10sp"
-            android:maxLines="1"
-            android:ellipsize="end"/>
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#40C9A84C"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"/>
-
-    <LinearLayout
-        android:id="@+id/widget_score_section"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
+        <!-- 🔥 Streak inline badge -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="bottom"
-            android:layout_marginEnd="6dp">
+            android:gravity="center_vertical"
+            android:background="@drawable/widget_streak_badge_bg"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp">
 
             <TextView
-                android:id="@+id/widget_score_main"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔥"
+                android:textSize="10sp"
+                android:includeFontPadding="false"/>
+
+            <TextView
+                android:id="@+id/widget_streak_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="০"
                 android:textColor="#E8C96A"
-                android:textSize="22sp"
-                android:textStyle="bold"/>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginStart="2dp"
-                android:layout_marginBottom="1dp">
-
-                <TextView
-                    android:id="@+id/widget_score_denom"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="/১০০"
-                    android:textColor="#C9A84C"
-                    android:textSize="10sp"/>
-
-                <TextView
-                    android:id="@+id/widget_score_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="আজ শুরু করো"
-                    android:textColor="#2ECC71"
-                    android:textSize="9sp"
-                    android:textStyle="bold"
-                    android:maxLines="1"
-                    android:ellipsize="end"/>
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="2dp">
-
-            <ProgressBar
-                android:id="@+id/widget_progress"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="match_parent"
-                android:layout_height="7dp"
-                android:progress="0"
-                android:max="100"
-                android:progressDrawable="@drawable/widget_progress_bar"
-                android:layout_marginBottom="2dp"/>
-
-            <TextView
-                android:id="@+id/widget_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="০/৯ আমল"
-                android:textColor="#FFFFFF"
                 android:textSize="10sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="2dp"
+                android:includeFontPadding="false"/>
         </LinearLayout>
 
+        <!-- Spacer — must be TextView, NOT View (View is not in RemoteViews allowlist) -->
         <TextView
-            android:id="@+id/widget_remaining"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <!-- Hijri date — small, right-aligned -->
+        <TextView
+            android:id="@+id/widget_hijri_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="আর ৯টি বাকি"
-            android:textColor="#E8C96A"
-            android:textSize="9sp"
-            android:gravity="end"
-            android:maxLines="2"
-            android:layout_marginStart="4dp"/>
+            android:text="—"
+            android:textColor="#80FFFFFF"
+            android:textSize="8sp"
+            android:maxLines="1"
+            android:ellipsize="end"/>
     </LinearLayout>
 
+    <!-- ── CENTER: 80dp ring in fixed 90dp frame ─────────────────────── -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="2dp">
+
+        <ProgressBar
+            android:id="@+id/widget_circular_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:max="10000"
+            android:progress="0"
+            android:progressDrawable="@drawable/widget_circular_progress"/>
+
+        <!-- X / Y text centered on ring -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/widget_count_completed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="০"
+                android:textColor="#E8C96A"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:includeFontPadding="false"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="/"
+                android:textColor="#80FFFFFF"
+                android:textSize="13sp"
+                android:includeFontPadding="false"/>
+
+            <TextView
+                android:id="@+id/widget_count_total"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="৯"
+                android:textColor="#CCFFFFFF"
+                android:textSize="13sp"
+                android:includeFontPadding="false"/>
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- ═══ HIDDEN COMPAT STUBS ═════════════════════════════════════════
+         These views are GONE and take no space, but must exist so the
+         Kotlin provider can reference their IDs without crashing.
+         Use wrap_content (not 0dp) — some RemoteViews implementations
+         reject 0dp views and fail the entire widget inflation.
+         ════════════════════════════════════════════════════════════════ -->
+    <TextView
+        android:id="@+id/widget_score_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/widget_score_denom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/widget_score_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+    <ProgressBar
+        android:id="@+id/widget_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/widget_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/widget_remaining"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
     <LinearLayout
         android:id="@+id/widget_amal_section"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="5dp"
         android:visibility="gone">
-
         <LinearLayout
             android:id="@+id/widget_amal_col1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginEnd="4dp"/>
-
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
         <LinearLayout
             android:id="@+id/widget_amal_col2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="4dp"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
     </LinearLayout>
-
     <TextView
         android:id="@+id/widget_empty_hint"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="আজ কোনো আমল লগ হয়নি"
-        android:textColor="#FFFFFF99"
-        android:textSize="10sp"
-        android:layout_marginTop="5dp"
         android:visibility="gone"/>
-
     <LinearLayout
         android:id="@+id/widget_submitted_panel"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal"
-        android:layout_marginTop="5dp"
         android:visibility="gone">
-
         <TextView
             android:id="@+id/widget_submitted_title"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="আলহামদুলিল্লাহ"
-            android:textColor="#E8C96A"
-            android:textSize="12sp"
-            android:textStyle="bold"/>
-
+            android:layout_height="wrap_content"/>
         <TextView
             android:id="@+id/widget_submitted_score"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="৭৪/১০০ — চমৎকার!"
-            android:textColor="#FFFFFF"
-            android:textSize="10sp"
-            android:layout_marginTop="2dp"/>
-
+            android:layout_height="wrap_content"/>
         <TextView
             android:id="@+id/widget_submitted_streak"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="#E8C96A"
-            android:textSize="9sp"
-            android:layout_marginTop="2dp"/>
+            android:layout_height="wrap_content"/>
     </LinearLayout>
-
     <TextView
         android:id="@+id/widget_cta"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="আমল লগ করো →"
-        android:textColor="#0D3D2E"
-        android:background="@drawable/widget_button_bg"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:layout_marginTop="6dp"/>
+        android:visibility="gone"/>
 
 </LinearLayout>
+

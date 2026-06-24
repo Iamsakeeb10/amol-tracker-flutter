@@ -150,6 +150,13 @@ class AmalNotifier extends StateNotifier<AmalState> {
   /// Re-sync today's log after a manual fields refresh (Retry).
   Future<void> refreshFromFields() => _load();
 
+  /// Push the current state to the home widget immediately.
+  /// Pass [streakOverride] when the caller already has the resolved streak
+  /// value (e.g. home screen) so we don't have to wait for currentUserProvider.
+  Future<void> refreshWidgetData({int? streakOverride}) =>
+      _updateHomeWidget(streakOverride: streakOverride);
+
+
   void _applyFields(List<AmalField> fields) {
     state = state.copyWith(
       toggles: normalizeTogglesForFields(state.toggles, fields),

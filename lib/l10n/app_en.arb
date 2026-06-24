@@ -932,5 +932,8 @@
   "quranPageTheme": "Page theme",
   "quranJumpToAyah": "Jump to ayah",
   "quranJumpToAyahHint": "Enter ayah number",
-  "quranAyahCopied": "Ayah copied to clipboard"
+  "quranAyahCopied": "Ayah copied to clipboard",
+  "qiblaTitle": "Qibla",
+  "qiblaGrantLocationPermission": "Grant Location Permission",
+  "qiblaOpenSettings": "Open Settings"
 }

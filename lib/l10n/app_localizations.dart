@@ -4470,6 +4470,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ayah copied to clipboard'**
   String get quranAyahCopied;
+
+  /// No description provided for @qiblaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Qibla'**
+  String get qiblaTitle;
+
+  /// No description provided for @qiblaGrantLocationPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Grant Location Permission'**
+  String get qiblaGrantLocationPermission;
+
+  /// No description provided for @qiblaOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get qiblaOpenSettings;
 }
 
 class _AppLocalizationsDelegate

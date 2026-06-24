@@ -904,5 +904,8 @@
   "quranPageTheme": "পৃষ্ঠার থিম",
   "quranJumpToAyah": "আয়াতে যান",
   "quranJumpToAyahHint": "আয়াত নম্বর লিখুন",
-  "quranAyahCopied": "আয়াত ক্লিপবোর্ডে কপি হয়েছে"
+  "quranAyahCopied": "আয়াত ক্লিপবোর্ডে কপি হয়েছে",
+  "qiblaTitle": "কিবলা",
+  "qiblaGrantLocationPermission": "লোকেশন পারমিশন দিন",
+  "qiblaOpenSettings": "সেটিংস খুলুন"
 }

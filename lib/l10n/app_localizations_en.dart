@@ -2392,4 +2392,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quranAyahCopied => 'Ayah copied to clipboard';
+
+  @override
+  String get qiblaTitle => 'Qibla';
+
+  @override
+  String get qiblaGrantLocationPermission => 'Grant Location Permission';
+
+  @override
+  String get qiblaOpenSettings => 'Open Settings';
 }

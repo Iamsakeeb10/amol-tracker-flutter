@@ -38,6 +38,7 @@ class AppRoutes {
   static const dhikr = '/dhikr';
   static const asmaUlHusna = '/asma-ul-husna';
   static const hijriCalendar = '/hijri-calendar';
+  static const qibla = '/qibla';
 
   static const quran = '/quran';
   static const quranSurahScrollPattern = '/quran/surah/:surahId';

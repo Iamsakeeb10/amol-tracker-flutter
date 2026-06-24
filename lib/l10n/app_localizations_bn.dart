@@ -2395,4 +2395,13 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get quranAyahCopied => 'আয়াত ক্লিপবোর্ডে কপি হয়েছে';
+
+  @override
+  String get qiblaTitle => 'কিবলা';
+
+  @override
+  String get qiblaGrantLocationPermission => 'লোকেশন পারমিশন দিন';
+
+  @override
+  String get qiblaOpenSettings => 'সেটিংস খুলুন';
 }

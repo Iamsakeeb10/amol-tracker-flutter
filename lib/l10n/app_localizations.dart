@@ -4488,6 +4488,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Settings'**
   String get qiblaOpenSettings;
+
+  /// No description provided for @qiblaNorth.
+  ///
+  /// In en, this message translates to:
+  /// **'N'**
+  String get qiblaNorth;
+
+  /// No description provided for @qiblaEast.
+  ///
+  /// In en, this message translates to:
+  /// **'E'**
+  String get qiblaEast;
+
+  /// No description provided for @qiblaSouth.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get qiblaSouth;
+
+  /// No description provided for @qiblaWest.
+  ///
+  /// In en, this message translates to:
+  /// **'W'**
+  String get qiblaWest;
 }
 
 class _AppLocalizationsDelegate

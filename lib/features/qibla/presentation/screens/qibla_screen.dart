@@ -373,7 +373,13 @@ class _Cardinals extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const dirs = ['N', 'E', 'S', 'W'];
+    final l10n = AppLocalizations.of(context)!;
+    final dirs = [
+      l10n.qiblaNorth,
+      l10n.qiblaEast,
+      l10n.qiblaSouth,
+      l10n.qiblaWest,
+    ];
     // Geographic world angles for each direction
     const worldAngles = [0.0, math.pi / 2, math.pi, -math.pi / 2];
     final r = size * 0.5 * 0.80;
@@ -395,7 +401,7 @@ class _Cardinals extends StatelessWidget {
               dirs[i],
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: dirs[i] == 'N'
+                color: i == 0 // Index 0 is North
                     ? AppColors.danger
                     : AppColors.goldLight.withValues(alpha: 0.6),
                 fontSize: size * 0.065,

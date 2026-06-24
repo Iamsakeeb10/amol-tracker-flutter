@@ -907,5 +907,9 @@
   "quranAyahCopied": "আয়াত ক্লিপবোর্ডে কপি হয়েছে",
   "qiblaTitle": "কিবলা",
   "qiblaGrantLocationPermission": "লোকেশন পারমিশন দিন",
-  "qiblaOpenSettings": "সেটিংস খুলুন"
+  "qiblaOpenSettings": "সেটিংস খুলুন",
+  "qiblaNorth": "উ",
+  "qiblaEast": "পূ",
+  "qiblaSouth": "দ",
+  "qiblaWest": "প"
 }

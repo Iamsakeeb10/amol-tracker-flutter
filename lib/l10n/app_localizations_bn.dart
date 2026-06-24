@@ -2404,4 +2404,16 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get qiblaOpenSettings => 'সেটিংস খুলুন';
+
+  @override
+  String get qiblaNorth => 'উ';
+
+  @override
+  String get qiblaEast => 'পূ';
+
+  @override
+  String get qiblaSouth => 'দ';
+
+  @override
+  String get qiblaWest => 'প';
 }

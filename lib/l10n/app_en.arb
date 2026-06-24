@@ -935,5 +935,9 @@
   "quranAyahCopied": "Ayah copied to clipboard",
   "qiblaTitle": "Qibla",
   "qiblaGrantLocationPermission": "Grant Location Permission",
-  "qiblaOpenSettings": "Open Settings"
+  "qiblaOpenSettings": "Open Settings",
+  "qiblaNorth": "N",
+  "qiblaEast": "E",
+  "qiblaSouth": "S",
+  "qiblaWest": "W"
 }

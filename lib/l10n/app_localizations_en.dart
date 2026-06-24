@@ -2401,4 +2401,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get qiblaOpenSettings => 'Open Settings';
+
+  @override
+  String get qiblaNorth => 'N';
+
+  @override
+  String get qiblaEast => 'E';
+
+  @override
+  String get qiblaSouth => 'S';
+
+  @override
+  String get qiblaWest => 'W';
 }

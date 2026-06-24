@@ -20,7 +20,7 @@ import '../../providers/quran_reading_prefs_provider.dart';
 import '../../providers/quran_surah_provider.dart';
 import '../../utils/quran_tap_targets.dart';
 import '../widgets/mushaf_page_view.dart';
-import '../widgets/quran_audio_mini_bar.dart';
+
 import '../widgets/surah_list_tile.dart';
 
 enum _QuranViewMode { surahList, mushafReader }
@@ -418,7 +418,6 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
             ),
         ],
       ),
-      bottomNavigationBar: const QuranAudioMiniBar(),
       body: isMushaf
           ? MushafPageView(
               onPageChanged: (page) {

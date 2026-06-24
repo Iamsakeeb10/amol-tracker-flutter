@@ -167,19 +167,23 @@ class _QuranSurahScrollScreenState
       if (index < 0) return;
 
       _keyForAyah(ayah);
-      await _jumpNearAyahIndex(index);
 
-      BuildContext? targetContext;
-      for (var attempt = 0; attempt < 10; attempt++) {
-        await WidgetsBinding.instance.endOfFrame;
-        if (!mounted) return;
+      BuildContext? targetContext = _ayahKeys[ayah]?.currentContext;
 
-        targetContext = _ayahKeys[ayah]?.currentContext;
-        if (targetContext != null) break;
+      if (targetContext == null) {
+        await _jumpNearAyahIndex(index);
 
-        // maxScrollExtent grows as items are laid out — re-jump once midway.
-        if (attempt == 4) {
-          await _jumpNearAyahIndex(index);
+        for (var attempt = 0; attempt < 10; attempt++) {
+          await WidgetsBinding.instance.endOfFrame;
+          if (!mounted) return;
+
+          targetContext = _ayahKeys[ayah]?.currentContext;
+          if (targetContext != null) break;
+
+          // maxScrollExtent grows as items are laid out — re-jump once midway.
+          if (attempt == 4) {
+            await _jumpNearAyahIndex(index);
+          }
         }
       }
 

@@ -105,11 +105,11 @@ flutter:
     - assets/hadiths/
     - assets/images/
     - assets/images/dua_categories/
-    - assets/audio/
     - assets/categories.json
     - assets/sub_categories.json
     - assets/duas.json
     - assets/quran_complete.sqlite
+    - assets/quran_tanzil_text.db
     - assets/qpc-nastaleeq-15-lines.db
     - assets/qpc-nastaleeq.db
 

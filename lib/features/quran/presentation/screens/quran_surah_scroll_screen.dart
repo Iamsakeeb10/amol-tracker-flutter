@@ -10,8 +10,8 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
-import '../../models/quran_ayah.dart';
 import '../../models/quran_audio_state.dart';
+import '../../models/quran_ayah.dart';
 import '../../providers/quran_audio_provider.dart';
 import '../../providers/quran_performance_provider.dart';
 import '../../providers/quran_reading_prefs_provider.dart';
@@ -24,10 +24,7 @@ import '../widgets/quran_floating_audio_button.dart';
 import '../widgets/translation_panel.dart';
 
 class QuranSurahScrollScreen extends ConsumerStatefulWidget {
-  const QuranSurahScrollScreen({
-    super.key,
-    required this.surahId,
-  });
+  const QuranSurahScrollScreen({super.key, required this.surahId});
 
   final int surahId;
 
@@ -36,7 +33,8 @@ class QuranSurahScrollScreen extends ConsumerStatefulWidget {
       _QuranSurahScrollScreenState();
 }
 
-class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen> {
+class _QuranSurahScrollScreenState
+    extends ConsumerState<QuranSurahScrollScreen> {
   final _scrollController = ScrollController();
   final _ayahKeys = <int, GlobalKey>{};
   List<QuranAyah> _ayahs = const [];
@@ -50,7 +48,9 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAyahsFromProvider());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _loadAyahsFromProvider(),
+    );
   }
 
   void _ensureAyahsLoaded(List<QuranAyah> ayahs) {
@@ -61,8 +61,10 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
 
   void _loadAyahsFromProvider() {
     if (!mounted) return;
-    final ayahs =
-        ref.read(quranSurahAyahsProvider(widget.surahId)).asData?.value;
+    final ayahs = ref
+        .read(quranSurahAyahsProvider(widget.surahId))
+        .asData
+        ?.value;
     if (ayahs != null) {
       _ensureAyahsLoaded(ayahs);
     }
@@ -126,8 +128,7 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
     }
   }
 
-  GlobalKey _keyForAyah(int ayah) =>
-      _ayahKeys.putIfAbsent(ayah, GlobalKey.new);
+  GlobalKey _keyForAyah(int ayah) => _ayahKeys.putIfAbsent(ayah, GlobalKey.new);
 
   void _syncAyahKeys(List<QuranAyah> ayahs) {
     for (final ayah in ayahs) {
@@ -142,8 +143,10 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
 
     final position = _scrollController.position;
     final fraction = index / (_ayahs.length - 1);
-    final target = (fraction * position.maxScrollExtent)
-        .clamp(0.0, position.maxScrollExtent);
+    final target = (fraction * position.maxScrollExtent).clamp(
+      0.0,
+      position.maxScrollExtent,
+    );
 
     position.jumpTo(target);
     await WidgetsBinding.instance.endOfFrame;
@@ -217,7 +220,7 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
   void _onJumpToAyahPressed() {
     final ayahs =
         ref.read(quranSurahAyahsProvider(widget.surahId)).asData?.value ??
-            _ayahs;
+        _ayahs;
     if (ayahs.isEmpty) {
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -297,9 +300,9 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
             children: [
               Text(
                 surah?.displayName(languageCode) ?? l10n.quranTitle,
-                style: AppTextStyles.bodyLarge(context).copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.bodyLarge(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               if (surah != null)
                 Text(
@@ -367,10 +370,9 @@ class _QuranSurahScrollScreenState extends ConsumerState<QuranSurahScrollScreen>
                         quranSurahByIdProvider(widget.surahId).future,
                       );
                       if (surah == null) return;
-                      await ref.read(quranAudioProvider.notifier).playSurah(
-                            surah,
-                            startAyah: ayah.ayah,
-                          );
+                      await ref
+                          .read(quranAudioProvider.notifier)
+                          .playSurah(surah, startAyah: ayah.ayah);
                     },
                     onLongPress: () => _copyAyah(context, ayah),
                   );
@@ -450,19 +452,14 @@ class _JumpToAyahDialogState extends State<_JumpToAyahDialog> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         textInputAction: TextInputAction.done,
         onSubmitted: (_) => _submit(),
-        decoration: InputDecoration(
-          hintText: l10n.quranJumpToAyahHint,
-        ),
+        decoration: InputDecoration(hintText: l10n.quranJumpToAyahHint),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.cancel),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: Text(l10n.quranJumpToAyah),
-        ),
+        FilledButton(onPressed: _submit, child: Text(l10n.quranJumpToAyah)),
       ],
     );
   }

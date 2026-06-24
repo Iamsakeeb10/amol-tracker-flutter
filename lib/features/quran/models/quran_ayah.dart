@@ -1,3 +1,5 @@
+import '../utils/tanzil_text.dart';
+
 class QuranAyah {
   const QuranAyah({
     required this.surah,
@@ -30,7 +32,7 @@ class QuranAyah {
     return QuranAyah(
       surah: map['surah'] as int,
       ayah: map['ayah'] as int,
-      textAr: map['text'] as String? ?? '',
+      textAr: normalizeTanzilTextForDisplay(map['text'] as String? ?? ''),
       page: map['page'] as int? ?? 1,
       juz: map['juz'] as int? ?? 1,
       translation: map['translation'] as String?,

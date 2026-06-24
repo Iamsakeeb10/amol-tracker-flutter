@@ -78,20 +78,16 @@ class AyahCardWidget extends ConsumerWidget {
                 ),
                 child: Text(
                   '${ayah.ayah}',
-                  style: AppTextStyles.label(context).copyWith(
-                    color: AppColors.gold,
-                    fontSize: 11.sp,
-                  ),
+                  style: AppTextStyles.label(
+                    context,
+                  ).copyWith(color: AppColors.gold, fontSize: 11.sp),
                 ),
               ),
             ),
             SizedBox(height: 10.h),
             Text(
               ayah.textAr,
-              style: QuranTextStyles.arabic(
-                fontSize: baseSize,
-                height: 2.3,
-              ),
+              style: QuranTextStyles.arabic(fontSize: baseSize, height: 2.3),
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,
             ),

@@ -7,19 +7,65 @@ import 'package:sqflite/sqflite.dart';
 import '../models/mushaf_layout_info.dart';
 import '../models/quran_ayah.dart';
 import '../models/quran_surah.dart';
+import 'quran_arabic_text_loader.dart';
 
 const _assetDbPath = 'assets/quran_complete.sqlite';
 const _dbFileName = 'quran_complete_v3.db';
+const _tanzilArabicJoin =
+    'INNER JOIN tanzil.quran_text t ON t.sura = a.surah AND t.aya = a.ayah';
 
 class QuranDatabaseService {
   QuranDatabaseService(this._db);
 
   final Database _db;
 
-  static Future<QuranDatabaseService> open() async {
-    final dbPath = await _resolveDbPath();
-    final db = await openDatabase(dbPath, readOnly: false);
-    return QuranDatabaseService(db);
+  static Future<QuranDatabaseService>? _openFuture;
+  static QuranDatabaseService? _cached;
+
+  static Future<QuranDatabaseService> open() {
+    final cached = _cached;
+    if (cached != null && cached._db.isOpen) return Future.value(cached);
+    return _openFuture ??= _openNew();
+  }
+
+  static Future<QuranDatabaseService> _openNew() async {
+    try {
+      final dbPath = await _resolveDbPath();
+      final arabicDbPath = await QuranArabicTextLoader.ensureCachedDbPath();
+      final db = await openDatabase(dbPath, readOnly: false);
+      await _attachTanzilIfNeeded(db, arabicDbPath);
+      final service = QuranDatabaseService(db);
+      _cached = service;
+      return service;
+    } catch (error) {
+      _openFuture = null;
+      rethrow;
+    }
+  }
+
+  static Future<void> _attachTanzilIfNeeded(
+    Database db,
+    String arabicDbPath,
+  ) async {
+    final escapedArabicPath = arabicDbPath.replaceAll("'", "''");
+    try {
+      await db.execute("ATTACH DATABASE '$escapedArabicPath' AS tanzil");
+    } on DatabaseException catch (error) {
+      if (!_isTanzilAlreadyAttached(error)) rethrow;
+    }
+  }
+
+  static bool _isTanzilAlreadyAttached(DatabaseException error) {
+    final message = error.toString().toLowerCase();
+    return message.contains('already in use') ||
+        message.contains('already exists');
+  }
+
+  static void _clearCacheIfCurrent(QuranDatabaseService service) {
+    if (identical(_cached, service)) {
+      _cached = null;
+      _openFuture = null;
+    }
   }
 
   static Future<String> _resolveDbPath() async {
@@ -63,15 +109,16 @@ class QuranDatabaseService {
       SELECT
         a.surah,
         a.ayah,
-        a.text,
+        t.text,
         a.page,
         a.juz,
-        t.text AS translation
+        tr.text AS translation
       FROM ayat a
-      LEFT JOIN translations t
-        ON t.surah = a.surah
-       AND t.ayah = a.ayah
-       AND t.translator = ?
+      $_tanzilArabicJoin
+      LEFT JOIN translations tr
+        ON tr.surah = a.surah
+       AND tr.ayah = a.ayah
+       AND tr.translator = ?
       WHERE a.page = ?
       ORDER BY a.surah ASC, a.ayah ASC
     ''', [translator, page]);
@@ -97,15 +144,16 @@ class QuranDatabaseService {
       SELECT
         a.surah,
         a.ayah,
-        a.text,
+        t.text,
         a.page,
         a.juz,
-        t.text AS translation
+        tr.text AS translation
       FROM ayat a
-      LEFT JOIN translations t
-        ON t.surah = a.surah
-       AND t.ayah = a.ayah
-       AND t.translator = ?
+      $_tanzilArabicJoin
+      LEFT JOIN translations tr
+        ON tr.surah = a.surah
+       AND tr.ayah = a.ayah
+       AND tr.translator = ?
       WHERE $conditions
       ORDER BY a.surah ASC, a.ayah ASC
     ''', args);
@@ -119,13 +167,18 @@ class QuranDatabaseService {
     bool includeTranslation = true,
   }) async {
     if (!includeTranslation) {
-      final rows = await _db.query(
-        'ayat',
-        columns: ['surah', 'ayah', 'text', 'page', 'juz'],
-        where: 'surah = ?',
-        whereArgs: [surahId],
-        orderBy: 'ayah ASC',
-      );
+      final rows = await _db.rawQuery('''
+        SELECT
+          a.surah,
+          a.ayah,
+          t.text,
+          a.page,
+          a.juz
+        FROM ayat a
+        $_tanzilArabicJoin
+        WHERE a.surah = ?
+        ORDER BY a.ayah ASC
+      ''', [surahId]);
       return rows.map(QuranAyah.fromMap).toList(growable: false);
     }
 
@@ -133,15 +186,16 @@ class QuranDatabaseService {
       SELECT
         a.surah,
         a.ayah,
-        a.text,
+        t.text,
         a.page,
         a.juz,
-        t.text AS translation
+        tr.text AS translation
       FROM ayat a
-      LEFT JOIN translations t
-        ON t.surah = a.surah
-       AND t.ayah = a.ayah
-       AND t.translator = ?
+      $_tanzilArabicJoin
+      LEFT JOIN translations tr
+        ON tr.surah = a.surah
+       AND tr.ayah = a.ayah
+       AND tr.translator = ?
       WHERE a.surah = ?
       ORDER BY a.ayah ASC
     ''', [translator, surahId]);
@@ -197,5 +251,13 @@ class QuranDatabaseService {
     );
   }
 
-  Future<void> close() => _db.close();
+  Future<void> close() async {
+    try {
+      await _db.execute('DETACH DATABASE tanzil');
+    } on DatabaseException catch (_) {
+      // Ignore if the Tanzil database was not attached on this connection.
+    }
+    await _db.close();
+    _clearCacheIfCurrent(this);
+  }
 }

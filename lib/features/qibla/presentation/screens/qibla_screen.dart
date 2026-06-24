@@ -172,20 +172,22 @@ class _CompassViewState extends State<_CompassView> {
         }
         final heading = _smooth(raw);
         final needleRad = (widget.qiblahBearing - heading) * (math.pi / 180);
+        final dialRad = -heading * (math.pi / 180);
 
         double offset = (widget.qiblahBearing - heading) % 360;
         if (offset > 180) offset -= 360;
         final isFacing = offset.abs() < 5.0;
 
-        return _Dial(needleRad: needleRad, isFacing: isFacing);
+        return _Dial(needleRad: needleRad, dialRad: dialRad, isFacing: isFacing);
       },
     );
   }
 }
 
 class _Dial extends StatelessWidget {
-  const _Dial({required this.needleRad, required this.isFacing});
+  const _Dial({required this.needleRad, required this.dialRad, required this.isFacing});
   final double needleRad;
+  final double dialRad;
   final bool isFacing;
 
   @override
@@ -225,20 +227,23 @@ class _Dial extends StatelessWidget {
                 ),
               ),
 
-              // Tick marks + rings
-              CustomPaint(
-                size: Size(size, size),
-                painter: _DialPainter(
-                  ringColor: AppColors.gold.withValues(alpha: 0.20),
-                  majorTickColor: AppColors.goldLight.withValues(alpha: 0.55),
-                  minorTickColor: Colors.white.withValues(alpha: 0.14),
+              // Rotating compass rose (tick marks + N/E/S/W labels)
+              Transform.rotate(
+                angle: dialRad,
+                child: CustomPaint(
+                  size: Size(size, size),
+                  painter: _DialPainter(
+                    ringColor: AppColors.gold.withValues(alpha: 0.20),
+                    majorTickColor: AppColors.goldLight.withValues(alpha: 0.55),
+                    minorTickColor: Colors.white.withValues(alpha: 0.14),
+                  ),
                 ),
               ),
 
-              // Cardinal N/E/S/W
-              _Cardinals(size: size),
+              // Cardinal N/E/S/W — positions orbit with heading, text always upright
+              _Cardinals(size: size, dialRad: dialRad),
 
-              // Rotating needle
+              // Rotating needle (always points at Qibla)
               Transform.rotate(
                 angle: needleRad,
                 child: _Needle(size: size, isFacing: isFacing),
@@ -362,13 +367,15 @@ class _Needle extends StatelessWidget {
 }
 
 class _Cardinals extends StatelessWidget {
-  const _Cardinals({required this.size});
+  const _Cardinals({required this.size, required this.dialRad});
   final double size;
+  final double dialRad;
 
   @override
   Widget build(BuildContext context) {
     const dirs = ['N', 'E', 'S', 'W'];
-    const angles = [0.0, math.pi / 2, math.pi, -math.pi / 2];
+    // Geographic world angles for each direction
+    const worldAngles = [0.0, math.pi / 2, math.pi, -math.pi / 2];
     final r = size * 0.5 * 0.80;
 
     return SizedBox(
@@ -377,8 +384,11 @@ class _Cardinals extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: List.generate(4, (i) {
-          final dx = r * math.sin(angles[i]);
-          final dy = -r * math.cos(angles[i]);
+          // Compute screen position from world angle + dial rotation
+          // Text itself has zero rotation — always perfectly upright and readable
+          final screenAngle = worldAngles[i] + dialRad;
+          final dx = r * math.sin(screenAngle);
+          final dy = -r * math.cos(screenAngle);
           return Transform.translate(
             offset: Offset(dx, dy),
             child: Text(

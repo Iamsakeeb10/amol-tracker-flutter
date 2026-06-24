@@ -1040,7 +1040,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get publicLeaderboardSubtitle => 'সব মেম্বার র‍্যাঙ্ক দেখতে পারবে';
 
   @override
-  String get quietHoursActive => 'নোটিফিকেশন বিরতি সময় চালু';
+  String get quietHoursActive => 'নোটিফিকেশন বিরতি চালু';
 
   @override
   String get quietHoursActiveSubtitle => 'রাতে নোটিফিকেশন মিউট থাকবে';

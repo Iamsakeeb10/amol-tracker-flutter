@@ -209,15 +209,15 @@ class _Dial extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: isFacing
-                        ? AppColors.success.withValues(alpha: 0.8)
-                        : AppColors.gold.withValues(alpha: 0.4),
+                        ? AppColors.success.withValues(alpha: 0.85)
+                        : AppColors.goldLight.withValues(alpha: 0.55),
                     width: 2.5,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: isFacing
-                          ? AppColors.success.withValues(alpha: 0.25)
-                          : AppColors.gold.withValues(alpha: 0.10),
+                          ? AppColors.success.withValues(alpha: 0.28)
+                          : AppColors.gold.withValues(alpha: 0.16),
                       blurRadius: 36,
                       spreadRadius: 8,
                     ),
@@ -229,9 +229,9 @@ class _Dial extends StatelessWidget {
               CustomPaint(
                 size: Size(size, size),
                 painter: _DialPainter(
-                  ringColor: AppColors.gold.withValues(alpha: 0.12),
-                  majorTickColor: Colors.white.withValues(alpha: 0.35),
-                  minorTickColor: Colors.white.withValues(alpha: 0.12),
+                  ringColor: AppColors.gold.withValues(alpha: 0.20),
+                  majorTickColor: AppColors.goldLight.withValues(alpha: 0.55),
+                  minorTickColor: Colors.white.withValues(alpha: 0.14),
                 ),
               ),
 
@@ -251,10 +251,10 @@ class _Dial extends StatelessWidget {
                 height: 14,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isFacing ? AppColors.success : Colors.white,
+                  color: isFacing ? AppColors.success : AppColors.goldLight,
                   boxShadow: [
                     BoxShadow(
-                      color: (isFacing ? AppColors.success : Colors.white)
+                      color: (isFacing ? AppColors.success : AppColors.gold)
                           .withValues(alpha: 0.5),
                       blurRadius: 10,
                     ),
@@ -343,13 +343,13 @@ class _Needle extends StatelessWidget {
                   height: tailReach - 8,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(2),
-                    color: Colors.white.withValues(alpha: 0.18),
+                    color: AppColors.goldPale.withValues(alpha: 0.25),
                   ),
                 ),
                 CustomPaint(
                   size: const Size(10, 8),
                   painter: _ArrowPainter(
-                    color: Colors.white.withValues(alpha: 0.18),
+                    color: AppColors.goldPale.withValues(alpha: 0.25),
                   ),
                 ),
               ],
@@ -387,7 +387,7 @@ class _Cardinals extends StatelessWidget {
               style: TextStyle(
                 color: dirs[i] == 'N'
                     ? AppColors.danger
-                    : Colors.white.withValues(alpha: 0.55),
+                    : AppColors.goldLight.withValues(alpha: 0.6),
                 fontSize: size * 0.065,
                 fontWeight: FontWeight.bold,
                 height: 1,

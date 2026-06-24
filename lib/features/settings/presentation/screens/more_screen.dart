@@ -48,7 +48,7 @@ class MoreScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const BottomTabBackButton(),
+              // const BottomTabBackButton(),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

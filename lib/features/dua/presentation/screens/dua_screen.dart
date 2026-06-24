@@ -142,7 +142,7 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
   Widget _buildAppBarTitle(AppLocalizations l10n) {
     final titleStyle = AppTextStyles.headlineMedium(
       context,
-    ).copyWith(fontSize: 17.5.sp, fontWeight: FontWeight.w600, height: 1);
+    ).copyWith(fontSize: 17.5.sp, fontWeight: FontWeight.w600, height: 0);
     const titleHeightBehavior = TextHeightBehavior(
       applyHeightToFirstAscent: false,
       applyHeightToLastDescent: false,
@@ -352,7 +352,7 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
       appBar: AppBar(
         centerTitle: false,
         automaticallyImplyLeading: false,
-        toolbarHeight: 42.h,
+        toolbarHeight: 52.h,
         leading: const BottomTabBackButton(),
         title: _buildAppBarTitle(l10n),
         actions: _buildActions(l10n),

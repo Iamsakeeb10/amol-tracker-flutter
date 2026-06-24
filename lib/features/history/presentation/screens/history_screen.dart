@@ -130,7 +130,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     children: [
                       Row(
                         children: [
-                          const BottomTabBackButton(),
+                          // const BottomTabBackButton(),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

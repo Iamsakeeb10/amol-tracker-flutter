@@ -167,7 +167,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const BottomTabBackButton(),
+                // const BottomTabBackButton(),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

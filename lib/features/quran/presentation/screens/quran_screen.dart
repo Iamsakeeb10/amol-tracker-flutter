@@ -346,7 +346,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        toolbarHeight: 42.h,
+        toolbarHeight: 62.h,
         leading: const BottomTabBackButton(fallbackRoute: AppRoutes.more),
         title: _buildAppBarTitle(l10n),
         actions: [

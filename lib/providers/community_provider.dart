@@ -8,9 +8,11 @@ import '../core/services/islamic_date_service.dart';
 import '../models/activity_feed_item_model.dart';
 import '../models/amal_log_model.dart';
 import 'auth_provider.dart';
+import 'date_provider.dart';
 
 /// Recent Hijri date tabs for the community sheet (cached per provider lifecycle).
 final communityRecentDatesProvider = Provider<List<String>>((ref) {
+  ref.watch(currentHijriDateProvider);
   return IslamicDateService.recentHijriStoragesFromBangladeshCalendar(
     count: 7,
   );
@@ -118,6 +120,9 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
           IslamicDateService.getCurrentIslamicDateStringSafe(),
         ),
       ) {
+    _ref.listen<String>(currentHijriDateProvider, (prev, next) {
+      if (prev != null && prev != next) _subscribeToday();
+    });
     _subscribeToday();
   }
 

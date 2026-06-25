@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/default_amal_fields.dart';
 import '../../../../core/router/routes.dart';
-import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/score_calculator.dart';
@@ -20,6 +19,7 @@ import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/announcement_provider.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/date_provider.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/announcement_modal.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -235,7 +235,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       hasSubmittedToday: isSubmitted,
     );
     final isNewUser = user.lastLogDate.trim().isEmpty && !isSubmitted;
-    final todayHijri = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final todayHijri = ref.watch(currentHijriDateProvider);
     final submittedLog = ref.watch(
       amalProvider(uid).select((s) => s.submittedLog),
     );

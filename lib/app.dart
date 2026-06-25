@@ -11,7 +11,10 @@ import 'features/badges/presentation/widgets/badge_celebration_overlay.dart';
 import 'features/syllabus/presentation/widgets/lms_level_up_overlay.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/amal_fields_provider.dart';
+import 'providers/amal_provider.dart';
+import 'providers/auth_provider.dart';
 import 'providers/badge_celebration_provider.dart';
+import 'providers/date_provider.dart';
 import 'providers/locale_provider.dart';
 
 class AmolTrackerApp extends ConsumerStatefulWidget {
@@ -47,6 +50,15 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
   }
 
   Future<void> _onAppResumed() async {
+    final previousDate = ref.read(currentHijriDateProvider);
+    ref.invalidate(currentHijriDateProvider);
+    final nextDate = ref.read(currentHijriDateProvider);
+    if (previousDate != nextDate) {
+      final uid = ref.read(currentUserProvider).asData?.value?.uid;
+      if (uid != null) {
+        unawaited(ref.read(amalProvider(uid).notifier).reloadForNewDay());
+      }
+    }
     await NotificationService.instance.rescheduleAll();
     if (!mounted) return;
     ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();

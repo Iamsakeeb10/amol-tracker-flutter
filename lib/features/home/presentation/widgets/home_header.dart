@@ -8,6 +8,7 @@ import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../providers/date_provider.dart';
 import '../../../../providers/notification_provider.dart';
 
 class HomeHeader extends ConsumerWidget {
@@ -20,6 +21,7 @@ class HomeHeader extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).languageCode;
     final unread = ref.watch(unreadNotificationsCountProvider);
+    ref.watch(currentHijriDateProvider);
     final unreadLabel = unread > 99 ? '99+' : '$unread';
 
     return GestureDetector(

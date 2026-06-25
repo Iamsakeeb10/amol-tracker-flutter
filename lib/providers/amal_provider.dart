@@ -17,6 +17,7 @@ import '../models/badge_model.dart';
 import '../models/user_model.dart';
 import 'amal_fields_provider.dart';
 import 'auth_provider.dart';
+import 'date_provider.dart';
 import 'history_provider.dart';
 
 /// Network status for offline banner (Phase 3).
@@ -135,6 +136,10 @@ final amalProvider =
 class AmalNotifier extends StateNotifier<AmalState> {
   AmalNotifier(this._ref, this._uid) : super(AmalState.initial()) {
     Future<void>.microtask(_load);
+    _ref.listen<String>(currentHijriDateProvider, (prev, next) {
+      if (prev == null || prev == next) return;
+      reloadForNewDay();
+    });
     _ref.listen<AsyncValue<List<AmalField>>>(amalFieldsProvider, (prev, next) {
       next.whenData((fields) {
         if (fields.isEmpty) return;
@@ -149,6 +154,18 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   /// Re-sync today's log after a manual fields refresh (Retry).
   Future<void> refreshFromFields() => _load();
+
+  /// Clear stale toggles and reload when the Islamic day rolls over.
+  Future<void> reloadForNewDay() async {
+    final fields = state.fields.isNotEmpty ? state.fields : const <AmalField>[];
+    state = AmalState(
+      toggles: _emptyTogglesForFields(fields),
+      fields: fields,
+      isSubmitted: false,
+      isLoading: true,
+    );
+    await _load();
+  }
 
   /// Push the current state to the home widget immediately.
   /// Pass [streakOverride] when the caller already has the resolved streak
@@ -180,6 +197,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
   }
 
   Future<void> _load() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
     List<AmalField> fields;
     try {
       fields = await _ref.read(amalFieldsProvider.future);
@@ -190,7 +209,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       fields = kDefaultAmalFields;
     }
 
-    final hijri = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final hijri = _ref.read(currentHijriDateProvider);
     final fs = _ref.read(firestoreServiceProvider);
 
     try {

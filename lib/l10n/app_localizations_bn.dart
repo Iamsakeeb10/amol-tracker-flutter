@@ -2416,4 +2416,10 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get qiblaWest => 'প';
+
+  @override
+  String get termsAndConditions => 'শর্তাবলী';
+
+  @override
+  String get privacyPolicy => 'প্রাইভেসি পলিসি';
 }

@@ -939,5 +939,7 @@
   "qiblaNorth": "N",
   "qiblaEast": "E",
   "qiblaSouth": "S",
-  "qiblaWest": "W"
+  "qiblaWest": "W",
+  "termsAndConditions": "Terms & Conditions",
+  "privacyPolicy": "Privacy Policy"
 }

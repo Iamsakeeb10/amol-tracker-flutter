@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
@@ -478,6 +479,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   subtitle: l10n.ramadanModeSubtitle,
                   value: _ramadanMode,
                   onChanged: (v) => setState(() => _ramadanMode = v),
+                ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.description_outlined,
+                  title: l10n.termsAndConditions,
+                  onTap: () => launchUrl(Uri.parse('https://iamsakeeb10.github.io/amol-tracker-legal/terms_conditions.html')),
+                ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.privacy_tip_outlined,
+                  title: l10n.privacyPolicy,
+                  onTap: () => launchUrl(Uri.parse('https://iamsakeeb10.github.io/amol-tracker-legal/privacy_policy.html')),
                 ),
                 const Divider(),
                 NavRow(

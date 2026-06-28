@@ -7,7 +7,9 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/locale_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../shared/widgets/card_container.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({super.key});
@@ -57,6 +59,86 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         setState(() => _isSigningIn = false);
       }
     }
+  }
+
+  void _showLanguageSheet() {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.emeraldMid,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18.r)),
+      ),
+      builder: (ctx) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final locale = ref.watch(localeProvider);
+            return Padding(
+              padding: EdgeInsets.fromLTRB(18.w, 16.h, 18.w, 22.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.languageSection,
+                    style: AppTextStyles.headlineMedium(ctx),
+                  ),
+                  SizedBox(height: 14.h),
+                  CardContainer(
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.language_outlined, size: 20.r),
+                          title: Text(
+                            l10n.english,
+                            style: AppTextStyles.bodyLarge(ctx),
+                          ),
+                          trailing: Icon(
+                            locale.languageCode == 'en'
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off,
+                            color: locale.languageCode == 'en'
+                                ? AppColors.gold
+                                : AppColors.textMuted,
+                          ),
+                          onTap: () {
+                            ref.read(localeProvider.notifier).setLocale(const Locale('en'));
+                            Navigator.pop(ctx);
+                          },
+                        ),
+                        const Divider(),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.language_outlined, size: 20.r),
+                          title: Text(
+                            l10n.bangla,
+                            style: AppTextStyles.bodyLarge(ctx),
+                          ),
+                          trailing: Icon(
+                            locale.languageCode == 'bn'
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off,
+                            color: locale.languageCode == 'bn'
+                                ? AppColors.gold
+                                : AppColors.textMuted,
+                          ),
+                          onTap: () {
+                            ref.read(localeProvider.notifier).setLocale(const Locale('bn'));
+                            Navigator.pop(ctx);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -182,19 +264,28 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               SizedBox(height: 24.h),
             ],
           ),
-          // Positioned(
-          //   top: 8.h,
-          //   right: 4.w,
-          //   child: TextButton(
-          //     onPressed: () => context.go(AppRoutes.dev),
-          //     child: Text(
-          //       'DEV',
-          //       style: AppTextStyles.label(
-          //         context,
-          //       ).copyWith(color: AppColors.gold),
-          //     ),
-          //   ),
-          // ),
+          Positioned(
+            top: 12.h,
+            right: 6.w,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.cardDark,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.cardBorder,
+                  width: 1.r,
+                ),
+              ),
+              child: IconButton(
+                onPressed: _showLanguageSheet,
+                icon: Icon(
+                  Icons.language_outlined,
+                  color: AppColors.gold,
+                  size: 24.r,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -263,12 +263,14 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                         title: l10n.date,
                         trailingText: HijriHelper.displayFromStorage(
                           state.selectedDate,
+                          languageCode: locale,
                         ),
                       ),
                       _DateTabsRow(
                         options: dates,
                         selectedDate: state.selectedDate,
                         onTapDate: notifier.selectDate,
+                        locale: locale,
                       ),
                       SizedBox(height: 10.h),
                       TextField(
@@ -664,11 +666,13 @@ class _DateTabsRow extends StatelessWidget {
     required this.options,
     required this.selectedDate,
     required this.onTapDate,
+    required this.locale,
   });
 
   final List<String> options;
   final String selectedDate;
   final ValueChanged<String> onTapDate;
+  final String locale;
 
   @override
   Widget build(BuildContext context) {
@@ -735,7 +739,7 @@ class _DateTabsRow extends StatelessWidget {
                       // First chip when viewing today gets the "Today" label.
                       final label = (isToday && isSelectedToday)
                           ? AppLocalizations.of(context)!.today
-                          : _shortHijriLabel(date);
+                          : _shortHijriLabel(date, locale);
 
                       return GestureDetector(
                         onTap: () => onTapDate(date),
@@ -780,8 +784,8 @@ class _DateTabsRow extends StatelessWidget {
     );
   }
 
-  String _shortHijriLabel(String storage) {
-    final display = HijriHelper.displayFromStorage(storage);
+  String _shortHijriLabel(String storage, String locale) {
+    final display = HijriHelper.displayFromStorage(storage, languageCode: locale);
     final parts = display.split(' ');
     if (parts.length < 2) return display;
     return '${parts[0]} ${parts[1]}';

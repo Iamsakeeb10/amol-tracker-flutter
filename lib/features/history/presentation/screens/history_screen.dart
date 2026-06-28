@@ -143,9 +143,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                 ),
                                 SizedBox(height: 2.h),
                                 Text(
-                                  IslamicDateService.monthYearHeaderBn(
+                                  IslamicDateService.monthYearHeader(
                                     _hijriYear,
                                     _hijriMonth,
+                                    languageCode: locale,
                                   ),
                                   style: AppTextStyles.displayMedium(context),
                                 ),
@@ -351,6 +352,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     List<MockDay> days,
     List<AmalLogModel> logs,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final fullDays = days.where((d) => d.state == DayCompletion.full).length;
     final partialDays = days
         .where((d) => d.state == DayCompletion.partial)
@@ -375,31 +377,27 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     IconData icon;
 
     if (fullDays >= 5) {
-      message =
-          'মাশাআল্লাহ! আপনি এই মাসে $fullDays দিন পূর্ণ আমল করেছেন। আল্লাহ কবুল করুন।';
+      message = l10n.historyMotivationFull(fullDays);
       cardColor = AppColors.successLight;
       borderColor = AppColors.success.withValues(alpha: 0.3);
       icon = Icons.favorite_outline_rounded;
     } else if (partialDays + lightDays >= 3) {
-      message =
-          'আপনি নিয়মিত চেষ্টা করছেন — এটাই সবচেয়ে গুরুত্বপূর্ণ। ধীরে ধীরে আরও বাড়বে ইনশাআল্লাহ।';
+      message = l10n.historyMotivationPartial;
       cardColor = AppColors.goldCard;
       borderColor = AppColors.goldBorder;
       icon = Icons.emoji_events_outlined;
     } else if (minimalDays >= 2) {
-      message =
-          'প্রতিটি ছোট আমলও আল্লাহর কাছে মূল্যবান। আজকে একটু বেশি করার চেষ্টা করুন।';
+      message = l10n.historyMotivationMinimal;
       cardColor = AppColors.cardDark;
       borderColor = AppColors.cardBorder;
       icon = Icons.water_drop_outlined;
     } else if (noDataDays > 5) {
-      message =
-          'কিছু দিন লগ করা হয়নি — কোনো সমস্যা নেই। আজ থেকে আবার শুরু করুন, আল্লাহ ক্ষমাশীল।';
+      message = l10n.historyMotivationNoData;
       cardColor = AppColors.cardDark;
       borderColor = AppColors.cardBorder;
       icon = Icons.refresh_rounded;
     } else {
-      message = 'প্রতিদিন আমল লগ করুন — ছোট হলেও নিয়মিত আমলই সর্বোত্তম।';
+      message = l10n.historyMotivationDefault;
       cardColor = AppColors.cardDark;
       borderColor = AppColors.cardBorder;
       icon = Icons.auto_awesome_outlined;
@@ -532,7 +530,7 @@ class _Legend extends StatelessWidget {
               shape: BoxShape.circle,
             ),
           ),
-          'হালকা', // "Light"
+          l10n.historyLight, // "Light"
         ),
         _legendItem(
           // 1–19
@@ -544,7 +542,7 @@ class _Legend extends StatelessWidget {
               shape: BoxShape.circle,
             ),
           ),
-          'সামান্য', // "Minimal"
+          l10n.historyMinimal, // "Minimal"
         ),
         _legendItem(
           // 0 logged

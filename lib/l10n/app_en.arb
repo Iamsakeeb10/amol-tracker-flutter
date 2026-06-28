@@ -941,5 +941,13 @@
   "qiblaSouth": "S",
   "qiblaWest": "W",
   "termsAndConditions": "Terms & Conditions",
-  "privacyPolicy": "Privacy Policy"
+  "privacyPolicy": "Privacy Policy",
+  "historyLight": "Light",
+  "historyMinimal": "Minimal",
+  "historyMotivationFull": "MashaAllah! You have completed full amal for {days} days this month. May Allah accept it.",
+  "@historyMotivationFull": {"placeholders": {"days": {"type": "int"}}},
+  "historyMotivationPartial": "You are trying regularly — that is the most important thing. It will gradually increase InshaAllah.",
+  "historyMotivationMinimal": "Every small amal is valuable to Allah. Try to do a little more today.",
+  "historyMotivationNoData": "No logs for a few days — no problem. Start again from today, Allah is Most Forgiving.",
+  "historyMotivationDefault": "Log your amal daily — even small but regular amal is best."
 }

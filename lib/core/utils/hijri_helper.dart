@@ -47,7 +47,8 @@ class HijriHelper {
   }
 
   /// Bengali display for a storage key.
-  static String displayFromStorage(String hijriYyyyMmDd) {
+  static String displayFromStorage(String hijriYyyyMmDd, {String languageCode = 'bn'}) {
+    if (languageCode == 'en') return IslamicDateService.displayFromStorageEn(hijriYyyyMmDd);
     return IslamicDateService.displayFromStorageBn(hijriYyyyMmDd);
   }
 

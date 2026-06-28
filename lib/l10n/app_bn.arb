@@ -913,5 +913,13 @@
   "qiblaSouth": "দ",
   "qiblaWest": "প",
   "termsAndConditions": "শর্তাবলী",
-  "privacyPolicy": "প্রাইভেসি পলিসি"
+  "privacyPolicy": "প্রাইভেসি পলিসি",
+  "historyLight": "হালকা",
+  "historyMinimal": "সামান্য",
+  "historyMotivationFull": "মাশাআল্লাহ! আপনি এই মাসে {days} দিন পূর্ণ আমল করেছেন। আল্লাহ কবুল করুন।",
+  "@historyMotivationFull": {"placeholders": {"days": {"type": "int"}}},
+  "historyMotivationPartial": "আপনি নিয়মিত চেষ্টা করছেন — এটাই সবচেয়ে গুরুত্বপূর্ণ। ধীরে ধীরে আরও বাড়বে ইনশাআল্লাহ।",
+  "historyMotivationMinimal": "প্রতিটি ছোট আমলও আল্লাহর কাছে মূল্যবান। আজকে একটু বেশি করার চেষ্টা করুন।",
+  "historyMotivationNoData": "কিছু দিন লগ করা হয়নি — কোনো সমস্যা নেই। আজ থেকে আবার শুরু করুন, আল্লাহ ক্ষমাশীল।",
+  "historyMotivationDefault": "প্রতিদিন আমল লগ করুন — ছোট হলেও নিয়মিত আমলই সর্বোত্তম।"
 }

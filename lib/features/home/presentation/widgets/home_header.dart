@@ -30,7 +30,7 @@ class HomeHeader extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            IslamicDateService.getDisplayIslamicDate(),
+            IslamicDateService.getDisplayIslamicDate(languageCode: locale),
             style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
           ),
           SizedBox(height: 6.h),

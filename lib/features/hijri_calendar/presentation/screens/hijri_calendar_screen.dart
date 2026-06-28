@@ -71,7 +71,7 @@ class _HijriCalendarScreenState extends ConsumerState<HijriCalendarScreen> {
       todayStorage: todayStorage,
     );
     final monthTitle = locale.languageCode == 'bn'
-        ? IslamicDateService.monthYearHeaderBn(_hijriYear, _hijriMonth)
+        ? IslamicDateService.monthYearHeader(_hijriYear, _hijriMonth)
         : HijriHelper.monthYearDisplay(_hijriYear, _hijriMonth);
 
     return AppScaffold(

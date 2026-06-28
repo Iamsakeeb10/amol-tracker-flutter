@@ -112,8 +112,9 @@ class IslamicDateService {
     return day == 13 || day == 14 || day == 15;
   }
 
-  static String getDisplayIslamicDate() {
+  static String getDisplayIslamicDate({String languageCode = 'bn'}) {
     final storage = getCurrentIslamicDateString();
+    if (languageCode == 'en') return displayFromStorageEn(storage);
     return displayFromStorageBn(storage);
   }
 
@@ -128,6 +129,19 @@ class IslamicDateService {
     }
 
     return '${_toBengaliNumeral(d)} ${_hijriMonthBn(m)} ${_toBengaliNumeral(y)}';
+  }
+
+  static String displayFromStorageEn(String hijriYyyyMmDd) {
+    final parts = hijriYyyyMmDd.split('-');
+    if (parts.length != 3) return hijriYyyyMmDd;
+    final y = int.tryParse(parts[0]);
+    final m = int.tryParse(parts[1]);
+    final d = int.tryParse(parts[2]);
+    if (y == null || m == null || d == null || m < 1 || m > 12) {
+      return hijriYyyyMmDd;
+    }
+
+    return '$d ${_hijriMonthEn(m)} $y';
   }
 
   static String _formatStorage(int year, int month, int day) {
@@ -156,6 +170,25 @@ class IslamicDateService {
       'শাওয়াল',
       'জিলকদ',
       'জিলহজ',
+    ];
+    return months[m];
+  }
+
+  static String _hijriMonthEn(int m) {
+    const months = [
+      '',
+      'Muharram',
+      'Safar',
+      'Rabi al-Awwal',
+      'Rabi al-Thani',
+      'Jumada al-Ula',
+      'Jumada al-Akhirah',
+      'Rajab',
+      'Sha\'ban',
+      'Ramadan',
+      'Shawwal',
+      'Dhu al-Qidah',
+      'Dhu al-Hijjah',
     ];
     return months[m];
   }
@@ -240,10 +273,13 @@ class IslamicDateService {
     }
   }
 
-  /// Month title for history headers: Bengali month + Bengali year.
-  static String monthYearHeaderBn(int hijriYear, int hijriMonth) {
+  /// Month title for history headers.
+  static String monthYearHeader(int hijriYear, int hijriMonth, {String languageCode = 'bn'}) {
     if (hijriMonth < 1 || hijriMonth > 12) {
-      return _toBengaliNumeral(hijriYear);
+      return languageCode == 'en' ? '$hijriYear' : _toBengaliNumeral(hijriYear);
+    }
+    if (languageCode == 'en') {
+      return '${_hijriMonthEn(hijriMonth)} $hijriYear';
     }
     return '${_hijriMonthBn(hijriMonth)} ${_toBengaliNumeral(hijriYear)}';
   }

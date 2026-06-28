@@ -231,6 +231,28 @@ async function fetchAllUsersWithTokens(env, accessToken) {
   return { ok: true, users };
 }
 
+async function fetchSingleUserWithToken(env, accessToken, uid) {
+  const url = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}`;
+  const resp = await fetch(url, {
+    headers: { authorization: `Bearer ${accessToken}` },
+  });
+  
+  if (!resp.ok) {
+    if (resp.status === 404) return { ok: true, users: [] };
+    const text = await resp.text();
+    return { ok: false, error: `user fetch failed: ${resp.status} ${text}` };
+  }
+
+  const data = await resp.json();
+  const fcmToken = readStringField(data.fields, 'fcmToken').trim();
+  
+  if (fcmToken) {
+    return { ok: true, users: [{ uid, fcmToken }] };
+  }
+  
+  return { ok: true, users: [] };
+}
+
 async function writeNotificationItem(env, accessToken, uid, type, message) {
   const now = new Date().toISOString();
   const url = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/notifications/${uid}/items`;
@@ -299,6 +321,7 @@ export default {
     const title = String(body.title || '').trim();
     const message = String(body.message || '').trim();
     const type = String(body.type || 'announcement').trim();
+    const targetUid = String(body.targetUid || '').trim();
 
     if (!adminUid || !title || !message) {
       logAdminPush('reject', 'missing_required_fields');
@@ -324,7 +347,7 @@ export default {
       return jsonResponse({ error: 'admin_uid_mismatch' }, 403);
     }
 
-    logAdminPush('auth_ok', `adminUid=${adminUid} type=${type}`);
+    logAdminPush('auth_ok', `adminUid=${adminUid} type=${type} targetUid=${targetUid || 'all'}`);
 
     const oauth = await getGoogleAccessTokenFromServiceAccount(env);
     if (!oauth.ok) {
@@ -332,7 +355,10 @@ export default {
       return jsonResponse({ error: oauth.error }, 502);
     }
 
-    const usersResult = await fetchAllUsersWithTokens(env, oauth.accessToken);
+    const usersResult = targetUid
+      ? await fetchSingleUserWithToken(env, oauth.accessToken, targetUid)
+      : await fetchAllUsersWithTokens(env, oauth.accessToken);
+
     if (!usersResult.ok) {
       logAdminPush('reject', usersResult.error);
       return jsonResponse({ error: usersResult.error }, 502);

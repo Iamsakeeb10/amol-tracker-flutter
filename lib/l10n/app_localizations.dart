@@ -920,6 +920,12 @@ abstract class AppLocalizations {
   /// **'Month\'s top'**
   String get monthTop;
 
+  /// No description provided for @meLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Me'**
+  String get meLabel;
+
   /// No description provided for @notifications.
   ///
   /// In en, this message translates to:

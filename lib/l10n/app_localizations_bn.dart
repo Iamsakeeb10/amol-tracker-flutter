@@ -442,6 +442,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get monthTop => 'মাসের সেরা';
 
   @override
+  String get meLabel => 'আমি';
+
+  @override
   String get notifications => 'নোটিফিকেশন';
 
   @override

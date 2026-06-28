@@ -248,6 +248,13 @@ class IslamicDateService {
     return (year: 1440, month: 1);
   }
 
+  static String getCurrentHijriMonthName({String languageCode = 'en'}) {
+    final current = currentHijriYearMonth();
+    return languageCode == 'bn'
+        ? _hijriMonthBn(current.month)
+        : _hijriMonthEn(current.month);
+  }
+
   /// Weekday name for the current Bangladesh-local calendar day (en or bn).
   static String weekdayToday({String languageCode = 'en'}) {
     final locale = languageCode == 'bn' ? 'bn_BD' : 'en_US';

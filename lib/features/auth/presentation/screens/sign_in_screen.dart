@@ -264,28 +264,33 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               SizedBox(height: 24.h),
             ],
           ),
-          Positioned(
-            top: 12.h,
-            right: 6.w,
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.cardBorder,
-                  width: 1.r,
-                ),
-              ),
-              child: IconButton(
-                onPressed: _showLanguageSheet,
-                icon: Icon(
-                  Icons.language_outlined,
-                  color: AppColors.gold,
-                  size: 24.r,
-                ),
-              ),
-            ),
+         Positioned(
+  top: 12.h,
+  right: 6.w,
+  child: Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: _showLanguageSheet,
+      customBorder: const CircleBorder(),
+      child: Container(
+        padding: EdgeInsets.all(10.r),
+        decoration: BoxDecoration(
+          color: AppColors.cardDark,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.cardBorder,
+            width: 1.r,
           ),
+        ),
+        child: Icon(
+          Icons.language_outlined,
+          color: AppColors.gold,
+          size: 24.r,
+        ),
+      ),
+    ),
+  ),
+),
         ],
       ),
     );

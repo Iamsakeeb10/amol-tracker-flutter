@@ -82,6 +82,37 @@ final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   return entries;
 });
 
+final monthlyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
+  ref,
+) async {
+  final fs = ref.read(firestoreServiceProvider);
+  final rows = await fs.monthlyLeaderboard();
+  final users = await fs.usersByIds(
+    rows.map((row) => (row['uid'] as String?) ?? ''),
+  );
+  final entries = <LeaderboardEntry>[];
+  for (final row in rows) {
+    final uid = (row['uid'] as String?) ?? '';
+    if (uid.isEmpty) continue;
+    final user = users[uid];
+    final showOnLeaderboard = user?.showOnLeaderboard ?? true;
+    if (!showOnLeaderboard) continue;
+    entries.add(
+      LeaderboardEntry(
+        uid: uid,
+        displayName: _safeName(
+          user?.name ?? (row['displayName'] as String? ?? ''),
+        ),
+        isAnonymousDisplay:
+            user?.isAnonymousDisplay ??
+            (row['isAnonymousDisplay'] as bool? ?? false),
+        score: row['score'] as int? ?? 0,
+      ),
+    );
+  }
+  return entries;
+});
+
 final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   ref,
 ) async {

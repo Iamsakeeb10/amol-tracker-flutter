@@ -902,6 +902,24 @@ abstract class AppLocalizations {
   /// **'Weekly'**
   String get weekly;
 
+  /// No description provided for @monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthly;
+
+  /// No description provided for @todayTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s top'**
+  String get todayTop;
+
+  /// No description provided for @monthTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Month\'s top'**
+  String get monthTop;
+
   /// No description provided for @notifications.
   ///
   /// In en, this message translates to:

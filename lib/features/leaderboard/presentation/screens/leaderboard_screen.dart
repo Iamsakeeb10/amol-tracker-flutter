@@ -19,16 +19,23 @@ import '../../../../shared/widgets/streak_badge.dart';
 import '../widgets/quiz_leaderboard_stat.dart';
 
 class LeaderboardScreen extends ConsumerStatefulWidget {
-  const LeaderboardScreen({super.key});
+  const LeaderboardScreen({super.key, this.initialTabIndex});
+  final int? initialTabIndex;
 
   @override
   ConsumerState<LeaderboardScreen> createState() => _LeaderboardScreenState();
 }
 
 class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
-  int _periodIndex = 0;
-  bool get _isStreak => _periodIndex == 2;
-  bool get _isQuiz => _periodIndex == 3;
+  late int _periodIndex;
+  bool get _isStreak => _periodIndex == 3;
+  bool get _isQuiz => _periodIndex == 4;
+
+  @override
+  void initState() {
+    super.initState();
+    _periodIndex = widget.initialTabIndex ?? 0;
+  }
 
   void _logDebug(String message) {
     if (kDebugMode) {
@@ -47,12 +54,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final periods = [l10n.weekly, l10n.daily, l10n.streak, l10n.leaderboardQuizTab];
+    final periods = [l10n.weekly, l10n.monthly, l10n.daily, l10n.streak, l10n.leaderboardQuizTab];
     final authUid = ref.watch(authStateProvider).asData?.value?.uid;
     final data = switch (_periodIndex) {
       0 => ref.watch(weeklyLeaderboardProvider),
-      1 => ref.watch(dailyLeaderboardProvider),
-      2 => ref.watch(streakLeaderboardProvider),
+      1 => ref.watch(monthlyLeaderboardProvider),
+      2 => ref.watch(dailyLeaderboardProvider),
+      3 => ref.watch(streakLeaderboardProvider),
       _ => ref.watch(quizLeaderboardProvider),
     };
 
@@ -352,7 +360,7 @@ class _Tabs extends StatelessWidget {
                 child: Text(
                   options[i],
                   style: AppTextStyles.button(context).copyWith(
-                    fontSize: options.length > 3 ? 11.sp : 12.sp,
+                    fontSize: options.length > 4 ? 10.sp : (options.length > 3 ? 11.sp : 12.sp),
                     color: selected
                         ? AppColors.emeraldDeep
                         : AppColors.textSecondary,

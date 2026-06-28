@@ -181,7 +181,12 @@ GoRouter buildAppRouter() {
       GoRoute(
         path: AppRoutes.leaderboard,
         name: 'leaderboard',
-        builder: (_, _) => const LeaderboardScreen(),
+        builder: (_, state) {
+          final extra = state.extra;
+          return LeaderboardScreen(
+            initialTabIndex: extra is int ? extra : null,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.notifications,

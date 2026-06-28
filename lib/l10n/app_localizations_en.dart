@@ -432,6 +432,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weekly => 'Weekly';
 
   @override
+  String get monthly => 'Monthly';
+
+  @override
+  String get todayTop => 'Today\'s top';
+
+  @override
+  String get monthTop => 'Month\'s top';
+
+  @override
   String get notifications => 'Notifications';
 
   @override

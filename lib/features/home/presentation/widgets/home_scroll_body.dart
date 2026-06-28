@@ -131,6 +131,10 @@ class HomeScrollBody extends ConsumerWidget {
                         maxScore: maxScore,
                       ),
                     ),
+                    SliverToBoxAdapter(child: SizedBox(height: 14.h)),
+                    const SliverToBoxAdapter(
+                      child: HomeTopPerformers(),
+                    ),
                     if (isNewUser) ...[
                       SliverToBoxAdapter(child: SizedBox(height: 14.h)),
                       SliverToBoxAdapter(child: HomeWelcomeCard(l10n: l10n)),

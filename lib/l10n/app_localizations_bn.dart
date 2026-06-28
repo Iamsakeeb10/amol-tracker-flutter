@@ -433,6 +433,15 @@ class AppLocalizationsBn extends AppLocalizations {
   String get weekly => 'সাপ্তাহিক';
 
   @override
+  String get monthly => 'মাসিক';
+
+  @override
+  String get todayTop => 'আজকের সেরা';
+
+  @override
+  String get monthTop => 'মাসের সেরা';
+
+  @override
   String get notifications => 'নোটিফিকেশন';
 
   @override

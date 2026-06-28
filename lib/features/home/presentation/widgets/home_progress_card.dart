@@ -25,6 +25,7 @@ class HomeProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return CardContainer(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -33,20 +34,23 @@ class HomeProgressCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   l10n.todaysProgress,
-                  style: AppTextStyles.bodyMedium(context),
+                  style: AppTextStyles.bodySmall(context).copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 13.sp,
+                  ),
                 ),
               ),
               Text(
                 '$done/$total',
                 style: AppTextStyles.goldNumeric(
                   context,
-                ).copyWith(fontSize: 18.sp),
+                ).copyWith(fontSize: 14.sp),
               ),
             ],
           ),
+          SizedBox(height: 8.h),
+          ScoreBar(value: total == 0 ? 0 : done / total, height: 4),
           SizedBox(height: 10.h),
-          ScoreBar(value: total == 0 ? 0 : done / total),
-          SizedBox(height: 12.h),
           Row(
             children: [
               Icon(
@@ -60,9 +64,12 @@ class HomeProgressCard extends StatelessWidget {
                   l10n.scoreOutOfPoints(score, maxScore),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodyMedium(
+                  style: AppTextStyles.bodySmall(
                     context,
-                  ).copyWith(color: AppColors.textPrimary),
+                  ).copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 12.sp,
+                  ),
                 ),
               ),
             ],

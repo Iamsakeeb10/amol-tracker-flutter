@@ -3205,6 +3205,54 @@ abstract class AppLocalizations {
   /// **'Gateway key missing. Run with --dart-define=DUA_PUSH_GATEWAY_KEY=your_key'**
   String get adminPushGatewayKeyMissing;
 
+  /// No description provided for @adminPushAudience.
+  ///
+  /// In en, this message translates to:
+  /// **'Audience'**
+  String get adminPushAudience;
+
+  /// No description provided for @adminPushBroadcast.
+  ///
+  /// In en, this message translates to:
+  /// **'All users'**
+  String get adminPushBroadcast;
+
+  /// No description provided for @adminPushSingleUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Specific user'**
+  String get adminPushSingleUser;
+
+  /// No description provided for @adminPushSearchUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by email or name…'**
+  String get adminPushSearchUser;
+
+  /// No description provided for @adminPushNoUsersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No users found'**
+  String get adminPushNoUsersFound;
+
+  /// No description provided for @adminPushUserSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected user'**
+  String get adminPushUserSelected;
+
+  /// No description provided for @adminPushSendToUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to {name}'**
+  String adminPushSendToUser(String name);
+
+  /// No description provided for @adminPushSelectUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a user to target'**
+  String get adminPushSelectUser;
+
   /// No description provided for @adminCoursesTitle.
   ///
   /// In en, this message translates to:
@@ -4590,6 +4638,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Log your amal daily — even small but regular amal is best.'**
   String get historyMotivationDefault;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String appVersion(String version);
 }
 
 class _AppLocalizationsDelegate

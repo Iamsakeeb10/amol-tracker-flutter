@@ -1690,6 +1690,32 @@ class AppLocalizationsEn extends AppLocalizations {
       'Gateway key missing. Run with --dart-define=DUA_PUSH_GATEWAY_KEY=your_key';
 
   @override
+  String get adminPushAudience => 'Audience';
+
+  @override
+  String get adminPushBroadcast => 'All users';
+
+  @override
+  String get adminPushSingleUser => 'Specific user';
+
+  @override
+  String get adminPushSearchUser => 'Search by email or name…';
+
+  @override
+  String get adminPushNoUsersFound => 'No users found';
+
+  @override
+  String get adminPushUserSelected => 'Selected user';
+
+  @override
+  String adminPushSendToUser(String name) {
+    return 'Send to $name';
+  }
+
+  @override
+  String get adminPushSelectUser => 'Select a user to target';
+
+  @override
   String get adminCoursesTitle => 'Courses';
 
   @override
@@ -2458,4 +2484,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get historyMotivationDefault =>
       'Log your amal daily — even small but regular amal is best.';
+
+  @override
+  String appVersion(String version) {
+    return 'Version $version';
+  }
 }

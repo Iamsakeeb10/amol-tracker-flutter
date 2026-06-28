@@ -643,6 +643,19 @@
   "adminPushFailed": "Failed to send notification.",
   "adminPushGatewayNotConfigured": "Push gateway not configured.",
   "adminPushGatewayKeyMissing": "Gateway key missing. Run with --dart-define=DUA_PUSH_GATEWAY_KEY=your_key",
+  "adminPushAudience": "Audience",
+  "adminPushBroadcast": "All users",
+  "adminPushSingleUser": "Specific user",
+  "adminPushSearchUser": "Search by email or name…",
+  "adminPushNoUsersFound": "No users found",
+  "adminPushUserSelected": "Selected user",
+  "adminPushSendToUser": "Send to {name}",
+  "@adminPushSendToUser": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "adminPushSelectUser": "Select a user to target",
 
   "adminCoursesTitle": "Courses",
   "adminCourseCreateTitle": "Create course",
@@ -953,5 +966,13 @@
   "historyMotivationPartial": "You are trying regularly — that is the most important thing. It will gradually increase InshaAllah.",
   "historyMotivationMinimal": "Every small amal is valuable to Allah. Try to do a little more today.",
   "historyMotivationNoData": "No logs for a few days — no problem. Start again from today, Allah is Most Forgiving.",
-  "historyMotivationDefault": "Log your amal daily — even small but regular amal is best."
+  "historyMotivationDefault": "Log your amal daily — even small but regular amal is best.",
+  "appVersion": "Version {version}",
+  "@appVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  }
 }

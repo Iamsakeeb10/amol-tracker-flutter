@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/router/routes.dart';
@@ -31,6 +32,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _anonymousDisplay = false;
   bool _ramadanMode = false;
   String? _lastSyncedUid;
+  String _version = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _version = '${info.version} (${info.buildNumber})';
+      });
+    }
+  }
 
   Future<void> _setAnonymous(bool value) async {
     final uid = ref.read(authStateProvider).asData?.value?.uid;
@@ -502,6 +519,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
           ),
+          if (_version.isNotEmpty) ...[
+            SizedBox(height: 24.h),
+            Center(
+              child: Text(
+                l10n.appVersion(_version),
+                style: AppTextStyles.bodyMedium(context).copyWith(
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

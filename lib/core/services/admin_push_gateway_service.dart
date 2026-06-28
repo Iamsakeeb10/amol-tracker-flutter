@@ -89,6 +89,7 @@ class AdminPushGatewayService {
     required String title,
     required String message,
     required String type,
+    String? targetUid,
   }) async {
     if (!allowedPushTypes.contains(type)) {
       logAdminPushDebug('push skipped: unsupported type=$type');
@@ -139,6 +140,8 @@ class AdminPushGatewayService {
             'title': title,
             'message': message,
             'type': type,
+            if (targetUid != null && targetUid.isNotEmpty)
+              'targetUid': targetUid,
           }),
         ),
       );

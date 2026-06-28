@@ -643,6 +643,19 @@
   "adminPushFailed": "নোটিফিকেশন পাঠাতে ব্যর্থ।",
   "adminPushGatewayNotConfigured": "পুশ গেটওয়ে কনফিগার করা নেই।",
   "adminPushGatewayKeyMissing": "গেটওয়ে কী নেই। --dart-define=DUA_PUSH_GATEWAY_KEY=your_key দিয়ে চালান",
+  "adminPushAudience": "প্রাপক",
+  "adminPushBroadcast": "সকল ব্যবহারকারী",
+  "adminPushSingleUser": "নির্দিষ্ট ব্যবহারকারী",
+  "adminPushSearchUser": "ইমেইল বা নাম দিয়ে খুঁজুন…",
+  "adminPushNoUsersFound": "কোনো ব্যবহারকারী পাওয়া যায়নি",
+  "adminPushUserSelected": "নির্বাচিত ব্যবহারকারী",
+  "adminPushSendToUser": "{name}-কে পাঠান",
+  "@adminPushSendToUser": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "adminPushSelectUser": "একজন ব্যবহারকারী বেছে নিন",
 
   "adminCoursesTitle": "কোর্স",
   "adminCourseCreateTitle": "কোর্স তৈরি",
@@ -925,5 +938,13 @@
   "historyMotivationPartial": "আপনি নিয়মিত চেষ্টা করছেন — এটাই সবচেয়ে গুরুত্বপূর্ণ। ধীরে ধীরে আরও বাড়বে ইনশাআল্লাহ।",
   "historyMotivationMinimal": "প্রতিটি ছোট আমলও আল্লাহর কাছে মূল্যবান। আজকে একটু বেশি করার চেষ্টা করুন।",
   "historyMotivationNoData": "কিছু দিন লগ করা হয়নি — কোনো সমস্যা নেই। আজ থেকে আবার শুরু করুন, আল্লাহ ক্ষমাশীল।",
-  "historyMotivationDefault": "প্রতিদিন আমল লগ করুন — ছোট হলেও নিয়মিত আমলই সর্বোত্তম।"
+  "historyMotivationDefault": "প্রতিদিন আমল লগ করুন — ছোট হলেও নিয়মিত আমলই সর্বোত্তম।",
+  "appVersion": "ভার্সন {version}",
+  "@appVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  }
 }

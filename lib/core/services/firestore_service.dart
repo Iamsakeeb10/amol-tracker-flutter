@@ -828,4 +828,64 @@ class FirestoreService {
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
+
+  /*
+  Purpose:
+  Search users by email prefix or name prefix for the admin "target user" picker.
+
+  Response:
+  Up to 10 UserModel results ranked by email match first, then name match.
+
+  Business Rules:
+  - Minimum query length: 2 characters.
+  - Email prefix query uses Firestore >=/<= range trick (case-insensitive via lowercase).
+  - Name prefix query is a secondary pass merged client-side.
+  - Deduplication by uid across both result sets.
+  - Hard cap of 10 results.
+
+  Flow:
+  1. Lowercase query.
+  2. Run email prefix range query on _users.
+  3. Run name prefix range query on _users.
+  4. Merge, deduplicate, cap at 10.
+
+  Failure Cases:
+  - Returns empty list on Firestore error (non-blocking).
+  */
+  Future<List<UserModel>> searchUsersByQuery(String query) async {
+    final q = query.trim().toLowerCase();
+    if (q.length < 2) return const <UserModel>[];
+
+    final end = '$q\uf8ff';
+    final results = <String, UserModel>{};
+
+    try {
+      // Email prefix search
+      final emailSnap = await _users
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: end)
+          .limit(10)
+          .get();
+      for (final doc in emailSnap.docs) {
+        results[doc.id] = UserModel.fromDoc(doc);
+      }
+    } catch (_) {}
+
+    try {
+      // Name prefix search (Firestore range queries are case-sensitive;
+      // names are stored as entered, so we search with original casing too)
+      final nameSnap = await _users
+          .where('name', isGreaterThanOrEqualTo: query.trim())
+          .where('name', isLessThanOrEqualTo: '${query.trim()}\uf8ff')
+          .limit(10)
+          .get();
+      for (final doc in nameSnap.docs) {
+        results.putIfAbsent(doc.id, () => UserModel.fromDoc(doc));
+      }
+    } catch (_) {}
+
+    final list = results.values.toList();
+    if (list.length > 10) return list.sublist(0, 10);
+    return list;
+  }
 }

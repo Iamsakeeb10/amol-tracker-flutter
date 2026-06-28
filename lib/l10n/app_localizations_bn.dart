@@ -1693,6 +1693,32 @@ class AppLocalizationsBn extends AppLocalizations {
       'গেটওয়ে কী নেই। --dart-define=DUA_PUSH_GATEWAY_KEY=your_key দিয়ে চালান';
 
   @override
+  String get adminPushAudience => 'প্রাপক';
+
+  @override
+  String get adminPushBroadcast => 'সকল ব্যবহারকারী';
+
+  @override
+  String get adminPushSingleUser => 'নির্দিষ্ট ব্যবহারকারী';
+
+  @override
+  String get adminPushSearchUser => 'ইমেইল বা নাম দিয়ে খুঁজুন…';
+
+  @override
+  String get adminPushNoUsersFound => 'কোনো ব্যবহারকারী পাওয়া যায়নি';
+
+  @override
+  String get adminPushUserSelected => 'নির্বাচিত ব্যবহারকারী';
+
+  @override
+  String adminPushSendToUser(String name) {
+    return '$name-কে পাঠান';
+  }
+
+  @override
+  String get adminPushSelectUser => 'একজন ব্যবহারকারী বেছে নিন';
+
+  @override
   String get adminCoursesTitle => 'কোর্স';
 
   @override
@@ -2461,4 +2487,9 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get historyMotivationDefault =>
       'প্রতিদিন আমল লগ করুন — ছোট হলেও নিয়মিত আমলই সর্বোত্তম।';
+
+  @override
+  String appVersion(String version) {
+    return 'ভার্সন $version';
+  }
 }

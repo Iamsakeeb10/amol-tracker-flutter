@@ -309,12 +309,21 @@ class NotificationService {
   }
 
   Future<void> _cancelUrgencyIfLoggedToday() async {
-    final hijriDate = IslamicDateService.getCurrentIslamicDateStringSafe();
-    if (!await _hasLoggedIslamicDate(hijriDate)) return;
+    // After Maghrib the Hijri date rolls forward to "tomorrow". A log made
+    // earlier today (before Maghrib) is stored under hijriPrev, so we must
+    // check both dates to correctly suppress pending warnings.
+    final hijriNow = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final hijriPrev = IslamicDateService.shiftStorageByDays(hijriNow, -1);
+
+    final loggedNow = await _hasLoggedIslamicDate(hijriNow);
+    final loggedPrev = await _hasLoggedIslamicDate(hijriPrev);
+    if (!loggedNow && !loggedPrev) return;
+
     await _localNotifications.cancel(_streakId);
     await _localNotifications.cancel(_midnightFallbackId);
     for (var i = 1; i < _notificationDaysAhead; i++) {
       await _localNotifications.cancel(_streakId + i);
+      await _localNotifications.cancel(_midnightFallbackId + i);
     }
   }
 
@@ -392,6 +401,10 @@ class NotificationService {
       await _localNotifications.cancel(_streakId + i);
     }
     await _localNotifications.cancel(_midnightFallbackId);
+    // Cancel urgent pre-Maghrib fallback IDs for 7-day window
+    for (var i = 1; i < 7; i++) {
+      await _localNotifications.cancel(_midnightFallbackId + i);
+    }
     await _localNotifications.cancel(_jumuahId);
     await _localNotifications.cancel(_ayyamBidId);
     for (var i = 0; i < _hadithDaysAhead; i++) {
@@ -635,20 +648,28 @@ class NotificationService {
 
   Future<void> _scheduleStreakWarning() async {
     try {
-      // Check if user has already logged today
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      final hijriDate = IslamicDateService.getCurrentIslamicDateStringSafe();
-      if (await _hasLoggedIslamicDate(hijriDate)) return;
+      // After Maghrib the Hijri date rolls forward. A log made before Maghrib
+      // sits under hijriPrev, so check both dates before scheduling warnings.
+      final hijriNow = IslamicDateService.getCurrentIslamicDateStringSafe();
+      final hijriPrev = IslamicDateService.shiftStorageByDays(hijriNow, -1);
+      if (await _hasLoggedIslamicDate(hijriNow)) return;
+      if (await _hasLoggedIslamicDate(hijriPrev)) return;
 
       final now = tz.TZDateTime.now(_bdTz);
 
-      // Schedule for today and next 7 days to ensure continuous scheduling
       final selectedBody = _pickMessage(
         category: 'streak',
         pool: _streakBodies,
       );
+      // Urgent body reuses _midnightBodies — the copy still fits a 5-min warning.
+      final urgentBody = _pickMessage(
+        category: 'streak_urgent',
+        pool: _midnightBodies,
+      );
+
       for (int dayOffset = 0; dayOffset < _notificationDaysAhead; dayOffset++) {
         final targetDate = DateTime(
           now.year,
@@ -656,41 +677,67 @@ class NotificationService {
           now.day,
         ).add(Duration(days: dayOffset));
 
-        final prayerTime = IslamicDateService.getMaghribTimeForDate(targetDate);
-        final notificationTime = prayerTime.subtract(
-          const Duration(minutes: 15),
+        final maghribTime =
+            IslamicDateService.getMaghribTimeForDate(targetDate);
+
+        // — Primary warning: 15 min before Maghrib —
+        final primaryTime = maghribTime.subtract(const Duration(minutes: 15));
+        final primaryTOD = TimeOfDay(
+          hour: primaryTime.hour,
+          minute: primaryTime.minute,
         );
+        if (!_isSuppressedByQuietHours(primaryTOD)) {
+          final primaryScheduled = tz.TZDateTime(
+            _bdTz,
+            targetDate.year,
+            targetDate.month,
+            targetDate.day,
+            primaryTime.hour,
+            primaryTime.minute,
+          );
+          if (primaryScheduled.isAfter(now)) {
+            await _schedulePolicyAware(
+              id: _streakId + dayOffset,
+              title: 'আজকের আমল বাকি আছে!',
+              body: selectedBody,
+              scheduledDate: primaryScheduled,
+              payload: AppRoutes.home,
+              category: 'streak',
+              matchDateTimeComponents: null,
+            );
+          }
+        }
 
-        final notificationTimeOfDay = TimeOfDay(
-          hour: notificationTime.hour,
-          minute: notificationTime.minute,
+        // — Urgent warning: 5 min before Maghrib (still within the same Islamic day) —
+        // Replaces the old 11:30 PM midnight fallback which fired AFTER the
+        // Islamic day had already ended at Maghrib.
+        final urgentTime = maghribTime.subtract(const Duration(minutes: 5));
+        final urgentTOD = TimeOfDay(
+          hour: urgentTime.hour,
+          minute: urgentTime.minute,
         );
-
-        if (_isSuppressedByQuietHours(notificationTimeOfDay)) continue;
-
-        final scheduledDate = tz.TZDateTime(
-          _bdTz,
-          targetDate.year,
-          targetDate.month,
-          targetDate.day,
-          notificationTime.hour,
-          notificationTime.minute,
-        );
-
-        // Skip if time has passed
-        if (!scheduledDate.isAfter(now)) continue;
-
-        await _schedulePolicyAware(
-          id: _streakId + dayOffset,
-          title: 'আজকের আমল বাকি আছে!',
-          body: selectedBody,
-          scheduledDate: scheduledDate,
-          payload: AppRoutes.home,
-          category: 'streak',
-          matchDateTimeComponents: null,
-        );
+        if (!_isSuppressedByQuietHours(urgentTOD)) {
+          final urgentScheduled = tz.TZDateTime(
+            _bdTz,
+            targetDate.year,
+            targetDate.month,
+            targetDate.day,
+            urgentTime.hour,
+            urgentTime.minute,
+          );
+          if (urgentScheduled.isAfter(now)) {
+            await _schedulePolicyAware(
+              id: _midnightFallbackId + dayOffset,
+              title: 'দিন শেষ হওয়ার আগে আমল লগ করুন',
+              body: urgentBody,
+              scheduledDate: urgentScheduled,
+              payload: AppRoutes.home,
+              category: 'streak_urgent',
+              matchDateTimeComponents: null,
+            );
+          }
+        }
       }
-      await _scheduleAlmostMidnightFallback();
     } catch (_) {
       // Fallback to default time (6 PM) if Maghrib calculation fails
       const at = TimeOfDay(hour: 18, minute: 0);
@@ -709,26 +756,6 @@ class NotificationService {
         matchDateTimeComponents: DateTimeComponents.time,
       );
     }
-  }
-
-  Future<void> _scheduleAlmostMidnightFallback() async {
-    final hijriDate = IslamicDateService.getCurrentIslamicDateStringSafe();
-    if (await _hasLoggedIslamicDate(hijriDate)) return;
-    const at = TimeOfDay(hour: 23, minute: 30);
-    if (_isSuppressedByQuietHours(at)) return;
-    final selectedBody = _pickMessage(
-      category: 'midnight_fallback',
-      pool: _midnightBodies,
-    );
-    await _schedulePolicyAware(
-      id: _midnightFallbackId,
-      title: 'দিন শেষ হওয়ার আগে আমল লগ করুন',
-      body: selectedBody,
-      scheduledDate: _nextInstanceForRecurring(at),
-      payload: AppRoutes.home,
-      category: 'midnight_fallback',
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
   }
 
   Future<void> _scheduleJumuah() async {

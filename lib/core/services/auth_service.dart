@@ -38,4 +38,14 @@ class AuthService {
     await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
     await LocalStorageService.clearAll();
   }
+
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      await NotificationService.instance.clearFcmTokenForCurrentUser();
+      await user.delete();
+      await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
+      await LocalStorageService.clearAll();
+    }
+  }
 }

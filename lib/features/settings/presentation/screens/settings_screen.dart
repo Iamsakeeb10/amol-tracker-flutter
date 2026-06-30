@@ -105,6 +105,60 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     context.go(AppRoutes.signIn);
   }
 
+  Future<void> _confirmDeleteAccount() async {
+    final l10n = AppLocalizations.of(context)!;
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteAccountTitle),
+        content: Text(l10n.deleteAccountConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+            child: Text(l10n.deleteAccount),
+          ),
+        ],
+      ),
+    );
+    if (shouldDelete != true) return;
+    if (!mounted) return;
+
+    // Capture before async gaps (context may be stale after awaits)
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final messenger = ScaffoldMessenger.of(context);
+    final failedMsg = l10n.deleteAccountFailed;
+
+    // Show loading indicator
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final authUid = ref.read(authStateProvider).asData?.value?.uid;
+      if (authUid != null) {
+        await ref.read(firestoreServiceProvider).deleteUserDoc(authUid);
+      }
+      await ref.read(authServiceProvider).deleteAccount();
+      // Do NOT pop the dialog or navigate manually here.
+      // deleteAccount() triggers a Firebase auth sign-out event, which causes
+      // GoRouter's redirect guard to fire immediately and navigate to sign-in.
+      // Calling navigator.pop() after that point crashes with !_debugLocked
+      // because the navigator is already being disposed by the redirect.
+    } catch (e) {
+      // Only on failure: the navigator is still alive, safe to pop and show error.
+      navigator.pop(); // dismiss loading dialog
+      messenger.showSnackBar(SnackBar(content: Text(failedMsg)));
+    }
+  }
+
+
   Future<void> _showHomeWidgetSheet() async {
     final l10n = AppLocalizations.of(context)!;
     var isSubmitting = false;
@@ -508,6 +562,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   icon: Icons.privacy_tip_outlined,
                   title: l10n.privacyPolicy,
                   onTap: () => launchUrl(Uri.parse('https://iamsakeeb10.github.io/amol-tracker-legal/privacy_policy.html')),
+                ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.delete_forever_outlined,
+                  title: l10n.deleteAccount,
+                  destructiveColor: AppColors.danger,
+                  onTap: _confirmDeleteAccount,
                 ),
                 const Divider(),
                 NavRow(

@@ -59,6 +59,10 @@ class FirestoreService {
     await _users.doc(uid).update(fields);
   }
 
+  Future<void> deleteUserDoc(String uid) async {
+    await _users.doc(uid).delete();
+  }
+
   Future<void> markBadgeCelebrationsSeen(
     String uid,
     List<String> badgeIds,

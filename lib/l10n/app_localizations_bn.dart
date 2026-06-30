@@ -276,6 +276,20 @@ class AppLocalizationsBn extends AppLocalizations {
   String get signOutConfirm => 'আপনি কি নিশ্চিত লগআউট করতে চান?';
 
   @override
+  String get deleteAccount => 'অ্যাকাউন্ট মুছুন';
+
+  @override
+  String get deleteAccountTitle => 'অ্যাকাউন্ট মুছুন';
+
+  @override
+  String get deleteAccountConfirm =>
+      'আপনি কি নিশ্চিত যে আপনি আপনার অ্যাকাউন্ট মুছে ফেলতে চান? এই কাজটি আর ফেরানো যাবে না এবং আপনার সমস্ত ডেটা স্থায়ীভাবে মুছে ফেলা হবে।';
+
+  @override
+  String get deleteAccountFailed =>
+      'অ্যাকাউন্ট মুছতে ব্যর্থ হয়েছে। আপনাকে আবার সাইন ইন করতে হতে পারে।';
+
+  @override
   String get cancel => 'ক্যানসেল';
 
   @override

@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "676050400746-jmj5t352ao62crds41riqk4k5ijmpn5d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shakib.amol.amol_tracker_app",
+            "certificate_hash": "581f8ddaeaa6b841cdbf67db8abfcda442ef0115"
+          }
+        },
+        {
           "client_id": "676050400746-r9a3akoi95a7d41r2hljf5c4m9o3670v.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

@@ -896,7 +896,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get noLogsForDay => 'এই দিনে কোনো লগ পাওয়া যায়নি';
 
   @override
-  String get noMoreRows => 'আর কোনো রো নেই';
+  String get noMoreRows => 'আর কেউ নেই';
 
   @override
   String get unableLoadActivityFeed => 'অ্যাক্টিভিটি ফিড লোড করা যায়নি।';

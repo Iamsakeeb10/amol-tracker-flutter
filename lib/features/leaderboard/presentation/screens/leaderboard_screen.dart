@@ -35,6 +35,14 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   void initState() {
     super.initState();
     _periodIndex = widget.initialTabIndex ?? 0;
+    // Invalidate all leaderboard providers to fetch fresh data on screen open.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(weeklyLeaderboardProvider);
+      ref.invalidate(monthlyLeaderboardProvider);
+      ref.invalidate(dailyLeaderboardProvider);
+      ref.invalidate(streakLeaderboardProvider);
+      ref.invalidate(quizLeaderboardProvider);
+    });
   }
 
   void _logDebug(String message) {
@@ -288,7 +296,15 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       return message;
     }
     final meIndex = entries.indexWhere((u) => u.uid == authUid);
-    if (meIndex <= 0) {
+    if (meIndex < 0) {
+      final message = AppLocalizations.of(context)!.leaderboardNudgeKeepClimbing;
+      _logDebug(
+        'nudge=not-found periodIndex=$_periodIndex isStreak=$_isStreak '
+        'authUid=$authUid entries=${entries.length} message="$message"',
+      );
+      return message;
+    }
+    if (meIndex == 0) {
       final message = AppLocalizations.of(context)!.leaderboardNudgeTop;
       _logDebug(
         'nudge=top periodIndex=$_periodIndex isStreak=$_isStreak '

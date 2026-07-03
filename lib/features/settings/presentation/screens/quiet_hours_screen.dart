@@ -225,11 +225,19 @@ class _TimeCard extends StatelessWidget {
             tooltip: 'Pick time',
           ),
           SizedBox(height: 8.h),
-          Text(
-            formatted,
-            style: AppTextStyles.displayLarge(
-              context,
-            ).copyWith(color: AppColors.goldLight, fontSize: 36.sp),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 6.w),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                formatted,
+                maxLines: 1,
+                softWrap: false,
+                style: AppTextStyles.displayLarge(
+                  context,
+                ).copyWith(color: AppColors.goldLight, fontSize: 26.sp),
+              ),
+            ),
           ),
           SizedBox(height: 12.h),
           Row(

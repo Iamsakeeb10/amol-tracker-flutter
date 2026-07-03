@@ -37,7 +37,7 @@ class HomeQuickNavSection extends StatelessWidget {
         ),
       ),
       _QuickNavCard(
-        icon: Icons.emoji_events_outlined,
+        icon: Icons.leaderboard_outlined,
         label: l10n.leaderboard,
         onTap: () => context.push(AppRoutes.leaderboard),
       ),
@@ -52,17 +52,17 @@ class HomeQuickNavSection extends StatelessWidget {
         onTap: () => context.push(AppRoutes.qibla),
       ),
       _QuickNavCard(
-        icon: Icons.touch_app_outlined,
+        icon: Icons.fiber_manual_record_outlined,
         label: l10n.dhikrCounter,
         onTap: () => context.push(AppRoutes.dhikr),
       ),
       _QuickNavCard(
-        icon: Icons.star_outline,
+        icon: Icons.auto_awesome_outlined,
         label: l10n.asmaUlHusna,
         onTap: () => context.push(AppRoutes.asmaUlHusna),
       ),
       _QuickNavCard(
-        icon: Icons.school_outlined,
+        icon: Icons.menu_book_outlined,
         label: l10n.syllabusTitle,
         onTap: () => context.push(AppRoutes.syllabus),
       ),

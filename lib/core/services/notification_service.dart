@@ -17,6 +17,7 @@ import '../utils/quiet_hours_helper.dart';
 import 'hadith_asset_service.dart';
 import 'islamic_date_service.dart';
 import 'local_storage_service.dart';
+import 'notification_message_service.dart';
 import 'prayer_adhan_scheduler.dart';
 
 class NotificationService {
@@ -51,6 +52,8 @@ class NotificationService {
   static const int _lessonReviewLookaheadDays = 21;
   static const int _hadithDaysAhead = 7;
   static const int _notificationDaysAhead = 7;
+  static const int _smartEveningId = 9001;
+  static const int _smartUrgentId = 9002;
   static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 8, minute: 0);
   static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 21, minute: 0);
   static const String _lastSentKeyPrefix = 'notif_last_sent_';
@@ -305,6 +308,80 @@ class NotificationService {
       );
     } catch (_) {
       // Never block other reminders if adhan scheduling fails.
+    }
+  }
+
+  /// Smart Duolingo-style reminders that escalate emotionally based on
+  /// how many days the user has missed. Call on app open, after submission,
+  /// and when app resumes.
+  Future<void> scheduleSmartReminders({
+    required String uid,
+    required int currentStreak,
+    required String lastLogDate,
+    required String locale,
+  }) async {
+    // Cancel previous smart reminders
+    await _localNotifications.cancel(_smartEveningId);
+    await _localNotifications.cancel(_smartUrgentId);
+
+    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final hasLoggedToday = lastLogDate == today;
+
+    // Already logged today — no reminders needed
+    if (hasLoggedToday) return;
+
+    // Calculate days missed
+    int daysMissed = 0;
+    if (lastLogDate.isNotEmpty && lastLogDate != today) {
+      daysMissed = IslamicDateService.daysBetween(lastLogDate, today).abs();
+    }
+
+    // Evening reminder (6:30 PM BD time)
+    if (isEveningEnabled) {
+      final eveningMsg = NotificationMessageService.getMessage(
+        NotificationContext(
+          currentStreak: currentStreak,
+          daysMissed: daysMissed,
+          isEveningCheck: true,
+          isUrgent: false,
+        ),
+        locale,
+      );
+      final eveningTime = const TimeOfDay(hour: 18, minute: 30);
+      if (!_isSuppressedByQuietHours(eveningTime)) {
+        await _safeZonedSchedule(
+          id: _smartEveningId,
+          title: eveningMsg.title,
+          body: eveningMsg.body,
+          scheduledDate: _nextInstanceForRecurring(eveningTime),
+          payload: AppRoutes.home,
+          matchDateTimeComponents: DateTimeComponents.time,
+        );
+      }
+    }
+
+    // Urgent reminder (10 PM BD time)
+    if (isStreakEnabled) {
+      final urgentMsg = NotificationMessageService.getMessage(
+        NotificationContext(
+          currentStreak: currentStreak,
+          daysMissed: daysMissed,
+          isEveningCheck: false,
+          isUrgent: true,
+        ),
+        locale,
+      );
+      final urgentTime = const TimeOfDay(hour: 22, minute: 0);
+      if (!_isSuppressedByQuietHours(urgentTime)) {
+        await _safeZonedSchedule(
+          id: _smartUrgentId,
+          title: urgentMsg.title,
+          body: urgentMsg.body,
+          scheduledDate: _nextInstanceForRecurring(urgentTime),
+          payload: AppRoutes.home,
+          matchDateTimeComponents: DateTimeComponents.time,
+        );
+      }
     }
   }
 

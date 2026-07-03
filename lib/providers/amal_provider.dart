@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import '../core/constants/default_amal_fields.dart';
 import '../core/services/firestore_service.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/services/local_storage_service.dart';
+import '../core/services/notification_service.dart';
 import '../core/utils/hijri_helper.dart';
 import '../core/utils/score_calculator.dart';
 import '../core/utils/streak_helper.dart';
@@ -19,6 +22,7 @@ import 'amal_fields_provider.dart';
 import 'auth_provider.dart';
 import 'date_provider.dart';
 import 'history_provider.dart';
+import 'locale_provider.dart';
 
 /// Network status for offline banner (Phase 3).
 final connectivityListProvider = StreamProvider<List<ConnectivityResult>>((
@@ -504,6 +508,18 @@ class AmalNotifier extends StateNotifier<AmalState> {
     }
     _ref.invalidate(historyMonthProvider);
     Future<void>.microtask(() => _trySyncSubmittedLog(log));
+
+    // Cancel smart reminders since user just logged
+    final locale = _ref.read(localeProvider).languageCode;
+    unawaited(
+      NotificationService.instance.scheduleSmartReminders(
+        uid: user.uid,
+        currentStreak: streakResult.newCurrentStreak,
+        lastLogDate: hijri,
+        locale: locale,
+      ),
+    );
+
     return SubmitResult(log: log, streakResult: streakResult);
   }
 

@@ -37,6 +37,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(ref.read(appBootstrapProvider.future));
+      _scheduleSmartReminders();
     });
   }
 
@@ -60,9 +61,24 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
       }
     }
     await NotificationService.instance.rescheduleAll();
+    _scheduleSmartReminders();
     if (!mounted) return;
     ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
     ref.read(amalFieldsProvider.notifier).refreshIfStale();
+  }
+
+  void _scheduleSmartReminders() {
+    final user = ref.read(currentUserProvider).asData?.value;
+    if (user == null) return;
+    final locale = ref.read(localeProvider).languageCode;
+    unawaited(
+      NotificationService.instance.scheduleSmartReminders(
+        uid: user.uid,
+        currentStreak: user.currentStreak,
+        lastLogDate: user.lastLogDate,
+        locale: locale,
+      ),
+    );
   }
 
   @override

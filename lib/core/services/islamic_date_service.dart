@@ -431,4 +431,25 @@ class IslamicDateService {
       (i) => shiftStorageByDays(todayDate, -(i + 1)),
     );
   }
+
+  /// Number of calendar days between two Hijri storage dates.
+  /// Returns 0 on parse failure.
+  static int daysBetween(String fromHijriDate, String toHijriDate) {
+    try {
+      final from = _parseHijriToGregorian(fromHijriDate);
+      final to = _parseHijriToGregorian(toHijriDate);
+      return to.difference(from).inDays;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  static DateTime _parseHijriToGregorian(String hijriYyyyMmDd) {
+    final parts = hijriYyyyMmDd.split('-');
+    if (parts.length != 3) throw FormatException('Bad hijri: $hijriYyyyMmDd');
+    final y = int.parse(parts[0]);
+    final m = int.parse(parts[1]);
+    final d = int.parse(parts[2]);
+    return HijriCalendar().hijriToGregorian(y, m, d);
+  }
 }

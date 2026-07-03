@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +30,8 @@ class LeaderboardScreen extends ConsumerStatefulWidget {
 
 class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   late int _periodIndex;
+  bool _initialLoadComplete = false;
+  Timer? _loadTimeout;
   bool get _isStreak => _periodIndex == 3;
   bool get _isQuiz => _periodIndex == 4;
 
@@ -35,6 +39,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   void initState() {
     super.initState();
     _periodIndex = widget.initialTabIndex ?? 0;
+    _startLoadTimeout();
     // Invalidate all leaderboard providers to fetch fresh data on screen open.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.invalidate(weeklyLeaderboardProvider);
@@ -42,6 +47,21 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       ref.invalidate(dailyLeaderboardProvider);
       ref.invalidate(streakLeaderboardProvider);
       ref.invalidate(quizLeaderboardProvider);
+    });
+  }
+
+  @override
+  void dispose() {
+    _loadTimeout?.cancel();
+    super.dispose();
+  }
+
+  void _startLoadTimeout() {
+    _loadTimeout?.cancel();
+    _loadTimeout = Timer(const Duration(seconds: 3), () {
+      if (mounted && !_initialLoadComplete) {
+        setState(() => _initialLoadComplete = true);
+      }
     });
   }
 
@@ -62,7 +82,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final periods = [l10n.weekly, l10n.monthly, l10n.daily, l10n.streak, l10n.leaderboardQuizTab];
+    final periods = [
+      l10n.weekly,
+      l10n.monthly,
+      l10n.daily,
+      l10n.streak,
+      l10n.leaderboardQuizTab,
+    ];
     final authUid = ref.watch(authStateProvider).asData?.value?.uid;
     final data = switch (_periodIndex) {
       0 => ref.watch(weeklyLeaderboardProvider),
@@ -92,7 +118,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               child: _Tabs(
                 value: _periodIndex,
                 options: periods,
-                onChanged: (i) => setState(() => _periodIndex = i),
+                onChanged: (i) => setState(() {
+                  _periodIndex = i;
+                  _initialLoadComplete = false;
+                  _startLoadTimeout();
+                }),
               ),
             ),
           ),
@@ -100,23 +130,41 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           ...data.when(
             skipLoadingOnRefresh: false,
             skipLoadingOnReload: false,
-            data: (entries) => _buildDataSlivers(
-              context,
-              entries: entries,
-              authUid: authUid,
-              l10n: l10n,
-            ),
+            data: (entries) {
+              if (!_initialLoadComplete) {
+                if (entries.isNotEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) setState(() => _initialLoadComplete = true);
+                  });
+                } else {
+                  return [SliverToBoxAdapter(child: _buildLoading())];
+                }
+              }
+              return _buildDataSlivers(
+                context,
+                entries: entries,
+                authUid: authUid,
+                l10n: l10n,
+              );
+            },
             loading: () => [SliverToBoxAdapter(child: _buildLoading())],
-            error: (error, _) => [
-              SliverToBoxAdapter(
-                child: CardContainer(
-                  child: Text(
-                    l10n.leaderboardLoadFailed,
-                    style: AppTextStyles.bodyMedium(context),
+            error: (error, _) {
+              if (!_initialLoadComplete) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) setState(() => _initialLoadComplete = true);
+                });
+              }
+              return [
+                SliverToBoxAdapter(
+                  child: CardContainer(
+                    child: Text(
+                      l10n.leaderboardLoadFailed,
+                      style: AppTextStyles.bodyMedium(context),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ];
+            },
           ),
           SliverToBoxAdapter(child: SizedBox(height: 24.h)),
         ],
@@ -147,8 +195,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
 
     final top3 = entries.take(3).toList();
     final nudge = _buildNudge(entries, authUid);
-    final userIndex =
-        authUid == null ? -1 : entries.indexWhere((u) => u.uid == authUid);
+    final userIndex = authUid == null
+        ? -1
+        : entries.indexWhere((u) => u.uid == authUid);
     final pinnedUser = userIndex >= 0 ? entries[userIndex] : null;
     final maxScore = entries.first.score;
     final statLabel = _statLabel();
@@ -160,19 +209,15 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             padding: EdgeInsets.only(bottom: 12.h),
             child: Text(
               l10n.leaderboardQuizTiebreakerHint,
-              style: AppTextStyles.bodySmall(context).copyWith(
-                color: AppColors.textMuted,
-              ),
+              style: AppTextStyles.bodySmall(
+                context,
+              ).copyWith(color: AppColors.textMuted),
               textAlign: TextAlign.center,
             ),
           ),
         ),
       SliverToBoxAdapter(
-        child: _Podium(
-          top3: top3,
-          displayName: _displayName,
-          isQuiz: _isQuiz,
-        ),
+        child: _Podium(top3: top3, displayName: _displayName, isQuiz: _isQuiz),
       ),
       SliverToBoxAdapter(child: SizedBox(height: 18.h)),
       SliverPadding(
@@ -241,11 +286,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         child: CardContainer.gold(
           child: Row(
             children: [
-              Icon(
-                Icons.star_rounded,
-                color: AppColors.goldLight,
-                size: 20.r,
-              ),
+              Icon(Icons.star_rounded, color: AppColors.goldLight, size: 20.r),
               SizedBox(width: 10.w),
               Expanded(
                 child: Text(
@@ -269,12 +310,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
         (index) => Padding(
           padding: EdgeInsets.only(bottom: 8.h),
           child: Shimmer.fromColors(
-            baseColor: AppColors.cardDark,
-            highlightColor: AppColors.cardBorder,
+            baseColor: AppColors.cardBorder,
+            highlightColor: AppColors.cardBorder.withValues(alpha: 1),
             child: Container(
               height: 58.h,
               decoration: BoxDecoration(
-                color: AppColors.cardDark,
+                color: AppColors.cardBorder,
                 borderRadius: BorderRadius.circular(14.r),
               ),
             ),
@@ -297,7 +338,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     }
     final meIndex = entries.indexWhere((u) => u.uid == authUid);
     if (meIndex < 0) {
-      final message = AppLocalizations.of(context)!.leaderboardNudgeKeepClimbing;
+      final message = AppLocalizations.of(
+        context,
+      )!.leaderboardNudgeKeepClimbing;
       _logDebug(
         'nudge=not-found periodIndex=$_periodIndex isStreak=$_isStreak '
         'authUid=$authUid entries=${entries.length} message="$message"',
@@ -376,7 +419,9 @@ class _Tabs extends StatelessWidget {
                 child: Text(
                   options[i],
                   style: AppTextStyles.button(context).copyWith(
-                    fontSize: options.length > 4 ? 10.sp : (options.length > 3 ? 11.sp : 12.sp),
+                    fontSize: options.length > 4
+                        ? 10.sp
+                        : (options.length > 3 ? 11.sp : 12.sp),
                     color: selected
                         ? AppColors.emeraldDeep
                         : AppColors.textSecondary,
@@ -596,7 +641,9 @@ class _RankRow extends StatelessWidget {
               SizedBox(width: 2.w),
               Text(
                 statLabel,
-                style: AppTextStyles.bodySmall(context).copyWith(fontSize: 10.sp),
+                style: AppTextStyles.bodySmall(
+                  context,
+                ).copyWith(fontSize: 10.sp),
               ),
             ],
           ],

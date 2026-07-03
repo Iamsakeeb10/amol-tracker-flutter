@@ -440,6 +440,9 @@ class AmalNotifier extends StateNotifier<AmalState> {
     try {
       final fs = _ref.read(firestoreServiceProvider);
       await fs.saveAmalLog(log, state.fields);
+      // Ensure lastLogDate is always updated when the log is saved,
+      // even if the full updateStreak call fails.
+      unawaited(fs.updateUserLastLogDate(user.uid, hijri).catchError((_) {}));
       try {
         switch (streakResult.action) {
           case StreakAction.increment:

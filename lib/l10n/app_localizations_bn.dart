@@ -456,6 +456,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get monthTop => 'মাসের সেরা';
 
   @override
+  String get noOneYet => 'এখনো কেউ নেই';
+
+  @override
   String get meLabel => 'আমি';
 
   @override

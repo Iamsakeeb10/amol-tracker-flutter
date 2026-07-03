@@ -135,39 +135,20 @@ class NotificationMessageService {
       ]);
     }
 
-    // ── MISSED 2 DAYS — friendly nudge ──
-    if (ctx.daysMissed == 2) {
+    // ── MISSED 2-3 DAYS — friendly nudge ──
+    if (ctx.daysMissed >= 2 && ctx.daysMissed <= 3) {
       return _pick(const [
         NotificationMessage(
           title: 'তোমাকে মিস করছি 😊',
-          body: '২ দিন হয়ে গেছে — আজ ফিরে আসলে ভালো লাগবে।',
-        ),
-        NotificationMessage(
-          title: 'কিছুদিন বিরতি নিয়েছো 🙂',
-          body: 'আজ থেকে আবার শুরু করা যায়, যখনই তুমি প্রস্তুত।',
-        ),
-        NotificationMessage(
-          title: 'তোমার জায়গাটা অপেক্ষায় 🪑',
-          body: '২ দিন হয়েছে — আজ একটা ছোট আমল দিয়ে ফিরে আসো।',
-        ),
-      ]);
-    }
-
-    // ── MISSED 3 DAYS — encouraging, no guilt ──
-    if (ctx.daysMissed == 3) {
-      return _pick(const [
-        NotificationMessage(
-          title: '৩ দিন হয়ে গেছে 🌱',
-          body:
-              'যেকোনো সময় আবার শুরু করা যায়। আজ একটা ছোট আমল দিয়ে চেষ্টা করো।',
+          body: 'আজ ফিরে আসলে ভালো লাগবে।',
         ),
         NotificationMessage(
           title: 'নতুন করে শুরু করার সময় ⏳',
           body: 'ছোট একটা আমলও অনেক মূল্যবান। আজ শুরু করো।',
         ),
         NotificationMessage(
-          title: 'কয়েকদিন হয়ে গেছে 🤍',
-          body: 'কোনো চাপ নেই — আজ যখন সময় হবে, লগ করো।',
+          title: 'তোমার জায়গাটা অপেক্ষায় 🪑',
+          body: 'আজ একটা ছোট আমল দিয়ে ফিরে আসো।',
         ),
       ]);
     }
@@ -306,38 +287,20 @@ class NotificationMessageService {
       ]);
     }
 
-    // ── MISSED 2 DAYS — friendly nudge ──
-    if (ctx.daysMissed == 2) {
+    // ── MISSED 2-3 DAYS — friendly nudge ──
+    if (ctx.daysMissed >= 2 && ctx.daysMissed <= 3) {
       return _pick(const [
         NotificationMessage(
           title: 'Missing you here 😊',
-          body: "It's been 2 days — it'd be great to see you back today.",
-        ),
-        NotificationMessage(
-          title: 'Taking a short break 🙂',
-          body: 'Whenever you\'re ready, today is a good day to start again.',
-        ),
-        NotificationMessage(
-          title: 'Your spot is waiting 🪑',
-          body: '2 days so far — come back today with one small amal.',
-        ),
-      ]);
-    }
-
-    // ── MISSED 3 DAYS — encouraging, no guilt ──
-    if (ctx.daysMissed == 3) {
-      return _pick(const [
-        NotificationMessage(
-          title: '3 days so far 🌱',
-          body: 'You can always start again. Try one small amal today.',
+          body: "it'd be great to see you back today.",
         ),
         NotificationMessage(
           title: 'A good time for a fresh start ⏳',
           body: 'Even a small amal counts. Start today.',
         ),
         NotificationMessage(
-          title: 'A few days have passed 🤍',
-          body: 'No pressure — log whenever it works for you today.',
+          title: 'Your spot is waiting 🪑',
+          body: 'Come back today with one small amal.',
         ),
       ]);
     }

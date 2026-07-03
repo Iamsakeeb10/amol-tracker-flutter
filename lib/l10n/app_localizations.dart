@@ -944,6 +944,12 @@ abstract class AppLocalizations {
   /// **'Month\'s top'**
   String get monthTop;
 
+  /// No description provided for @noOneYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No one yet'**
+  String get noOneYet;
+
   /// No description provided for @meLabel.
   ///
   /// In en, this message translates to:

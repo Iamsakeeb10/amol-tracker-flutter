@@ -78,6 +78,7 @@ class _PerformerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -131,8 +132,13 @@ class _PerformerCard extends StatelessWidget {
                     height: 30.h,
                     child: Center(
                       child: Text(
-                        '-',
-                        style: AppTextStyles.bodySmall(context),
+                        l10n.noOneYet,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodySmall(context).copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 11.sp,
+                        ),
                       ),
                     ),
                   );

@@ -330,10 +330,19 @@ class NotificationService {
     // Already logged today — no reminders needed
     if (hasLoggedToday) return;
 
-    // Calculate days missed
+    // Calculate days missed from lastLogDate
     int daysMissed = 0;
     if (lastLogDate.isNotEmpty && lastLogDate != today) {
       daysMissed = IslamicDateService.daysBetween(lastLogDate, today).abs();
+    }
+
+    // Verify against actual Firestore log entries to catch stale lastLogDate.
+    if (daysMissed > 0) {
+      final verified = await _countVerifiedMissedDays(
+        today: today,
+        maxDays: daysMissed,
+      );
+      if (verified < daysMissed) daysMissed = verified;
     }
 
     // Evening reminder (6:30 PM BD time)
@@ -654,6 +663,26 @@ class NotificationService {
         .doc(docId)
         .get();
     return doc.exists;
+  }
+
+  /// Walk backwards from yesterday, counting consecutive missing days
+  /// by checking actual Firestore log documents. Caps at [maxDays] reads.
+  Future<int> _countVerifiedMissedDays({
+    required String today,
+    required int maxDays,
+  }) async {
+    if (maxDays <= 0) return 0;
+    final checkLimit = maxDays.clamp(0, 7);
+    int verifiedMissed = 0;
+    String checkDate = today;
+    for (var i = 0; i < checkLimit; i++) {
+      checkDate = IslamicDateService.shiftStorageByDays(checkDate, -1);
+      if (await _hasLoggedIslamicDate(checkDate)) break;
+      verifiedMissed++;
+    }
+    return verifiedMissed >= checkLimit && maxDays > checkLimit
+        ? maxDays
+        : verifiedMissed;
   }
 
   Future<void> _schedulePolicyAware({

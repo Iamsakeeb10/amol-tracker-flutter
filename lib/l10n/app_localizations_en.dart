@@ -455,6 +455,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get monthTop => 'Month\'s top';
 
   @override
+  String get noOneYet => 'No one yet';
+
+  @override
   String get meLabel => 'Me';
 
   @override

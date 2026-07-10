@@ -8,6 +8,7 @@ import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../providers/auth_provider.dart';
 import '../../../../providers/date_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import 'streak_bottom_sheet.dart';
@@ -25,6 +26,7 @@ class HomeHeader extends ConsumerWidget {
     final unread = ref.watch(unreadNotificationsCountProvider);
     ref.watch(currentHijriDateProvider);
     final unreadLabel = unread > 99 ? '99+' : '$unread';
+    final user = ref.watch(currentUserProvider).asData?.value;
 
     return GestureDetector(
       onTap: () => context.push(AppRoutes.history),
@@ -33,7 +35,9 @@ class HomeHeader extends ConsumerWidget {
         children: [
           Text(
             IslamicDateService.getDisplayIslamicDate(languageCode: locale),
-            style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+            style: AppTextStyles.label(
+              context,
+            ).copyWith(color: AppColors.gold, fontSize: 11.sp),
           ),
           SizedBox(height: 6.h),
           Row(
@@ -133,6 +137,39 @@ class HomeHeader extends ConsumerWidget {
                           ),
                         ),
                     ],
+                  ),
+                ),
+              ),
+              SizedBox(width: 8.w),
+              InkWell(
+                onTap: () => context.push(AppRoutes.profile),
+                borderRadius: BorderRadius.circular(100.r),
+                child: Tooltip(
+                  message: l10n.profile,
+                  child: Container(
+                    width: 34.r,
+                    height: 34.r,
+                    decoration: BoxDecoration(
+                      color: AppColors.goldCard,
+                      border: Border.all(color: AppColors.goldBorder),
+                      shape: BoxShape.circle,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: user?.photoUrl.isNotEmpty == true
+                        ? Image.network(
+                            user!.photoUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => Icon(
+                              Icons.person_outline_rounded,
+                              color: AppColors.gold,
+                              size: 20.r,
+                            ),
+                          )
+                        : Icon(
+                            Icons.person_outline_rounded,
+                            color: AppColors.gold,
+                            size: 20.r,
+                          ),
                   ),
                 ),
               ),

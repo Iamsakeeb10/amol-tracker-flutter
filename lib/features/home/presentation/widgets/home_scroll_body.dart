@@ -15,7 +15,7 @@ import 'home_submitted_amal_sliver.dart';
 import 'home_welcome_card.dart';
 import 'home_widgets.dart';
 
-class HomeScrollBody extends ConsumerWidget {
+class HomeScrollBody extends ConsumerStatefulWidget {
   const HomeScrollBody({
     super.key,
     required this.uid,
@@ -58,7 +58,43 @@ class HomeScrollBody extends ConsumerWidget {
   final Future<void> Function() onRetryFields;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScrollBody> createState() => _HomeScrollBodyState();
+}
+
+class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
+  final ScrollController _scrollController = ScrollController();
+  bool _showBottomFade = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    final offset = _scrollController.offset;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+
+    final shouldShowBottomFade = offset < maxScroll;
+
+    if (shouldShowBottomFade != _showBottomFade) {
+      setState(() {
+        _showBottomFade = shouldShowBottomFade;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
@@ -66,106 +102,142 @@ class HomeScrollBody extends ConsumerWidget {
       children: [
         Padding(
           padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 0),
-          child: HomeHeader(streak: streak),
+          child: HomeHeader(streak: widget.streak),
         ),
         SizedBox(height: 14.h),
         Expanded(
-          child: CustomScrollView(
-            slivers: [
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  20.w,
-                  0,
-                  20.w,
-                  showSaveFab ? 112.h : 96.h,
-                ),
-                sliver: SliverMainAxisGroup(
+          child: Stack(
+            children: [
+              NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  _onScroll();
+                  return false;
+                },
+                child: CustomScrollView(
+                  controller: _scrollController,
                   slivers: [
-                    if (offline)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.only(bottom: 10.h),
-                          child: CardContainer(
-                            color: HomeUiColors.offlineBannerBg,
-                            borderColor: HomeUiColors.offlineBannerBorder,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.wifi_off,
-                                  color: AppColors.warning,
-                                  size: 18.r,
-                                ),
-                                SizedBox(width: 8.w),
-                                Expanded(
-                                  child: Text(
-                                    l10n.homeOfflineSyncMessage,
-                                    style: AppTextStyles.bodySmall(context)
-                                        .copyWith(
-                                      color: AppColors.textPrimary,
-                                      fontSize: 11.sp,
-                                    ),
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(
+                        20.w,
+                        0,
+                        20.w,
+                        widget.showSaveFab ? 112.h : 96.h,
+                      ),
+                      sliver: SliverMainAxisGroup(
+                        slivers: [
+                          if (widget.offline)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.only(bottom: 10.h),
+                                child: CardContainer(
+                                  color: HomeUiColors.offlineBannerBg,
+                                  borderColor: HomeUiColors.offlineBannerBorder,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.wifi_off,
+                                        color: AppColors.warning,
+                                        size: 18.r,
+                                      ),
+                                      SizedBox(width: 8.w),
+                                      Expanded(
+                                        child: Text(
+                                          l10n.homeOfflineSyncMessage,
+                                          style: AppTextStyles.bodySmall(context)
+                                              .copyWith(
+                                            color: AppColors.textPrimary,
+                                            fontSize: 11.sp,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
+                            ),
+                          if (widget.amalError != null) ...[
+                            SliverToBoxAdapter(
+                              child: Text(
+                                widget.amalError!,
+                                style: AppTextStyles.bodySmall(context).copyWith(
+                                  color: AppColors.danger,
+                                  fontSize: 12.sp,
+                                ),
+                              ),
+                            ),
+                            SliverToBoxAdapter(child: SizedBox(height: 8.h)),
+                          ],
+                          SliverToBoxAdapter(
+                            child: HomeProgressCard(
+                              done: widget.doneCount,
+                              total: widget.fields.length,
+                              score: widget.totalScore,
+                              maxScore: widget.maxScore,
                             ),
                           ),
-                        ),
-                      ),
-                    if (amalError != null) ...[
-                      SliverToBoxAdapter(
-                        child: Text(
-                          amalError!,
-                          style: AppTextStyles.bodySmall(context).copyWith(
-                            color: AppColors.danger,
-                            fontSize: 12.sp,
+                          SliverToBoxAdapter(child: SizedBox(height: 14.h)),
+                          const SliverToBoxAdapter(
+                            child: HomeTopPerformers(),
                           ),
-                        ),
-                      ),
-                      SliverToBoxAdapter(child: SizedBox(height: 8.h)),
-                    ],
-                    SliverToBoxAdapter(
-                      child: HomeProgressCard(
-                        done: doneCount,
-                        total: fields.length,
-                        score: totalScore,
-                        maxScore: maxScore,
+                          if (widget.isNewUser) ...[
+                            SliverToBoxAdapter(child: SizedBox(height: 14.h)),
+                            SliverToBoxAdapter(
+                                child: HomeWelcomeCard(l10n: l10n)),
+                          ],
+                          SliverToBoxAdapter(child: SizedBox(height: 14.h)),
+                          if (widget.isSubmitted)
+                            ...buildHomeSubmittedAmalSlivers(
+                              context: context,
+                              uid: widget.uid,
+                              fieldsAsync: widget.fieldsAsync,
+                              locale: widget.locale,
+                              l10n: l10n,
+                              submittedLog: widget.submittedLog,
+                              onRetryFields: widget.onRetryFields,
+                              onEditTodayAmal: widget.onEditTodayAmal,
+                            )
+                          else
+                            ...buildHomeEditingAmalSlivers(
+                              context: context,
+                              ref: ref,
+                              uid: widget.uid,
+                              fieldsAsync: widget.fieldsAsync,
+                              locale: widget.locale,
+                              l10n: l10n,
+                              isAmalLoading: widget.isAmalLoading,
+                              hasAnyDone: widget.hasAnyDone,
+                              onRetryFields: widget.onRetryFields,
+                            ),
+                          SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+                          const HomeQuickNavSection(),
+                        ],
                       ),
                     ),
-                    SliverToBoxAdapter(child: SizedBox(height: 14.h)),
-                    const SliverToBoxAdapter(
-                      child: HomeTopPerformers(),
-                    ),
-                    if (isNewUser) ...[
-                      SliverToBoxAdapter(child: SizedBox(height: 14.h)),
-                      SliverToBoxAdapter(child: HomeWelcomeCard(l10n: l10n)),
-                    ],
-                    SliverToBoxAdapter(child: SizedBox(height: 14.h)),
-                    if (isSubmitted)
-                      ...buildHomeSubmittedAmalSlivers(
-                        context: context,
-                        uid: uid,
-                        fieldsAsync: fieldsAsync,
-                        locale: locale,
-                        l10n: l10n,
-                        submittedLog: submittedLog,
-                        onRetryFields: onRetryFields,
-                        onEditTodayAmal: onEditTodayAmal,
-                      )
-                    else
-                      ...buildHomeEditingAmalSlivers(
-                        context: context,
-                        ref: ref,
-                        uid: uid,
-                        fieldsAsync: fieldsAsync,
-                        locale: locale,
-                        l10n: l10n,
-                        isAmalLoading: isAmalLoading,
-                        hasAnyDone: hasAnyDone,
-                        onRetryFields: onRetryFields,
-                      ),
-                    SliverToBoxAdapter(child: SizedBox(height: 20.h)),
-                    const HomeQuickNavSection(),
                   ],
+                ),
+              ),
+              // Bottom fade gradient
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: AnimatedOpacity(
+                  opacity: _showBottomFade ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Container(
+                    height: 30.h,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          AppColors.emeraldDeep,
+                          AppColors.emeraldDeep.withValues(alpha: 0.8),
+                          AppColors.emeraldDeep.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],

@@ -104,6 +104,8 @@ Map<String, dynamic> announcementToFirestoreMap({
   String? imageUrl,
   DateTime? startsAt,
   DateTime? expiresAt,
+  String? actionUrl,
+  String? actionLabel,
   bool forUpdate = false,
 }) {
   final map = <String, dynamic>{
@@ -135,6 +137,18 @@ Map<String, dynamic> announcementToFirestoreMap({
     map,
     'expiresAt',
     expiresAt != null ? Timestamp.fromDate(expiresAt) : null,
+    forUpdate: forUpdate,
+  );
+  _putOptionalField(
+    map,
+    'actionUrl',
+    _nullableTrim(actionUrl),
+    forUpdate: forUpdate,
+  );
+  _putOptionalField(
+    map,
+    'actionLabel',
+    _nullableTrim(actionLabel),
     forUpdate: forUpdate,
   );
   return map;

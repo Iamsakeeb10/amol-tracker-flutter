@@ -3019,6 +3019,24 @@ abstract class AppLocalizations {
   /// **'Image URL (optional)'**
   String get adminFormImageUrl;
 
+  /// No description provided for @adminFormActionUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Action URL (optional)'**
+  String get adminFormActionUrl;
+
+  /// No description provided for @adminFormActionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Button Text (optional)'**
+  String get adminFormActionLabel;
+
+  /// No description provided for @announcementActionDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get announcementActionDefault;
+
   /// No description provided for @adminFormActive.
   ///
   /// In en, this message translates to:

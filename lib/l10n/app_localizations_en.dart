@@ -1598,6 +1598,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminFormImageUrl => 'Image URL (optional)';
 
   @override
+  String get adminFormActionUrl => 'Action URL (optional)';
+
+  @override
+  String get adminFormActionLabel => 'Button Text (optional)';
+
+  @override
+  String get announcementActionDefault => 'Open';
+
+  @override
   String get adminFormActive => 'Active';
 
   @override

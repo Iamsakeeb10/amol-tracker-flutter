@@ -1601,6 +1601,15 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminFormImageUrl => 'ছবির URL (ঐচ্ছিক)';
 
   @override
+  String get adminFormActionUrl => 'অ্যাকশন URL (ঐচ্ছিক)';
+
+  @override
+  String get adminFormActionLabel => 'বাটনের টেক্সট (ঐচ্ছিক)';
+
+  @override
+  String get announcementActionDefault => 'খুলুন';
+
+  @override
   String get adminFormActive => 'সক্রিয়';
 
   @override

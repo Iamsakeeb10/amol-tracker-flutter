@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../core/utils/external_url_helper.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/announcement_model.dart';
 import '../../providers/auth_provider.dart';
@@ -132,29 +133,83 @@ class _AnnouncementModalState extends ConsumerState<AnnouncementModal> {
                     ),
                   ),
                   SizedBox(height: 20.h),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: dismiss,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.goldLight,
-                        foregroundColor: AppColors.emeraldDeep,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
+                  if (widget.announcement.actionUrl != null &&
+                      widget.announcement.actionUrl!.isNotEmpty)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: dismiss,
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.textMuted,
+                              side: BorderSide(color: AppColors.textMuted, width: 1.r),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
+                            ),
+                            child: Text(
+                              l10n.announcementDismiss,
+                              style: AppTextStyles.button(context).copyWith(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ),
                         ),
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        l10n.announcementDismiss,
-                        style: AppTextStyles.button(context).copyWith(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.emeraldDeep,
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await launchExternalUrl(widget.announcement.actionUrl!);
+                              if (context.mounted) dismiss();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.goldLight,
+                              foregroundColor: AppColors.emeraldDeep,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              widget.announcement.actionLabel ??
+                                  l10n.announcementActionDefault,
+                              style: AppTextStyles.button(context).copyWith(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.emeraldDeep,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: dismiss,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textMuted,
+                          side: BorderSide(color: AppColors.textMuted, width: 1.r),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                        ),
+                        child: Text(
+                          l10n.announcementDismiss,
+                          style: AppTextStyles.button(context).copyWith(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textMuted,
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

@@ -12,6 +12,8 @@ class AnnouncementModel {
   final DateTime? expiresAt;
   final bool showOnce;
   final DateTime createdAt;
+  final String? actionUrl;
+  final String? actionLabel;
 
   const AnnouncementModel({
     required this.id,
@@ -25,6 +27,8 @@ class AnnouncementModel {
     required this.expiresAt,
     required this.showOnce,
     required this.createdAt,
+    this.actionUrl,
+    this.actionLabel,
   });
 
   bool get isCurrentlyActive {
@@ -52,6 +56,8 @@ class AnnouncementModel {
       expiresAt: (data['expiresAt'] as Timestamp?)?.toDate(),
       showOnce: (data['showOnce'] as bool?) ?? false,
       createdAt: createdAt is Timestamp ? createdAt.toDate() : DateTime.now(),
+      actionUrl: data['actionUrl'] as String?,
+      actionLabel: data['actionLabel'] as String?,
     );
   }
 }

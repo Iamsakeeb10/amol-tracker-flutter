@@ -34,6 +34,8 @@ class _AdminAnnouncementFormScreenState
   late final TextEditingController _messageCtrl;
   late final TextEditingController _arabicCtrl;
   late final TextEditingController _imageCtrl;
+  late final TextEditingController _actionUrlCtrl;
+  late final TextEditingController _actionLabelCtrl;
   late String _type;
   late bool _isActive;
   late bool _showOnce;
@@ -51,6 +53,8 @@ class _AdminAnnouncementFormScreenState
     _messageCtrl = TextEditingController(text: e?.message ?? '');
     _arabicCtrl = TextEditingController(text: e?.arabicText ?? '');
     _imageCtrl = TextEditingController(text: e?.imageUrl ?? '');
+    _actionUrlCtrl = TextEditingController(text: e?.actionUrl ?? '');
+    _actionLabelCtrl = TextEditingController(text: e?.actionLabel ?? '');
     _type = normalizeAnnouncementType(e?.type);
     _isActive = e?.isActive ?? true;
     _showOnce = e?.showOnce ?? false;
@@ -64,6 +68,8 @@ class _AdminAnnouncementFormScreenState
     _messageCtrl.dispose();
     _arabicCtrl.dispose();
     _imageCtrl.dispose();
+    _actionUrlCtrl.dispose();
+    _actionLabelCtrl.dispose();
     super.dispose();
   }
 
@@ -80,6 +86,8 @@ class _AdminAnnouncementFormScreenState
       expiresAt: _expiresAt,
       showOnce: _showOnce,
       createdAt: widget.existing?.createdAt ?? DateTime.now(),
+      actionUrl: _nullable(_actionUrlCtrl.text),
+      actionLabel: _nullable(_actionLabelCtrl.text),
     );
   }
 
@@ -113,6 +121,8 @@ class _AdminAnnouncementFormScreenState
       imageUrl: _imageCtrl.text,
       startsAt: _startsAt,
       expiresAt: _expiresAt,
+      actionUrl: _actionUrlCtrl.text,
+      actionLabel: _actionLabelCtrl.text,
       forUpdate: _isEdit,
     );
 
@@ -228,6 +238,16 @@ class _AdminAnnouncementFormScreenState
                     label: l10n.adminFormImageUrl,
                     controller: _imageCtrl,
                     icon: Icons.image_outlined,
+                  ),
+                  AdminFormField(
+                    label: l10n.adminFormActionUrl,
+                    controller: _actionUrlCtrl,
+                    icon: Icons.link_rounded,
+                  ),
+                  AdminFormField(
+                    label: l10n.adminFormActionLabel,
+                    controller: _actionLabelCtrl,
+                    icon: Icons.text_fields_rounded,
                   ),
                 ],
               ),

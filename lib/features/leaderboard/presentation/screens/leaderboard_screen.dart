@@ -422,19 +422,22 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 
   Widget _buildLoading() {
-    return Column(
-      children: List.generate(
-        4,
-        (index) => Padding(
-          padding: EdgeInsets.only(bottom: 8.h),
-          child: Shimmer.fromColors(
-            baseColor: AppColors.cardBorder,
-            highlightColor: AppColors.cardBorder.withValues(alpha: 1),
-            child: Container(
-              height: 58.h,
-              decoration: BoxDecoration(
-                color: AppColors.cardBorder,
-                borderRadius: BorderRadius.circular(14.r),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        children: List.generate(
+          4,
+          (index) => Padding(
+            padding: EdgeInsets.only(bottom: 8.h),
+            child: Shimmer.fromColors(
+              baseColor: AppColors.cardBorder,
+              highlightColor: AppColors.cardBorder.withValues(alpha: 1),
+              child: Container(
+                height: 58.h,
+                decoration: BoxDecoration(
+                  color: AppColors.cardBorder,
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
               ),
             ),
           ),

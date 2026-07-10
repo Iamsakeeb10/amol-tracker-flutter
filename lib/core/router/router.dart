@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -64,9 +65,13 @@ import 'routes.dart';
 
 GoRouter buildAppRouter() {
   final firestoreService = FirestoreService();
+  final analyticsObserver = FirebaseAnalyticsObserver(
+    analytics: FirebaseAnalytics.instance,
+  );
   return GoRouter(
     initialLocation: AppRoutes.launch,
     debugLogDiagnostics: false,
+    observers: [analyticsObserver],
     refreshListenable: GoRouterRefreshStream(
       FirebaseAuth.instance.authStateChanges(),
     ),

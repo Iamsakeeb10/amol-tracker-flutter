@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:riverpod/legacy.dart';
 
+import '../core/services/analytics_service.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/services/local_storage_service.dart';
 import '../models/dhikr_model.dart';
@@ -163,6 +164,10 @@ class DhikrNotifier extends StateNotifier<DhikrState> {
       todaySessions: [...state.todaySessions, session],
     );
     unawaited(_triggerHaptic(HapticFeedback.mediumImpact));
+    AnalyticsService.instance.logZikrCompleted(
+      name: preset.isCustom ? (preset.customName ?? preset.id) : preset.id,
+      count: preset.target,
+    );
     await LocalStorageService.saveDhikrSession(_todayHijri, session.toMap());
     _completionTimer?.cancel();
     _completionTimer = Timer(const Duration(milliseconds: 1500), () {

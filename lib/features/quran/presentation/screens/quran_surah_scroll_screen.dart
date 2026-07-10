@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -48,6 +49,20 @@ class _QuranSurahScrollScreenState
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final surahs = ref.read(quranSurahListProvider).asData?.value;
+      if (surahs != null) {
+        final surah = surahs.firstWhere(
+          (s) => s.id == widget.surahId,
+          orElse: () => surahs.first,
+        );
+        AnalyticsService.instance.logSurahOpened(
+          name: surah.nameTransliteration,
+          page: surah.startPage,
+        );
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _loadAyahsFromProvider(),
     );

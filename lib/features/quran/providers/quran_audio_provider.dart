@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
 
+import '../../../core/services/analytics_service.dart';
 import '../models/quran_audio_state.dart';
 import '../models/quran_surah.dart';
 import '../services/quran_audio_handler.dart';
@@ -100,8 +100,11 @@ class QuranAudioNotifier extends StateNotifier<QuranAudioState> {
         qariId: prefs.qari,
       );
     } catch (error, stackTrace) {
-      debugPrint('Quran audio failed: $error');
-      debugPrint('$stackTrace');
+      AnalyticsService.instance.recordError(
+        error,
+        stackTrace,
+        reason: 'Quran audio playback failed',
+      );
       state = state.copyWith(isLoading: false, hasError: true, isPlaying: false);
     }
   }

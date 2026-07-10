@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
+import 'analytics_service.dart';
+
 class HadithAssetService {
   const HadithAssetService._();
 
@@ -23,7 +25,7 @@ class HadithAssetService {
           .where((hadith) => hadith.isNotEmpty)
           .toList(growable: false);
     } catch (e, st) {
-      print('HadithAssetService error: $e\n$st'); // ← add this
+      AnalyticsService.instance.recordError(e, st, reason: 'Hadith asset load failed');
       return const [];
     }
   }

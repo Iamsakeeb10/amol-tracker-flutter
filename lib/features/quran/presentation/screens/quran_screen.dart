@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -53,6 +54,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logQuranOpened();
     final prefs = ref.read(quranReadingPrefsProvider);
     _viewMode = QuranConstants.mushafModeEnabled && prefs.mushafReaderMode
         ? _QuranViewMode.mushafReader
@@ -133,6 +135,9 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
     final trimmed = value.trim();
     if (trimmed == _searchQuery) return;
     setState(() => _searchQuery = trimmed);
+    if (trimmed.isNotEmpty) {
+      AnalyticsService.instance.logSearchUsed(section: 'quran');
+    }
   }
 
   Future<void> _toggleViewMode() async {
@@ -164,6 +169,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
 
   void _openMushafAtLastPage() {
     if (!QuranConstants.mushafModeEnabled) return;
+    AnalyticsService.instance.logContinueReadingClicked(surahName: 'quran');
     setState(() {
       _viewMode = _QuranViewMode.mushafReader;
       _mushafCurrentPage = ref.read(quranReadingPrefsProvider).lastMushafPage;

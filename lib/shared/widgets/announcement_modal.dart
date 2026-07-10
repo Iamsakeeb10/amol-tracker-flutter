@@ -3,33 +3,47 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/services/analytics_service.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/announcement_model.dart';
 import '../../providers/auth_provider.dart';
 
-class AnnouncementModal extends ConsumerWidget {
+class AnnouncementModal extends ConsumerStatefulWidget {
   const AnnouncementModal({super.key, required this.announcement});
 
   final AnnouncementModel announcement;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AnnouncementModal> createState() => _AnnouncementModalState();
+}
+
+class _AnnouncementModalState extends ConsumerState<AnnouncementModal> {
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.instance.logAnnouncementOpened(
+      announcementId: widget.announcement.id,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final hasArabic =
-        announcement.arabicText != null && announcement.arabicText!.isNotEmpty;
+        widget.announcement.arabicText != null && widget.announcement.arabicText!.isNotEmpty;
     final hasImage =
-        announcement.imageUrl != null && announcement.imageUrl!.isNotEmpty;
+        widget.announcement.imageUrl != null && widget.announcement.imageUrl!.isNotEmpty;
 
     Future<void> dismiss() async {
       Navigator.pop(context);
-      if (!announcement.showOnce) return;
+      if (!widget.announcement.showOnce) return;
       final uid = ref.read(currentUserProvider).value?.uid;
       if (uid == null) return;
       await ref
           .read(firestoreServiceProvider)
-          .markAnnouncementSeen(uid, announcement.id);
+          .markAnnouncementSeen(uid, widget.announcement.id);
     }
 
     return Dialog(
@@ -56,14 +70,14 @@ class AnnouncementModal extends ConsumerWidget {
               child: Column(
                 children: [
                   Icon(
-                    _iconForType(announcement.type),
+                    _iconForType(widget.announcement.type),
                     color: AppColors.goldLight,
                     size: 32.r,
                   ),
                   SizedBox(height: 12.h),
                   if (hasArabic) ...[
                     Text(
-                      announcement.arabicText!,
+                      widget.announcement.arabicText!,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.amiri(
                         fontSize: 20.sp,
@@ -77,7 +91,7 @@ class AnnouncementModal extends ConsumerWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12.r),
                       child: Image.network(
-                        announcement.imageUrl!,
+                        widget.announcement.imageUrl!,
                         width: double.infinity,
                         height: 180.h,
                         fit: BoxFit.cover,
@@ -99,7 +113,7 @@ class AnnouncementModal extends ConsumerWidget {
                     SizedBox(height: 16.h),
                   ],
                   Text(
-                    announcement.title,
+                    widget.announcement.title,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.notoSansBengali(
                       fontSize: 16.sp,
@@ -109,7 +123,7 @@ class AnnouncementModal extends ConsumerWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    announcement.message,
+                    widget.announcement.message,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.notoSansBengali(
                       fontSize: 13.sp,

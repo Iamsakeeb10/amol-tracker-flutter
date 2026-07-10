@@ -6,6 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/time_display_helper.dart';
@@ -53,6 +54,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final uid = ref.read(authStateProvider).asData?.value?.uid;
     if (uid == null) return;
     setState(() => _anonymousDisplay = value);
+    AnalyticsService.instance.logAnonymousModeChanged(enabled: value);
+    AnalyticsService.instance.setAnonymousMode(value);
     await ref
         .read(firestoreServiceProvider)
         .updateUserDisplayFields(uid, isAnonymousDisplay: value);
@@ -497,9 +500,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ? AppColors.gold
                         : AppColors.textMuted,
                   ),
-                  onTap: () => ref
-                      .read(localeProvider.notifier)
-                      .setLocale(const Locale('en')),
+                  onTap: () {
+                    ref.read(localeProvider.notifier).setLocale(const Locale('en'));
+                    AnalyticsService.instance.logLanguageChanged(language: 'en');
+                  },
                 ),
                 const Divider(),
                 ListTile(
@@ -517,9 +521,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ? AppColors.gold
                         : AppColors.textMuted,
                   ),
-                  onTap: () => ref
-                      .read(localeProvider.notifier)
-                      .setLocale(const Locale('bn')),
+                  onTap: () {
+                    ref.read(localeProvider.notifier).setLocale(const Locale('bn'));
+                    AnalyticsService.instance.logLanguageChanged(language: 'bn');
+                  },
                 ),
               ],
             ),

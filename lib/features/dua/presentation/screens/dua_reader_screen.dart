@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/bengali_numeral_helper.dart';
@@ -49,6 +50,13 @@ class _DuaReaderScreenState extends ConsumerState<DuaReaderScreen> {
     super.initState();
     _currentIndex = widget.initialIndex.clamp(0, widget.duaIds.length - 1);
     _pageController = PageController(initialPage: _currentIndex);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final dua = ref.read(duasListProvider).asData?.value;
+      if (dua != null && dua.isNotEmpty) {
+        AnalyticsService.instance.logDuaOpened(category: 'general');
+      }
+    });
   }
 
   @override
@@ -62,6 +70,9 @@ class _DuaReaderScreenState extends ConsumerState<DuaReaderScreen> {
     final notifier = ref.read(duaFavoritesProvider.notifier);
     final wasFavorite = notifier.isFavorite(dua.duaId);
     await notifier.toggle(dua.duaId);
+    if (!wasFavorite) {
+      AnalyticsService.instance.logDuaFavorited(name: dua.title);
+    }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

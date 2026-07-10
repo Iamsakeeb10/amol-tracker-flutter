@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'analytics_service.dart';
 import 'local_storage_service.dart';
 import 'notification_service.dart';
 
@@ -17,10 +18,14 @@ class AuthService {
     // from Credential Manager on emulator/device restarts.
     try {
       await _googleSignIn.signOut();
-    } catch (_) {}
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'Google signOut cleanup failed');
+    }
     try {
       await _googleSignIn.disconnect();
-    } catch (_) {}
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'Google disconnect cleanup failed');
+    }
 
     await _googleSignIn.initialize();
     final account = await _googleSignIn.authenticate();

@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -134,6 +135,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final success = await _persistOnboardingData(userModel);
     if (!mounted) return;
     if (success) {
+      AnalyticsService.instance.logOnboardingCompleted(duration: 0);
       context.go(AppRoutes.home);
       return;
     }

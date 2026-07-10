@@ -14,6 +14,7 @@ import '../constants/prayer_adhan_constants.dart';
 import '../router/routes.dart';
 import '../utils/fcm_notification_display.dart';
 import '../utils/quiet_hours_helper.dart';
+import 'analytics_service.dart';
 import 'hadith_asset_service.dart';
 import 'islamic_date_service.dart';
 import 'local_storage_service.dart';
@@ -284,8 +285,8 @@ class NotificationService {
 
       await userRef.set({'fcmToken': token}, SetOptions(merge: true));
       await LocalStorageService.setPref(_fcmOwnerUidKey, user.uid);
-    } catch (_) {
-      // Network/auth failures must not block local notification scheduling.
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'FCM token sync failed');
     }
   }
 
@@ -416,8 +417,12 @@ class NotificationService {
   Future<void> _safeRescheduleAll() async {
     try {
       await rescheduleAll();
-    } catch (_) {
-      // Never crash app startup due to platform scheduling quirks.
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(
+        e,
+        st,
+        reason: 'Notification reschedule failed',
+      );
     }
   }
 

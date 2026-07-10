@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -332,6 +333,9 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
     final trimmed = value.trim();
     if (trimmed == _searchQuery) return;
     setState(() => _searchQuery = trimmed);
+    if (trimmed.isNotEmpty) {
+      AnalyticsService.instance.logSearchUsed(section: 'dua');
+    }
   }
 
   @override

@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'dart:io' show Platform;
 
 import 'core/router/router.dart';
+import 'core/services/analytics_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/theme/theme.dart';
 import 'features/badges/presentation/widgets/badge_celebration_overlay.dart';
@@ -34,11 +37,37 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     WidgetsBinding.instance.addObserver(this);
     _router = buildAppRouter();
     unawaited(_initNotifications());
+    unawaited(_setupCrashlytics());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(ref.read(appBootstrapProvider.future));
       _scheduleSmartReminders();
     });
+  }
+
+  Future<void> _setupCrashlytics() async {
+    // Set user ID on auth state changes
+    ref.listen(authStateProvider, (prev, next) {
+      final user = next.asData?.value;
+      if (user != null) {
+        AnalyticsService.instance.setUserIdentifier(user.uid);
+      } else {
+        AnalyticsService.instance.setUserIdentifier('');
+      }
+    });
+
+    // Set custom keys
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final locale = Platform.localeName;
+      final lang = ref.read(localeProvider).languageCode;
+      await AnalyticsService.instance.setCustomKeys(
+        appVersion: packageInfo.version,
+        buildNumber: packageInfo.buildNumber,
+        language: lang,
+        deviceLocale: locale,
+      );
+    } catch (_) {}
   }
 
   Future<void> _initNotifications() async {

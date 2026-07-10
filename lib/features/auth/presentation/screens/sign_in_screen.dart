@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -105,6 +106,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                           ),
                           onTap: () {
                             ref.read(localeProvider.notifier).setLocale(const Locale('en'));
+                            AnalyticsService.instance.logLanguageSelected(language: 'en');
                             Navigator.pop(ctx);
                           },
                         ),
@@ -126,6 +128,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                           ),
                           onTap: () {
                             ref.read(localeProvider.notifier).setLocale(const Locale('bn'));
+                            AnalyticsService.instance.logLanguageSelected(language: 'bn');
                             Navigator.pop(ctx);
                           },
                         ),

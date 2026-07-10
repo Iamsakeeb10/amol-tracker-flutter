@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -38,6 +39,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logLeaderboardOpened();
     _periodIndex = widget.initialTabIndex ?? 0;
     _startLoadTimeout();
     // Invalidate all leaderboard providers to fetch fresh data on screen open.

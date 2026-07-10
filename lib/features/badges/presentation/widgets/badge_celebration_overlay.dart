@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -79,6 +80,7 @@ class _BadgeCelebrationOverlayState extends State<_BadgeCelebrationOverlay>
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logBadgeViewed(name: widget.badge.id);
     _controller = AnimationController(
       vsync: this,
       duration: Duration(

@@ -7,6 +7,7 @@ import 'package:riverpod/legacy.dart';
 
 import '../core/constants/amal_fields.dart';
 import '../core/constants/default_amal_fields.dart';
+import '../core/services/analytics_service.dart';
 import '../core/services/firestore_service.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/services/local_storage_service.dart';
@@ -390,6 +391,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       bestStreak: newBest,
       lastLogDate: hijri,
     );
+    AnalyticsService.instance.logStreakFreezeUsed(streakDays: newCurrent);
   }
 
   Future<void> resetStreak(String uid) async {
@@ -440,13 +442,39 @@ class AmalNotifier extends StateNotifier<AmalState> {
     try {
       final fs = _ref.read(firestoreServiceProvider);
       await fs.saveAmalLog(log, state.fields);
+      AnalyticsService.instance.logAmalCompleted(score: score);
+      AnalyticsService.instance.logDailyScoreCompleted(totalScore: score);
       // Ensure lastLogDate is always updated when the log is saved,
       // even if the full updateStreak call fails.
       unawaited(fs.updateUserLastLogDate(user.uid, hijri).catchError((_) {}));
       try {
         switch (streakResult.action) {
           case StreakAction.increment:
+            AnalyticsService.instance.logStreakExtended(
+              streakDays: streakResult.newCurrentStreak,
+            );
+            await fs.updateStreak(
+              user.uid,
+              currentStreak: streakResult.newCurrentStreak,
+              bestStreak: streakResult.newBestStreak,
+              streakFreezeUsed: user.streakFreezeWeekKey != currentWeekKey
+                  ? false
+                  : user.streakFreezeUsed,
+              streakFreezeWeekKey: currentWeekKey,
+              lastLogDate: hijri,
+            );
+            await _syncClientSideBadgesAndFeed(
+              fs: fs,
+              user: user,
+              submittedLog: log,
+              resultingCurrentStreak: streakResult.newCurrentStreak,
+              currentWeekKey: currentWeekKey,
+            );
+            break;
           case StreakAction.reset:
+            AnalyticsService.instance.logStreakLost(
+              previousStreak: user.currentStreak,
+            );
             await fs.updateStreak(
               user.uid,
               currentStreak: streakResult.newCurrentStreak,
@@ -486,7 +514,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
       } catch (e) {
         // Streak fields can sync later; log doc is saved.
       }
-    } catch (_) {
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'Amal submit failed');
       submitWarning = 'Saved locally - will sync when back online.';
     } finally {
       await LocalStorageService.saveLog(
@@ -554,6 +583,12 @@ class AmalNotifier extends StateNotifier<AmalState> {
     final isTopThisWeek =
         weeklyRows.isNotEmpty && weeklyRows.first['uid'] == user.uid;
     if (isTopThisWeek) nextBadges.add('topOfCommunity');
+
+    // Log newly unlocked badges
+    final newBadges = nextBadges.difference(user.badges.toSet());
+    for (final badgeId in newBadges) {
+      AnalyticsService.instance.logBadgeUnlocked(name: badgeId);
+    }
 
     await fs.updateUser(user.uid, <String, dynamic>{
       'badges': nextBadges.toList(),

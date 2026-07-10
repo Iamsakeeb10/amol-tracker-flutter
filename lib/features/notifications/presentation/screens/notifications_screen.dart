@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/firestore_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -316,6 +317,7 @@ class _NotificationRow extends StatelessWidget {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     return CardContainer(
       onTap: () async {
+        AnalyticsService.instance.logNotificationOpened(type: item.type);
         if (uid != null && !item.isRead) {
           await FirestoreService().markNotificationRead(uid, item.id);
         }

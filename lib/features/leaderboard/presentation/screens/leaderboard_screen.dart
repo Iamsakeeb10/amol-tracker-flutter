@@ -36,12 +36,19 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   bool get _isStreak => _periodIndex == 3;
   bool get _isQuiz => _periodIndex == 4;
 
+  // Pagination state
+  static const int _pageSize = 20;
+  final ScrollController _scrollController = ScrollController();
+  int _displayedCount = 20;
+  bool _isLoadingMore = false;
+
   @override
   void initState() {
     super.initState();
     AnalyticsService.instance.logLeaderboardOpened();
     _periodIndex = widget.initialTabIndex ?? 0;
     _startLoadTimeout();
+    _scrollController.addListener(_onScroll);
     // Invalidate all leaderboard providers to fetch fresh data on screen open.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.invalidate(weeklyLeaderboardProvider);
@@ -55,6 +62,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   @override
   void dispose() {
     _loadTimeout?.cancel();
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
     super.dispose();
   }
 
@@ -64,6 +74,36 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       if (mounted && !_initialLoadComplete) {
         setState(() => _initialLoadComplete = true);
       }
+    });
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients || _isLoadingMore) return;
+    final max = _scrollController.position.maxScrollExtent;
+    final cur = _scrollController.offset;
+    if (max - cur < 200) {
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    final data = switch (_periodIndex) {
+      0 => ref.read(weeklyLeaderboardProvider),
+      1 => ref.read(monthlyLeaderboardProvider),
+      2 => ref.read(dailyLeaderboardProvider),
+      3 => ref.read(streakLeaderboardProvider),
+      _ => ref.read(quizLeaderboardProvider),
+    };
+    data.whenData((entries) {
+      if (_displayedCount >= entries.length) return;
+      setState(() {
+        _isLoadingMore = true;
+        _displayedCount += _pageSize;
+      });
+      // Simulate a brief delay so the loading indicator is visible.
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) setState(() => _isLoadingMore = false);
+      });
     });
   }
 
@@ -100,7 +140,20 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       _ => ref.watch(quizLeaderboardProvider),
     };
 
+    // Determine pinned user for the fixed bottom card.
+    LeaderboardEntry? pinnedEntry;
+    int pinnedRank = -1;
+    data.whenData((entries) {
+      if (authUid == null || entries.isEmpty) return;
+      final idx = entries.indexWhere((u) => u.uid == authUid);
+      if (idx >= 5) {
+        pinnedEntry = entries[idx];
+        pinnedRank = idx + 1;
+      }
+    });
+
     return AppScaffold(
+      padding: EdgeInsets.zero,
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: 22.r),
@@ -112,63 +165,111 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           style: AppTextStyles.headlineMedium(context),
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(0, 4.h, 0, 0),
-            sliver: SliverToBoxAdapter(
-              child: _Tabs(
-                value: _periodIndex,
-                options: periods,
-                onChanged: (i) => setState(() {
-                  _periodIndex = i;
-                  _initialLoadComplete = false;
-                  _startLoadTimeout();
-                }),
-              ),
+      body: Column(
+        children: [
+          // Tabs pinned at top — never scroll.
+          Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+            child: _Tabs(
+              value: _periodIndex,
+              options: periods,
+              onChanged: (i) => setState(() {
+                _periodIndex = i;
+                _initialLoadComplete = false;
+                _displayedCount = _pageSize;
+                _isLoadingMore = false;
+                _startLoadTimeout();
+              }),
             ),
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 16.h)),
-          ...data.when(
-            skipLoadingOnRefresh: false,
-            skipLoadingOnReload: false,
-            data: (entries) {
-              if (!_initialLoadComplete) {
-                if (entries.isNotEmpty) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) setState(() => _initialLoadComplete = true);
-                  });
-                } else {
-                  return [SliverToBoxAdapter(child: _buildLoading())];
-                }
-              }
-              return _buildDataSlivers(
-                context,
-                entries: entries,
-                authUid: authUid,
-                l10n: l10n,
-              );
-            },
-            loading: () => [SliverToBoxAdapter(child: _buildLoading())],
-            error: (error, _) {
-              if (!_initialLoadComplete) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) setState(() => _initialLoadComplete = true);
-                });
-              }
-              return [
-                SliverToBoxAdapter(
-                  child: CardContainer(
-                    child: Text(
-                      l10n.leaderboardLoadFailed,
-                      style: AppTextStyles.bodyMedium(context),
+          SizedBox(height: 16.h),
+          Expanded(
+            child: Stack(
+              children: [
+                CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    ...data.when(
+                      skipLoadingOnRefresh: false,
+                      skipLoadingOnReload: false,
+                      data: (entries) {
+                        if (!_initialLoadComplete) {
+                          if (entries.isNotEmpty) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (mounted) {
+                                setState(() => _initialLoadComplete = true);
+                              }
+                            });
+                          } else {
+                            return [SliverToBoxAdapter(child: _buildLoading())];
+                          }
+                        }
+                        return _buildDataSlivers(
+                          context,
+                          entries: entries,
+                          authUid: authUid,
+                          l10n: l10n,
+                        );
+                      },
+                      loading: () => [
+                        SliverToBoxAdapter(child: _buildLoading()),
+                      ],
+                      error: (error, _) {
+                        if (!_initialLoadComplete) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              setState(() => _initialLoadComplete = true);
+                            }
+                          });
+                        }
+                        return [
+                          SliverToBoxAdapter(
+                            child: CardContainer(
+                              child: Text(
+                                l10n.leaderboardLoadFailed,
+                                style: AppTextStyles.bodyMedium(context),
+                              ),
+                            ),
+                          ),
+                        ];
+                      },
+                    ),
+                    SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+                  ],
+                ),
+                // Bottom fade scroll affordance.
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 40.h,
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppColors.emeraldDeep.withValues(alpha: 0),
+                            AppColors.emeraldDeep,
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ];
-            },
+              ],
+            ),
           ),
-          SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+          // Fixed bottom card for user ranked outside top 5.
+          if (pinnedEntry != null)
+            _PinnedBottomCard(
+              entry: pinnedEntry!,
+              rank: pinnedRank,
+              isQuiz: _isQuiz,
+              statLabel: _statLabel(),
+              displayName: _displayName(pinnedEntry!),
+            ),
         ],
       ),
     );
@@ -200,15 +301,27 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     final userIndex = authUid == null
         ? -1
         : entries.indexWhere((u) => u.uid == authUid);
-    final pinnedUser = userIndex >= 0 ? entries[userIndex] : null;
+    final shouldPin = userIndex >= 5;
     final maxScore = entries.first.score;
     final statLabel = _statLabel();
 
+    // Build the visible entries for the normal list.
+    // When pinned (rank > 5), exclude the current user from the list.
+    final visibleEntries = shouldPin
+        ? [for (int i = 0; i < entries.length; i++) if (i != userIndex) entries[i]]
+        : entries;
+
+    // Apply pagination: only show up to _displayedCount entries.
+    final displayedEntries = visibleEntries
+        .take(_displayedCount.clamp(0, visibleEntries.length))
+        .toList();
+    final hasMore = displayedEntries.length < visibleEntries.length;
+
     return [
       if (_isQuiz)
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.only(bottom: 12.h),
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 12.h),
+          sliver: SliverToBoxAdapter(
             child: Text(
               l10n.leaderboardQuizTiebreakerHint,
               style: AppTextStyles.bodySmall(
@@ -218,20 +331,34 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             ),
           ),
         ),
-      SliverToBoxAdapter(
-        child: _Podium(top3: top3, displayName: _displayName, isQuiz: _isQuiz),
+      SliverPadding(
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        sliver: SliverToBoxAdapter(
+          child: SizedBox(
+            height: 220.h,
+            child: _Podium(
+              top3: top3,
+              displayName: _displayName,
+              isQuiz: _isQuiz,
+            ),
+          ),
+        ),
       ),
       SliverToBoxAdapter(child: SizedBox(height: 18.h)),
       SliverPadding(
         padding: EdgeInsets.zero,
         sliver: SliverList.builder(
-          itemCount: entries.length,
+          itemCount: displayedEntries.length,
           itemBuilder: (context, index) {
-            final user = entries[index];
+            final user = displayedEntries[index];
+            // Compute the original rank in the full list.
+            final originalIndex = shouldPin
+                ? (index >= userIndex ? index + 1 : index)
+                : index;
             return Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
+              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
               child: _RankRow(
-                rank: index + 1,
+                rank: originalIndex + 1,
                 user: user,
                 statLabel: statLabel,
                 displayName: _displayName(user),
@@ -245,60 +372,49 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           },
         ),
       ),
-      if (pinnedUser != null && userIndex >= 3) ...[
-        SliverToBoxAdapter(child: SizedBox(height: 8.h)),
+      // Loading more indicator.
+      if (_isLoadingMore)
         SliverToBoxAdapter(
-          child: CardContainer.gold(
-            child: Row(
-              children: [
-                Icon(Icons.push_pin_outlined, color: AppColors.gold),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: _isQuiz
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.leaderboardYourRankNumber(userIndex + 1),
-                              style: AppTextStyles.bodyMedium(context),
-                            ),
-                            SizedBox(height: 6.h),
-                            QuizLeaderboardStat(
-                              points: pinnedUser.score,
-                              attempts: pinnedUser.attemptCount ?? 0,
-                            ),
-                          ],
-                        )
-                      : Text(
-                          l10n.leaderboardYourRank(
-                            userIndex + 1,
-                            pinnedUser.score,
-                            statLabel,
-                          ),
-                          style: AppTextStyles.bodyMedium(context),
-                        ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 12.h),
+            child: Center(
+              child: SizedBox(
+                height: 20.r,
+                width: 20.r,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.r,
+                  color: AppColors.gold,
                 ),
-              ],
+              ),
             ),
           ),
         ),
-      ],
-      SliverToBoxAdapter(child: SizedBox(height: 16.h)),
-      SliverToBoxAdapter(
-        child: CardContainer.gold(
-          child: Row(
-            children: [
-              Icon(Icons.star_rounded, color: AppColors.goldLight, size: 20.r),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Text(
-                  nudge,
-                  style: AppTextStyles.bodyLarge(
-                    context,
-                  ).copyWith(fontSize: 13.sp),
+      // "Load more" sentinel at bottom to trigger scroll-based loading.
+      if (hasMore && !_isLoadingMore)
+        SliverToBoxAdapter(child: SizedBox(height: 1.h)),
+      SliverToBoxAdapter(child: SizedBox(height: 8.h)),
+      SliverPadding(
+        padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 0),
+        sliver: SliverToBoxAdapter(
+          child: CardContainer.gold(
+            child: Row(
+              children: [
+                Icon(
+                  Icons.star_rounded,
+                  color: AppColors.goldLight,
+                  size: 20.r,
                 ),
-              ),
-            ],
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    nudge,
+                    style: AppTextStyles.bodyLarge(
+                      context,
+                    ).copyWith(fontSize: 13.sp),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -385,6 +501,107 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   }
 }
 
+/// Fixed card at the bottom of the screen for the current user when ranked > 5.
+class _PinnedBottomCard extends StatelessWidget {
+  final LeaderboardEntry entry;
+  final int rank;
+  final bool isQuiz;
+  final String statLabel;
+  final String displayName;
+
+  const _PinnedBottomCard({
+    required this.entry,
+    required this.rank,
+    required this.isQuiz,
+    required this.statLabel,
+    required this.displayName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.emeraldDeep,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+          child: Row(
+            children: [
+              Container(
+                width: 36.r,
+                height: 36.r,
+                decoration: BoxDecoration(
+                  color: AppColors.gold,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '$rank',
+                  style: AppTextStyles.goldNumeric(context).copyWith(
+                    color: AppColors.emeraldDeep,
+                    fontSize: 16.sp,
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.you,
+                      style: AppTextStyles.bodySmall(context).copyWith(
+                        color: AppColors.gold,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11.sp,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    if (isQuiz)
+                      QuizLeaderboardStat(
+                        points: entry.score,
+                        attempts: entry.attemptCount ?? 0,
+                        compact: true,
+                      )
+                    else
+                      Text(
+                        '${entry.score} $statLabel',
+                        style: AppTextStyles.bodyMedium(context).copyWith(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              AvatarChip(
+                initial: entry.isAnonymousDisplay
+                    ? '🕌'
+                    : displayName.substring(0, 1).toUpperCase(),
+                color: entry.isAnonymousDisplay
+                    ? AppColors.cardBorder
+                    : AppColors.gold,
+                size: 36,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _Tabs extends StatelessWidget {
   final int value;
   final List<String> options;
@@ -452,88 +669,104 @@ class _Podium extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (top3.length < 3) return const SizedBox();
+    // order: [2nd, 1st, 3rd]
     final order = [top3[1], top3[0], top3[2]];
-    final heights = [64.h, 88.h, 56.h];
     final ranks = [2, 1, 3];
+    final pillarColors = [AppColors.goldCard, AppColors.gold, AppColors.goldCard];
+    final rankColors = [AppColors.gold, AppColors.emeraldDeep, AppColors.gold];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final compact = constraints.maxWidth < 340.w;
+        final totalH = constraints.maxHeight;
+        final totalW = constraints.maxWidth;
+        final colW = totalW / 3;
+        final gap = totalH * 0.025;
+        // Pillar heights as fraction — rank 1 tallest, rank 3 shortest.
+        final pillarH = [totalH * 0.35, totalH * 0.50, totalH * 0.28];
+
         return SizedBox(
-          height: compact ? 216.h : 200.h,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: List.generate(3, (i) {
-              final user = order[i];
-              final name = displayName(user);
-              final initial = name.isEmpty
-                  ? '?'
-                  : name.substring(0, 1).toUpperCase();
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.w),
+          height: totalH,
+          width: totalW,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Pillars at bottom.
+              for (int i = 0; i < 3; i++)
+                Positioned(
+                  left: i * colW + 6,
+                  right: (2 - i) * colW + 6,
+                  bottom: 0,
+                  height: pillarH[i],
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: pillarColors[i],
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(8.r),
+                      ),
+                      border: Border.all(color: AppColors.goldBorder),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${ranks[i]}',
+                      style: AppTextStyles.displayMedium(context).copyWith(
+                        color: rankColors[i],
+                        fontSize: 22.sp,
+                      ),
+                    ),
+                  ),
+                ),
+              // Content on top of each pillar.
+              for (int i = 0; i < 3; i++)
+                Positioned(
+                  left: i * colW,
+                  right: (2 - i) * colW,
+                  bottom: pillarH[i] + gap,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       AvatarChip(
-                        initial: user.isAnonymousDisplay ? '🕌' : initial,
-                        color: user.isAnonymousDisplay
+                        initial: order[i].isAnonymousDisplay
+                            ? '🕌'
+                            : (displayName(order[i]).isEmpty
+                                    ? '?'
+                                    : displayName(order[i])
+                                        .substring(0, 1))
+                                .toUpperCase(),
+                        color: order[i].isAnonymousDisplay
                             ? AppColors.cardBorder
                             : AppColors.gold,
-                        size: ranks[i] == 1 ? 56 : 44,
+                        size: ranks[i] == 1 ? 50 : 42,
                         ring: ranks[i] == 1,
-                        fontSize: ranks[i] == 1 ? 22 : 18,
+                        fontSize: ranks[i] == 1 ? 20 : 16,
                       ),
-                      SizedBox(height: 6.h),
+                      SizedBox(height: gap),
                       Text(
-                        name,
+                        displayName(order[i]),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodyLarge(
-                          context,
-                        ).copyWith(fontSize: 12.sp),
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodyLarge(context).copyWith(
+                          fontSize: 11.sp,
+                        ),
                       ),
+                      SizedBox(height: 2.h),
                       if (isQuiz)
                         QuizLeaderboardStat(
-                          points: user.score,
-                          attempts: user.attemptCount ?? 0,
+                          points: order[i].score,
+                          attempts: order[i].attemptCount ?? 0,
                           compact: true,
                         )
                       else
                         Text(
-                          '${user.score}',
-                          style: AppTextStyles.goldNumeric(
-                            context,
-                          ).copyWith(fontSize: 16.sp),
-                        ),
-                      SizedBox(height: 6.h),
-                      Container(
-                        height: compact ? heights[i] + 8.h : heights[i],
-                        decoration: BoxDecoration(
-                          color: ranks[i] == 1
-                              ? AppColors.gold
-                              : AppColors.goldCard,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(10.r),
-                          ),
-                          border: Border.all(color: AppColors.goldBorder),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '${ranks[i]}',
-                          style: AppTextStyles.displayMedium(context).copyWith(
-                            color: ranks[i] == 1
-                                ? AppColors.emeraldDeep
-                                : AppColors.gold,
-                            fontSize: 26.sp,
+                          '${order[i].score}',
+                          style: AppTextStyles.goldNumeric(context).copyWith(
+                            fontSize: 14.sp,
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
-              );
-            }),
+            ],
           ),
         );
       },

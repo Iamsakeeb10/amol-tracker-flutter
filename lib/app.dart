@@ -37,7 +37,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     WidgetsBinding.instance.addObserver(this);
     _router = buildAppRouter();
     unawaited(_initNotifications());
-    unawaited(_setupCrashlytics());
+    unawaited(_setupCustomAnalyticsKeys());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(ref.read(appBootstrapProvider.future));
@@ -45,18 +45,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     });
   }
 
-  Future<void> _setupCrashlytics() async {
-    // Set user ID on auth state changes
-    ref.listen(authStateProvider, (prev, next) {
-      final user = next.asData?.value;
-      if (user != null) {
-        AnalyticsService.instance.setUserIdentifier(user.uid);
-      } else {
-        AnalyticsService.instance.setUserIdentifier('');
-      }
-    });
-
-    // Set custom keys
+  Future<void> _setupCustomAnalyticsKeys() async {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       final locale = Platform.localeName;
@@ -128,6 +117,16 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
 
   @override
   Widget build(BuildContext context) {
+    // Listen to auth state changes to set analytics user ID.
+    ref.listen(authStateProvider, (prev, next) {
+      final user = next.asData?.value;
+      if (user != null) {
+        AnalyticsService.instance.setUserIdentifier(user.uid);
+      } else {
+        AnalyticsService.instance.setUserIdentifier('');
+      }
+    });
+
     final locale = ref.watch(localeProvider);
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,

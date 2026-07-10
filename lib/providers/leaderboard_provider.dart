@@ -117,7 +117,8 @@ final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   ref,
 ) async {
   final fs = ref.read(firestoreServiceProvider);
-  final rows = await fs.streakLeaderboard();
+  final result = await fs.streakLeaderboard();
+  final rows = result.rows;
   final users = await fs.usersByIds(
     rows.map((row) => (row['uid'] as String?) ?? ''),
   );

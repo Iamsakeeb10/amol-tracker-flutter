@@ -684,13 +684,20 @@ class FirestoreService {
     return rows;
   }
 
-  Future<List<Map<String, dynamic>>> streakLeaderboard() async {
-    final query = await _users
-        .orderBy('currentStreak', descending: true)
-        .limit(50)
-        .get();
+  static const int _leaderboardPageSize = 20;
 
-    return query.docs.map((doc) {
+  Future<
+    ({List<Map<String, dynamic>> rows, DocumentSnapshot<Map<String, dynamic>>? lastDoc})
+  >
+  streakLeaderboard({DocumentSnapshot<Map<String, dynamic>>? startAfter}) async {
+    var query = _users
+        .orderBy('currentStreak', descending: true)
+        .limit(_leaderboardPageSize);
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+    final snap = await query.get();
+    final rows = snap.docs.map((doc) {
       final data = doc.data();
       return <String, dynamic>{
         'uid': doc.id,
@@ -699,6 +706,8 @@ class FirestoreService {
         'score': (data['currentStreak'] as num?)?.toInt() ?? 0,
       };
     }).toList();
+    final lastDoc = snap.docs.isNotEmpty ? snap.docs.last : null;
+    return (rows: rows, lastDoc: lastDoc);
   }
 
   Future<bool> hasSentDuaToday({

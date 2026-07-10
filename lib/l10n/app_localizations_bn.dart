@@ -2518,4 +2518,46 @@ class AppLocalizationsBn extends AppLocalizations {
   String appVersion(String version) {
     return 'ভার্সন $version';
   }
+
+  @override
+  String get streakSheetLast7Days => 'গত ৭ দিন';
+
+  @override
+  String get streakSheetPrevious => 'আগের';
+
+  @override
+  String get streakSheetNext => 'পরবর্তী';
+
+  @override
+  String get streakSheetCompleted => 'সম্পন্ন';
+
+  @override
+  String get streakSheetMissed => 'মিসড';
+
+  @override
+  String get streakSheetToday => 'আজ';
+
+  @override
+  String get streakSheetPending => 'অপেক্ষমান';
+
+  @override
+  String get streakSheetPreAccount => 'অ্যাকাউন্টের আগে';
+
+  @override
+  String get streakSheetNoLog => 'এই দিনের জন্য কোনো লগ সাবমিট হয়নি';
+
+  @override
+  String get streakSheetNotYetSubmitted => 'আজ এখনো লগ সাবমিট হয়নি';
+
+  @override
+  String get streakSheetFreezeAvailable => 'ফ্রিজ উপলব্ধ';
+
+  @override
+  String get streakSheetFreezeUsed => 'এই সপ্তাহে ফ্রিজ ব্যবহৃত';
+
+  @override
+  String get streakSheetScore => 'স্কোর';
+
+  @override
+  String get streakSheetBestStreak => 'সেরা';
 }

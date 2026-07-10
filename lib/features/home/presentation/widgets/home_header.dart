@@ -10,11 +10,13 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/date_provider.dart';
 import '../../../../providers/notification_provider.dart';
+import 'streak_bottom_sheet.dart';
 
 class HomeHeader extends ConsumerWidget {
-  const HomeHeader({super.key, required this.streak});
+  const HomeHeader({super.key, required this.streak, required this.uid});
 
   final int streak;
+  final String uid;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,7 +48,7 @@ class HomeHeader extends ConsumerWidget {
               ),
               SizedBox(width: 8.w),
               InkWell(
-                onTap: () => context.push(AppRoutes.profile),
+                onTap: () => StreakBottomSheet.show(context, uid: uid),
                 borderRadius: BorderRadius.circular(99.r),
                 child: Container(
                   padding: EdgeInsets.symmetric(

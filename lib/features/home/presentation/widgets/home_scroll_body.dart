@@ -102,7 +102,7 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
       children: [
         Padding(
           padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 0),
-          child: HomeHeader(streak: widget.streak),
+          child: HomeHeader(streak: widget.streak, uid: widget.uid),
         ),
         SizedBox(height: 14.h),
         Expanded(

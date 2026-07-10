@@ -4692,6 +4692,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version {version}'**
   String appVersion(String version);
+
+  /// No description provided for @streakSheetLast7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get streakSheetLast7Days;
+
+  /// No description provided for @streakSheetPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get streakSheetPrevious;
+
+  /// No description provided for @streakSheetNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get streakSheetNext;
+
+  /// No description provided for @streakSheetCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get streakSheetCompleted;
+
+  /// No description provided for @streakSheetMissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed'**
+  String get streakSheetMissed;
+
+  /// No description provided for @streakSheetToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get streakSheetToday;
+
+  /// No description provided for @streakSheetPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get streakSheetPending;
+
+  /// No description provided for @streakSheetPreAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Before account'**
+  String get streakSheetPreAccount;
+
+  /// No description provided for @streakSheetNoLog.
+  ///
+  /// In en, this message translates to:
+  /// **'No log submitted for this day'**
+  String get streakSheetNoLog;
+
+  /// No description provided for @streakSheetNotYetSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Log not submitted yet'**
+  String get streakSheetNotYetSubmitted;
+
+  /// No description provided for @streakSheetFreezeAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Freeze available'**
+  String get streakSheetFreezeAvailable;
+
+  /// No description provided for @streakSheetFreezeUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Freeze used this week'**
+  String get streakSheetFreezeUsed;
+
+  /// No description provided for @streakSheetScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score'**
+  String get streakSheetScore;
+
+  /// No description provided for @streakSheetBestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Best'**
+  String get streakSheetBestStreak;
 }
 
 class _AppLocalizationsDelegate

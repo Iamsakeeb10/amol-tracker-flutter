@@ -2515,4 +2515,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String appVersion(String version) {
     return 'Version $version';
   }
+
+  @override
+  String get streakSheetLast7Days => 'Last 7 days';
+
+  @override
+  String get streakSheetPrevious => 'Previous';
+
+  @override
+  String get streakSheetNext => 'Next';
+
+  @override
+  String get streakSheetCompleted => 'Completed';
+
+  @override
+  String get streakSheetMissed => 'Missed';
+
+  @override
+  String get streakSheetToday => 'Today';
+
+  @override
+  String get streakSheetPending => 'Pending';
+
+  @override
+  String get streakSheetPreAccount => 'Before account';
+
+  @override
+  String get streakSheetNoLog => 'No log submitted for this day';
+
+  @override
+  String get streakSheetNotYetSubmitted => 'Log not submitted yet';
+
+  @override
+  String get streakSheetFreezeAvailable => 'Freeze available';
+
+  @override
+  String get streakSheetFreezeUsed => 'Freeze used this week';
+
+  @override
+  String get streakSheetScore => 'Score';
+
+  @override
+  String get streakSheetBestStreak => 'Best';
 }

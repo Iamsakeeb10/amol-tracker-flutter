@@ -982,5 +982,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "streakSheetLast7Days": "Last 7 days",
+  "streakSheetPrevious": "Previous",
+  "streakSheetNext": "Next",
+  "streakSheetCompleted": "Completed",
+  "streakSheetMissed": "Missed",
+  "streakSheetToday": "Today",
+  "streakSheetPending": "Pending",
+  "streakSheetPreAccount": "Before account",
+  "streakSheetNoLog": "No log submitted for this day",
+  "streakSheetNotYetSubmitted": "Log not submitted yet",
+  "streakSheetFreezeAvailable": "Freeze available",
+  "streakSheetFreezeUsed": "Freeze used this week",
+  "streakSheetScore": "Score",
+  "streakSheetBestStreak": "Best"
 }

@@ -954,5 +954,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "streakSheetLast7Days": "গত ৭ দিন",
+  "streakSheetPrevious": "আগের",
+  "streakSheetNext": "পরবর্তী",
+  "streakSheetCompleted": "সম্পন্ন",
+  "streakSheetMissed": "মিসড",
+  "streakSheetToday": "আজ",
+  "streakSheetPending": "অপেক্ষমান",
+  "streakSheetPreAccount": "অ্যাকাউন্টের আগে",
+  "streakSheetNoLog": "এই দিনের জন্য কোনো লগ সাবমিট হয়নি",
+  "streakSheetNotYetSubmitted": "আজ এখনো লগ সাবমিট হয়নি",
+  "streakSheetFreezeAvailable": "ফ্রিজ উপলব্ধ",
+  "streakSheetFreezeUsed": "এই সপ্তাহে ফ্রিজ ব্যবহৃত",
+  "streakSheetScore": "স্কোর",
+  "streakSheetBestStreak": "সেরা"
 }

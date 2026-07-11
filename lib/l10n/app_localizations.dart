@@ -4776,6 +4776,276 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Best'**
   String get streakSheetBestStreak;
+
+  /// No description provided for @myReports.
+  ///
+  /// In en, this message translates to:
+  /// **'My Reports'**
+  String get myReports;
+
+  /// No description provided for @reportsWeeklyTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get reportsWeeklyTab;
+
+  /// No description provided for @reportsMonthlyTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get reportsMonthlyTab;
+
+  /// No description provided for @reportsCustomTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get reportsCustomTab;
+
+  /// No description provided for @reportsWeeklyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly report'**
+  String get reportsWeeklyTitle;
+
+  /// No description provided for @reportsMonthlyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly report'**
+  String get reportsMonthlyTitle;
+
+  /// No description provided for @reportsCustomTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom report'**
+  String get reportsCustomTitle;
+
+  /// No description provided for @reportsAvgScore.
+  ///
+  /// In en, this message translates to:
+  /// **'avg score / 100'**
+  String get reportsAvgScore;
+
+  /// No description provided for @reportsDaysLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'{logged}/{total} days logged'**
+  String reportsDaysLogged(Object logged, Object total);
+
+  /// No description provided for @reportsCurrentStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'current streak'**
+  String get reportsCurrentStreak;
+
+  /// No description provided for @reportsBestStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'best streak'**
+  String get reportsBestStreak;
+
+  /// No description provided for @reportsConsistency.
+  ///
+  /// In en, this message translates to:
+  /// **'consistency'**
+  String get reportsConsistency;
+
+  /// No description provided for @reportsBestDayScore.
+  ///
+  /// In en, this message translates to:
+  /// **'best day score'**
+  String get reportsBestDayScore;
+
+  /// No description provided for @reportsCommunityRank.
+  ///
+  /// In en, this message translates to:
+  /// **'community rank'**
+  String get reportsCommunityRank;
+
+  /// No description provided for @reportsRankUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'current period only'**
+  String get reportsRankUnavailable;
+
+  /// No description provided for @reportsDaysInRange.
+  ///
+  /// In en, this message translates to:
+  /// **'days in range'**
+  String get reportsDaysInRange;
+
+  /// No description provided for @reportsDaysLoggedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'days logged'**
+  String get reportsDaysLoggedLabel;
+
+  /// No description provided for @reportsChartDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily scores'**
+  String get reportsChartDaily;
+
+  /// No description provided for @reportsChartWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly avg scores'**
+  String get reportsChartWeekly;
+
+  /// No description provided for @reportsAmalBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Amal breakdown'**
+  String get reportsAmalBreakdown;
+
+  /// No description provided for @reportsInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get reportsInsights;
+
+  /// No description provided for @reportsBestDayInsight.
+  ///
+  /// In en, this message translates to:
+  /// **'Best day was {day} with a score of {score}/100'**
+  String reportsBestDayInsight(Object day, Object score);
+
+  /// No description provided for @reportsWeakestAmalInsight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weakest amal: {label} — completed {done} of {total} days'**
+  String reportsWeakestAmalInsight(Object label, Object done, Object total);
+
+  /// No description provided for @reportsStrongestAmalInsight.
+  ///
+  /// In en, this message translates to:
+  /// **'Strongest amal: {label} — completed {done} of {total} days'**
+  String reportsStrongestAmalInsight(Object label, Object done, Object total);
+
+  /// No description provided for @reportsTrendUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Score improved by +{points} pts vs previous period'**
+  String reportsTrendUp(Object points);
+
+  /// No description provided for @reportsTrendDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Score dropped by {points} pts vs previous period'**
+  String reportsTrendDown(Object points);
+
+  /// No description provided for @reportsTrendFlat.
+  ///
+  /// In en, this message translates to:
+  /// **'Score is unchanged vs previous period'**
+  String get reportsTrendFlat;
+
+  /// No description provided for @reportsRankInsight.
+  ///
+  /// In en, this message translates to:
+  /// **'You ranked #{rank} in the community this period'**
+  String reportsRankInsight(Object rank);
+
+  /// No description provided for @reportsHadithOfPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Hadith of the period'**
+  String get reportsHadithOfPeriod;
+
+  /// No description provided for @reportsShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get reportsShare;
+
+  /// No description provided for @reportsSharing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing…'**
+  String get reportsSharing;
+
+  /// No description provided for @reportsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load report right now.'**
+  String get reportsLoadFailed;
+
+  /// No description provided for @reportsRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get reportsRetry;
+
+  /// No description provided for @reportsEmptyPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No amal logs in this period yet. Start logging to see your report.'**
+  String get reportsEmptyPeriod;
+
+  /// No description provided for @reportsThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get reportsThisWeek;
+
+  /// No description provided for @reportsThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get reportsThisMonth;
+
+  /// No description provided for @reportsCustomRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom range'**
+  String get reportsCustomRange;
+
+  /// No description provided for @reportsPickRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick date range'**
+  String get reportsPickRange;
+
+  /// No description provided for @reportsSelectStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Select start date'**
+  String get reportsSelectStart;
+
+  /// No description provided for @reportsSelectEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Select end date'**
+  String get reportsSelectEnd;
+
+  /// No description provided for @reportsApplyRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get reportsApplyRange;
+
+  /// No description provided for @reportsCustomRangeTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum range is 90 days.'**
+  String get reportsCustomRangeTooLong;
+
+  /// No description provided for @reportsInvalidRange.
+  ///
+  /// In en, this message translates to:
+  /// **'End date must be on or after start date.'**
+  String get reportsInvalidRange;
+
+  /// No description provided for @reportsRangeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a start date, then an end date (max 90 days).'**
+  String get reportsRangeHint;
+
+  /// No description provided for @reportsEmDash.
+  ///
+  /// In en, this message translates to:
+  /// **'—'**
+  String get reportsEmDash;
 }
 
 class _AppLocalizationsDelegate

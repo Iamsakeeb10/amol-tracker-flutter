@@ -398,6 +398,41 @@ class FirestoreService {
     final mm = hijriMonth.toString().padLeft(2, '0');
     final start = '$hijriYear-$mm-01';
     final end = '$hijriYear-$mm-${daysInMonth.toString().padLeft(2, '0')}';
+    return getLogsInRange(uid, start, end);
+  }
+
+  /*
+  Purpose:
+  Fetch a user's submitted amal logs for an inclusive Hijri date range.
+
+  Response:
+  Sorted list of AmalLogModel by hijriDate ascending.
+
+  Business Rules:
+  - Range is inclusive on both ends (Hijri YYYY-MM-DD storage keys).
+  - Falls back to uid-only query + client filter when composite index is missing.
+
+  Flow:
+  1. Query amal_logs by uid + hijriDate range.
+  2. On failed-precondition / FirebaseException, fetch by uid and filter.
+  3. Sort ascending by hijriDate.
+
+  Side Effects:
+  None beyond Firestore reads.
+
+  Failure Cases:
+  FirebaseException from the primary path triggers the fallback; other errors bubble.
+  */
+  Future<List<AmalLogModel>> getLogsInRange(
+    String uid,
+    String startHijri,
+    String endHijri,
+  ) async {
+    if (uid.isEmpty || startHijri.isEmpty || endHijri.isEmpty) {
+      return const <AmalLogModel>[];
+    }
+    final start = startHijri.compareTo(endHijri) <= 0 ? startHijri : endHijri;
+    final end = startHijri.compareTo(endHijri) <= 0 ? endHijri : startHijri;
 
     try {
       final query = await _amalLogs
@@ -410,8 +445,6 @@ class FirestoreService {
         ..sort((a, b) => a.hijriDate.compareTo(b.hijriDate));
       return logs;
     } on FirebaseException {
-      // Fallback when composite index is missing:
-      // fetch by uid and filter month client-side.
       final query = await _amalLogs.where('uid', isEqualTo: uid).get();
       final logs =
           query.docs

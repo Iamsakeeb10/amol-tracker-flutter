@@ -13,7 +13,6 @@ import '../../../../providers/auth_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../providers/syllabus_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
-import '../../../../shared/widgets/bottom_tab_back_button.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
@@ -123,6 +122,12 @@ class MoreScreen extends ConsumerWidget {
                   title: l10n.leaderboard,
                   trailing: l10n.weekly,
                   onTap: () => context.push(AppRoutes.leaderboard),
+                ),
+                const Divider(),
+                NavRow(
+                  icon: Icons.assessment_outlined,
+                  title: l10n.myReports,
+                  onTap: () => context.push(AppRoutes.reports),
                 ),
                 const Divider(),
                 NavRow(

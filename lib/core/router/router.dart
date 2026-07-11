@@ -35,6 +35,7 @@ import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart'
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/settings/presentation/screens/more_screen.dart';
 import '../../features/settings/presentation/screens/quiet_hours_screen.dart';
 import '../../features/settings/presentation/screens/prayer_reminder_screen.dart';
@@ -192,6 +193,11 @@ GoRouter buildAppRouter() {
             initialTabIndex: extra is int ? extra : null,
           );
         },
+      ),
+      GoRoute(
+        path: AppRoutes.reports,
+        name: 'reports',
+        builder: (_, _) => const ReportsScreen(),
       ),
       GoRoute(
         path: AppRoutes.notifications,

@@ -42,6 +42,11 @@ class HomeQuickNavSection extends StatelessWidget {
         onTap: () => context.push(AppRoutes.leaderboard),
       ),
       _QuickNavCard(
+        icon: Icons.assessment_outlined,
+        label: l10n.myReports,
+        onTap: () => context.push(AppRoutes.reports),
+      ),
+      _QuickNavCard(
         icon: Icons.calendar_month_outlined,
         label: l10n.hijriCalendar,
         onTap: () => context.push(AppRoutes.hijriCalendar),

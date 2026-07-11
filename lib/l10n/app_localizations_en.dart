@@ -2557,4 +2557,155 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get streakSheetBestStreak => 'Best';
+
+  @override
+  String get myReports => 'My Reports';
+
+  @override
+  String get reportsWeeklyTab => 'Weekly';
+
+  @override
+  String get reportsMonthlyTab => 'Monthly';
+
+  @override
+  String get reportsCustomTab => 'Custom';
+
+  @override
+  String get reportsWeeklyTitle => 'Weekly report';
+
+  @override
+  String get reportsMonthlyTitle => 'Monthly report';
+
+  @override
+  String get reportsCustomTitle => 'Custom report';
+
+  @override
+  String get reportsAvgScore => 'avg score / 100';
+
+  @override
+  String reportsDaysLogged(Object logged, Object total) {
+    return '$logged/$total days logged';
+  }
+
+  @override
+  String get reportsCurrentStreak => 'current streak';
+
+  @override
+  String get reportsBestStreak => 'best streak';
+
+  @override
+  String get reportsConsistency => 'consistency';
+
+  @override
+  String get reportsBestDayScore => 'best day score';
+
+  @override
+  String get reportsCommunityRank => 'community rank';
+
+  @override
+  String get reportsRankUnavailable => 'current period only';
+
+  @override
+  String get reportsDaysInRange => 'days in range';
+
+  @override
+  String get reportsDaysLoggedLabel => 'days logged';
+
+  @override
+  String get reportsChartDaily => 'Daily scores';
+
+  @override
+  String get reportsChartWeekly => 'Weekly avg scores';
+
+  @override
+  String get reportsAmalBreakdown => 'Amal breakdown';
+
+  @override
+  String get reportsInsights => 'Insights';
+
+  @override
+  String reportsBestDayInsight(Object day, Object score) {
+    return 'Best day was $day with a score of $score/100';
+  }
+
+  @override
+  String reportsWeakestAmalInsight(Object label, Object done, Object total) {
+    return 'Weakest amal: $label — completed $done of $total days';
+  }
+
+  @override
+  String reportsStrongestAmalInsight(Object label, Object done, Object total) {
+    return 'Strongest amal: $label — completed $done of $total days';
+  }
+
+  @override
+  String reportsTrendUp(Object points) {
+    return 'Score improved by +$points pts vs previous period';
+  }
+
+  @override
+  String reportsTrendDown(Object points) {
+    return 'Score dropped by $points pts vs previous period';
+  }
+
+  @override
+  String get reportsTrendFlat => 'Score is unchanged vs previous period';
+
+  @override
+  String reportsRankInsight(Object rank) {
+    return 'You ranked #$rank in the community this period';
+  }
+
+  @override
+  String get reportsHadithOfPeriod => 'Hadith of the period';
+
+  @override
+  String get reportsShare => 'Share';
+
+  @override
+  String get reportsSharing => 'Preparing…';
+
+  @override
+  String get reportsLoadFailed => 'Could not load report right now.';
+
+  @override
+  String get reportsRetry => 'Retry';
+
+  @override
+  String get reportsEmptyPeriod =>
+      'No amal logs in this period yet. Start logging to see your report.';
+
+  @override
+  String get reportsThisWeek => 'This week';
+
+  @override
+  String get reportsThisMonth => 'This month';
+
+  @override
+  String get reportsCustomRange => 'Custom range';
+
+  @override
+  String get reportsPickRange => 'Pick date range';
+
+  @override
+  String get reportsSelectStart => 'Select start date';
+
+  @override
+  String get reportsSelectEnd => 'Select end date';
+
+  @override
+  String get reportsApplyRange => 'Apply';
+
+  @override
+  String get reportsCustomRangeTooLong => 'Maximum range is 90 days.';
+
+  @override
+  String get reportsInvalidRange => 'End date must be on or after start date.';
+
+  @override
+  String get reportsRangeHint =>
+      'Tap a start date, then an end date (max 90 days).';
+
+  @override
+  String get reportsEmDash => '—';
 }

@@ -2560,4 +2560,156 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get streakSheetBestStreak => 'সেরা';
+
+  @override
+  String get myReports => 'আমার রিপোর্ট';
+
+  @override
+  String get reportsWeeklyTab => 'সাপ্তাহিক';
+
+  @override
+  String get reportsMonthlyTab => 'মাসিক';
+
+  @override
+  String get reportsCustomTab => 'কাস্টম';
+
+  @override
+  String get reportsWeeklyTitle => 'সাপ্তাহিক রিপোর্ট';
+
+  @override
+  String get reportsMonthlyTitle => 'মাসিক রিপোর্ট';
+
+  @override
+  String get reportsCustomTitle => 'কাস্টম রিপোর্ট';
+
+  @override
+  String get reportsAvgScore => 'গড় স্কোর / ১০০';
+
+  @override
+  String reportsDaysLogged(Object logged, Object total) {
+    return '$logged/$total দিন লগ হয়েছে';
+  }
+
+  @override
+  String get reportsCurrentStreak => 'বর্তমান স্ট্রিক';
+
+  @override
+  String get reportsBestStreak => 'সেরা স্ট্রিক';
+
+  @override
+  String get reportsConsistency => 'ধারাবাহিকতা';
+
+  @override
+  String get reportsBestDayScore => 'সেরা দিনের স্কোর';
+
+  @override
+  String get reportsCommunityRank => 'কমিউনিটি র‍্যাঙ্ক';
+
+  @override
+  String get reportsRankUnavailable => 'শুধু বর্তমান সময়কালে';
+
+  @override
+  String get reportsDaysInRange => 'রেঞ্জের দিন';
+
+  @override
+  String get reportsDaysLoggedLabel => 'লগ করা দিন';
+
+  @override
+  String get reportsChartDaily => 'দৈনিক স্কোর';
+
+  @override
+  String get reportsChartWeekly => 'সাপ্তাহিক গড় স্কোর';
+
+  @override
+  String get reportsAmalBreakdown => 'আমল বিশ্লেষণ';
+
+  @override
+  String get reportsInsights => 'সারসংক্ষেপ';
+
+  @override
+  String reportsBestDayInsight(Object day, Object score) {
+    return 'সেরা দিন ছিল $day, স্কোর $score/১০০';
+  }
+
+  @override
+  String reportsWeakestAmalInsight(Object label, Object done, Object total) {
+    return 'দুর্বলতম আমল: $label — $total দিনের মধ্যে $done দিন সম্পন্ন';
+  }
+
+  @override
+  String reportsStrongestAmalInsight(Object label, Object done, Object total) {
+    return 'সবচেয়ে শক্তিশালী আমল: $label — $total দিনের মধ্যে $done দিন সম্পন্ন';
+  }
+
+  @override
+  String reportsTrendUp(Object points) {
+    return 'আগের সময়কালের তুলনায় স্কোর +$points পয়েন্ট বেড়েছে';
+  }
+
+  @override
+  String reportsTrendDown(Object points) {
+    return 'আগের সময়কালের তুলনায় স্কোর $points পয়েন্ট কমেছে';
+  }
+
+  @override
+  String get reportsTrendFlat => 'আগের সময়কালের তুলনায় স্কোর অপরিবর্তিত';
+
+  @override
+  String reportsRankInsight(Object rank) {
+    return 'এই সময়কালে কমিউনিটিতে আপনার র‍্যাঙ্ক #$rank';
+  }
+
+  @override
+  String get reportsHadithOfPeriod => 'সময়কালের হাদিস';
+
+  @override
+  String get reportsShare => 'শেয়ার';
+
+  @override
+  String get reportsSharing => 'প্রস্তুত হচ্ছে…';
+
+  @override
+  String get reportsLoadFailed => 'এখন রিপোর্ট লোড করা যায়নি।';
+
+  @override
+  String get reportsRetry => 'আবার চেষ্টা';
+
+  @override
+  String get reportsEmptyPeriod =>
+      'এই সময়কালে এখনো কোনো আমল লগ নেই। রিপোর্ট দেখতে লগ করা শুরু করুন।';
+
+  @override
+  String get reportsThisWeek => 'এই সপ্তাহ';
+
+  @override
+  String get reportsThisMonth => 'এই মাস';
+
+  @override
+  String get reportsCustomRange => 'কাস্টম রেঞ্জ';
+
+  @override
+  String get reportsPickRange => 'তারিখ রেঞ্জ বেছে নিন';
+
+  @override
+  String get reportsSelectStart => 'শুরুর তারিখ নির্বাচন করুন';
+
+  @override
+  String get reportsSelectEnd => 'শেষ তারিখ নির্বাচন করুন';
+
+  @override
+  String get reportsApplyRange => 'প্রয়োগ';
+
+  @override
+  String get reportsCustomRangeTooLong => 'সর্বোচ্চ রেঞ্জ ৯০ দিন।';
+
+  @override
+  String get reportsInvalidRange =>
+      'শেষ তারিখ শুরুর তারিখের পরে বা সমান হতে হবে।';
+
+  @override
+  String get reportsRangeHint =>
+      'শুরুর তারিখ, তারপর শেষ তারিখ ট্যাপ করুন (সর্বোচ্চ ৯০ দিন)।';
+
+  @override
+  String get reportsEmDash => '—';
 }

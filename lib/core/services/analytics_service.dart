@@ -293,4 +293,26 @@ class AnalyticsService {
       parameters: {'section': section},
     );
   }
+
+  // -- Reports --
+  Future<void> logReportsOpened() async {
+    if (!_enabled) return;
+    await _analytics.logEvent(name: 'reports_opened');
+  }
+
+  Future<void> logReportPeriodChanged({required String type}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'report_period_changed',
+      parameters: {'type': type},
+    );
+  }
+
+  Future<void> logReportShared({required String type}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'report_shared',
+      parameters: {'type': type},
+    );
+  }
 }

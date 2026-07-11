@@ -28,6 +28,7 @@ class AppRoutes {
   static const dua = '/dua';
   static const more = '/more';
   static const leaderboard = '/leaderboard';
+  static const reports = '/reports';
   static const notifications = '/notifications';
   static const profile = '/profile';
   static const settings = '/settings';

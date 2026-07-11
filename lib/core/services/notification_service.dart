@@ -355,7 +355,14 @@ class NotificationService {
       if (verified < daysMissed) daysMissed = verified;
     }
 
-    // Evening reminder (6:30 PM BD time)
+    // Both smart reminders are Maghrib-relative so they always fire
+    // BEFORE the Islamic day ends, regardless of season.
+    final now = tz.TZDateTime.now(_bdTz);
+    final todayGregorian = DateTime(now.year, now.month, now.day);
+    final maghribTime =
+        IslamicDateService.getMaghribTimeForDate(todayGregorian);
+
+    // Smart evening: 30 min before Maghrib (gentle reminder)
     if (isEveningEnabled) {
       final eveningMsg = NotificationMessageService.getMessage(
         NotificationContext(
@@ -366,20 +373,34 @@ class NotificationService {
         ),
         locale,
       );
-      final eveningTime = const TimeOfDay(hour: 18, minute: 30);
-      if (!_isSuppressedByQuietHours(eveningTime)) {
-        await _safeZonedSchedule(
-          id: _smartEveningId,
-          title: eveningMsg.title,
-          body: eveningMsg.body,
-          scheduledDate: _nextInstanceForRecurring(eveningTime),
-          payload: AppRoutes.home,
-          matchDateTimeComponents: DateTimeComponents.time,
+      final eveningTime = maghribTime.subtract(const Duration(minutes: 30));
+      final eveningTOD = TimeOfDay(
+        hour: eveningTime.hour,
+        minute: eveningTime.minute,
+      );
+      if (!_isSuppressedByQuietHours(eveningTOD)) {
+        final scheduled = tz.TZDateTime(
+          _bdTz,
+          todayGregorian.year,
+          todayGregorian.month,
+          todayGregorian.day,
+          eveningTime.hour,
+          eveningTime.minute,
         );
+        if (scheduled.isAfter(now)) {
+          await _safeZonedSchedule(
+            id: _smartEveningId,
+            title: eveningMsg.title,
+            body: eveningMsg.body,
+            scheduledDate: scheduled,
+            payload: AppRoutes.home,
+            matchDateTimeComponents: null,
+          );
+        }
       }
     }
 
-    // Urgent reminder (10 PM BD time)
+    // Smart urgent: 10 min before Maghrib (last chance)
     if (isStreakEnabled) {
       final urgentMsg = NotificationMessageService.getMessage(
         NotificationContext(
@@ -390,16 +411,30 @@ class NotificationService {
         ),
         locale,
       );
-      final urgentTime = const TimeOfDay(hour: 22, minute: 0);
-      if (!_isSuppressedByQuietHours(urgentTime)) {
-        await _safeZonedSchedule(
-          id: _smartUrgentId,
-          title: urgentMsg.title,
-          body: urgentMsg.body,
-          scheduledDate: _nextInstanceForRecurring(urgentTime),
-          payload: AppRoutes.home,
-          matchDateTimeComponents: DateTimeComponents.time,
+      final urgentTime = maghribTime.subtract(const Duration(minutes: 10));
+      final urgentTOD = TimeOfDay(
+        hour: urgentTime.hour,
+        minute: urgentTime.minute,
+      );
+      if (!_isSuppressedByQuietHours(urgentTOD)) {
+        final scheduled = tz.TZDateTime(
+          _bdTz,
+          todayGregorian.year,
+          todayGregorian.month,
+          todayGregorian.day,
+          urgentTime.hour,
+          urgentTime.minute,
         );
+        if (scheduled.isAfter(now)) {
+          await _safeZonedSchedule(
+            id: _smartUrgentId,
+            title: urgentMsg.title,
+            body: urgentMsg.body,
+            scheduledDate: scheduled,
+            payload: AppRoutes.home,
+            matchDateTimeComponents: null,
+          );
+        }
       }
     }
   }

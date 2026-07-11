@@ -111,6 +111,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await ref.read(amalProvider(uid).notifier).refreshFromFields();
   }
 
+  Future<void> _refreshAll(String uid) async {
+    ref.invalidate(currentUserProvider);
+    ref.invalidate(amalFieldsProvider);
+    ref.invalidate(amalProvider(uid));
+    ref.invalidate(liveStreakProvider);
+    ref.invalidate(announcementsProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -267,6 +275,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         streak: streakValue,
         submittedLog: submittedLog,
         showSaveFab: !isSubmitted && hasAnyDone,
+        onRefreshAll: () => _refreshAll(uid),
         onRetryFields: () => _retryAmalFields(uid),
         onEditTodayAmal: (log) => _onEditTodayAmal(
           context,

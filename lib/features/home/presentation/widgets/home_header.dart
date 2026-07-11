@@ -164,22 +164,42 @@ class HomeHeader extends ConsumerWidget {
                       border: Border.all(color: AppColors.goldBorder),
                       shape: BoxShape.circle,
                     ),
-                    clipBehavior: Clip.antiAlias,
-                    child: user?.photoUrl.isNotEmpty == true
-                        ? Image.network(
-                            user!.photoUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => Icon(
+                    child: ClipOval(
+                      child: user?.photoUrl.isNotEmpty == true
+                          ? Image.network(
+                              user!.photoUrl,
+                              fit: BoxFit.cover,
+                              width: 34.r,
+                              height: 34.r,
+                              frameBuilder:
+                                  (
+                                    context,
+                                    child,
+                                    frame,
+                                    wasSynchronouslyLoaded,
+                                  ) {
+                                    if (wasSynchronouslyLoaded) return child;
+                                    return AnimatedOpacity(
+                                      opacity: frame == null ? 0 : 1,
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      curve: Curves.easeOut,
+                                      child: child,
+                                    );
+                                  },
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.person_outline_rounded,
+                                color: AppColors.gold,
+                                size: 20.r,
+                              ),
+                            )
+                          : Icon(
                               Icons.person_outline_rounded,
                               color: AppColors.gold,
                               size: 20.r,
                             ),
-                          )
-                        : Icon(
-                            Icons.person_outline_rounded,
-                            color: AppColors.gold,
-                            size: 20.r,
-                          ),
+                    ),
                   ),
                 ),
               ),

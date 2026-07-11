@@ -34,6 +34,7 @@ class HomeScrollBody extends ConsumerStatefulWidget {
     required this.streak,
     required this.submittedLog,
     required this.showSaveFab,
+    required this.onRefreshAll,
     required this.onEditTodayAmal,
     required this.onRetryFields,
   });
@@ -54,6 +55,7 @@ class HomeScrollBody extends ConsumerStatefulWidget {
   final int? streak;
   final AmalLogModel? submittedLog;
   final bool showSaveFab;
+  final Future<void> Function() onRefreshAll;
   final Future<void> Function(AmalLogModel log) onEditTodayAmal;
   final Future<void> Function() onRetryFields;
 
@@ -113,9 +115,13 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                   _onScroll();
                   return false;
                 },
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  slivers: [
+                child: RefreshIndicator(
+                  onRefresh: widget.onRefreshAll,
+                  color: AppColors.gold,
+                  backgroundColor: AppColors.emeraldMid,
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    slivers: [
                     SliverPadding(
                       padding: EdgeInsets.fromLTRB(
                         20.w,
@@ -213,7 +219,8 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                         ],
                       ),
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               // Bottom fade gradient

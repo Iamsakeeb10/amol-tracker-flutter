@@ -2618,7 +2618,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsChartWeekly => 'Weekly avg scores';
 
   @override
-  String get reportsAmalBreakdown => 'Amal breakdown';
+  String get reportsAmalBreakdown => 'Amal Performance';
 
   @override
   String get reportsInsights => 'Insights';

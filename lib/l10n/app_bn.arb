@@ -990,7 +990,7 @@
   "reportsDaysLoggedLabel": "লগ করা দিন",
   "reportsChartDaily": "দৈনিক স্কোর",
   "reportsChartWeekly": "সাপ্তাহিক গড় স্কোর",
-  "reportsAmalBreakdown": "আমল বিশ্লেষণ",
+  "reportsAmalBreakdown": "আমলের পারফরম্যান্স",
   "reportsInsights": "সারসংক্ষেপ",
   "reportsBestDayInsight": "সেরা দিন ছিল {day}, স্কোর {score}/১০০",
   "@reportsBestDayInsight": {"placeholders": {"day": {}, "score": {}}},

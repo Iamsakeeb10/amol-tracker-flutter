@@ -2621,7 +2621,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get reportsChartWeekly => 'সাপ্তাহিক গড় স্কোর';
 
   @override
-  String get reportsAmalBreakdown => 'আমল বিশ্লেষণ';
+  String get reportsAmalBreakdown => 'আমলের পারফরম্যান্স';
 
   @override
   String get reportsInsights => 'সারসংক্ষেপ';

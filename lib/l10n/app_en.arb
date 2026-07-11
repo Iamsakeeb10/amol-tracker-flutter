@@ -1018,7 +1018,7 @@
   "reportsDaysLoggedLabel": "days logged",
   "reportsChartDaily": "Daily scores",
   "reportsChartWeekly": "Weekly avg scores",
-  "reportsAmalBreakdown": "Amal breakdown",
+  "reportsAmalBreakdown": "Amal Performance",
   "reportsInsights": "Insights",
   "reportsBestDayInsight": "Best day was {day} with a score of {score}/100",
   "@reportsBestDayInsight": {"placeholders": {"day": {}, "score": {}}},

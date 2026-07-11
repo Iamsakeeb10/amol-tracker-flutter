@@ -4894,7 +4894,7 @@ abstract class AppLocalizations {
   /// No description provided for @reportsAmalBreakdown.
   ///
   /// In en, this message translates to:
-  /// **'Amal breakdown'**
+  /// **'Amal Performance'**
   String get reportsAmalBreakdown;
 
   /// No description provided for @reportsInsights.

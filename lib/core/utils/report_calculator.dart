@@ -192,6 +192,7 @@ class ReportCalculator {
       logs: loggedKeys.map((k) => byDate[k]!).toList(),
       fields: fields,
       locale: locale,
+      totalEligibleDays: eligibleKeys.length,
     );
 
     ReportAmalStat? weakest;
@@ -281,10 +282,11 @@ class ReportCalculator {
     required List<AmalLogModel> logs,
     required List<amal_const.AmalField> fields,
     required String locale,
+    required int totalEligibleDays,
   }) {
     final active = resolveAmalFields(fields);
     if (active.isEmpty) return const [];
-    final eligible = logs.length;
+    final eligible = totalEligibleDays;
     if (eligible == 0) {
       return active
           .map(
@@ -300,24 +302,33 @@ class ReportCalculator {
     }
 
     final done = <String, int>{for (final f in active) f.id: 0};
+    final numericSums = <String, int>{for (final f in active) f.id: 0};
     for (final log in logs) {
       for (final f in active) {
-        final isDone = f.type == amal_const.AmalType.numeric
-            ? getNumericValue(log.toggles[f.id], f.maxValue) > 0
-            : (log.toggles[f.id] == true);
-        if (isDone) done[f.id] = (done[f.id] ?? 0) + 1;
+        if (f.type == amal_const.AmalType.numeric) {
+          final value = getNumericValue(log.toggles[f.id], f.maxValue);
+          numericSums[f.id] = (numericSums[f.id] ?? 0) + value;
+          if (value > 0) done[f.id] = (done[f.id] ?? 0) + 1;
+        } else {
+          if (log.toggles[f.id] == true) {
+            done[f.id] = (done[f.id] ?? 0) + 1;
+          }
+        }
       }
     }
 
     final stats = active
         .map((f) {
           final count = done[f.id] ?? 0;
+          final rate = f.type == amal_const.AmalType.numeric
+              ? (numericSums[f.id] ?? 0) / (eligible * f.maxValue)
+              : count / eligible;
           return ReportAmalStat(
             id: f.id,
             label: f.getLabel(locale),
             doneCount: count,
             eligibleDays: eligible,
-            rate: count / eligible,
+            rate: rate,
           );
         })
         .toList()

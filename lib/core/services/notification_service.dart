@@ -326,14 +326,23 @@ class NotificationService {
     await _localNotifications.cancel(_smartUrgentId);
 
     final today = IslamicDateService.getCurrentIslamicDateStringSafe();
-    final hasLoggedToday = lastLogDate == today;
+    final yesterday = IslamicDateService.shiftStorageByDays(today, -1);
+    // After Maghrib the Islamic day rolls forward. A log made before Maghrib
+    // sits under yesterday's Islamic date, so check both dates.
+    final hasLoggedToday =
+        lastLogDate == today || lastLogDate == yesterday;
 
-    // Already logged today — no reminders needed
-    if (hasLoggedToday) return;
+    // Already logged today — cancel streak warnings too and bail.
+    if (hasLoggedToday) {
+      await _cancelUrgencyIfLoggedToday();
+      return;
+    }
 
     // Calculate days missed from lastLogDate
     int daysMissed = 0;
-    if (lastLogDate.isNotEmpty && lastLogDate != today) {
+    if (lastLogDate.isNotEmpty &&
+        lastLogDate != today &&
+        lastLogDate != yesterday) {
       daysMissed = IslamicDateService.daysBetween(lastLogDate, today).abs();
     }
 
@@ -739,7 +748,11 @@ class NotificationService {
 
   Future<void> _scheduleEveningNoLog() async {
     final hijriDate = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final hijriPrev = IslamicDateService.shiftStorageByDays(hijriDate, -1);
+    // After Maghrib the Islamic day rolls forward. A log made before Maghrib
+    // sits under hijriPrev, so check both dates.
     if (await _hasLoggedIslamicDate(hijriDate)) return;
+    if (await _hasLoggedIslamicDate(hijriPrev)) return;
     final at = eveningTime;
     if (_isSuppressedByQuietHours(at)) return;
     final selectedBody = _pickMessage(

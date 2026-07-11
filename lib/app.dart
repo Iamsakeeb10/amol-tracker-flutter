@@ -18,6 +18,7 @@ import 'providers/amal_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/badge_celebration_provider.dart';
 import 'providers/date_provider.dart';
+import 'providers/history_provider.dart';
 import 'providers/locale_provider.dart';
 
 class AmolTrackerApp extends ConsumerStatefulWidget {
@@ -89,10 +90,15 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     final user = ref.read(currentUserProvider).asData?.value;
     if (user == null) return;
     final locale = ref.read(localeProvider).languageCode;
+    // Use the same live streak source as the home screen, bottom sheet,
+    // and profile screens. Fall back to Firestore only if the provider
+    // hasn't loaded yet.
+    final liveStreak = ref.read(liveStreakProvider).value;
+    final currentStreak = liveStreak ?? user.currentStreak;
     unawaited(
       NotificationService.instance.scheduleSmartReminders(
         uid: user.uid,
-        currentStreak: user.currentStreak,
+        currentStreak: currentStreak,
         lastLogDate: user.lastLogDate,
         locale: locale,
       ),

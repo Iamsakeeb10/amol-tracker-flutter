@@ -375,7 +375,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
   Future<void> applyFreeze(UserModel user, {required String hijri}) async {
     final fs = _ref.read(firestoreServiceProvider);
     final baseline = user.currentStreak <= 0 ? 1 : user.currentStreak;
-    final newCurrent = baseline + 1;
+    final frozenDate = IslamicDateService.shiftStorageByDays(hijri, -1);
+    final newCurrent = baseline + 2;
     final newBest = newCurrent > user.bestStreak ? newCurrent : user.bestStreak;
     await fs.updateStreak(
       user.uid,
@@ -384,6 +385,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       currentStreak: newCurrent,
       bestStreak: newBest,
       lastLogDate: hijri,
+      streakFreezeDate: frozenDate,
     );
     AnalyticsService.instance.logStreakFreezeUsed(streakDays: newCurrent);
   }
@@ -533,6 +535,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       );
     }
     _ref.invalidate(historyMonthProvider);
+    _ref.read(amalLogRefreshProvider.notifier).bump();
     Future<void>.microtask(() => _trySyncSubmittedLog(log));
 
     // Cancel smart reminders since user just logged

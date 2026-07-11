@@ -291,5 +291,13 @@ final liveStreakProvider = FutureProvider.autoDispose<int>((ref) async {
       if (!_isBackfilledLog(log)) log.hijriDate,
   };
 
-  return computeStreakFromLogs(loggedDates: loggedDates, todayHijri: today);
+  final frozenDates = <String>{
+    if (user.streakFreezeDate.isNotEmpty) user.streakFreezeDate,
+  };
+
+  return computeStreakFromLogs(
+    loggedDates: loggedDates,
+    todayHijri: today,
+    frozenDates: frozenDates,
+  );
 });

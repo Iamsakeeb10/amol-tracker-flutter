@@ -75,21 +75,23 @@ String weekKeyFromDate(DateTime date) {
 int computeStreakFromLogs({
   required Set<String> loggedDates,
   required String todayHijri,
+  Set<String> frozenDates = const {},
 }) {
-  if (loggedDates.isEmpty) return 0;
+  if (loggedDates.isEmpty && frozenDates.isEmpty) return 0;
 
-  // Walk backwards from today, counting consecutive logged days.
+  // Combine actual logs and frozen dates for consecutive-day checking.
+  final coveredDates = {...loggedDates, ...frozenDates};
+
   var streak = 0;
   var candidate = todayHijri;
-  while (loggedDates.contains(candidate)) {
+  while (coveredDates.contains(candidate)) {
     streak++;
     candidate = IslamicDateService.shiftStorageByDays(candidate, -1);
   }
 
-  // If today wasn't logged, check if yesterday starts a streak.
   if (streak == 0) {
     candidate = IslamicDateService.shiftStorageByDays(todayHijri, -1);
-    while (loggedDates.contains(candidate)) {
+    while (coveredDates.contains(candidate)) {
       streak++;
       candidate = IslamicDateService.shiftStorageByDays(candidate, -1);
     }
@@ -171,7 +173,7 @@ StreakResult computeStreakResult({
 /// Returns the streak value after applying a freeze to [currentStreak].
 int streakAfterFreeze(int currentStreak) {
   final baseline = currentStreak <= 0 ? 1 : currentStreak;
-  return baseline + 1;
+  return baseline + 2; // +1 for frozen day, +1 for today
 }
 
 /// Keeps Home and History streak cards in sync when today's submit is done

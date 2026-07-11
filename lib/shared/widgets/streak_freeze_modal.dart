@@ -97,7 +97,7 @@ class StreakFreezeModal extends StatelessWidget {
               ),
               SizedBox(height: 4.h),
               Text(
-                "You missed yesterday. Use a streak freeze to keep your streak alive — it will become a ${preservedStreak + 1}-day streak.",
+                "You missed yesterday. Use a streak freeze to keep your streak alive — it will become a ${preservedStreak + 2}-day streak.",
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium(context),
               ),

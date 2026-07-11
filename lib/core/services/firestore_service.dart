@@ -468,6 +468,7 @@ class FirestoreService {
     bool? streakFreezeUsed,
     String? streakFreezeWeekKey,
     String? lastLogDate,
+    String? streakFreezeDate,
   }) async {
     final fields = <String, dynamic>{};
     if (currentStreak != null) fields['currentStreak'] = currentStreak;
@@ -479,6 +480,7 @@ class FirestoreService {
       fields['streakFreezeWeekKey'] = streakFreezeWeekKey;
     }
     if (lastLogDate != null) fields['lastLogDate'] = lastLogDate;
+    if (streakFreezeDate != null) fields['streakFreezeDate'] = streakFreezeDate;
     if (fields.isEmpty) return;
     await _users.doc(uid).update(fields);
   }

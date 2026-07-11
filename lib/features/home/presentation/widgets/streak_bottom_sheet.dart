@@ -14,6 +14,7 @@ import '../../../../models/amal_log_model.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/date_provider.dart';
+import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 
 enum StreakDayStatus { completed, missed, today, preAccount }
@@ -157,14 +158,16 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
   /// Returns true if [log] was backfilled — i.e. submitted on a different
   /// Hijri day than the log's own [hijriDate]. Backfilled logs should not
   /// count as "completed" for streak display purposes.
+  ///
+  /// Uses Maghrib-aware date conversion so a submission after Maghrib
+  /// (which counts as the next Islamic day) is not falsely marked backfilled.
   static bool _isBackfilled(AmalLogModel log, String hijriDate) {
     try {
       final submittedBd = IslamicDateService.bangladeshDateTimeFrom(
         log.submittedAt,
       );
-      final submittedHijri = IslamicDateService.islamicDateStringForGregorianDate(
-        submittedBd,
-      );
+      final submittedHijri =
+          IslamicDateService.islamicDateStringForBangladeshMoment(submittedBd);
       return submittedHijri != hijriDate;
     } catch (_) {
       return false;
@@ -197,15 +200,21 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
       );
     }
 
+    final log = _dayLogs[hijriDate];
+
     if (hijriDate == today) {
-      final log = _dayLogs[hijriDate];
-      final isSubmitted = ref.read(
+      final isSubmitted = ref.watch(
         amalProvider(widget.uid).select((s) => s.isSubmitted),
       );
       if (isSubmitted && log != null) {
+        // Same rules as any other day: a log counts only if it was submitted
+        // on its own Islamic day (not backfilled from a different day).
+        final backfilled = _isBackfilled(log, hijriDate);
         return StreakDay(
           hijriDate: hijriDate,
-          status: StreakDayStatus.completed,
+          status: backfilled
+              ? StreakDayStatus.missed
+              : StreakDayStatus.completed,
           score: log.score,
           weekday: weekday,
           hijriDisplay: hijriDisplay,
@@ -220,14 +229,16 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
       );
     }
 
-    final log = _dayLogs[hijriDate];
     if (log != null) {
       final backfilled = _isBackfilled(log, hijriDate);
+      // A day is completed if a log was submitted on its own Islamic day.
+      // Score doesn't matter — any submission counts. Backfilled logs
+      // (submitted on a different Islamic day) do not count.
       return StreakDay(
         hijriDate: hijriDate,
-        status: (log.score > 0 && !backfilled)
-            ? StreakDayStatus.completed
-            : StreakDayStatus.missed,
+        status: backfilled
+            ? StreakDayStatus.missed
+            : StreakDayStatus.completed,
         score: log.score,
         weekday: weekday,
         hijriDisplay: hijriDisplay,
@@ -248,13 +259,15 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).languageCode;
     final user = ref.watch(currentUserProvider).value;
-    final displayStreak = resolveDisplayedStreakValues(
-      currentStreak: user?.currentStreak ?? 0,
-      bestStreak: user?.bestStreak ?? 0,
-      hasSubmittedToday: ref.watch(
-        amalProvider(widget.uid).select((s) => s.isSubmitted),
-      ),
-    );
+
+    // Use the live streak from actual logs (same source as home header).
+    final liveStreakAsync = ref.watch(liveStreakProvider);
+    final computedStreak = liveStreakAsync.value ?? user?.currentStreak ?? 0;
+
+    final bestStreak = user?.bestStreak ?? 0;
+    final effectiveBest = bestStreak < computedStreak
+        ? computedStreak
+        : bestStreak;
 
     final currentWeekKey = weekKeyFromDate(IslamicDateService.nowInBD());
     final freezeAvailable = user != null &&
@@ -287,12 +300,12 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
                 ),
               ),
               _SheetHeader(
-                streak: displayStreak.currentStreak,
+                streak: computedStreak,
                 onClose: () => Navigator.pop(context),
               ),
               SizedBox(height: 12.h),
               _StatsRow(
-                bestStreak: displayStreak.bestStreak,
+                bestStreak: effectiveBest,
                 freezeAvailable: freezeAvailable,
                 freezeUsed: user?.streakFreezeUsed ?? false,
                 currentWeekKey: currentWeekKey,

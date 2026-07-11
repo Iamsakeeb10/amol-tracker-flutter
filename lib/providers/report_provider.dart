@@ -10,7 +10,6 @@ import '../core/utils/score_calculator.dart';
 import '../core/utils/streak_helper.dart';
 import '../models/amal_log_model.dart';
 import 'amal_fields_provider.dart';
-import 'amal_provider.dart';
 import 'auth_provider.dart';
 import 'history_provider.dart';
 import 'locale_provider.dart';
@@ -186,11 +185,10 @@ final reportSummaryProvider =
           }
         }
 
-        final amal = ref.read(amalProvider(key.uid));
-        final displayStreak = resolveDisplayedStreakValues(
-          currentStreak: user.currentStreak,
-          bestStreak: user.bestStreak,
-          hasSubmittedToday: amal.isSubmitted,
+        final liveStreak = ref.watch(liveStreakProvider).value ?? user.currentStreak;
+        final displayStreak = DisplayStreakValues(
+          currentStreak: liveStreak,
+          bestStreak: user.bestStreak < liveStreak ? liveStreak : user.bestStreak,
         );
 
         return ReportCalculator.compute(

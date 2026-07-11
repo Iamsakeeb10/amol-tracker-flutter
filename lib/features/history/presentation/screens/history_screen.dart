@@ -12,12 +12,10 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
-import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../shared/mock/mock_data.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
-import '../../../../shared/widgets/bottom_tab_back_button.dart';
 import '../../../../shared/widgets/calendar_day_cell.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
@@ -81,11 +79,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       hijriYear: _hijriYear,
       hijriMonth: _hijriMonth,
     );
-    final amal = ref.watch(amalProvider(authUser.uid));
-    final displayStreak = resolveDisplayedStreakValues(
-      currentStreak: user.currentStreak,
-      bestStreak: user.bestStreak,
-      hasSubmittedToday: amal.isSubmitted,
+    final liveStreak = ref.watch(liveStreakProvider).value ?? user.currentStreak;
+    final displayStreak = DisplayStreakValues(
+      currentStreak: liveStreak,
+      bestStreak: user.bestStreak < liveStreak ? liveStreak : user.bestStreak,
     );
     final locale = Localizations.localeOf(context).languageCode;
     ref.watch(amalLogRefreshProvider);

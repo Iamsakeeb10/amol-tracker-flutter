@@ -1,5 +1,7 @@
 import 'package:hijri/hijri_calendar.dart';
 
+import '../services/islamic_date_service.dart';
+
 /// What to do after submitting today's log, based on [lastLogDate] vs [todayHijri].
 enum StreakAction {
   /// User logged the previous Hijri day — increment streak (or start at 1).
@@ -62,6 +64,40 @@ String weekKeyFromDate(DateTime date) {
   return '${monday.year}-${monday.month.toString().padLeft(2, '0')}-${monday.day.toString().padLeft(2, '0')}';
 }
 
+/// Computes streak from a set of logged Hijri dates by counting consecutive
+/// completed days backwards from [todayHijri].
+///
+/// This is the source-of-truth for streak display, computed from actual logs
+/// rather than the potentially stale Firestore `currentStreak` field.
+///
+/// If today is not in [loggedDates], walks backwards from yesterday so the
+/// streak still reflects the most recent consecutive chain.
+int computeStreakFromLogs({
+  required Set<String> loggedDates,
+  required String todayHijri,
+}) {
+  if (loggedDates.isEmpty) return 0;
+
+  // Walk backwards from today, counting consecutive logged days.
+  var streak = 0;
+  var candidate = todayHijri;
+  while (loggedDates.contains(candidate)) {
+    streak++;
+    candidate = IslamicDateService.shiftStorageByDays(candidate, -1);
+  }
+
+  // If today wasn't logged, check if yesterday starts a streak.
+  if (streak == 0) {
+    candidate = IslamicDateService.shiftStorageByDays(todayHijri, -1);
+    while (loggedDates.contains(candidate)) {
+      streak++;
+      candidate = IslamicDateService.shiftStorageByDays(candidate, -1);
+    }
+  }
+
+  return streak;
+}
+
 /// Computes streak transition when submitting a log on [todayHijri].
 ///
 /// [lastLogDate] is the user's previous `lastLogDate` from Firestore (before this submit).
@@ -106,9 +142,6 @@ StreakResult computeStreakResult({
   }
 
   if (diffDays == 1) {
-    // If Firestore hasn't yet updated `currentStreak` for the previous day,
-    // we might see `currentStreak == 0` even though [lastLogDate] is a valid
-    // logged day. In that case, treat the baseline as 1 before incrementing.
     final baselineCurrent = currentStreak <= 0 ? 1 : currentStreak;
     final newCurrent = baselineCurrent + 1;
     final newBest = newCurrent > bestStreak ? newCurrent : bestStreak;
@@ -135,16 +168,56 @@ StreakResult computeStreakResult({
   );
 }
 
+/// Returns the streak value after applying a freeze to [currentStreak].
+int streakAfterFreeze(int currentStreak) {
+  final baseline = currentStreak <= 0 ? 1 : currentStreak;
+  return baseline + 1;
+}
+
 /// Keeps Home and History streak cards in sync when today's submit is done
 /// but Firestore user streak fields have not refreshed yet.
+///
+/// Uses [lastLogDate] to cross-check: if there's a gap between [lastLogDate]
+/// and today, the Firestore `currentStreak` is stale and we cap it at 1.
 DisplayStreakValues resolveDisplayedStreakValues({
   required int currentStreak,
   required int bestStreak,
   required bool hasSubmittedToday,
+  String? lastLogDate,
 }) {
-  final effectiveCurrent = (currentStreak == 0 && hasSubmittedToday)
-      ? 1
-      : currentStreak;
+  int effectiveCurrent;
+
+  if (hasSubmittedToday && lastLogDate != null && lastLogDate.isNotEmpty) {
+    // Cross-check: verify the Firestore streak against lastLogDate.
+    try {
+      final lastG = hijriStorageStringToGregorian(lastLogDate);
+      final todayG = hijriStorageStringToGregorian(
+        IslamicDateService.getCurrentIslamicDateStringSafe(),
+      );
+      final diffDays = _calendarDaysBetween(lastG, todayG);
+
+      if (diffDays <= 0) {
+        // Submitted today — streak is at least 1.
+        effectiveCurrent = currentStreak <= 0 ? 1 : currentStreak;
+      } else if (diffDays == 1) {
+        // Submitted yesterday — Firestore may not have incremented yet.
+        // If currentStreak is 0 or 1, treat as 2 (yesterday + today).
+        effectiveCurrent = currentStreak <= 1 ? 2 : currentStreak;
+      } else {
+        // Gap exists — streak was broken. After today's submit it's 1.
+        effectiveCurrent = 1;
+      }
+    } catch (_) {
+      effectiveCurrent = (currentStreak == 0 && hasSubmittedToday)
+          ? 1
+          : currentStreak;
+    }
+  } else if (hasSubmittedToday) {
+    effectiveCurrent = currentStreak <= 0 ? 1 : currentStreak;
+  } else {
+    effectiveCurrent = currentStreak;
+  }
+
   final effectiveBest = bestStreak < effectiveCurrent
       ? effectiveCurrent
       : bestStreak;

@@ -68,6 +68,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         : user.name.trim().substring(0, 1).toUpperCase();
     final fields = ref.watch(amalFieldsListProvider);
     final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+    final liveStreak = ref.watch(liveStreakProvider).value ?? user.currentStreak;
 
     return AppScaffold(
       appBar: AppBar(
@@ -137,7 +138,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     style: AppTextStyles.bodyMedium(context),
                   ),
                   SizedBox(height: 12.h),
-                  Center(child: StreakBadge(days: user.currentStreak)),
+                  Center(child: StreakBadge(days: liveStreak)),
                 ],
               ),
             ),
@@ -154,7 +155,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               delegate: SliverChildListDelegate([
                 StatCard(
                   label: l10n.streak,
-                  value: '${user.currentStreak}',
+                  value: '$liveStreak',
                   sublabel: l10n.historyDays,
                   prominent: true,
                 ),
@@ -225,7 +226,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           ProfileBadgesSection(
             unlockedBadgeIds: user.badges,
-            currentStreak: user.currentStreak,
+            currentStreak: liveStreak,
           ),
         ],
       ),

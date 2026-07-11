@@ -6,6 +6,7 @@ import '../core/services/local_storage_service.dart';
 import '../core/utils/amal_edit_debug.dart';
 import '../core/utils/history_month_calculator.dart';
 import '../core/utils/score_calculator.dart';
+import '../core/utils/streak_helper.dart';
 import '../core/constants/default_amal_fields.dart';
 import '../models/amal_log_model.dart';
 import '../models/user_model.dart';
@@ -247,4 +248,48 @@ final editableDayProvider =
     'score=${log?.score ?? 0}',
   );
   return EditableDayState(canEdit: true, existingLog: log);
+});
+
+/// Returns true if [log] was backfilled — submitted on a different Hijri day
+/// than the log's own [hijriDate]. Backfilled logs should not count towards
+/// streak computation.
+///
+/// Uses Maghrib-aware date conversion so a submission after Maghrib
+/// (which counts as the next Islamic day) is not falsely marked backfilled.
+bool _isBackfilledLog(AmalLogModel log) {
+  try {
+    final submittedBd = IslamicDateService.bangladeshDateTimeFrom(
+      log.submittedAt,
+    );
+    final submittedHijri =
+        IslamicDateService.islamicDateStringForBangladeshMoment(submittedBd);
+    return submittedHijri != log.hijriDate;
+  } catch (_) {
+    return false;
+  }
+}
+
+/// Authoritative streak computed from actual logs, not the potentially stale
+/// Firestore `currentStreak` field. Fetches the last 30 days of logs and
+/// counts consecutive completed days backwards from today.
+///
+/// Excludes backfilled logs (submitted on a different Hijri day) so the
+/// streak only counts genuine daily completions.
+final liveStreakProvider = FutureProvider.autoDispose<int>((ref) async {
+  final user = ref.watch(currentUserProvider).value;
+  if (user == null) return 0;
+
+  // Refetch when logs change (after submit, edit, etc.).
+  ref.watch(amalLogRefreshProvider);
+
+  final fs = ref.read(firestoreServiceProvider);
+  final logs = await fs.getRecentLogs(user.uid, limit: 30);
+
+  final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+  final loggedDates = <String>{
+    for (final log in logs)
+      if (!_isBackfilledLog(log)) log.hijriDate,
+  };
+
+  return computeStreakFromLogs(loggedDates: loggedDates, todayHijri: today);
 });

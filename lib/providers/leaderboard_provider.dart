@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/services/quiz_leaderboard_service.dart';
 import 'auth_provider.dart';
+import 'history_provider.dart';
 
 final quizLeaderboardServiceProvider = Provider<QuizLeaderboardService>(
   (ref) => QuizLeaderboardService(),
@@ -122,6 +123,9 @@ final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   final users = await fs.usersByIds(
     rows.map((row) => (row['uid'] as String?) ?? ''),
   );
+  // Compute the current user's live streak to override the Firestore value.
+  final authUid = ref.read(authStateProvider).asData?.value?.uid;
+  final liveStreak = ref.read(liveStreakProvider).value;
   final entries = <LeaderboardEntry>[];
   for (final row in rows) {
     final uid = (row['uid'] as String?) ?? '';
@@ -129,6 +133,10 @@ final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
     final user = users[uid];
     final showOnLeaderboard = user?.showOnLeaderboard ?? true;
     if (!showOnLeaderboard) continue;
+    // Override the current user's score with the live streak value.
+    final score = (uid == authUid && liveStreak != null)
+        ? liveStreak
+        : (row['score'] as int? ?? 0);
     entries.add(
       LeaderboardEntry(
         uid: uid,
@@ -138,10 +146,12 @@ final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
         isAnonymousDisplay:
             user?.isAnonymousDisplay ??
             (row['isAnonymousDisplay'] as bool? ?? false),
-        score: row['score'] as int? ?? 0,
+        score: score,
       ),
     );
   }
+  // Re-sort after override since the current user's position may have changed.
+  entries.sort((a, b) => b.score.compareTo(a.score));
   return entries;
 });
 

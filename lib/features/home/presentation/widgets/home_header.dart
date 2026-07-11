@@ -16,7 +16,7 @@ import 'streak_bottom_sheet.dart';
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key, required this.streak, required this.uid});
 
-  final int streak;
+  final int? streak;
   final String uid;
 
   @override
@@ -73,12 +73,22 @@ class HomeHeader extends ConsumerWidget {
                         size: 15.r,
                       ),
                       SizedBox(width: 4.w),
-                      Text(
-                        l10n.dayStreak(streak),
-                        style: AppTextStyles.pill(
-                          context,
-                        ).copyWith(color: AppColors.gold, fontSize: 11.sp),
-                      ),
+                      if (streak != null)
+                        Text(
+                          l10n.dayStreak(streak!),
+                          style: AppTextStyles.pill(
+                            context,
+                          ).copyWith(color: AppColors.gold, fontSize: 11.sp),
+                        )
+                      else
+                        Container(
+                          width: 36.w,
+                          height: 12.h,
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                        ),
                     ],
                   ),
                 ),

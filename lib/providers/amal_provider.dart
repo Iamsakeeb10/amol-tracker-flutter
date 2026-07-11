@@ -52,10 +52,7 @@ bool _isPerfectWeekChain(List<AmalLogModel> logs) {
   return true;
 }
 
-int _streakAfterFreeze(int currentStreak) {
-  final baseline = currentStreak <= 0 ? 1 : currentStreak;
-  return baseline + 1;
-}
+int _streakAfterFreeze(int currentStreak) => streakAfterFreeze(currentStreak);
 
 class AmalState {
   const AmalState({
@@ -309,15 +306,12 @@ class AmalNotifier extends StateNotifier<AmalState> {
       final activeFields = HomeWidgetService.getActiveFields(state.fields);
       final totalCount = activeFields.length;
 
+      // Use the same live streak source as the home screen, bottom sheet,
+      // and profile screens. Fall back to Firestore only if the provider
+      // hasn't loaded yet.
       final user = _ref.read(currentUserProvider).asData?.value;
-      var streak = streakOverride ?? user?.currentStreak ?? 0;
-      if (streakOverride == null && state.isSubmitted) {
-        streak = resolveDisplayedStreakValues(
-          currentStreak: streak,
-          bestStreak: user?.bestStreak ?? streak,
-          hasSubmittedToday: true,
-        ).currentStreak;
-      }
+      final liveStreak = _ref.read(liveStreakProvider).value;
+      final streak = streakOverride ?? liveStreak ?? user?.currentStreak ?? 0;
 
       await HomeWidgetService.updateWidget(
         hijriDateDisplay: hijriDisplay,

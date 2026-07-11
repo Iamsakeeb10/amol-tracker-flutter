@@ -11,7 +11,6 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/score_calculator.dart';
-import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../models/announcement_model.dart';
@@ -136,19 +135,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
       _scheduleAnnouncementShow();
 
-      // Push widget update immediately with the now-resolved streak.
-      // The home screen already has correct data at this point — no need
-      // to wait for amalProvider's internal async chain.
-      final resolvedStreak = resolveDisplayedStreakValues(
-        currentStreak: nextUser.currentStreak,
-        bestStreak: nextUser.bestStreak,
-        hasSubmittedToday:
-            ref.read(amalProvider(nextUser.uid).select((s) => s.isSubmitted)),
-      ).currentStreak;
+      // Push widget update immediately with the live streak.
+      final liveValue = ref.read(liveStreakProvider).value;
+      final resolvedStreak = liveValue ?? nextUser.currentStreak;
       unawaited(
         ref
             .read(amalProvider(nextUser.uid).notifier)
             .refreshWidgetData(streakOverride: resolvedStreak),
+      );
+    });
+    // When liveStreakProvider finishes loading (or refreshes after submit),
+    // push the correct streak to the native home screen widget.
+    ref.listen<AsyncValue<int>>(liveStreakProvider, (previous, next) {
+      final liveValue = next.value;
+      if (liveValue == null) return;
+      final uid = authUser?.uid;
+      if (uid == null) return;
+      unawaited(
+        ref
+            .read(amalProvider(uid).notifier)
+            .refreshWidgetData(streakOverride: liveValue),
       );
     });
     ref.listen(announcementsProvider, (previous, next) {
@@ -229,11 +235,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final offline =
         connectivity != null && connectivity.contains(ConnectivityResult.none);
-    final displayStreak = resolveDisplayedStreakValues(
-      currentStreak: user.currentStreak,
-      bestStreak: user.bestStreak,
-      hasSubmittedToday: isSubmitted,
-    );
+    final liveStreakAsync = ref.watch(liveStreakProvider);
+    final liveStreak = liveStreakAsync.value;
+    // Show null (loader) while live streak is loading, then use the computed value.
+    final streakValue = liveStreakAsync is AsyncLoading
+        ? null
+        : (liveStreak ?? user.currentStreak);
     final isNewUser = user.lastLogDate.trim().isEmpty && !isSubmitted;
     final todayHijri = ref.watch(currentHijriDateProvider);
     final submittedLog = ref.watch(
@@ -257,7 +264,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         isAmalLoading: isAmalLoading,
         hasAnyDone: hasAnyDone,
         isNewUser: isNewUser,
-        streak: displayStreak.currentStreak,
+        streak: streakValue,
         submittedLog: submittedLog,
         showSaveFab: !isSubmitted && hasAnyDone,
         onRetryFields: () => _retryAmalFields(uid),

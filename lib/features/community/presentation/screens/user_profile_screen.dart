@@ -141,10 +141,13 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               final dateIsToday =
                   effectiveDate ==
                   IslamicDateService.getCurrentIslamicDateStringSafe();
-              final displayStreak = resolveDisplayedStreakValues(
-                currentStreak: user.currentStreak,
-                bestStreak: user.bestStreak,
-                hasSubmittedToday: dateIsToday && selectedLog != null,
+              final computedStreak = profileData?.computedStreak ?? 0;
+              final bestStreak = user.bestStreak;
+              final displayStreak = DisplayStreakValues(
+                currentStreak: computedStreak,
+                bestStreak: bestStreak < computedStreak
+                    ? computedStreak
+                    : bestStreak,
               );
               final displayAnonymous = user.isAnonymousDisplay && !isOwn;
               final shownName = displayAnonymous
@@ -399,17 +402,27 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         ? widget.selectedLogFallback
         : null;
     final selectedLog = await fs.getLog(uid, effectiveDate);
-    List<AmalLogModel> weekly = const <AmalLogModel>[];
+    // Fetch 30 logs to compute an accurate streak (not just 7).
+    List<AmalLogModel> allLogs = const <AmalLogModel>[];
     try {
-      weekly = await fs.getRecentLogs(uid, limit: 7);
+      allLogs = await fs.getRecentLogs(uid, limit: 30);
     } catch (_) {}
-    final avgScore = weekly.isEmpty
+    // Compute streak from actual logs, excluding backfilled submissions.
+    final loggedDates = <String>{
+      for (final log in allLogs)
+        if (!_isBackfilledLog(log)) log.hijriDate,
+    };
+    final computedStreak =
+        computeStreakFromLogs(loggedDates: loggedDates, todayHijri: today);
+    final avgScore = allLogs.isEmpty
         ? 0
-        : (weekly.map((e) => e.score).reduce((a, b) => a + b) / weekly.length)
+        : (allLogs.map((e) => e.score).reduce((a, b) => a + b) /
+                  allLogs.length)
               .round();
     return _ProfileData(
       selectedLog: selectedLog ?? fallback,
-      weeklyLogs: weekly,
+      weeklyLogs: allLogs,
+      computedStreak: computedStreak,
       avgScore: avgScore,
       effectiveDate: effectiveDate,
     );
@@ -758,7 +771,7 @@ class _WeeklyBars extends StatelessWidget {
         ),
       );
     }
-    final bars = logs.take(7).toList();
+    final bars = logs.length <= 7 ? logs : logs.sublist(logs.length - 7);
     return CardContainer(
       child: SizedBox(
         height: 130.h,
@@ -818,14 +831,31 @@ class _ProfileData {
   const _ProfileData({
     required this.selectedLog,
     required this.weeklyLogs,
+    required this.computedStreak,
     required this.avgScore,
     required this.effectiveDate,
   });
 
   final AmalLogModel? selectedLog;
   final List<AmalLogModel> weeklyLogs;
+  final int computedStreak;
   final int avgScore;
   final String effectiveDate;
+}
+
+/// Returns true if [log] was submitted on a different Islamic day than its
+/// [hijriDate] (i.e. backfilled). Uses Maghrib-aware date conversion.
+bool _isBackfilledLog(AmalLogModel log) {
+  try {
+    final submittedBd = IslamicDateService.bangladeshDateTimeFrom(
+      log.submittedAt,
+    );
+    final submittedHijri =
+        IslamicDateService.islamicDateStringForBangladeshMoment(submittedBd);
+    return submittedHijri != log.hijriDate;
+  } catch (_) {
+    return false;
+  }
 }
 
 class _UserProfileLoadingShimmer extends StatelessWidget {

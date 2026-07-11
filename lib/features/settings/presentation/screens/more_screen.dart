@@ -10,6 +10,7 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/time_display_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/history_provider.dart';
 import '../../../../providers/notification_provider.dart';
 import '../../../../providers/syllabus_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -33,7 +34,7 @@ class MoreScreen extends ConsumerWidget {
     final rawName = user?.name ?? '';
     final displayName = rawName.trim().isEmpty ? l10n.profile : rawName.trim();
     final initial = displayName.substring(0, 1).toUpperCase();
-    final streak = user?.currentStreak ?? 0;
+    final streak = ref.watch(liveStreakProvider).value ?? user?.currentStreak ?? 0;
     final isFullAdmin = AdminConfig.isFullAdmin(user?.uid, role: user?.role);
     final isListedModerator =
         ref.watch(isListedCourseModeratorProvider).value ?? false;

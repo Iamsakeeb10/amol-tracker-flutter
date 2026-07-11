@@ -51,7 +51,7 @@ class HomeScrollBody extends ConsumerStatefulWidget {
   final bool isAmalLoading;
   final bool hasAnyDone;
   final bool isNewUser;
-  final int streak;
+  final int? streak;
   final AmalLogModel? submittedLog;
   final bool showSaveFab;
   final Future<void> Function(AmalLogModel log) onEditTodayAmal;

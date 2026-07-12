@@ -594,7 +594,7 @@ class _DayCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 4.h),
+            SizedBox(height: 3.h),
             Text(
               _weekdayShort(),
               style: AppTextStyles.label(context).copyWith(
@@ -617,17 +617,26 @@ class _DayCard extends StatelessWidget {
               ),
             ),
             SizedBox(height: 2.h),
-            Text(
-              day.status == StreakDayStatus.completed
-                  ? '${day.score}'
-                  : _statusLabel(context),
-              style: AppTextStyles.pill(context).copyWith(
-                fontSize: 9.sp,
+            if (day.status == StreakDayStatus.preAccount)
+              Icon(
+                Icons.lock_outline,
+                size: 10.r,
                 color: _iconColor(),
-                fontWeight: FontWeight.w600,
+              )
+            else
+              Text(
+                day.status == StreakDayStatus.completed
+                    ? '${day.score}'
+                    : _statusLabel(context),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.pill(context).copyWith(
+                  fontSize: 9.sp,
+                  color: _iconColor(),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            SizedBox(height: 4.h),
+            SizedBox(height: 3.h),
           ],
         ),
       ),

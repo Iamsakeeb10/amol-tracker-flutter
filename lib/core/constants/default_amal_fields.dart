@@ -23,16 +23,28 @@ List<AmalField> resolveAmalFields(List<AmalField> fields) =>
 /// Bundled fallback when Hive cache and Firestore are both unavailable.
 const List<AmalField> kDefaultAmalFields = [
   AmalField(
-    id: 'fard',
-    label: {'en': 'Fard Salah', 'bn': 'জামাতে ফরয নামাজ'},
+    id: 'fard_salah',
+    label: {'en': 'Fard Salah', 'bn': 'ফরয নামাজ'},
     sublabel: {
-      'en': 'All five fard in congregation',
-      'bn': 'জামাতে মোট ফরয নামাজ আদায়',
+      'en': 'Total fard prayers performed today',
+      'bn': 'আজ মোট কত ওয়াক্ত ফরয নামাজ আদায় করেছেন',
     },
-    points: 30,
+    points: 10,
     maxValue: 5,
     type: AmalType.numeric,
     order: 1,
+  ),
+  AmalField(
+    id: 'fard',
+    label: {'en': "Jama'at Fard Salah", 'bn': 'জামাতে ফরয নামাজ'},
+    sublabel: {
+      'en': "Total fard prayers performed in Jama'at today",
+      'bn': 'আজ মোট কত ওয়াক্ত জামাতে ফরয নামাজ আদায় করেছেন',
+    },
+    points: 20,
+    maxValue: 5,
+    type: AmalType.numeric,
+    order: 2,
   ),
   AmalField(
     id: 'takbir',
@@ -44,21 +56,21 @@ const List<AmalField> kDefaultAmalFields = [
     points: 10,
     maxValue: 5,
     type: AmalType.numeric,
-    order: 2,
+    order: 3,
   ),
   AmalField(
     id: 'morning_azkar',
     label: {'en': 'Morning Azkar', 'bn': 'সকালের আযকার'},
     sublabel: {'en': 'Morning azkar completed', 'bn': 'সকালের আযকার সম্পন্ন'},
     points: 10,
-    order: 3,
+    order: 4,
   ),
   AmalField(
     id: 'evening_azkar',
     label: {'en': 'Evening Azkar', 'bn': 'সন্ধ্যার আযকার'},
     sublabel: {'en': 'Evening azkar completed', 'bn': 'সন্ধ্যার আযকার সম্পন্ন'},
     points: 10,
-    order: 4,
+    order: 5,
   ),
   AmalField(
     id: 'quran',
@@ -68,7 +80,7 @@ const List<AmalField> kDefaultAmalFields = [
       'bn': 'কমপক্ষে এক রুকু তিলাওয়াত',
     },
     points: 10,
-    order: 5,
+    order: 6,
   ),
   AmalField(
     id: 'mulk',
@@ -78,7 +90,7 @@ const List<AmalField> kDefaultAmalFields = [
       'bn': 'রাতে ঘুমের আগে সূরা মূলক তিলাওয়াত',
     },
     points: 10,
-    order: 6,
+    order: 7,
   ),
   AmalField(
     id: 'miswak',
@@ -88,7 +100,7 @@ const List<AmalField> kDefaultAmalFields = [
       'bn': 'ওজুতে মিসওয়াক (কমপক্ষে দিনে একবার)',
     },
     points: 5,
-    order: 7,
+    order: 8,
   ),
   AmalField(
     id: 'sunnah',
@@ -98,7 +110,7 @@ const List<AmalField> kDefaultAmalFields = [
       'bn': 'ফরয নামাজ ব্যতীত ১২ রাকাত সুন্নাহ + বিতির',
     },
     points: 10,
-    order: 8,
+    order: 9,
   ),
   AmalField(
     id: 'post_azkar',
@@ -108,6 +120,6 @@ const List<AmalField> kDefaultAmalFields = [
       'bn': 'ফরয নামাজ পরবর্তী আযকার সম্পন্ন',
     },
     points: 5,
-    order: 9,
+    order: 10,
   ),
 ];

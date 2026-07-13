@@ -37,7 +37,9 @@ class AdminAmalFieldTile extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
         child: Row(
           children: [
-            AdminIconBox(icon: iconForAmalType(field.type)),
+            AdminIconBox(
+              icon: resolveIconFromField(field) ?? iconForAmalType(field.type),
+            ),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(

@@ -2954,6 +2954,30 @@ abstract class AppLocalizations {
   /// **'Display'**
   String get adminAmalFieldDisplaySection;
 
+  /// No description provided for @adminAmalFieldIconSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get adminAmalFieldIconSection;
+
+  /// No description provided for @adminAmalFieldIconSourceFa.
+  ///
+  /// In en, this message translates to:
+  /// **'Font Awesome'**
+  String get adminAmalFieldIconSourceFa;
+
+  /// No description provided for @adminAmalFieldIconSourceMaterial.
+  ///
+  /// In en, this message translates to:
+  /// **'Material'**
+  String get adminAmalFieldIconSourceMaterial;
+
+  /// No description provided for @adminAmalFieldIconClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear icon'**
+  String get adminAmalFieldIconClear;
+
   /// No description provided for @adminAmalFieldTileSubtitle.
   ///
   /// In en, this message translates to:

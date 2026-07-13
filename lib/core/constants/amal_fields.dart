@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum AmalType { boolean, numeric }
 
+enum IconSource { fontAwesome, material }
+
 class AmalField {
   final String id;
   final Map<String, String> label;
@@ -11,6 +13,8 @@ class AmalField {
   final AmalType type;
   final int order;
   final bool isActive;
+  final String? iconName;
+  final IconSource? iconSource;
 
   const AmalField({
     required this.id,
@@ -21,6 +25,8 @@ class AmalField {
     this.type = AmalType.boolean,
     this.order = 999,
     this.isActive = true,
+    this.iconName,
+    this.iconSource,
   });
 
   String getLabel(String locale) {
@@ -58,6 +64,8 @@ class AmalField {
       type: _parseType(map['type']),
       order: (map['order'] as num?)?.toInt() ?? 999,
       isActive: parseIsActive(map['isActive']),
+      iconName: (map['iconName'] as String?)?.trim(),
+      iconSource: _parseIconSource(map['iconSource']),
     );
   }
 
@@ -84,6 +92,8 @@ class AmalField {
       'type': type == AmalType.numeric ? 'numeric' : 'boolean',
       'order': order,
       'isActive': isActive,
+      if (iconName != null) 'iconName': iconName,
+      if (iconSource != null) 'iconSource': iconSource == IconSource.material ? 'material' : 'fontAwesome',
     };
   }
 
@@ -99,5 +109,11 @@ class AmalField {
       return AmalType.numeric;
     }
     return AmalType.boolean;
+  }
+
+  static IconSource? _parseIconSource(dynamic raw) {
+    if (raw == 'material') return IconSource.material;
+    if (raw == 'fontAwesome') return IconSource.fontAwesome;
+    return null;
   }
 }

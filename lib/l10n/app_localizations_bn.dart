@@ -1564,6 +1564,18 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminAmalFieldDisplaySection => 'প্রদর্শন';
 
   @override
+  String get adminAmalFieldIconSection => 'আইকন';
+
+  @override
+  String get adminAmalFieldIconSourceFa => 'ফন্ট অসাম';
+
+  @override
+  String get adminAmalFieldIconSourceMaterial => 'ম্যাটেরিয়াল';
+
+  @override
+  String get adminAmalFieldIconClear => 'আইকন মুছুন';
+
+  @override
   String adminAmalFieldTileSubtitle(
     String id,
     String type,

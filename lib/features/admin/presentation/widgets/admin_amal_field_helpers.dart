@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/theme/colors.dart';
@@ -53,6 +54,8 @@ Map<String, dynamic> amalFieldToFirestoreMap({
   required int order,
   required bool isActive,
   String? id,
+  String? iconName,
+  IconSource? iconSource,
 }) {
   final map = <String, dynamic>{
     'label': buildLocaleMap(en: labelEn, bn: labelBn),
@@ -64,6 +67,14 @@ Map<String, dynamic> amalFieldToFirestoreMap({
     'isActive': isActive,
   };
   if (id != null) map['id'] = id.trim();
+  if (iconName != null && iconName.isNotEmpty) map['iconName'] = iconName;
+  if (iconSource != null) {
+    map['iconSource'] = iconSource == IconSource.material ? 'material' : 'fontAwesome';
+  } else if (iconName == null || iconName.isEmpty) {
+    // Explicitly clear icon fields when no icon is selected
+    map['iconName'] = null;
+    map['iconSource'] = null;
+  }
   return map;
 }
 
@@ -78,6 +89,8 @@ AmalField buildDraftAmalField({
   required int maxValue,
   required int order,
   required bool isActive,
+  String? iconName,
+  IconSource? iconSource,
 }) {
   return AmalField(
     id: id.trim().isEmpty ? 'preview' : id.trim(),
@@ -88,6 +101,8 @@ AmalField buildDraftAmalField({
     type: type,
     order: order,
     isActive: isActive,
+    iconName: iconName,
+    iconSource: iconSource,
   );
 }
 
@@ -212,4 +227,66 @@ class AdminAmalTypeSelector extends StatelessWidget {
       }).toList(),
     );
   }
+}
+
+// --- Icon resolution maps ---
+
+final Map<String, IconData> kFontAwesomeIconMap = {
+  'fa_mosque': FontAwesomeIcons.mosque.data,
+  'fa_hands_praying': FontAwesomeIcons.handsPraying.data,
+  'fa_book_open': FontAwesomeIcons.bookOpen.data,
+  'fa_moon': FontAwesomeIcons.moon.data,
+  'fa_star_and_crescent': FontAwesomeIcons.starAndCrescent.data,
+  'fa_cloud_sun': FontAwesomeIcons.cloudSun.data,
+  'fa_people_group': FontAwesomeIcons.peopleGroup.data,
+  'fa_wand_magic': FontAwesomeIcons.wandMagic.data,
+  'fa_repeat': FontAwesomeIcons.repeat.data,
+  'fa_check_double': FontAwesomeIcons.checkDouble.data,
+  'fa_headphones': FontAwesomeIcons.headphones.data,
+  'fa_person_walking': FontAwesomeIcons.personWalking.data,
+  'fa_dove': FontAwesomeIcons.dove.data,
+  'fa_spa': FontAwesomeIcons.spa.data,
+  'fa_book_quran': FontAwesomeIcons.bookQuran.data,
+  'fa_water': FontAwesomeIcons.water.data,
+  'fa_seedling': FontAwesomeIcons.seedling.data,
+  'fa_heart': FontAwesomeIcons.heart.data,
+  'fa_clock': FontAwesomeIcons.clock.data,
+  'fa_hand_holding_heart': FontAwesomeIcons.handHoldingHeart.data,
+};
+
+const Map<String, IconData> kMaterialIconMap = {
+  'mi_star': Icons.star,
+  'mi_favorite': Icons.favorite,
+  'mi_book': Icons.book,
+  'mi_nights_stay': Icons.nights_stay,
+  'mi_wb_sunny': Icons.wb_sunny,
+  'mi_self_improvement': Icons.self_improvement,
+  'mi_spa': Icons.spa,
+  'mi_water_drop': Icons.water_drop,
+  'mi_eco': Icons.eco,
+  'mi_access_time': Icons.access_time,
+  'mi_check_circle': Icons.check_circle,
+  'mi_volunteer_activism': Icons.volunteer_activism,
+  'mi_menu_book': Icons.menu_book,
+  'mi_light_mode': Icons.light_mode,
+  'mi_dark_mode': Icons.dark_mode,
+  'mi_auto_awesome': Icons.auto_awesome,
+  'mi_psychology': Icons.psychology,
+  'mi_sunny': Icons.sunny,
+  'mi_wb_twilight': Icons.wb_twilight,
+  'mi_self_improvement_2': Icons.self_improvement,
+};
+
+IconData? resolveIconFromFieldName(String iconName, IconSource source) {
+  if (source == IconSource.material) {
+    return kMaterialIconMap[iconName];
+  }
+  return kFontAwesomeIconMap[iconName];
+}
+
+IconData? resolveIconFromField(AmalField field) {
+  if (field.iconName != null && field.iconSource != null) {
+    return resolveIconFromFieldName(field.iconName!, field.iconSource!);
+  }
+  return null;
 }

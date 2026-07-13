@@ -15,6 +15,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../widgets/admin_amal_field_helpers.dart';
+import '../widgets/admin_icon_picker.dart';
 import '../widgets/admin_shared_widgets.dart';
 
 class AdminAmalFieldFormScreen extends ConsumerStatefulWidget {
@@ -40,6 +41,8 @@ class _AdminAmalFieldFormScreenState
   late final TextEditingController _orderCtrl;
   late AmalType _type;
   late bool _isActive;
+  late IconSource _iconSource;
+  late String? _iconName;
   bool _isSaving = false;
 
   bool get _isEdit => widget.existing != null;
@@ -58,6 +61,8 @@ class _AdminAmalFieldFormScreenState
     _orderCtrl = TextEditingController(text: '${e?.order ?? 999}');
     _type = e?.type ?? AmalType.boolean;
     _isActive = e?.isActive ?? true;
+    _iconSource = e?.iconSource ?? IconSource.fontAwesome;
+    _iconName = e?.iconName;
   }
 
   @override
@@ -88,6 +93,8 @@ class _AdminAmalFieldFormScreenState
       maxValue: _parseInt(_maxValueCtrl, fallback: 1),
       order: _parseInt(_orderCtrl, fallback: 999),
       isActive: _isActive,
+      iconName: _iconName,
+      iconSource: _iconSource,
     );
   }
 
@@ -132,6 +139,8 @@ class _AdminAmalFieldFormScreenState
       maxValue: _parseInt(_maxValueCtrl, fallback: 1),
       order: _parseInt(_orderCtrl, fallback: 999),
       isActive: _isActive,
+      iconName: _iconName,
+      iconSource: _iconSource,
     );
 
     try {
@@ -284,6 +293,19 @@ class _AdminAmalFieldFormScreenState
                     maxLines: 2,
                   ),
                 ],
+              ),
+            ),
+            SizedBox(height: 16.h),
+            SectionHeader(title: l10n.adminAmalFieldIconSection.toUpperCase()),
+            CardContainer(
+              child: AdminIconPicker(
+                selectedSource: _iconSource,
+                selectedIconName: _iconName,
+                onSourceChanged: (v) => setState(() {
+                  _iconSource = v;
+                  _iconName = null;
+                }),
+                onIconChanged: (v) => setState(() => _iconName = v),
               ),
             ),
             SizedBox(height: 16.h),

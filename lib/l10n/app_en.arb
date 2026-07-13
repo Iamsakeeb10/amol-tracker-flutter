@@ -594,6 +594,10 @@
   "adminAmalFieldLabelsSection": "Labels",
   "adminAmalFieldScoringSection": "Scoring",
   "adminAmalFieldDisplaySection": "Display",
+  "adminAmalFieldIconSection": "Icon",
+  "adminAmalFieldIconSourceFa": "Font Awesome",
+  "adminAmalFieldIconSourceMaterial": "Material",
+  "adminAmalFieldIconClear": "Clear icon",
   "adminAmalFieldTileSubtitle": "{id} · {type} · {points} · #{order}",
   "@adminAmalFieldTileSubtitle": {
     "placeholders": {

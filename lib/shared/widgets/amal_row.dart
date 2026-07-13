@@ -6,6 +6,7 @@ import '../../core/constants/amal_fields.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/tap_target.dart';
+import '../../features/admin/presentation/widgets/admin_amal_field_helpers.dart';
 import 'amal_numeric_picker.dart';
 import 'card_container.dart';
 
@@ -92,6 +93,7 @@ class AmalRow extends StatelessWidget {
             fieldId: field.id,
             color: done ? AppColors.emeraldDeep : AppColors.textSecondary,
             size: 18.r,
+            field: field,
           ),
         ),
         SizedBox(width: 12.w),
@@ -210,11 +212,13 @@ class AmalFieldIcon extends StatelessWidget {
     required this.fieldId,
     required this.color,
     required this.size,
+    this.field,
   });
 
   final String fieldId;
   final Color color;
   final double size;
+  final AmalField? field;
 
   @override
   Widget build(BuildContext context) {
@@ -226,14 +230,22 @@ class AmalFieldIcon extends StatelessWidget {
           width: size,
           height: size,
           color: color,
-          errorBuilder: (_, __, ___) => amalFieldIconWidget(
-            fieldId,
-            color: color,
-            size: size,
-          ),
+          errorBuilder: (_, __, ___) => _buildIcon(),
         );
       }
     }
+    return _buildIcon();
+  }
+
+  Widget _buildIcon() {
+    // Try stored icon from field first
+    if (field != null) {
+      final resolved = resolveIconFromField(field!);
+      if (resolved != null) {
+        return Icon(resolved, color: color, size: size);
+      }
+    }
+    // Fall back to hardcoded switch
     return amalFieldIconWidget(fieldId, color: color, size: size);
   }
 }

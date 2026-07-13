@@ -594,6 +594,10 @@
   "adminAmalFieldLabelsSection": "লেবেল",
   "adminAmalFieldScoringSection": "স্কোরিং",
   "adminAmalFieldDisplaySection": "প্রদর্শন",
+  "adminAmalFieldIconSection": "আইকন",
+  "adminAmalFieldIconSourceFa": "ফন্ট অসাম",
+  "adminAmalFieldIconSourceMaterial": "ম্যাটেরিয়াল",
+  "adminAmalFieldIconClear": "আইকন মুছুন",
   "adminAmalFieldTileSubtitle": "{id} · {type} · {points} · #{order}",
   "@adminAmalFieldTileSubtitle": {
     "placeholders": {

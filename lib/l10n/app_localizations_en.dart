@@ -1561,6 +1561,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminAmalFieldDisplaySection => 'Display';
 
   @override
+  String get adminAmalFieldIconSection => 'Icon';
+
+  @override
+  String get adminAmalFieldIconSourceFa => 'Font Awesome';
+
+  @override
+  String get adminAmalFieldIconSourceMaterial => 'Material';
+
+  @override
+  String get adminAmalFieldIconClear => 'Clear icon';
+
+  @override
   String adminAmalFieldTileSubtitle(
     String id,
     String type,

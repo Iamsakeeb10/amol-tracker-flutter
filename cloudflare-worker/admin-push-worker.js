@@ -286,6 +286,21 @@ function logAdminPush(step, detail) {
   console.log(`[AdminPush] ${step}${detail ? `: ${detail}` : ''}`);
 }
 
+async function fetchUserRole(env, accessToken, uid) {
+  const url = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}`;
+  const resp = await fetch(url, {
+    headers: { authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!resp.ok) {
+    return { ok: false, error: `user fetch failed: ${resp.status}` };
+  }
+
+  const data = await resp.json();
+  const role = readStringField(data.fields, 'role');
+  return { ok: true, role };
+}
+
 export default {
   async fetch(request, env) {
     logAdminPush('request', `${request.method} ${request.url}`);
@@ -328,15 +343,6 @@ export default {
       return jsonResponse({ error: 'missing_required_fields' }, 400);
     }
 
-    if (!env.ADMIN_UID) {
-      logAdminPush('reject', 'ADMIN_UID secret missing');
-      return jsonResponse({ error: 'ADMIN_UID is missing' }, 500);
-    }
-    if (adminUid !== env.ADMIN_UID) {
-      logAdminPush('reject', `not_admin adminUid=${adminUid}`);
-      return jsonResponse({ error: 'not_admin' }, 403);
-    }
-
     const verify = await verifyFirebaseIdToken(idToken, env);
     if (!verify.ok) {
       logAdminPush('reject', verify.error);
@@ -347,13 +353,23 @@ export default {
       return jsonResponse({ error: 'admin_uid_mismatch' }, 403);
     }
 
-    logAdminPush('auth_ok', `adminUid=${adminUid} type=${type} targetUid=${targetUid || 'all'}`);
-
     const oauth = await getGoogleAccessTokenFromServiceAccount(env);
     if (!oauth.ok) {
       logAdminPush('reject', oauth.error);
       return jsonResponse({ error: oauth.error }, 502);
     }
+
+    const roleResult = await fetchUserRole(env, oauth.accessToken, adminUid);
+    if (!roleResult.ok) {
+      logAdminPush('reject', roleResult.error);
+      return jsonResponse({ error: 'failed_to_verify_role' }, 500);
+    }
+    if (roleResult.role !== 'admin') {
+      logAdminPush('reject', `not_admin role=${roleResult.role} uid=${adminUid}`);
+      return jsonResponse({ error: 'not_admin' }, 403);
+    }
+
+    logAdminPush('auth_ok', `adminUid=${adminUid} type=${type} targetUid=${targetUid || 'all'}`);
 
     const usersResult = targetUid
       ? await fetchSingleUserWithToken(env, oauth.accessToken, targetUid)

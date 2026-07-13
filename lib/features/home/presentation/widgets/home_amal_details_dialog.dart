@@ -57,8 +57,8 @@ Future<void> showHomeAmalDetailsDialog(
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(color: AppColors.goldBorder),
                     ),
-                    child: Icon(
-                      amalFieldIcon(field.id),
+                    child: AmalFieldIcon(
+                      fieldId: field.id,
                       color: AppColors.gold,
                       size: 22.r,
                     ),

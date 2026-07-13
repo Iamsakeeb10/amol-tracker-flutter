@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../core/constants/amal_fields.dart';
 import '../../core/theme/colors.dart';
@@ -8,30 +9,40 @@ import '../../core/utils/tap_target.dart';
 import 'amal_numeric_picker.dart';
 import 'card_container.dart';
 
-IconData amalFieldIcon(String id) {
+/// Icon mapping for amal fields.
+/// Uses FontAwesome for culturally appropriate Islamic icons.
+Widget amalFieldIconWidget(String id, {Color? color, double? size}) {
   switch (id) {
+    case 'fard_salah':
+      return FaIcon(FontAwesomeIcons.mosque, color: color, size: size);
     case 'fard':
-      return Icons.circle_outlined;
+      return FaIcon(FontAwesomeIcons.peopleGroup, color: color, size: size);
     case 'takbir':
-      return Icons.star_outline;
+      return FaIcon(FontAwesomeIcons.handsPraying, color: color, size: size);
     case 'morning_azkar':
-      return Icons.wb_sunny_outlined;
+      return FaIcon(FontAwesomeIcons.cloudSun, color: color, size: size);
     case 'evening_azkar':
-      return Icons.nightlight_outlined;
+      return FaIcon(FontAwesomeIcons.moon, color: color, size: size);
     case 'quran':
-      return Icons.menu_book_outlined;
+      return FaIcon(FontAwesomeIcons.bookOpen, color: color, size: size);
     case 'mulk':
-      return Icons.bookmark_outline;
+      return FaIcon(FontAwesomeIcons.starAndCrescent, color: color, size: size);
     case 'miswak':
-      return Icons.cleaning_services_outlined;
+      return FaIcon(FontAwesomeIcons.wandMagic, color: color, size: size);
     case 'sunnah':
-      return Icons.brightness_low_outlined;
+      return FaIcon(FontAwesomeIcons.repeat, color: color, size: size);
     case 'post_azkar':
-      return Icons.access_time_outlined;
+      return FaIcon(FontAwesomeIcons.checkDouble, color: color, size: size);
     default:
-      return Icons.check_circle_outline;
+      return Icon(Icons.check_circle_outline, color: color, size: size);
   }
 }
+
+/// Whether the field uses a custom asset icon (e.g. SVG/PNG) instead of FontAwesome.
+bool amalFieldHasCustomIcon(String id) => false;
+
+/// Path to custom asset icon for fields that need SVG/PNG.
+String? amalFieldCustomIconPath(String id) => null;
 
 class AmalRow extends StatelessWidget {
   final AmalField field;
@@ -77,8 +88,8 @@ class AmalRow extends StatelessWidget {
             color: done ? AppColors.gold : AppColors.cardBorder,
             borderRadius: BorderRadius.circular(10.r),
           ),
-          child: Icon(
-            amalFieldIcon(field.id),
+          child: AmalFieldIcon(
+            fieldId: field.id,
             color: done ? AppColors.emeraldDeep : AppColors.textSecondary,
             size: 18.r,
           ),
@@ -188,5 +199,41 @@ class AmalRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Widget that renders either a FontAwesome icon or a custom asset image.
+/// Use this instead of `Icon(amalFieldIcon(...))` to support custom assets like miswak.
+class AmalFieldIcon extends StatelessWidget {
+  const AmalFieldIcon({
+    super.key,
+    required this.fieldId,
+    required this.color,
+    required this.size,
+  });
+
+  final String fieldId;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    if (amalFieldHasCustomIcon(fieldId)) {
+      final assetPath = amalFieldCustomIconPath(fieldId);
+      if (assetPath != null) {
+        return Image.asset(
+          assetPath,
+          width: size,
+          height: size,
+          color: color,
+          errorBuilder: (_, __, ___) => amalFieldIconWidget(
+            fieldId,
+            color: color,
+            size: size,
+          ),
+        );
+      }
+    }
+    return amalFieldIconWidget(fieldId, color: color, size: size);
   }
 }

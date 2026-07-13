@@ -712,8 +712,8 @@ class _AmalReadOnlyRow extends StatelessWidget {
               color: done ? AppColors.goldBorder : AppColors.cardBorder,
             ),
           ),
-          child: Icon(
-            amalFieldIcon(field.id),
+          child: AmalFieldIcon(
+            fieldId: field.id,
             size: 14.r,
             color: done ? AppColors.gold : AppColors.textMuted,
           ),

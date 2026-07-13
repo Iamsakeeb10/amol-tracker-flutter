@@ -69,6 +69,7 @@ dependencies:
   package_info_plus: ^9.0.1
   firebase_analytics: ^12.4.3
   firebase_crashlytics: ^5.2.4
+  font_awesome_flutter: ^11.0.0
 
 dev_dependencies:
   flutter_test:

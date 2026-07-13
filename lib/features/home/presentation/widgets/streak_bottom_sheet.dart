@@ -58,11 +58,18 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
   int _selectedIndex = 6;
   Map<String, AmalLogModel?> _dayLogs = {};
   bool _isLoading = true;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _loadWeekLogs();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   String get _today =>
@@ -107,6 +114,9 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
       _isLoading = false;
     });
     _clampSelectedIndex();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToToday();
+    });
   }
 
   void _clampSelectedIndex() {
@@ -128,6 +138,18 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
     if (_selectedIndex > lastValid) {
       _selectedIndex = lastValid;
     }
+  }
+
+  void _scrollToToday() {
+    if (!_scrollController.hasClients) return;
+    final targetOffset = _selectedIndex * (62.w + 6.w);
+    final maxOffset = _scrollController.position.maxScrollExtent;
+    final clampedOffset = targetOffset.clamp(0.0, maxOffset);
+    _scrollController.animateTo(
+      clampedOffset,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   /// Locale-aware weekday for a Hijri storage date.
@@ -322,6 +344,7 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
                 child: _isLoading
                     ? _DayCardsShimmer()
                     : ListView.separated(
+                        controller: _scrollController,
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.zero,
                         itemCount: days.length,

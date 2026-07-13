@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,6 +9,7 @@ import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/amal_edit_debug.dart';
 import '../../../../core/utils/amal_edit_toggles.dart';
 import '../../../../core/utils/score_calculator.dart';
 import '../../../../models/amal_log_model.dart';
@@ -159,6 +161,23 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
     });
 
     final locale = Localizations.localeOf(context).languageCode;
+    final lockedFieldIds = <String>{
+      for (final f in fields)
+        if (!IslamicDateService.isHijriDateOnOrAfter(
+          widget.hijriDate,
+          f.createdAt,
+        ))
+          f.id,
+    };
+    if (kDebugMode) {
+      for (final f in fields) {
+        logAmalEditDebug(
+          'field=${f.id} createdAt=${f.createdAt} '
+          'hijriDate=${widget.hijriDate} '
+          'locked=${lockedFieldIds.contains(f.id)}',
+        );
+      }
+    }
     final maxScore = editAmalMaxScore(fields);
     final score = calculateScore(_toggles, fields);
     final doneCount = _toggles.values
@@ -257,19 +276,51 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
               final done = field.type == AmalType.numeric
                   ? (numericVal ?? 0) > 0
                   : (_toggles[field.id] as bool? ?? false);
+              final isLocked = lockedFieldIds.contains(field.id);
               return Padding(
                 padding: EdgeInsets.only(bottom: 8.h),
-                child: AmalRow(
-                  field: field,
-                  locale: locale,
-                  done: done,
-                  numericValue: numericVal,
-                  numericPickerMax: pickerMax,
-                  onNumericChanged: _isSaving
-                      ? null
-                      : (v) => _setNumeric(field.id, v, fields),
-                  onChanged:
-                      _isSaving ? null : (_) => _toggle(field.id, fields),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Opacity(
+                      opacity: isLocked ? 0.5 : 1.0,
+                      child: AmalRow(
+                        field: field,
+                        locale: locale,
+                        done: done,
+                        numericValue: numericVal,
+                        numericPickerMax: pickerMax,
+                        readOnly: isLocked,
+                        onNumericChanged: (isLocked || _isSaving)
+                            ? null
+                            : (v) => _setNumeric(field.id, v, fields),
+                        onChanged: (isLocked || _isSaving)
+                            ? null
+                            : (_) => _toggle(field.id, fields),
+                      ),
+                    ),
+                    if (isLocked)
+                      Padding(
+                        padding: EdgeInsets.only(left: 14.w, top: 2.h, bottom: 4.h),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.lock_outline,
+                              size: 12.r,
+                              color: AppColors.textMuted,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              'এই দিনে এই আমল ছিল না',
+                              style: AppTextStyles.bodySmall(context).copyWith(
+                                color: AppColors.textMuted,
+                                fontSize: 11.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               );
             },

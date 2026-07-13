@@ -15,6 +15,7 @@ class AmalField {
   final bool isActive;
   final String? iconName;
   final IconSource? iconSource;
+  final DateTime? createdAt;
 
   const AmalField({
     required this.id,
@@ -27,6 +28,7 @@ class AmalField {
     this.isActive = true,
     this.iconName,
     this.iconSource,
+    this.createdAt,
   });
 
   String getLabel(String locale) {
@@ -55,6 +57,13 @@ class AmalField {
 
   factory AmalField.fromMap(Map<String, dynamic> map) {
     final id = (map['id'] as String?)?.trim() ?? '';
+    DateTime? createdAt;
+    final raw = map['createdAt'];
+    if (raw is Timestamp) {
+      createdAt = raw.toDate();
+    } else if (raw is DateTime) {
+      createdAt = raw;
+    }
     return AmalField(
       id: id,
       label: _parseLocaleMap(map['label']),
@@ -66,6 +75,7 @@ class AmalField {
       isActive: parseIsActive(map['isActive']),
       iconName: (map['iconName'] as String?)?.trim(),
       iconSource: _parseIconSource(map['iconSource']),
+      createdAt: createdAt,
     );
   }
 

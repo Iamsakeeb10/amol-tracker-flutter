@@ -452,4 +452,22 @@ class IslamicDateService {
     final d = int.parse(parts[2]);
     return HijriCalendar().hijriToGregorian(y, m, d);
   }
+
+  /// Whether [hijriDate] (YYYY-MM-DD) is on or after the day [createdAt].
+  /// Returns true if [createdAt] is null (legacy fields always editable).
+  static bool isHijriDateOnOrAfter(String hijriDate, DateTime? createdAt) {
+    if (createdAt == null) return true;
+    try {
+      final parts = hijriDate.split('-');
+      if (parts.length != 3) return true;
+      final y = int.parse(parts[0]);
+      final m = int.parse(parts[1]);
+      final d = int.parse(parts[2]);
+      final gregorianDay = HijriCalendar().hijriToGregorian(y, m, d);
+      final fieldDay = DateTime(createdAt.year, createdAt.month, createdAt.day);
+      return !gregorianDay.isBefore(fieldDay);
+    } catch (_) {
+      return true;
+    }
+  }
 }

@@ -92,7 +92,9 @@ class AmalFieldsService {
   */
   Future<void> createField(AmalField field) async {
     final batch = _firestore.batch();
-    batch.set(_collection.doc(field.id), field.toMap());
+    final data = field.toMap();
+    data['createdAt'] = FieldValue.serverTimestamp();
+    batch.set(_collection.doc(field.id), data);
     _addMetaBumpToBatch(batch);
     await batch.commit();
   }

@@ -24,7 +24,7 @@ List<AmalField> resolveAmalFields(List<AmalField> fields) =>
 const List<AmalField> kDefaultAmalFields = [
   AmalField(
     id: 'fard_salah',
-    label: {'en': 'Fard Salah', 'bn': 'ফরয নামাজ'},
+    label: {'en': 'Fard Salah Performed', 'bn': 'ফরয নামাজ আদায়'},
     sublabel: {
       'en': 'Total fard prayers performed today',
       'bn': 'আজ মোট কত ওয়াক্ত ফরয নামাজ আদায় করেছেন',

@@ -51,6 +51,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logScreenViewed('reports');
     AnalyticsService.instance.logReportsOpened();
     AnalyticsService.instance.setLastScreen('reports');
     AnalyticsService.instance.setLastFeature('reports');

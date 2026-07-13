@@ -32,18 +32,23 @@ class CommunityScreen extends ConsumerStatefulWidget {
   ConsumerState<CommunityScreen> createState() => _CommunityScreenState();
 }
 
-class _CommunityScreenState extends ConsumerState<CommunityScreen> {
+class _CommunityScreenState extends ConsumerState<CommunityScreen>
+    with SingleTickerProviderStateMixin {
   late final ScrollController _headerHorizontalController;
   late final ScrollController _verticalController;
   late final TextEditingController _searchController;
   final Map<String, ScrollController> _rowHorizontalControllers = {};
   bool _isSyncingHorizontal = false;
   double _horizontalOffset = 0;
+  late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logScreenViewed('community');
     AnalyticsService.instance.logCommunityOpened();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabChanged);
     _headerHorizontalController = ScrollController();
     _headerHorizontalController.addListener(
       () => _syncHorizontalOffsets(_headerHorizontalController),
@@ -52,8 +57,17 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     _searchController = TextEditingController();
   }
 
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    if (_tabController.index == 1) {
+      AnalyticsService.instance.logActivityFeedOpened();
+    }
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
     _searchController.dispose();
     _verticalController
       ..removeListener(_onVerticalScroll)
@@ -161,9 +175,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     _cleanupStaleRowControllers(activeRowKeys);
 
     return AppScaffold(
-      body: DefaultTabController(
-        length: 2,
-        child: Column(
+      body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -199,6 +211,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                 borderRadius: BorderRadius.circular(AppRadius.md.r),
               ),
               child: TabBar(
+                controller: _tabController,
                 dividerColor: Colors.transparent,
                 indicator: BoxDecoration(
                   color: AppColors.goldCard,
@@ -222,6 +235,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             SizedBox(height: 12.h),
             Expanded(
               child: TabBarView(
+                controller: _tabController,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -533,8 +547,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
 

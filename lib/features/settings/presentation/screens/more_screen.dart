@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/admin_config.dart';
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/time_display_helper.dart';
@@ -20,11 +21,22 @@ import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 import '../../../../shared/widgets/toggle_row.dart';
 
-class MoreScreen extends ConsumerWidget {
+class MoreScreen extends ConsumerStatefulWidget {
   const MoreScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MoreScreen> createState() => _MoreScreenState();
+}
+
+class _MoreScreenState extends ConsumerState<MoreScreen> {
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.instance.logScreenViewed('more');
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider).asData?.value;
     final prefs = ref.watch(notificationPrefsProvider);
@@ -122,68 +134,101 @@ class MoreScreen extends ConsumerWidget {
                   icon: Icons.leaderboard_outlined,
                   title: l10n.leaderboard,
                   trailing: l10n.weekly,
-                  onTap: () => context.push(AppRoutes.leaderboard),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('leaderboard', screen: 'more');
+                    context.push(AppRoutes.leaderboard);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.assessment_outlined,
                   title: l10n.myReports,
-                  onTap: () => context.push(AppRoutes.reports),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('reports', screen: 'more');
+                    context.push(AppRoutes.reports);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.notifications_outlined,
                   title: l10n.notifications,
                   trailing: unread == 0 ? null : '$unread',
-                  onTap: () => context.push(AppRoutes.notifications),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('notifications', screen: 'more');
+                    context.push(AppRoutes.notifications);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.calendar_month_outlined,
                   title: l10n.hijriCalendar,
-                  onTap: () => context.push(AppRoutes.hijriCalendar),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('hijri_calendar', screen: 'more');
+                    context.push(AppRoutes.hijriCalendar);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.explore_outlined,
                   title: l10n.qiblaTitle,
-                  onTap: () => context.push(AppRoutes.qibla),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('qibla', screen: 'more');
+                    context.push(AppRoutes.qibla);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.fiber_manual_record_outlined,
                   title: l10n.dhikrCounter,
-                  onTap: () => context.push(AppRoutes.dhikr),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('dhikr', screen: 'more');
+                    context.push(AppRoutes.dhikr);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.auto_awesome_outlined,
                   title: l10n.asmaUlHusna,
-                  onTap: () => context.push(AppRoutes.asmaUlHusna),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('asma_ul_husna', screen: 'more');
+                    context.push(AppRoutes.asmaUlHusna);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.menu_book_outlined,
                   title: l10n.navDua,
-                  onTap: () => context.push(AppRoutes.dua),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('dua', screen: 'more');
+                    context.push(AppRoutes.dua);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.auto_stories_outlined,
                   title: l10n.quranTitle,
-                  onTap: () => context.push(AppRoutes.quran),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('quran', screen: 'more');
+                    context.push(AppRoutes.quran);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.menu_book_outlined,
                   title: l10n.syllabusTitle,
-                  onTap: () => context.push(AppRoutes.syllabus),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('syllabus', screen: 'more');
+                    context.push(AppRoutes.syllabus);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.person_outline,
                   title: l10n.profileAndBadges,
-                  onTap: () => context.push(AppRoutes.profile),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('profile', screen: 'more');
+                    context.push(AppRoutes.profile);
+                  },
                 ),
               ],
             ),
@@ -197,14 +242,20 @@ class MoreScreen extends ConsumerWidget {
                 NavRow(
                   icon: Icons.tune_rounded,
                   title: l10n.settings,
-                  onTap: () => context.push(AppRoutes.settings),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('settings', screen: 'more');
+                    context.push(AppRoutes.settings);
+                  },
                 ),
                 const Divider(),
                 NavRow(
                   icon: Icons.do_not_disturb_on_outlined,
                   title: l10n.quietHours,
                   trailing: quietHoursLabel,
-                  onTap: () => context.push(AppRoutes.quietHours),
+                  onTap: () {
+                    AnalyticsService.instance.logFeatureTapped('quiet_hours', screen: 'more');
+                    context.push(AppRoutes.quietHours);
+                  },
                 ),
               ],
             ),
@@ -220,13 +271,19 @@ class MoreScreen extends ConsumerWidget {
                     NavRow(
                       icon: Icons.campaign_outlined,
                       title: l10n.adminAnnouncementsTitle,
-                      onTap: () => context.push(AppRoutes.adminAnnouncements),
+                      onTap: () {
+                        AnalyticsService.instance.logFeatureTapped('admin_announcements', screen: 'more');
+                        context.push(AppRoutes.adminAnnouncements);
+                      },
                     ),
                     const Divider(),
                     NavRow(
                       icon: Icons.checklist_rtl_outlined,
                       title: l10n.adminAmalFieldsTitle,
-                      onTap: () => context.push(AppRoutes.adminAmalFields),
+                      onTap: () {
+                        AnalyticsService.instance.logFeatureTapped('admin_amal_fields', screen: 'more');
+                        context.push(AppRoutes.adminAmalFields);
+                      },
                     ),
                     const Divider(),
                   ],
@@ -234,7 +291,10 @@ class MoreScreen extends ConsumerWidget {
                     NavRow(
                       icon: Icons.menu_book_outlined,
                       title: l10n.adminCoursesTitle,
-                      onTap: () => context.push(AppRoutes.adminCourses),
+                      onTap: () {
+                        AnalyticsService.instance.logFeatureTapped('admin_courses', screen: 'more');
+                        context.push(AppRoutes.adminCourses);
+                      },
                     ),
                     if (isFullAdmin) const Divider(),
                   ],
@@ -242,7 +302,10 @@ class MoreScreen extends ConsumerWidget {
                     NavRow(
                       icon: Icons.notifications_active_outlined,
                       title: l10n.adminPushNotificationTitle,
-                      onTap: () => context.push(AppRoutes.adminPushNotification),
+                      onTap: () {
+                        AnalyticsService.instance.logFeatureTapped('admin_push_notification', screen: 'more');
+                        context.push(AppRoutes.adminPushNotification);
+                      },
                     ),
                 ],
               ),

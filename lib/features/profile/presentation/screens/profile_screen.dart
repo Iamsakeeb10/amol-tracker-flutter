@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/constants/default_amal_fields.dart';
 import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/theme/colors.dart';
@@ -47,6 +48,12 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isSavingPrivacy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.instance.logScreenViewed('profile');
+  }
 
   @override
   Widget build(BuildContext context) {

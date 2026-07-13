@@ -1243,8 +1243,31 @@ class NotificationService {
 
   void _onLocalResponse(NotificationResponse response) {
     final payload = response.payload;
-    if (payload == null || payload.isEmpty) return;
+    if (payload == null || payload.isEmpty) {
+      // Prayer adhan notifications have no payload — check by ID range.
+      final id = response.id;
+      if (id != null &&
+          id >= PrayerAdhanConstants.minNotificationId &&
+          id <= PrayerAdhanConstants.maxNotificationId) {
+        final prayerName = _prayerNameFromNotificationId(id);
+        if (prayerName != null) {
+          AnalyticsService.instance.logPrayerReminderOpened(
+            prayerName: prayerName,
+          );
+        }
+      }
+      return;
+    }
     _dispatchDeepLink(payload);
+  }
+
+  String? _prayerNameFromNotificationId(int id) {
+    for (final entry in PrayerAdhanConstants.baseNotificationIds.entries) {
+      if (id >= entry.value && id < entry.value + PrayerAdhanConstants.daysAhead) {
+        return entry.key;
+      }
+    }
+    return null;
   }
 
   String _routeFromMessage(RemoteMessage message) {

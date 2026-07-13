@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/router/routes.dart';
+import '../../core/services/analytics_service.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/confirm_exit_app_on_back.dart';
@@ -36,6 +37,8 @@ class ScaffoldWithBottomNav extends ConsumerWidget {
   }
 
   void _onTap(BuildContext context, int index) {
+    const tabs = ['home', 'history', 'community', 'more'];
+    AnalyticsService.instance.logScreenViewed(tabs[index], category: 'tab');
     switch (index) {
       case 0:
         context.go(AppRoutes.home);

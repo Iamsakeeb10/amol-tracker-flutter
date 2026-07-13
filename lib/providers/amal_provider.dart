@@ -440,6 +440,35 @@ class AmalNotifier extends StateNotifier<AmalState> {
       await fs.saveAmalLog(log, state.fields);
       AnalyticsService.instance.logAmalCompleted(score: score);
       AnalyticsService.instance.logDailyScoreCompleted(totalScore: score);
+
+      // Field-level tracking
+      final nowLocal = DateTime.now();
+      final dayOfWeek = _dayOfWeekName(nowLocal.weekday);
+      final hijriMonth = _hijriMonthFromStorage(hijri);
+      for (final entry in toggles.entries) {
+        AnalyticsService.instance.logAmalFieldSubmitted(
+          fieldId: entry.key,
+          value: entry.value,
+          dayOfWeek: dayOfWeek,
+          hijriMonth: hijriMonth,
+        );
+      }
+
+      // Submission timing
+      AnalyticsService.instance.logAmalSubmissionTiming(
+        hourOfDay: nowLocal.hour,
+        score: score,
+        isLastMinute: nowLocal.hour >= 22,
+      );
+
+      // Update user properties
+      final locale = _ref.read(localeProvider).languageCode;
+      final totalSubmissions = user.currentStreak + 1;
+      AnalyticsService.instance.updateUserProperties(
+        currentStreak: streakResult.newCurrentStreak,
+        totalSubmissions: totalSubmissions,
+        locale: locale,
+      );
       // Ensure lastLogDate is always updated when the log is saved,
       // even if the full updateStreak call fails.
       unawaited(fs.updateUserLastLogDate(user.uid, hijri).catchError((_) {}));
@@ -611,4 +640,47 @@ class AmalNotifier extends StateNotifier<AmalState> {
       );
     }
   }
+}
+
+String _dayOfWeekName(int weekday) {
+  switch (weekday) {
+    case 1:
+      return 'monday';
+    case 2:
+      return 'tuesday';
+    case 3:
+      return 'wednesday';
+    case 4:
+      return 'thursday';
+    case 5:
+      return 'friday';
+    case 6:
+      return 'saturday';
+    case 7:
+      return 'sunday';
+    default:
+      return 'unknown';
+  }
+}
+
+String _hijriMonthFromStorage(String hijriDate) {
+  final parts = hijriDate.split('-');
+  if (parts.length < 2) return 'unknown';
+  final monthNum = int.tryParse(parts[1]) ?? 0;
+  const months = [
+    '',
+    'muharram',
+    'safar',
+    'rabi_ul_awwal',
+    'rabi_us_sani',
+    'jumada_al_ula',
+    'jumada_al_thani',
+    'rajab',
+    'shaban',
+    'ramadan',
+    'shawwal',
+    'dhul_qadah',
+    'dhul_hijjah',
+  ];
+  return (monthNum >= 1 && monthNum <= 12) ? months[monthNum] : 'unknown';
 }

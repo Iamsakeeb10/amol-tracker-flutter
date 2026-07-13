@@ -6,6 +6,7 @@ import 'package:hijri/hijri_calendar.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -33,6 +34,7 @@ class _HijriCalendarScreenState extends ConsumerState<HijriCalendarScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logScreenViewed('hijri_calendar');
     final ym = IslamicDateService.currentHijriYearMonth();
     _hijriYear = ym.year;
     _hijriMonth = ym.month;

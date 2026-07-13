@@ -55,6 +55,7 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logScreenViewed('dua');
     _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
     _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -30,6 +30,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logScreenViewed('qibla');
     AnalyticsService.instance.logQiblaOpened();
     _bootstrap();
   }

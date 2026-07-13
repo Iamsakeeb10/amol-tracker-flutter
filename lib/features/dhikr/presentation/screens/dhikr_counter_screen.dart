@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -26,6 +27,7 @@ class _DhikrCounterScreenState extends ConsumerState<DhikrCounterScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logScreenViewed('dhikr');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(dhikrProvider.notifier).refreshFromStorage();
     });

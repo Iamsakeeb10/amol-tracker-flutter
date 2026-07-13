@@ -45,6 +45,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logScreenViewed('leaderboard');
     AnalyticsService.instance.logLeaderboardOpened();
     _periodIndex = widget.initialTabIndex ?? 0;
     _startLoadTimeout();

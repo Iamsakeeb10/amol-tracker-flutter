@@ -44,10 +44,12 @@ class _QuranSurahScrollScreenState
   int? _pendingScrollAyah;
   Timer? _scrollSaveTimer;
   int? _pendingAyahSave;
+  DateTime? _entryTime;
 
   @override
   void initState() {
     super.initState();
+    _entryTime = DateTime.now();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -90,8 +92,20 @@ class _QuranSurahScrollScreenState
     _scrollController.removeListener(_onScroll);
     _scrollSaveTimer?.cancel();
     _flushPendingAyahSave();
+    _logReadingSession();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _logReadingSession() {
+    if (_entryTime == null) return;
+    final duration = DateTime.now().difference(_entryTime!);
+    final minutes = duration.inMinutes;
+    if (minutes < 1) return;
+    AnalyticsService.instance.logReadingSessionCompleted(
+      minutes: minutes,
+      pages: _ayahs.length,
+    );
   }
 
   void _flushPendingAyahSave() {

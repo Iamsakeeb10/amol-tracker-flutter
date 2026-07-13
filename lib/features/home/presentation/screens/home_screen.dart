@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/default_amal_fields.dart';
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/score_calculator.dart';
@@ -117,6 +118,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.invalidate(amalProvider(uid));
     ref.invalidate(liveStreakProvider);
     ref.invalidate(announcementsProvider);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.instance.logScreenViewed('home');
   }
 
   @override

@@ -315,4 +315,267 @@ class AnalyticsService {
       parameters: {'type': type},
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // Advanced analytics — field-level, timing, session, navigation
+  // ---------------------------------------------------------------------------
+
+  // -- Amal field-level tracking --
+  Future<void> logAmalFieldSubmitted({
+    required String fieldId,
+    required dynamic value,
+    required String dayOfWeek,
+    required String hijriMonth,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'amal_field_submitted',
+      parameters: {
+        'field_id': fieldId,
+        'value': value.toString(),
+        'day_of_week': dayOfWeek,
+        'hijri_month': hijriMonth,
+      },
+    );
+  }
+
+  // -- Submission timing --
+  Future<void> logAmalSubmissionTiming({
+    required int hourOfDay,
+    required int score,
+    required bool isLastMinute,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'amal_submission_timing',
+      parameters: {
+        'hour_of_day': hourOfDay,
+        'score': score,
+        'is_last_minute': isLastMinute,
+      },
+    );
+  }
+
+  // -- Session without submission --
+  Future<void> logSessionWithoutSubmission({
+    required int sessionDurationSeconds,
+    required bool hadDraftProgress,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'session_without_submission',
+      parameters: {
+        'duration_seconds': sessionDurationSeconds,
+        'had_draft': hadDraftProgress,
+      },
+    );
+  }
+
+  // -- Streak freeze modal --
+  Future<void> logStreakFreezeModalAction({
+    required int streakLength,
+    required String action,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'streak_freeze_modal',
+      parameters: {
+        'streak_length': streakLength,
+        'action': action,
+      },
+    );
+  }
+
+  // -- Community sheet interaction --
+  Future<void> logCommunitySheetInteraction({
+    required String action,
+    required int dateOffset,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'community_sheet_interaction',
+      parameters: {
+        'action': action,
+        'date_offset': dateOffset,
+      },
+    );
+  }
+
+  // -- Report action --
+  Future<void> logReportAction({
+    required String action,
+    required String reportType,
+    required int avgScore,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'report_action',
+      parameters: {
+        'action': action,
+        'report_type': reportType,
+        'avg_score': avgScore,
+      },
+    );
+  }
+
+  // -- Feature first use --
+  Future<void> logFeatureFirstUse({
+    required String feature,
+    required int daysAfterInstall,
+    required String entryPoint,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'feature_first_use',
+      parameters: {
+        'feature': feature,
+        'days_after_install': daysAfterInstall,
+        'entry_point': entryPoint,
+      },
+    );
+  }
+
+  // -- Onboarding step --
+  Future<void> logOnboardingStep({
+    required int step,
+    required String action,
+    required int timeOnStepSeconds,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'onboarding_step',
+      parameters: {
+        'step': step,
+        'action': action,
+        'time_on_step': timeOnStepSeconds,
+      },
+    );
+  }
+
+  // -- Amal edited --
+  Future<void> logAmalEdited({
+    required int hijriDaysAgo,
+    required int fieldsChanged,
+    required int scoreDelta,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'amal_edited',
+      parameters: {
+        'days_ago': hijriDaysAgo,
+        'fields_changed': fieldsChanged,
+        'score_delta': scoreDelta,
+      },
+    );
+  }
+
+  // -- Widget tapped --
+  Future<void> logWidgetTapped({
+    required String widgetState,
+    required int hourOfDay,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'widget_tapped',
+      parameters: {
+        'widget_state': widgetState,
+        'hour_of_day': hourOfDay,
+      },
+    );
+  }
+
+  // -- Dua sent --
+  Future<void> logDuaSent({required bool isAnonymous}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'dua_sent',
+      parameters: {'is_anonymous': isAnonymous},
+    );
+  }
+
+  // -- Announcement action --
+  Future<void> logAnnouncementAction({
+    required String announcementId,
+    required String action,
+    required int timeVisibleSeconds,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'announcement_action',
+      parameters: {
+        'announcement_id': announcementId,
+        'action': action,
+        'time_visible': timeVisibleSeconds,
+      },
+    );
+  }
+
+  // -- Session end --
+  Future<void> logSessionEnd({
+    required int durationSeconds,
+    required int screensVisited,
+    required bool didSubmitAmal,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'session_end',
+      parameters: {
+        'duration_seconds': durationSeconds,
+        'screens_visited': screensVisited,
+        'did_submit_amal': didSubmitAmal,
+      },
+    );
+  }
+
+  // -- Screen / feature navigation tracking --
+  Future<void> logScreenViewed(String screenName, {String? category}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'screen_viewed',
+      parameters: {
+        'screen_name': screenName,
+        if (category != null) 'category': category,
+      },
+    );
+  }
+
+  Future<void> logFeatureTapped(String feature, {String? screen}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'feature_tapped',
+      parameters: {
+        'feature': feature,
+        if (screen != null) 'screen': screen,
+      },
+    );
+  }
+
+  // -- User properties --
+  Future<void> updateUserProperties({
+    required int currentStreak,
+    required int totalSubmissions,
+    required String locale,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.setUserProperty(
+      name: 'streak_tier',
+      value: _getStreakTier(currentStreak),
+    );
+    await _analytics.setUserProperty(
+      name: 'total_submissions',
+      value: totalSubmissions.toString(),
+    );
+    await _analytics.setUserProperty(
+      name: 'language',
+      value: locale,
+    );
+  }
+
+  String _getStreakTier(int streak) {
+    if (streak == 0) return 'none';
+    if (streak <= 7) return '1_to_7';
+    if (streak <= 14) return '8_to_14';
+    if (streak <= 30) return '15_to_30';
+    return '30_plus';
+  }
 }

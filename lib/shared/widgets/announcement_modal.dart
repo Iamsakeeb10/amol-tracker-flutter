@@ -20,9 +20,12 @@ class AnnouncementModal extends ConsumerStatefulWidget {
 }
 
 class _AnnouncementModalState extends ConsumerState<AnnouncementModal> {
+  DateTime? _openTime;
+
   @override
   void initState() {
     super.initState();
+    _openTime = DateTime.now();
     AnalyticsService.instance.logAnnouncementOpened(
       announcementId: widget.announcement.id,
     );
@@ -36,7 +39,17 @@ class _AnnouncementModalState extends ConsumerState<AnnouncementModal> {
     final hasImage =
         widget.announcement.imageUrl != null && widget.announcement.imageUrl!.isNotEmpty;
 
+    int timeVisibleSeconds() {
+      if (_openTime == null) return 0;
+      return DateTime.now().difference(_openTime!).inSeconds;
+    }
+
     Future<void> dismiss() async {
+      AnalyticsService.instance.logAnnouncementAction(
+        announcementId: widget.announcement.id,
+        action: 'dismissed',
+        timeVisibleSeconds: timeVisibleSeconds(),
+      );
       Navigator.pop(context);
       if (!widget.announcement.showOnce) return;
       final uid = ref.read(currentUserProvider).value?.uid;
@@ -164,6 +177,11 @@ class _AnnouncementModalState extends ConsumerState<AnnouncementModal> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
+                              AnalyticsService.instance.logAnnouncementAction(
+                                announcementId: widget.announcement.id,
+                                action: 'tapped_cta',
+                                timeVisibleSeconds: timeVisibleSeconds(),
+                              );
                               await launchExternalUrl(widget.announcement.actionUrl!);
                               if (context.mounted) dismiss();
                             },

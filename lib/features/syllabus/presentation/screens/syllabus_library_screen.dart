@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -25,6 +26,12 @@ class _SyllabusLibraryScreenState extends ConsumerState<SyllabusLibraryScreen> {
   final _searchController = TextEditingController();
   String _query = '';
   String? _selectedTag;
+
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.instance.logScreenViewed('syllabus');
+  }
 
   @override
   void dispose() {

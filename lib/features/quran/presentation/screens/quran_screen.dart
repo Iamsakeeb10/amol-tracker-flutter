@@ -54,6 +54,7 @@ class _QuranScreenState extends ConsumerState<QuranScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.instance.logScreenViewed('quran');
     AnalyticsService.instance.logQuranOpened();
     final prefs = ref.read(quranReadingPrefsProvider);
     _viewMode = QuranConstants.mushafModeEnabled && prefs.mushafReaderMode

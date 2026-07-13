@@ -32,6 +32,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _isAnonymousDisplay = false;
   bool _notificationRequested = false;
   String _displayName = '';
+  DateTime? _stepStartTime;
+  int _currentStep = 1;
 
   List<_SlideData> _slides(AppLocalizations l10n) => <_SlideData>[
     _SlideData(
@@ -62,6 +64,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ? authUser!.displayName!.trim()
         : 'Anonymous';
     _isAnonymousDisplay = authUser?.isAnonymous ?? false;
+    _stepStartTime = DateTime.now();
+    _controller.addListener(_onPageChanged);
+  }
+
+  void _onPageChanged() {
+    if (_controller.page == null) return;
+    final newPage = _controller.page!.round() + 1;
+    if (newPage != _currentStep) {
+      _logStepAction('completed');
+      _currentStep = newPage;
+      _stepStartTime = DateTime.now();
+    }
+  }
+
+  void _logStepAction(String action) {
+    if (_stepStartTime == null) return;
+    final duration = DateTime.now().difference(_stepStartTime!).inSeconds;
+    AnalyticsService.instance.logOnboardingStep(
+      step: _currentStep,
+      action: action,
+      timeOnStepSeconds: duration,
+    );
   }
 
   Future<void> _next() async {
@@ -77,6 +101,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _skip() {
+    _logStepAction('skipped');
     return _completeOnboarding();
   }
 
@@ -95,6 +120,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     await android?.requestExactAlarmsPermission();
     await NotificationService.instance.initialize();
     await NotificationService.instance.scheduleAll();
+    AnalyticsService.instance.setNotificationEnabled(true);
     if (mounted) {
       setState(() => _notificationRequested = true);
     }
@@ -104,6 +130,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (_isSubmitting) return;
     final authUser = FirebaseAuth.instance.currentUser;
     if (authUser == null) return;
+
+    _logStepAction('completed');
 
     final l10n = AppLocalizations.of(context)!;
     final fallbackName = authUser.isAnonymous ? l10n.anonymous : l10n.user;
@@ -163,6 +191,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   void dispose() {
+    _controller.removeListener(_onPageChanged);
+    _logStepAction('abandoned');
     _controller.dispose();
     _pageIndexNotifier.dispose();
     super.dispose();

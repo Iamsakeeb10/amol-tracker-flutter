@@ -42,7 +42,7 @@ class AdminCourseListScreen extends ConsumerWidget {
     }
 
     final isFullAdmin =
-        AdminConfig.isFullAdmin(user?.uid, role: user?.role);
+        AdminConfig.isFullAdmin(user?.email, role: user?.role);
 
     return AppScaffold(
       padding: EdgeInsets.zero,
@@ -134,7 +134,7 @@ class _AdminCourseRow extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider).asData?.value;
     final service = ref.read(syllabusServiceProvider);
-    final canPublish = AdminConfig.isFullAdmin(user?.uid, role: user?.role);
+    final canPublish = AdminConfig.isFullAdmin(user?.email, role: user?.role);
 
     return AdminCourseTile(
       course: course,

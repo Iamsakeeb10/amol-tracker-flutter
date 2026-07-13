@@ -1795,7 +1795,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminCourseTags => 'ট্যাগ (কমা দিয়ে)';
 
   @override
-  String get adminCourseModerators => 'মডারেটর UID (কমা দিয়ে)';
+  String get adminCourseModerators => 'মডারেটর ইমেইল (কমা দিয়ে)';
 
   @override
   String get adminCourseDetailsSection => 'কোর্স বিবরণ';

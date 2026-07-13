@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'colors.dart';
 
@@ -38,18 +37,17 @@ class AppTextStyles {
     double? height,
     double letterSpacing = 0,
   }) {
-    final style = TextStyle(
+    return TextStyle(
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color,
       height: height,
       letterSpacing: letterSpacing,
+      fontFamily: _isBn(context, locale: locale)
+          ? 'NotoSansBengali'
+          : 'PlusJakartaSans',
       decoration: TextDecoration.none,
     );
-    if (_isBn(context, locale: locale)) {
-      return GoogleFonts.notoSansBengali(textStyle: style);
-    }
-    return GoogleFonts.plusJakartaSans(textStyle: style);
   }
 
   static TextStyle _bodyFont(

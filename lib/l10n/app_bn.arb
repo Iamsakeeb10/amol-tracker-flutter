@@ -682,7 +682,7 @@
   "adminCourseDescriptionRequired": "বিবরণ প্রয়োজন।",
   "adminCourseCoverUrl": "কভার ছবির URL (ঐচ্ছিক)",
   "adminCourseTags": "ট্যাগ (কমা দিয়ে)",
-  "adminCourseModerators": "মডারেটর UID (কমা দিয়ে)",
+  "adminCourseModerators": "মডারেটর ইমেইল (কমা দিয়ে)",
   "adminCourseDetailsSection": "কোর্স বিবরণ",
   "adminCourseModeratorsSection": "মডারেটর",
   "adminCourseStatusSection": "স্ট্যাটাস",

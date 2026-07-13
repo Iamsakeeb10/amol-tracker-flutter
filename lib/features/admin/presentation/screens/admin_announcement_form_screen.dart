@@ -108,7 +108,7 @@ class _AdminAnnouncementFormScreenState
     }
 
     final user = ref.read(currentUserProvider).asData?.value;
-    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) return;
+    if (!AdminConfig.isFullAdmin(user?.email, role: user?.role)) return;
 
     setState(() => _isSaving = true);
     final data = announcementToFirestoreMap(
@@ -164,7 +164,7 @@ class _AdminAnnouncementFormScreenState
     final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider).asData?.value;
 
-    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) {
+    if (!AdminConfig.isFullAdmin(user?.email, role: user?.role)) {
       return AppScaffold(
         body: Center(
           child: Text(

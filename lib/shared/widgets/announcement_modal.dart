@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/services/analytics_service.dart';
 import '../../core/theme/colors.dart';
@@ -80,7 +79,8 @@ class _AnnouncementModalState extends ConsumerState<AnnouncementModal> {
                     Text(
                       widget.announcement.arabicText!,
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.amiri(
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
                         fontSize: 20.sp,
                         color: AppColors.goldLight,
                         height: 1.6,
@@ -116,7 +116,8 @@ class _AnnouncementModalState extends ConsumerState<AnnouncementModal> {
                   Text(
                     widget.announcement.title,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.notoSansBengali(
+                    style: TextStyle(
+                      fontFamily: 'NotoSansBengali',
                       fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
@@ -126,7 +127,8 @@ class _AnnouncementModalState extends ConsumerState<AnnouncementModal> {
                   Text(
                     widget.announcement.message,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.notoSansBengali(
+                    style: TextStyle(
+                      fontFamily: 'NotoSansBengali',
                       fontSize: 13.sp,
                       color: AppColors.textSecondary,
                       height: 1.6,

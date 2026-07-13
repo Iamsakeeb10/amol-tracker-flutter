@@ -39,7 +39,7 @@ class _AdminLessonListScreenState extends ConsumerState<AdminLessonListScreen> {
     final course = courseAsync.value;
 
     if (course != null &&
-        !AdminConfig.canModerateCourse(user?.uid, course, role: user?.role)) {
+        !AdminConfig.canModerateCourse(user?.email, course, role: user?.role)) {
       return AppScaffold(
         body: Center(
           child: Text(
@@ -53,7 +53,7 @@ class _AdminLessonListScreenState extends ConsumerState<AdminLessonListScreen> {
 
     if (courseAsync.hasValue &&
         course == null &&
-        !AdminConfig.canAccessCourseAdmin(user?.uid, role: user?.role)) {
+        !AdminConfig.canAccessCourseAdmin(user?.email, role: user?.role)) {
       return AppScaffold(
         body: Center(
           child: Text(

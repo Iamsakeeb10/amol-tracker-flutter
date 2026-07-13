@@ -103,7 +103,7 @@ class _AdminPushNotificationScreenState
 
     final uid = ref.read(authStateProvider).asData?.value?.uid;
     final user = ref.read(currentUserProvider).asData?.value;
-    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) return;
+    if (!AdminConfig.isFullAdmin(user?.email, role: user?.role)) return;
 
     final gateway = ref.read(adminPushGatewayServiceProvider);
     logAdminPushDebug(
@@ -148,7 +148,7 @@ class _AdminPushNotificationScreenState
     final user = ref.watch(currentUserProvider).asData?.value;
     final hasKey = ref.watch(adminPushGatewayServiceProvider).hasGatewayKey;
 
-    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) {
+    if (!AdminConfig.isFullAdmin(user?.email, role: user?.role)) {
       return AppScaffold(
         body: Center(
           child: Text(

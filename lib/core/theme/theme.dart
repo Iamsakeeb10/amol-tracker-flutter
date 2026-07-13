@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'colors.dart';
 import 'text_styles.dart';
@@ -20,8 +19,8 @@ class AppTheme {
     final base = ThemeData.dark(useMaterial3: true);
     final isBn = locale?.languageCode == 'bn';
     final baseTextTheme = isBn
-        ? GoogleFonts.notoSansBengaliTextTheme(base.textTheme)
-        : GoogleFonts.plusJakartaSansTextTheme(base.textTheme);
+        ? base.textTheme.apply(fontFamily: 'NotoSansBengali')
+        : base.textTheme.apply(fontFamily: 'PlusJakartaSans');
 
     _cachedLocaleTag = localeTag;
     _cachedTheme = base.copyWith(

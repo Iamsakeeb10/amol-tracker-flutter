@@ -29,9 +29,9 @@ final allCoursesProvider = StreamProvider<List<CourseModel>>((ref) {
 });
 
 final isListedCourseModeratorProvider = FutureProvider<bool>((ref) async {
-  final uid = ref.watch(currentUserProvider).asData?.value?.uid;
-  if (uid == null || uid.isEmpty) return false;
-  return ref.read(syllabusServiceProvider).isListedCourseModerator(uid);
+  final email = ref.watch(currentUserProvider).asData?.value?.email;
+  if (email == null || email.isEmpty) return false;
+  return ref.read(syllabusServiceProvider).isListedCourseModerator(email);
 });
 
 final courseProvider = StreamProvider.family<CourseModel?, String>(

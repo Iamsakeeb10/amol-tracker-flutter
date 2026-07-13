@@ -3400,7 +3400,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminCourseModerators.
   ///
   /// In en, this message translates to:
-  /// **'Moderator UIDs (comma-separated)'**
+  /// **'Moderator emails (comma-separated)'**
   String get adminCourseModerators;
 
   /// No description provided for @adminCourseDetailsSection.

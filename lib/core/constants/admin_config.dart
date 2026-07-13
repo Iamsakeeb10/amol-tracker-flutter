@@ -4,32 +4,32 @@ import '../../models/user_role.dart';
 class AdminConfig {
   AdminConfig._();
 
-  static const Set<String> _adminUids = {'WLZuhj6DaIT2x05uY6fiS88X6852'};
+  static const Set<String> _adminEmails = {'shakibshovon.10@gmail.com'};
 
-  static bool isUidAdmin(String? uid) =>
-      uid != null && _adminUids.contains(uid);
+  static bool isEmailAdmin(String? email) =>
+      email != null && _adminEmails.contains(email);
 
   /// Full admin access (announcements, push, all courses).
-  static bool isFullAdmin(String? uid, {UserRole? role}) =>
-      isUidAdmin(uid) || role == UserRole.admin;
+  static bool isFullAdmin(String? email, {UserRole? role}) =>
+      isEmailAdmin(email) || role == UserRole.admin;
 
   /// Backward-compatible alias for full admin checks.
-  static bool isAdmin(String? uid, {UserRole? role}) =>
-      isFullAdmin(uid, role: role);
+  static bool isAdmin(String? email, {UserRole? role}) =>
+      isFullAdmin(email, role: role);
 
   /// Can open syllabus course management screens.
-  static bool canAccessCourseAdmin(String? uid, {UserRole? role}) =>
-      isFullAdmin(uid, role: role) || role == UserRole.moderator;
+  static bool canAccessCourseAdmin(String? email, {UserRole? role}) =>
+      isFullAdmin(email, role: role) || role == UserRole.moderator;
 
   /// Can manage a specific course (full admin, global moderator, or listed moderator).
   static bool canModerateCourse(
-    String? uid,
+    String? email,
     CourseModel course, {
     UserRole? role,
   }) =>
-      isFullAdmin(uid, role: role) ||
+      isFullAdmin(email, role: role) ||
       role == UserRole.moderator ||
-      (uid != null && course.moderators.contains(uid));
+      (email != null && course.moderators.contains(email));
 
   static bool isFullAdminRoute(String location) {
     return location == '/admin/announcements' ||

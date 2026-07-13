@@ -35,11 +35,11 @@ class MoreScreen extends ConsumerWidget {
     final displayName = rawName.trim().isEmpty ? l10n.profile : rawName.trim();
     final initial = displayName.substring(0, 1).toUpperCase();
     final streak = ref.watch(liveStreakProvider).value ?? user?.currentStreak ?? 0;
-    final isFullAdmin = AdminConfig.isFullAdmin(user?.uid, role: user?.role);
+    final isFullAdmin = AdminConfig.isFullAdmin(user?.email, role: user?.role);
     final isListedModerator =
         ref.watch(isListedCourseModeratorProvider).value ?? false;
     final canManageCourses =
-        AdminConfig.canAccessCourseAdmin(user?.uid, role: user?.role) ||
+        AdminConfig.canAccessCourseAdmin(user?.email, role: user?.role) ||
         isListedModerator;
     return AppScaffold(
       padding: EdgeInsets.zero,

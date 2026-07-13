@@ -498,10 +498,10 @@ class SyllabusService {
     return controller.stream;
   }
 
-  Future<bool> isListedCourseModerator(String uid) async {
-    if (uid.isEmpty) return false;
+  Future<bool> isListedCourseModerator(String email) async {
+    if (email.isEmpty) return false;
     final snap = await _courses
-        .where('moderators', arrayContains: uid)
+        .where('moderators', arrayContains: email)
         .limit(1)
         .get();
     return snap.docs.isNotEmpty;

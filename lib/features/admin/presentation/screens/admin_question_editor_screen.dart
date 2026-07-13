@@ -143,7 +143,7 @@ class _AdminQuestionEditorScreenState
     final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider).asData?.value;
 
-    if (!AdminConfig.canAccessCourseAdmin(user?.uid, role: user?.role)) {
+    if (!AdminConfig.canAccessCourseAdmin(user?.email, role: user?.role)) {
       return AppScaffold(
         body: Center(
           child: Text(

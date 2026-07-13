@@ -1792,7 +1792,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminCourseTags => 'Tags (comma-separated)';
 
   @override
-  String get adminCourseModerators => 'Moderator UIDs (comma-separated)';
+  String get adminCourseModerators => 'Moderator emails (comma-separated)';
 
   @override
   String get adminCourseDetailsSection => 'Course details';

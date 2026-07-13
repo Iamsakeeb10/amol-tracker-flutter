@@ -118,7 +118,7 @@ class _AdminAmalFieldFormScreenState
     if (!_formKey.currentState!.validate()) return;
 
     final user = ref.read(currentUserProvider).asData?.value;
-    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) return;
+    if (!AdminConfig.isFullAdmin(user?.email, role: user?.role)) return;
 
     setState(() => _isSaving = true);
     final data = amalFieldToFirestoreMap(
@@ -195,7 +195,7 @@ class _AdminAmalFieldFormScreenState
     final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider).asData?.value;
 
-    if (!AdminConfig.isFullAdmin(user?.uid, role: user?.role)) {
+    if (!AdminConfig.isFullAdmin(user?.email, role: user?.role)) {
       return AppScaffold(
         body: Center(
           child: Text(

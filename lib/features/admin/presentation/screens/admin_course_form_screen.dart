@@ -108,19 +108,19 @@ class _AdminCourseFormScreenState extends ConsumerState<AdminCourseFormScreen> {
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
-    final uid = ref.read(authStateProvider).asData?.value?.uid;
     final user = ref.read(currentUserProvider).asData?.value;
     if (_isEdit) {
       if (!AdminConfig.canModerateCourse(
-        uid,
+        user?.email,
         widget.existing!,
         role: user?.role,
       )) {
         return;
       }
-    } else if (!AdminConfig.isFullAdmin(uid, role: user?.role)) {
+    } else if (!AdminConfig.isFullAdmin(user?.email, role: user?.role)) {
       return;
     }
+    final uid = user?.uid;
 
     setState(() => _isSaving = true);
     final service = ref.read(syllabusServiceProvider);
@@ -182,11 +182,11 @@ class _AdminCourseFormScreenState extends ConsumerState<AdminCourseFormScreen> {
     final user = ref.watch(currentUserProvider).asData?.value;
     final unauthorized = _isEdit
         ? !AdminConfig.canModerateCourse(
-            user?.uid,
+            user?.email,
             widget.existing!,
             role: user?.role,
           )
-        : !AdminConfig.isFullAdmin(user?.uid, role: user?.role);
+        : !AdminConfig.isFullAdmin(user?.email, role: user?.role);
 
     if (unauthorized) {
       return AppScaffold(

@@ -28,34 +28,34 @@ class AdminLessonFormArgs {
 }
 
 bool adminCanAccessCourseList(UserModel? user, List<CourseModel> courses) {
-  if (AdminConfig.canAccessCourseAdmin(user?.uid, role: user?.role)) {
+  if (AdminConfig.canAccessCourseAdmin(user?.email, role: user?.role)) {
     return true;
   }
-  final uid = user?.uid;
-  if (uid == null) return false;
-  return courses.any((course) => course.moderators.contains(uid));
+  final email = user?.email;
+  if (email == null || email.isEmpty) return false;
+  return courses.any((course) => course.moderators.contains(email));
 }
 
 List<CourseModel> adminVisibleCourses(
   UserModel? user,
   List<CourseModel> courses,
 ) {
-  if (AdminConfig.isFullAdmin(user?.uid, role: user?.role)) return courses;
-  final uid = user?.uid;
-  if (uid == null) return const [];
+  if (AdminConfig.isFullAdmin(user?.email, role: user?.role)) return courses;
+  final email = user?.email;
+  if (email == null || email.isEmpty) return const [];
   return courses
       .where(
         (course) =>
-            AdminConfig.canModerateCourse(uid, course, role: user?.role),
+            AdminConfig.canModerateCourse(email, course, role: user?.role),
       )
       .toList();
 }
 
 bool adminCanModerateCourseRef(UserModel? user, CourseModel? course) {
   if (course == null) {
-    return AdminConfig.canAccessCourseAdmin(user?.uid, role: user?.role);
+    return AdminConfig.canAccessCourseAdmin(user?.email, role: user?.role);
   }
-  return AdminConfig.canModerateCourse(user?.uid, course, role: user?.role);
+  return AdminConfig.canModerateCourse(user?.email, course, role: user?.role);
 }
 
 IconData iconForResourceType(LessonResourceType type) {

@@ -682,7 +682,7 @@
   "adminCourseDescriptionRequired": "Description is required.",
   "adminCourseCoverUrl": "Cover image URL (optional)",
   "adminCourseTags": "Tags (comma-separated)",
-  "adminCourseModerators": "Moderator UIDs (comma-separated)",
+  "adminCourseModerators": "Moderator emails (comma-separated)",
   "adminCourseDetailsSection": "Course details",
   "adminCourseModeratorsSection": "Moderators",
   "adminCourseStatusSection": "Status",

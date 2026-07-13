@@ -471,21 +471,26 @@ class NotificationService {
   }
 
   Future<void> _ensureLocalNotificationPermission() async {
-    final android = _localNotifications
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-    final ios = _localNotifications
-        .resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin
-        >();
+    try {
+      final android = _localNotifications
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      final ios = _localNotifications
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
 
-    if (android != null) {
-      await android.requestNotificationsPermission();
-      await android.requestExactAlarmsPermission();
-    }
-    if (ios != null) {
-      await ios.requestPermissions(alert: true, badge: true, sound: true);
+      if (android != null) {
+        await android.requestNotificationsPermission();
+        await android.requestExactAlarmsPermission();
+      }
+      if (ios != null) {
+        await ios.requestPermissions(alert: true, badge: true, sound: true);
+      }
+    } catch (_) {
+      // Permission request can fail during early init when platform context
+      // is not yet available. Notifications still work via FCM.
     }
   }
 
@@ -704,14 +709,20 @@ class NotificationService {
   }
 
   Future<bool> _hasLoggedIslamicDate(String hijriDate) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return false;
-    final docId = '${user.uid}_$hijriDate';
-    final doc = await FirebaseFirestore.instance
-        .collection('amal_logs')
-        .doc(docId)
-        .get();
-    return doc.exists;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return false;
+      final docId = '${user.uid}_$hijriDate';
+      final doc = await FirebaseFirestore.instance
+          .collection('amal_logs')
+          .doc(docId)
+          .get();
+      return doc.exists;
+    } catch (_) {
+      // Firestore unavailable — assume not logged so we don't suppress
+      // a needed reminder. Worst case: duplicate notification, not missed.
+      return false;
+    }
   }
 
   /// Walk backwards from yesterday, counting consecutive missing days
@@ -724,10 +735,14 @@ class NotificationService {
     final checkLimit = maxDays.clamp(0, 7);
     int verifiedMissed = 0;
     String checkDate = today;
-    for (var i = 0; i < checkLimit; i++) {
-      checkDate = IslamicDateService.shiftStorageByDays(checkDate, -1);
-      if (await _hasLoggedIslamicDate(checkDate)) break;
-      verifiedMissed++;
+    try {
+      for (var i = 0; i < checkLimit; i++) {
+        checkDate = IslamicDateService.shiftStorageByDays(checkDate, -1);
+        if (await _hasLoggedIslamicDate(checkDate)) break;
+        verifiedMissed++;
+      }
+    } catch (_) {
+      // Firestore unavailable — return what we have so far
     }
     return verifiedMissed >= checkLimit && maxDays > checkLimit
         ? maxDays
@@ -1171,53 +1186,58 @@ class NotificationService {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final snap = await FirebaseFirestore.instance
-        .collection('userProgress')
-        .doc(user.uid)
-        .collection('lessonReviews')
-        .get();
-    final now = tz.TZDateTime.now(_bdTz);
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('userProgress')
+          .doc(user.uid)
+          .collection('lessonReviews')
+          .get();
+      final now = tz.TZDateTime.now(_bdTz);
 
-    for (final doc in snap.docs) {
-      final data = doc.data();
-      final courseId = (data['courseId'] as String?) ?? '';
-      final lessonId = doc.id;
-      final nextReviewAt = data['nextReviewAt'];
-      if (courseId.isEmpty || lessonId.isEmpty) continue;
-      if (nextReviewAt is! Timestamp) continue;
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final courseId = (data['courseId'] as String?) ?? '';
+        final lessonId = doc.id;
+        final nextReviewAt = data['nextReviewAt'];
+        if (courseId.isEmpty || lessonId.isEmpty) continue;
+        if (nextReviewAt is! Timestamp) continue;
 
-      var scheduled = tz.TZDateTime.from(nextReviewAt.toDate(), _bdTz);
-      if (!scheduled.isAfter(now)) {
-        scheduled = now.add(const Duration(minutes: 5));
-      }
-      if (scheduled.isAfter(now.add(const Duration(days: _lessonReviewLookaheadDays)))) {
-        continue;
-      }
-      if (_isSuppressedByQuietHours(
-        TimeOfDay(hour: scheduled.hour, minute: scheduled.minute),
-      )) {
-        scheduled = _nextTimeOutsideQuietHours(scheduled);
+        var scheduled = tz.TZDateTime.from(nextReviewAt.toDate(), _bdTz);
+        if (!scheduled.isAfter(now)) {
+          scheduled = now.add(const Duration(minutes: 5));
+        }
         if (scheduled.isAfter(now.add(const Duration(days: _lessonReviewLookaheadDays)))) {
           continue;
         }
+        if (_isSuppressedByQuietHours(
+          TimeOfDay(hour: scheduled.hour, minute: scheduled.minute),
+        )) {
+          scheduled = _nextTimeOutsideQuietHours(scheduled);
+          if (scheduled.isAfter(now.add(const Duration(days: _lessonReviewLookaheadDays)))) {
+            continue;
+          }
+        }
+
+        final lessonTitle = ((data['lessonTitle'] as String?) ?? '').trim();
+        final copy = _studyReviewNotificationCopy(lessonTitle);
+        final payload = AppRoutes.lessonViewerPath(courseId, lessonId);
+        final id = _lessonReviewNotificationId(courseId, lessonId);
+
+        await _localNotifications.zonedSchedule(
+          id,
+          copy.title,
+          copy.body,
+          scheduled,
+          _notificationDetails(payload: payload, body: copy.body),
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload: payload,
+        );
       }
-
-      final lessonTitle = ((data['lessonTitle'] as String?) ?? '').trim();
-      final copy = _studyReviewNotificationCopy(lessonTitle);
-      final payload = AppRoutes.lessonViewerPath(courseId, lessonId);
-      final id = _lessonReviewNotificationId(courseId, lessonId);
-
-      await _localNotifications.zonedSchedule(
-        id,
-        copy.title,
-        copy.body,
-        scheduled,
-        _notificationDetails(payload: payload, body: copy.body),
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        payload: payload,
-      );
+    } catch (_) {
+      // Firestore unavailable — skip lesson review scheduling this cycle.
+      // Will be retried on next app resume.
     }
   }
 

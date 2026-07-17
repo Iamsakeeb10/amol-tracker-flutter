@@ -1,6 +1,7 @@
 import 'package:hijri/hijri_calendar.dart';
 
 import '../services/islamic_date_service.dart';
+import '../../models/amal_log_model.dart';
 
 /// What to do after submitting today's log, based on [lastLogDate] vs [todayHijri].
 enum StreakAction {
@@ -55,6 +56,25 @@ int _calendarDaysBetween(DateTime a, DateTime b) {
   final aa = DateTime(a.year, a.month, a.day);
   final bb = DateTime(b.year, b.month, b.day);
   return bb.difference(aa).inDays;
+}
+
+/// Returns true if [log] was backfilled — submitted on a different Hijri day
+/// than the log's own [hijriDate]. Backfilled logs should not count towards
+/// streak computation.
+///
+/// Uses Maghrib-aware date conversion so a submission after Maghrib
+/// (which counts as the next Islamic day) is not falsely marked backfilled.
+bool isBackfilledLog(AmalLogModel log) {
+  try {
+    final submittedBd = IslamicDateService.bangladeshDateTimeFrom(
+      log.submittedAt,
+    );
+    final submittedHijri =
+        IslamicDateService.islamicDateStringForBangladeshMoment(submittedBd);
+    return submittedHijri != log.hijriDate;
+  } catch (_) {
+    return false;
+  }
 }
 
 String weekKeyFromDate(DateTime date) {

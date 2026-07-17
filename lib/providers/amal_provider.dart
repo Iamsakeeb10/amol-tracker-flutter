@@ -591,9 +591,26 @@ class AmalNotifier extends StateNotifier<AmalState> {
     final nextBadges = <String>{...user.badges};
     final maxScore = getMaxScore(state.fields).clamp(1, kDefaultMaxDailyScore);
 
+    // Recompute streak from actual logs instead of using the potentially
+    // stale Firestore currentStreak, so badges match what the UI shows.
+    final badgeLogs = await fs.getRecentLogs(user.uid, limit: 30);
+    final badgeToday = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final badgeLoggedDates = <String>{
+      for (final log in badgeLogs)
+        if (!isBackfilledLog(log)) log.hijriDate,
+    };
+    final badgeFrozenDates = <String>{
+      if (user.streakFreezeDate.isNotEmpty) user.streakFreezeDate,
+    };
+    final liveStreak = computeStreakFromLogs(
+      loggedDates: badgeLoggedDates,
+      todayHijri: badgeToday,
+      frozenDates: badgeFrozenDates,
+    );
+
     for (final badge in kBadgeDefinitions) {
       if (badge.streakThreshold != null &&
-          resultingCurrentStreak >= badge.streakThreshold!) {
+          liveStreak >= badge.streakThreshold!) {
         nextBadges.add(badge.id);
       }
     }

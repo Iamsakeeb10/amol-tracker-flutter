@@ -250,25 +250,6 @@ final editableDayProvider =
   return EditableDayState(canEdit: true, existingLog: log);
 });
 
-/// Returns true if [log] was backfilled — submitted on a different Hijri day
-/// than the log's own [hijriDate]. Backfilled logs should not count towards
-/// streak computation.
-///
-/// Uses Maghrib-aware date conversion so a submission after Maghrib
-/// (which counts as the next Islamic day) is not falsely marked backfilled.
-bool _isBackfilledLog(AmalLogModel log) {
-  try {
-    final submittedBd = IslamicDateService.bangladeshDateTimeFrom(
-      log.submittedAt,
-    );
-    final submittedHijri =
-        IslamicDateService.islamicDateStringForBangladeshMoment(submittedBd);
-    return submittedHijri != log.hijriDate;
-  } catch (_) {
-    return false;
-  }
-}
-
 /// Authoritative streak computed from actual logs, not the potentially stale
 /// Firestore `currentStreak` field. Fetches the last 30 days of logs and
 /// counts consecutive completed days backwards from today.
@@ -288,7 +269,7 @@ final liveStreakProvider = FutureProvider.autoDispose<int>((ref) async {
   final today = IslamicDateService.getCurrentIslamicDateStringSafe();
   final loggedDates = <String>{
     for (final log in logs)
-      if (!_isBackfilledLog(log)) log.hijriDate,
+      if (!isBackfilledLog(log)) log.hijriDate,
   };
 
   final frozenDates = <String>{

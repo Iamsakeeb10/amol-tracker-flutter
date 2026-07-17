@@ -124,7 +124,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             key: ValueKey(
               'profile-$logRefresh-${widget.userId}-${widget.selectedHijriDate}',
             ),
-            future: _loadProfileData(fs, user.uid),
+            future: _loadProfileData(fs, user),
             builder: (context, dataSnap) {
               if (dataSnap.connectionState == ConnectionState.waiting &&
                   !dataSnap.hasData) {
@@ -392,28 +392,34 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     );
   }
 
-  Future<_ProfileData> _loadProfileData(FirestoreService fs, String uid) async {
+  Future<_ProfileData> _loadProfileData(FirestoreService fs, UserModel user) async {
     final today = IslamicDateService.getCurrentIslamicDateStringSafe();
     final effectiveDate = widget.selectedHijriDate ?? today;
     final fallback =
         (widget.selectedLogFallback != null &&
-            widget.selectedLogFallback!.uid == uid &&
+            widget.selectedLogFallback!.uid == user.uid &&
             widget.selectedLogFallback!.hijriDate == effectiveDate)
         ? widget.selectedLogFallback
         : null;
-    final selectedLog = await fs.getLog(uid, effectiveDate);
+    final selectedLog = await fs.getLog(user.uid, effectiveDate);
     // Fetch 30 logs to compute an accurate streak (not just 7).
     List<AmalLogModel> allLogs = const <AmalLogModel>[];
     try {
-      allLogs = await fs.getRecentLogs(uid, limit: 30);
+      allLogs = await fs.getRecentLogs(user.uid, limit: 30);
     } catch (_) {}
     // Compute streak from actual logs, excluding backfilled submissions.
     final loggedDates = <String>{
       for (final log in allLogs)
-        if (!_isBackfilledLog(log)) log.hijriDate,
+        if (!isBackfilledLog(log)) log.hijriDate,
     };
-    final computedStreak =
-        computeStreakFromLogs(loggedDates: loggedDates, todayHijri: today);
+    final frozenDates = <String>{
+      if (user.streakFreezeDate.isNotEmpty) user.streakFreezeDate,
+    };
+    final computedStreak = computeStreakFromLogs(
+      loggedDates: loggedDates,
+      todayHijri: today,
+      frozenDates: frozenDates,
+    );
     final avgScore = allLogs.isEmpty
         ? 0
         : (allLogs.map((e) => e.score).reduce((a, b) => a + b) /
@@ -841,21 +847,6 @@ class _ProfileData {
   final int computedStreak;
   final int avgScore;
   final String effectiveDate;
-}
-
-/// Returns true if [log] was submitted on a different Islamic day than its
-/// [hijriDate] (i.e. backfilled). Uses Maghrib-aware date conversion.
-bool _isBackfilledLog(AmalLogModel log) {
-  try {
-    final submittedBd = IslamicDateService.bangladeshDateTimeFrom(
-      log.submittedAt,
-    );
-    final submittedHijri =
-        IslamicDateService.islamicDateStringForBangladeshMoment(submittedBd);
-    return submittedHijri != log.hijriDate;
-  } catch (_) {
-    return false;
-  }
 }
 
 class _UserProfileLoadingShimmer extends StatelessWidget {

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -130,8 +128,6 @@ class FardPrayerExpandRow extends StatelessWidget {
 
 /// Wraps [child] with an enlarged tap target and a subtle press-scale
 /// animation, giving toggle taps a more tactile, responsive feel.
-/// Wraps [child] with an enlarged tap target and a subtle press-scale
-/// animation, giving toggle taps a more tactile, responsive feel.
 ///
 /// The extra tap area is an invisible overlay (via [Positioned.fill] with
 /// negative insets) so it never affects the layout size of [child].
@@ -188,9 +184,9 @@ class _TapScaleState extends State<_TapScale> {
   }
 }
 
-/// A prayer circle whose fill sweeps in like a radial progress indicator
-/// (0% to 100%, clockwise from the top) when toggled on, and sweeps back
-/// out the same way when toggled off.
+/// A prayer circle that "blooms" in — the fill grows radially outward from
+/// the center to full size with a slight overshoot bounce on completion —
+/// rather than sweeping like a clock hand. Reverses the same way on untoggle.
 class _PrayerCircle extends StatefulWidget {
   const _PrayerCircle({
     required this.isChecked,
@@ -209,14 +205,22 @@ class _PrayerCircle extends StatefulWidget {
 class _PrayerCircleState extends State<_PrayerCircle>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  late final Animation<double> _bloom;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 380),
+      duration: const Duration(milliseconds: 420),
       value: widget.isChecked ? 1 : 0,
+    );
+    // Overshoot slightly past full bloom before settling, giving a soft
+    // "pop" feel instead of a mechanical linear fill.
+    _bloom = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeIn,
     );
   }
 
@@ -246,28 +250,44 @@ class _PrayerCircleState extends State<_PrayerCircle>
       mainAxisSize: MainAxisSize.min,
       children: [
         AnimatedBuilder(
-          animation: _controller,
+          animation: _bloom,
           builder: (context, _) {
-            final progress = _controller.value;
+            // Raw (non-overshooting) progress, used for anything that must
+            // stay within 0..1 such as colour lerps and icon swap timing.
+            final linear = _controller.value.clamp(0.0, 1.0);
             return SizedBox(
               width: 36.r,
               height: 36.r,
               child: CustomPaint(
-                painter: _RadialFillPainter(
-                  progress: progress,
+                painter: _BloomFillPainter(
+                  bloom: _bloom.value,
                   fillColor: AppColors.gold,
                   borderColor: AppColors.cardBorder,
                   strokeWidth: 1.5.r,
                 ),
                 child: Center(
                   child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 150),
-                    child: progress > 0.5
-                        ? Icon(
-                            Icons.check,
+                    duration: const Duration(milliseconds: 120),
+                    // Only the checkmark gets a bounce-in pop; the idle
+                    // prayer icon always renders at its normal size so it
+                    // never gets stuck small at rest.
+                    child: linear > 0.5
+                        ? TweenAnimationBuilder<double>(
                             key: const ValueKey(true),
-                            color: AppColors.emeraldDeep,
-                            size: 18.r,
+                            tween: Tween(begin: 0.4, end: 1.0),
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeOutBack,
+                            builder: (context, scale, child) {
+                              return Transform.scale(
+                                scale: scale,
+                                child: child,
+                              );
+                            },
+                            child: Icon(
+                              Icons.check,
+                              color: AppColors.emeraldDeep,
+                              size: 18.r,
+                            ),
                           )
                         : Icon(
                             widget.icon,
@@ -283,21 +303,15 @@ class _PrayerCircleState extends State<_PrayerCircle>
         ),
         SizedBox(height: 4.h),
         AnimatedBuilder(
-          animation: _controller,
+          animation: _bloom,
           builder: (context, _) {
-            final progress = _controller.value;
+            final linear = _controller.value.clamp(0.0, 1.0);
             return Text(
               widget.label,
               style: labelStyle.copyWith(
                 fontSize: 9.sp,
-                color: Color.lerp(
-                  AppColors.textMuted,
-                  AppColors.gold,
-                  progress,
-                ),
-                fontWeight: progress > 0.5
-                    ? FontWeight.w600
-                    : FontWeight.normal,
+                color: Color.lerp(AppColors.textMuted, AppColors.gold, linear),
+                fontWeight: linear > 0.5 ? FontWeight.w600 : FontWeight.normal,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
@@ -310,18 +324,20 @@ class _PrayerCircleState extends State<_PrayerCircle>
   }
 }
 
-/// Paints a circular border plus a pie-style sweep that fills clockwise
-/// from the top as [progress] goes from 0 to 1, like a radial progress ring
-/// completing into a solid disc.
-class _RadialFillPainter extends CustomPainter {
-  _RadialFillPainter({
-    required this.progress,
+/// Paints a circular border plus a fill disc that grows radially from the
+/// center outward as [bloom] goes from 0 to 1 (and slightly beyond, since
+/// the driving curve overshoots before settling — the painter clamps the
+/// drawn radius so it never visually exceeds the border).
+class _BloomFillPainter extends CustomPainter {
+  _BloomFillPainter({
+    required this.bloom,
     required this.fillColor,
     required this.borderColor,
     required this.strokeWidth,
   });
 
-  final double progress;
+  /// May slightly exceed 1.0 momentarily due to the overshoot curve.
+  final double bloom;
   final Color fillColor;
   final Color borderColor;
   final double strokeWidth;
@@ -329,34 +345,33 @@ class _RadialFillPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
-    final radius = (size.shortestSide - strokeWidth) / 2;
+    final ringRadius = (size.shortestSide - strokeWidth) / 2;
+    final linear = bloom.clamp(0.0, 1.0);
 
     // Border ring: colour transitions alongside the fill so the outline
-    // finishes turning gold exactly as the sweep completes.
+    // finishes turning gold as the bloom completes.
     final borderPaint = Paint()
-      ..color = Color.lerp(borderColor, fillColor, progress)!
+      ..color = Color.lerp(borderColor, fillColor, linear)!
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
-    canvas.drawCircle(center, radius, borderPaint);
+    canvas.drawCircle(center, ringRadius, borderPaint);
 
-    if (progress <= 0) return;
+    if (bloom <= 0) return;
 
-    // Pie-style fill sweeping clockwise from 12 o'clock.
+    // Fill disc grows from the center; radius can momentarily overshoot the
+    // ring (from the curve) which reads as a soft "pop" rather than a hard
+    // clip, so it is only clamped a touch past the ring rather than to it.
+    final fillRadius = (ringRadius - strokeWidth / 2) * bloom.clamp(0.0, 1.06);
+
     final fillPaint = Paint()
       ..color = fillColor
       ..style = PaintingStyle.fill;
-
-    const startAngle = -pi / 2;
-    final sweepAngle = 2 * pi * progress;
-    final fillRadius = radius - strokeWidth / 2;
-    final fillRect = Rect.fromCircle(center: center, radius: fillRadius);
-
-    canvas.drawArc(fillRect, startAngle, sweepAngle, true, fillPaint);
+    canvas.drawCircle(center, fillRadius, fillPaint);
   }
 
   @override
-  bool shouldRepaint(covariant _RadialFillPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
+  bool shouldRepaint(covariant _BloomFillPainter oldDelegate) {
+    return oldDelegate.bloom != bloom ||
         oldDelegate.fillColor != fillColor ||
         oldDelegate.borderColor != borderColor;
   }

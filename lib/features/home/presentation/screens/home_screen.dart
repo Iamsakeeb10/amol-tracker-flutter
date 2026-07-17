@@ -21,7 +21,9 @@ import '../../../../providers/announcement_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/date_provider.dart';
 import '../../../../providers/history_provider.dart';
+import '../../../../core/services/jummah_modal_service.dart';
 import '../../../../shared/widgets/announcement_modal.dart';
+import '../../../../shared/widgets/jummah_reminder_modal.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../widgets/home_scroll_body.dart';
 
@@ -38,6 +40,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _trackedUserId;
   String? _scheduledAnnouncementId;
   bool _didInitialAnnouncementCheck = false;
+  bool _didJummahCheck = false;
 
   void _resetAnnouncementSessionForUser(String? uid) {
     _sessionDismissedAnnouncementIds.clear();
@@ -45,6 +48,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _scheduledAnnouncementId = null;
     _trackedUserId = uid;
     _didInitialAnnouncementCheck = false;
+    _didJummahCheck = false;
   }
 
   AnnouncementModel? _resolveNextAnnouncement() {
@@ -104,6 +108,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted) return;
       await _showAnnouncementDialog(next);
     }
+
+    _scheduleJummahModalShow();
+  }
+
+  void _scheduleJummahModalShow() {
+    if (_didJummahCheck) return;
+    if (_isAnnouncementDialogOpen) return;
+    if (!JummahModalService.shouldShow()) {
+      _didJummahCheck = true;
+      return;
+    }
+
+    final nextAnnouncement = _resolveNextAnnouncement();
+    if (nextAnnouncement != null) return;
+
+    _didJummahCheck = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isAnnouncementDialogOpen) return;
+      JummahReminderModal.show(context).then((_) {
+        JummahModalService.markShown();
+      });
+    });
   }
 
   Future<void> _retryAmalFields(String uid) async {
@@ -139,7 +165,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       (previousUid, nextUid) {
         if (previousUid == nextUid) return;
         _resetAnnouncementSessionForUser(nextUid);
-        if (nextUid != null) _scheduleAnnouncementShow();
+        if (nextUid != null) {
+          _scheduleAnnouncementShow();
+          _scheduleJummahModalShow();
+        }
       },
     );
     ref.listen(currentUserProvider, (previous, next) {
@@ -149,6 +178,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _resetAnnouncementSessionForUser(nextUser.uid);
       }
       _scheduleAnnouncementShow();
+      _scheduleJummahModalShow();
 
       // Push widget update immediately with the live streak.
       final liveValue = ref.read(liveStreakProvider).value;
@@ -225,6 +255,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _didInitialAnnouncementCheck = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scheduleAnnouncementShow();
+        _scheduleJummahModalShow();
       });
     }
 

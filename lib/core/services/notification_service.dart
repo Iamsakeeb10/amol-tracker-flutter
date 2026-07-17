@@ -78,8 +78,7 @@ class NotificationService {
     'এখনো সুযোগ আছে। দ্রুত লগ করো — এক মিনিটও লাগবে না।',
   ];
   static const List<String> _jumuahBodies = [
-    'আজ জুম্মাহ। যত বেশি পারো দরূদ পড়ো — এই দিনের প্রতিটি দরূদে বিশেষ মর্যাদা আছে।',
-    'আজ জুম্মাহ — সপ্তাহের সেরা দিন। আমলে পূর্ণ করো এই দিনকে।',
+    'সূরা কাহফ তিলাওয়াত করুন, রাসূল ﷺ-এর প্রতি বেশি বেশি দরূদ পাঠ করুন, দোয়া করুন এবং সময়মতো জুমুআহর সালাতের জন্য প্রস্তুতি নিন। আল্লাহ আপনার আমল কবুল করুন। 🤲',
   ];
 
   final FlutterLocalNotificationsPlugin _localNotifications =
@@ -938,7 +937,7 @@ class NotificationService {
     final selectedBody = _pickMessage(category: 'jumuah', pool: _jumuahBodies);
     await _schedulePolicyAware(
       id: _jumuahId,
-      title: 'জুমআর দিন — সেরা আমলের দিন',
+      title: '🕌 জুমুআহর বরকতময় সময় শুরু হয়েছে',
       body: selectedBody,
       scheduledDate: _nextWeeklyInstance(DateTime.friday, at),
       payload: AppRoutes.home,
@@ -946,6 +945,8 @@ class NotificationService {
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
     );
   }
+
+
 
   Future<void> _scheduleAyyamBid() async {
     final now = DateTime.now();

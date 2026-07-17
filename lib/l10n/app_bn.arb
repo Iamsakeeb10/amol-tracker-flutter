@@ -126,8 +126,12 @@
   "duaPageCounter": "{current} / {total}",
   "@duaPageCounter": {
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "duaReaderOptions": "পড়ার সেটিংস",
@@ -147,7 +151,13 @@
   "duaReaderTextSizeDecrease": "টেক্সট ছোট করুন",
   "duaReaderTextSizeIncrease": "টেক্সট বড় করুন",
   "routeNotFound": "রুট পাওয়া যায়নি: {path}",
-  "@routeNotFound": {"placeholders": {"path": {"type": "String"}}},
+  "@routeNotFound": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "account": "অ্যাকাউন্ট",
   "devMenu": "ডেভ মেনু",
   "profile": "প্রোফাইল",
@@ -278,52 +288,100 @@
   "leaderboardBeFirstToday": "আজ প্রথম লগটা আপনিই দিন!",
   "leaderboardYourRank": "আপনার র‍্যাঙ্ক: #{rank} · {score} {stat}",
   "@leaderboardYourRank": {
-    "placeholders": {"rank": {}, "score": {}, "stat": {}}
+    "placeholders": {
+      "rank": {},
+      "score": {},
+      "stat": {}
+    }
   },
   "leaderboardYourRankNumber": "আপনার র‍্যাঙ্ক: #{rank}",
   "@leaderboardYourRankNumber": {
-    "placeholders": {"rank": {"type": "int"}}
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
   },
   "leaderboardLoadFailed": "এই মুহূর্তে লিডারবোর্ড লোড করা যাচ্ছে না।",
   "leaderboardNudgeKeepClimbing": "চালিয়ে যান - প্রতিটি আমল গুরুত্বপূর্ণ।",
   "leaderboardNudgeTop": "আপনি টপে আছেন - ধারাবাহিক থাকুন।",
   "leaderboardNudgeBehindDays": "২য় স্থানের থেকে {behind} দিন পিছিয়ে - স্ট্রিক ধরে রাখুন।",
-  "@leaderboardNudgeBehindDays": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindDays": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardNudgeBehindPoints": "২য় স্থানের থেকে {behind} পয়েন্ট পিছিয়ে - আজ লগ করে গ্যাপ কমান।",
-  "@leaderboardNudgeBehindPoints": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindPoints": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardNudgeBehindFirstDays": "১ম স্থানের থেকে {behind} দিন পিছিয়ে - স্ট্রিক ধরে রাখুন।",
-  "@leaderboardNudgeBehindFirstDays": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindFirstDays": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardNudgeBehindFirstPoints": "১ম স্থানের থেকে {behind} পয়েন্ট পিছিয়ে - আজ লগ করে এগিয়ে যান।",
-  "@leaderboardNudgeBehindFirstPoints": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindFirstPoints": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardQuizTab": "কুইজ",
   "leaderboardQuizBeFirst": "কুইজ পাস করার জন্য প্রথম হন!",
   "leaderboardNudgeBehindQuizPoints": "২য় স্থানের থেকে {behind} পয়েন্ট পিছিয়ে - আরও কুইজ পাস করে এগিয়ে যান।",
-  "@leaderboardNudgeBehindQuizPoints": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindQuizPoints": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardNudgeBehindFirstQuizPoints": "১ম স্থানের থেকে {behind} পয়েন্ট পিছিয়ে - আরও কুইজ পাস করে শীর্ষে উঠুন।",
-  "@leaderboardNudgeBehindFirstQuizPoints": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindFirstQuizPoints": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardQuizAttempts": "চেষ্টা",
   "leaderboardQuizStat": "{points} পয়েন্ট · {attempts} চেষ্টা",
   "@leaderboardQuizStat": {
     "placeholders": {
-      "points": {"type": "int"},
-      "attempts": {"type": "int"}
+      "points": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
     }
   },
   "leaderboardYourRankQuiz": "আপনার র‍্যাঙ্ক: #{rank} · {stat}",
   "@leaderboardYourRankQuiz": {
     "placeholders": {
-      "rank": {"type": "int"},
-      "stat": {"type": "String"}
+      "rank": {
+        "type": "int"
+      },
+      "stat": {
+        "type": "String"
+      }
     }
   },
   "leaderboardQuizTiebreakerHint": "সমান পয়েন্টে কম চেষ্টায় এগিয়ে থাকবেন।",
   "history": "হিস্টোরি",
   "historyLoadFailed": "হিস্টোরি লোড করা যায়নি।",
   "historyConsistency": "{value}% কনসিস্টেন্সি",
-  "@historyConsistency": {"placeholders": {"value": {}}},
+  "@historyConsistency": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "historyLoggedDays": "লগ করা দিন",
   "historyOfDays": "মোট {days} দিনের মধ্যে",
-  "@historyOfDays": {"placeholders": {"days": {}}},
+  "@historyOfDays": {
+    "placeholders": {
+      "days": {}
+    }
+  },
   "historyAvgScore": "গড় স্কোর",
   "historyNoLogsYet": "এখনও লগ নেই",
   "historyThisMonth": "এই মাসে",
@@ -331,7 +389,12 @@
   "historyStartLogging": "হিস্টোরি তৈরি করতে আজ থেকে লগ শুরু করুন",
   "historyWeakestAmal": "সবচেয়ে দুর্বল আমল",
   "historyWeakestAmalDetail": "{label} - এই মাসে {days} দিন মিস হয়েছে",
-  "@historyWeakestAmalDetail": {"placeholders": {"label": {}, "days": {}}},
+  "@historyWeakestAmalDetail": {
+    "placeholders": {
+      "label": {},
+      "days": {}
+    }
+  },
   "historyFull": "পূর্ণ",
   "historyPartial": "আংশিক",
   "historyMiss": "মিস",
@@ -350,7 +413,11 @@
   "dayDetailGoToHome": "হোমে যান",
   "editTodayAmal": "আজকের আমল সম্পাদনা করুন",
   "memberSince": "{year} সাল থেকে মেম্বার",
-  "@memberSince": {"placeholders": {"year": {}}},
+  "@memberSince": {
+    "placeholders": {
+      "year": {}
+    }
+  },
   "best": "সেরা",
   "avg": "গড়",
   "thisWeek": "এই সপ্তাহ",
@@ -375,7 +442,11 @@
   "selected": "সিলেক্টেড",
   "todaysAmal": "আজকের আমল",
   "amalOnDate": "{date} তারিখের আমল",
-  "@amalOnDate": {"placeholders": {"date": {}}},
+  "@amalOnDate": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "last7Days": "শেষ ৭ দিন",
   "profileSettings": "প্রোফাইল সেটিংস",
   "saving": "সেভ হচ্ছে...",
@@ -399,7 +470,12 @@
   "yourGroup": "আপনার গ্রুপ",
   "manage": "ম্যানেজ",
   "groupMembersDesc": "{count} জন ভাই · {desc}",
-  "@groupMembersDesc": {"placeholders": {"count": {}, "desc": {}}},
+  "@groupMembersDesc": {
+    "placeholders": {
+      "count": {},
+      "desc": {}
+    }
+  },
   "viewSheetArrow": "শিট দেখুন →",
   "done": "সম্পন্ন",
   "pending": "অপেক্ষমাণ",
@@ -434,15 +510,22 @@
   "deleteGroupWarning": "সব মেম্বার অ্যাক্সেস হারাবে। এটা আর ফেরানো যাবে না।",
   "delete": "ডিলিট",
   "dayStreak": "{days} দিনের স্ট্রিক",
-  "@dayStreak": {"placeholders": {"days": {}}},
+  "@dayStreak": {
+    "placeholders": {
+      "days": {}
+    }
+  },
   "groupSheet": "গ্রুপ শিট",
   "allActiveToday": "আজ {count} জন অ্যাক্টিভ",
-  "@allActiveToday": {"placeholders": {"count": {}}},
+  "@allActiveToday": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "groupStreak": "গ্রুপ স্ট্রিক",
   "groupAvg": "গ্রুপ গড়",
   "memberUpper": "মেম্বার",
-  "numericLegend": "সংখ্যা (ফরজ, তাকবির)"
-  ,
+  "numericLegend": "সংখ্যা (ফরজ, তাকবির)",
   "homeOfflineSyncMessage": "অফলাইন - আপনার লগ এই ডিভাইসে সেভ থাকবে, ইন্টারনেট এলে অটো সিঙ্ক হবে।",
   "loggedToday": "আজ লগ করা হয়েছে ✓",
   "markAllDone": "সবগুলো সম্পন্ন",
@@ -450,7 +533,11 @@
   "submitTodaysLog": "আজকের লগ সাবমিট করুন",
   "saveTodaysAmal": "আজকের আমল সংরক্ষণ করুন",
   "draftSavedTapSaveToFinish": "খসড়া সংরক্ষিত। আজকের হিসাব শেষ করতে \"{saveButton}\" চাপুন।",
-  "@draftSavedTapSaveToFinish": {"placeholders": {"saveButton": {}}},
+  "@draftSavedTapSaveToFinish": {
+    "placeholders": {
+      "saveButton": {}
+    }
+  },
   "completeAllAmalAutoSave": "আজকের আমল সংরক্ষণ করতে উপরের সব আমল সম্পন্ন করুন।",
   "amalAutoSaving": "আজকের আমল সংরক্ষণ হচ্ছে…",
   "progressAutosavedHint": "আপনার অগ্রগতি খসড়া হিসেবে অটো সেভ হচ্ছে।",
@@ -458,10 +545,19 @@
   "firstAmalStartsToday": "আপনার প্রথম আমল আজ থেকেই শুরু।",
   "onFire": "দারুণ চলছে",
   "bestStreakKeepGoing": "সেরা: {days} দিন · চালিয়ে যান",
-  "@bestStreakKeepGoing": {"placeholders": {"days": {}}},
+  "@bestStreakKeepGoing": {
+    "placeholders": {
+      "days": {}
+    }
+  },
   "todaysProgress": "আজকের প্রগ্রেস",
   "scoreOutOfPoints": "{score} / {max} পয়েন্ট",
-  "@scoreOutOfPoints": {"placeholders": {"score": {}, "max": {}}},
+  "@scoreOutOfPoints": {
+    "placeholders": {
+      "score": {},
+      "max": {}
+    }
+  },
   "outOf100Compact": "/১০০",
   "weekdayMon": "সো",
   "weekdayTue": "ম",
@@ -472,12 +568,20 @@
   "weekdaySun": "শ",
   "dayCompleteSubtitle": "আজকের আমল সফলভাবে সম্পন্ন করেছেন।",
   "pointsEarned": "+{points} পয়েন্ট অর্জন",
-  "@pointsEarned": {"placeholders": {"points": {}}},
+  "@pointsEarned": {
+    "placeholders": {
+      "points": {}
+    }
+  },
   "hadithOfDay": "আজকের হাদিস",
   "todaysSummary": "আজকের সারাংশ",
   "backToHome": "হোমে ফিরে যান",
   "pointsValue": "{points} পয়েন্ট",
-  "@pointsValue": {"placeholders": {"points": {}}},
+  "@pointsValue": {
+    "placeholders": {
+      "points": {}
+    }
+  },
   "tapScreenToJump": "স্ক্রিনে ট্যাপ করে দ্রুত যান (UI টেস্টিং)",
   "badgeThreeDaysTitle": "৩ দিনের স্ট্রিক",
   "badgeThreeDaysDesc": "টানা ৩ দিন আমল সম্পন্ন করুন।",
@@ -506,7 +610,13 @@
   "alhamdulillah": "আলহামদুলিল্লাহ",
   "allahuAkbar": "আল্লাহু আকবার",
   "dhikrTarget": "লক্ষ্য: {count}",
-  "@dhikrTarget": {"placeholders": {"count": {"type": "int"}}},
+  "@dhikrTarget": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "dhikrCount": "গণনা",
   "dhikrCompleted": "সম্পন্ন!",
   "dhikrReset": "রিসেট",
@@ -526,7 +636,13 @@
   "asmaUlHusna": "আসমাউল হুসনা",
   "husnaSubtitle": "আল্লাহর ৯৯টি নাম",
   "husnaLearnedCount": "৯৯টির মধ্যে {learned}টি শিখেছেন",
-  "@husnaLearnedCount": {"placeholders": {"learned": {"type": "int"}}},
+  "@husnaLearnedCount": {
+    "placeholders": {
+      "learned": {
+        "type": "int"
+      }
+    }
+  },
   "husnaMarkLearned": "শিখেছি হিসেবে চিহ্নিত করুন",
   "husnaMarkNotLearned": "চিহ্ন সরান",
   "husnaQuiz": "কুইজ মোড",
@@ -534,11 +650,26 @@
   "husnaQuizCorrect": "সঠিক!",
   "husnaQuizWrong": "ভুল",
   "husnaQuizScore": "স্কোর: {score} / {total}",
-  "@husnaQuizScore": {"placeholders": {"score": {"type": "int"}, "total": {"type": "int"}}},
+  "@husnaQuizScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "husnaQuizFinished": "কুইজ সম্পন্ন",
   "husnaNoNamesLearned": "কুইজ খুলতে আগে কমপক্ষে ৪টি নাম শিখুন",
   "husnaNumber": "#{number}",
-  "@husnaNumber": {"placeholders": {"number": {"type": "int"}}},
+  "@husnaNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "husnaBenefit": "চিন্তা",
   "husnaMeaning": "অর্থ",
   "husnaNextQuestion": "পরবর্তী",
@@ -549,14 +680,29 @@
   "husnaFilterLearned": "শিখেছি",
   "husnaFilterNotLearned": "শিখিনি",
   "husnaQuizProgress": "প্রশ্ন {current} / {total}",
-  "@husnaQuizProgress": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "@husnaQuizProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "husnaQuizExcellent": "চমৎকার!",
   "husnaQuizGoodEffort": "ভালো চেষ্টা!",
   "husnaQuizKeepLearning": "শেখা চালিয়ে যান!",
   "husnaSwipeHint": "পরের নাম দেখতে সোয়াইপ করুন",
   "husnaPronunciation": "উচ্চারণ",
   "husnaCorrectAnswer": "সঠিক উত্তর: {name}",
-  "@husnaCorrectAnswer": {"placeholders": {"name": {"type": "String"}}},
+  "@husnaCorrectAnswer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "announcementDismiss": "বুঝেছি",
   "announcementTypeReminder": "রিমাইন্ডার",
   "announcementTypeAnnouncement": "ঘোষণা",
@@ -601,10 +747,18 @@
   "adminAmalFieldTileSubtitle": "{id} · {type} · {points} · #{order}",
   "@adminAmalFieldTileSubtitle": {
     "placeholders": {
-      "id": {"type": "String"},
-      "type": {"type": "String"},
-      "points": {"type": "String"},
-      "order": {"type": "int"}
+      "id": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      },
+      "points": {
+        "type": "String"
+      },
+      "order": {
+        "type": "int"
+      }
     }
   },
   "adminStatusLive": "লাইভ",
@@ -664,11 +818,12 @@
   "adminPushSendToUser": "{name}-কে পাঠান",
   "@adminPushSendToUser": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "adminPushSelectUser": "একজন ব্যবহারকারী বেছে নিন",
-
   "adminCoursesTitle": "কোর্স",
   "adminCourseCreateTitle": "কোর্স তৈরি",
   "adminCourseEditTitle": "কোর্স সম্পাদনা",
@@ -680,7 +835,13 @@
   "adminCourseFormSaved": "কোর্স সংরক্ষিত হয়েছে।",
   "adminCoursePublishedPushTitle": "নতুন কোর্স উপলব্ধ",
   "adminCoursePublishedPushMessage": "একটি নতুন সিলেবাস কোর্স প্রকাশিত হয়েছে: {title}। এনরোল করতে সিলেবাস খুলুন।",
-  "@adminCoursePublishedPushMessage": {"placeholders": {"title": {"type": "String"}}},
+  "@adminCoursePublishedPushMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "adminCourseManageLessons": "পাঠ পরিচালনা",
   "adminCourseDescription": "বিবরণ",
   "adminCourseDescriptionRequired": "বিবরণ প্রয়োজন।",
@@ -692,7 +853,6 @@
   "adminCourseStatusSection": "স্ট্যাটাস",
   "adminCourseStatusPublished": "প্রকাশিত",
   "adminCourseStatusDraft": "খসড়া",
-
   "adminLessonsTitle": "পাঠ",
   "adminLessonsSubtitle": "টেনে সাজান। প্রস্তুত হলে প্রকাশ করুন।",
   "adminLessonCreateTitle": "পাঠ যোগ",
@@ -720,7 +880,6 @@
   "adminLessonThumbnailUrl": "থাম্বনেইল URL (ঐচ্ছিক)",
   "adminLessonDuration": "সময়কাল (মিনিট, ঐচ্ছিক)",
   "adminLessonPublished": "প্রকাশিত",
-
   "adminQuizTitle": "কুইজ",
   "adminQuizCreateTitle": "কুইজ তৈরি",
   "adminQuizEditTitle": "কুইজ সম্পাদনা",
@@ -753,7 +912,6 @@
   "adminQuizQuestionDone": "সম্পন্ন",
   "adminQuizCorrectAnswer": "উত্তর: {answer}",
   "adminQuizOptionCount": "{count} অপশন",
-
   "syllabusTitle": "পাঠ্যক্রম",
   "syllabusSearchHint": "কোর্স খুঁজুন…",
   "syllabusEmptyList": "এখনো কোনো প্রকাশিত কোর্স নেই।",
@@ -767,15 +925,25 @@
   "syllabusProgressLabel": "{total} পাঠের মধ্যে {completed}",
   "@syllabusProgressLabel": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "syllabusCourseCompleted": "কোর্স সম্পন্ন",
   "syllabusLessonsSection": "পাঠ",
   "syllabusNoLessons": "এখনো কোনো পাঠ প্রকাশিত হয়নি।",
   "syllabusLessonCount": "{count}টি পাঠ",
-  "@syllabusLessonCount": {"placeholders": {"count": {"type": "int"}}},
+  "@syllabusLessonCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusCourseLoadFailed": "কোর্স লোড করা যায়নি।",
   "syllabusLessonLoadFailed": "পাঠ লোড করা যায়নি।",
   "syllabusMarkComplete": "সম্পন্ন হিসেবে চিহ্নিত করুন",
@@ -793,46 +961,105 @@
   "syllabusVideoUnmute": "শব্দ চালু",
   "syllabusVideoOpenYoutube": "YouTube-এ খুলুন",
   "syllabusLaunchUrlFailed": "এই রিসোর্স খোলা যায়নি।",
-
   "syllabusQuizTitle": "কুইজ",
   "syllabusQuizLoadFailed": "এই কুইজ লোড করা যায়নি।",
   "syllabusQuizRulesTitle": "শুরু করার আগে",
   "syllabusQuizQuestionCount": "{count}টি প্রশ্ন",
-  "@syllabusQuizQuestionCount": {"placeholders": {"count": {"type": "int"}}},
+  "@syllabusQuizQuestionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizTimeLimitLabel": "সময়সীমা: {limit}",
-  "@syllabusQuizTimeLimitLabel": {"placeholders": {"limit": {"type": "String"}}},
+  "@syllabusQuizTimeLimitLabel": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
   "syllabusQuizNoTimeLimit": "সময়সীমা নেই",
   "syllabusQuizPassingScoreLabel": "{score}টি সঠিক উত্তরে পাস",
-  "@syllabusQuizPassingScoreLabel": {"placeholders": {"score": {"type": "int"}}},
+  "@syllabusQuizPassingScoreLabel": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizPreviousAttempts": "আপনার চেষ্টা",
   "syllabusQuizAttemptCount": "{count}টি চেষ্টা",
-  "@syllabusQuizAttemptCount": {"placeholders": {"count": {"type": "int"}}},
+  "@syllabusQuizAttemptCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizAttemptNumber": "চেষ্টা #{number}",
-  "@syllabusQuizAttemptNumber": {"placeholders": {"number": {"type": "int"}}},
+  "@syllabusQuizAttemptNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizAttemptsLabel": "{count}টি চেষ্টা · সেরা {score}/{total}",
   "@syllabusQuizAttemptsLabel": {
     "placeholders": {
-      "count": {"type": "int"},
-      "score": {"type": "int"},
-      "total": {"type": "int"}
+      "count": {
+        "type": "int"
+      },
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "syllabusQuizAttemptHistoryRow": "{score}/{total} · {date}",
   "@syllabusQuizAttemptHistoryRow": {
     "placeholders": {
-      "score": {"type": "int"},
-      "total": {"type": "int"},
-      "date": {"type": "String"}
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
     }
   },
   "syllabusQuizAttemptPassed": "পাস",
   "syllabusQuizAttemptFailed": "অসফল",
   "syllabusQuizBestScore": "সর্বোচ্চ স্কোর: {score} / {total}",
-  "@syllabusQuizBestScore": {"placeholders": {"score": {"type": "int"}, "total": {"type": "int"}}},
+  "@syllabusQuizBestScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizAlreadyPassed": "আপনি এই কুইজে পাস করেছেন",
   "syllabusQuizStart": "কুইজ শুরু করুন",
   "syllabusQuizProgress": "প্রশ্ন {current} / {total}",
-  "@syllabusQuizProgress": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "@syllabusQuizProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizQuestionLabel": "প্রশ্ন",
   "syllabusQuizNext": "পরবর্তী",
   "syllabusQuizPrevious": "পূর্ববর্তী",
@@ -846,12 +1073,33 @@
   "syllabusQuizResultPassed": "পাস!",
   "syllabusQuizResultFailed": "পাস হয়নি",
   "syllabusQuizYourScore": "স্কোর: {score} / {total}",
-  "@syllabusQuizYourScore": {"placeholders": {"score": {"type": "int"}, "total": {"type": "int"}}},
+  "@syllabusQuizYourScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizTimeTaken": "সময় লেগেছে: {time}",
-  "@syllabusQuizTimeTaken": {"placeholders": {"time": {"type": "String"}}},
+  "@syllabusQuizTimeTaken": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "syllabusQuizReviewSection": "উত্তর পর্যালোচনা",
   "syllabusQuizReviewQuestion": "প্রশ্ন {number}",
-  "@syllabusQuizReviewQuestion": {"placeholders": {"number": {"type": "int"}}},
+  "@syllabusQuizReviewQuestion": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizYourAnswer": "আপনার উত্তর",
   "syllabusQuizCorrectAnswer": "সঠিক উত্তর",
   "syllabusQuizExplanation": "ব্যাখ্যা",
@@ -866,15 +1114,25 @@
   "syllabusQuizBismillahTranslation": "পরম করুণাময় ও অসীম দয়ালু আল্লাহর নামে।",
   "syllabusQuizBismillahIntention": "হে আল্লাহ, আমাকে উপকারী জ্ঞান ও সঠিক বোঝাপড়া দান করুন।",
   "syllabusQuizBismillahBegin": "কুইজ শুরু করুন",
-
   "lmsXpSectionTitle": "শিক্ষার অগ্রগতি",
   "lmsXpLabel": "{xp} XP",
-  "@lmsXpLabel": {"placeholders": {"xp": {"type": "int"}}},
+  "@lmsXpLabel": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
   "lmsXpToNextLevel": "পরবর্তী স্তরে {xp} XP",
-  "@lmsXpToNextLevel": {"placeholders": {"xp": {"type": "int"}}},
+  "@lmsXpToNextLevel": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
   "lmsLevelUpTitle": "নতুন স্তর!",
   "lmsLevelUpTapToContinue": "চালিয়ে যেতে ট্যাপ করুন",
-
   "lessonDiscussionTitle": "আলোচনা",
   "lessonDiscussionEmpty": "এখনো কোনো মন্তব্য নেই। আপনার পড়াশোনার দলের সাথে কথোপকথন শুরু করুন।",
   "lessonDiscussionHint": "এই পাঠ সম্পর্কে আপনার মতামত শেয়ার করুন…",
@@ -885,20 +1143,23 @@
   "lessonDiscussionEditTitle": "মন্তব্য সম্পাদনা",
   "lessonDiscussionEditFailed": "মন্তব্য সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।",
   "lessonDiscussionEdited": "সম্পাদিত",
-
   "courseCertificateTitle": "সমাপনী সনদ",
   "courseCertificateArabic": "بارك الله فيك",
   "courseCertificatePresentedTo": "সম্মানিত",
   "courseCertificateForCourse": "কোর্স সম্পন্নের জন্য",
   "courseCertificateDate": "সম্পন্ন: {date}",
-  "@courseCertificateDate": {"placeholders": {"date": {"type": "String"}}},
+  "@courseCertificateDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "courseCertificateShare": "শেয়ার",
   "courseCertificateView": "সনদ দেখুন",
-
   "syllabusBookmarkedFilter": "বুকমার্ক",
   "syllabusBookmarksEmpty": "এখনো কোনো বুকমার্ক নেই।",
   "syllabusAudioLoadFailed": "অডিও লেসন লোড করা যায়নি।",
-
   "quranTitle": "কুরআন",
   "quranSurahList": "সূরাসমূহ",
   "quranReader": "মুসহাফ পাঠ",
@@ -925,8 +1186,12 @@
   "quranPageOf": "পৃষ্ঠা {page} / {total}",
   "@quranPageOf": {
     "placeholders": {
-      "page": {"type": "int"},
-      "total": {"type": "int"}
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "quranTranslationFontSize": "অনুবাদ টেক্সট সাইজ",
@@ -946,7 +1211,13 @@
   "historyLight": "হালকা",
   "historyMinimal": "সামান্য",
   "historyMotivationFull": "মাশাআল্লাহ! আপনি এই মাসে {days} দিন পূর্ণ আমল করেছেন। আল্লাহ কবুল করুন।",
-  "@historyMotivationFull": {"placeholders": {"days": {"type": "int"}}},
+  "@historyMotivationFull": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "historyMotivationPartial": "আপনি নিয়মিত চেষ্টা করছেন — এটাই সবচেয়ে গুরুত্বপূর্ণ। ধীরে ধীরে আরও বাড়বে ইনশাআল্লাহ।",
   "historyMotivationMinimal": "প্রতিটি ছোট আমলও আল্লাহর কাছে মূল্যবান। আজকে একটু বেশি করার চেষ্টা করুন।",
   "historyMotivationNoData": "কিছু দিন লগ করা হয়নি — কোনো সমস্যা নেই। আজ থেকে আবার শুরু করুন, আল্লাহ ক্ষমাশীল।",
@@ -973,7 +1244,6 @@
   "streakSheetFreezeUsed": "এই সপ্তাহে ফ্রিজ ব্যবহৃত",
   "streakSheetScore": "স্কোর",
   "streakSheetBestStreak": "সেরা",
-
   "myReports": "আমার রিপোর্ট",
   "reportsWeeklyTab": "সাপ্তাহিক",
   "reportsMonthlyTab": "মাসিক",
@@ -983,7 +1253,12 @@
   "reportsCustomTitle": "কাস্টম রিপোর্ট",
   "reportsAvgScore": "গড় স্কোর / ১০০",
   "reportsDaysLogged": "{logged}/{total} দিন লগ হয়েছে",
-  "@reportsDaysLogged": {"placeholders": {"logged": {}, "total": {}}},
+  "@reportsDaysLogged": {
+    "placeholders": {
+      "logged": {},
+      "total": {}
+    }
+  },
   "reportsCurrentStreak": "বর্তমান স্ট্রিক",
   "reportsBestStreak": "সেরা স্ট্রিক",
   "reportsConsistency": "ধারাবাহিকতা",
@@ -997,18 +1272,47 @@
   "reportsAmalBreakdown": "আমলের পারফরম্যান্স",
   "reportsInsights": "সারসংক্ষেপ",
   "reportsBestDayInsight": "সেরা দিন ছিল {day}, স্কোর {score}/১০০",
-  "@reportsBestDayInsight": {"placeholders": {"day": {}, "score": {}}},
+  "@reportsBestDayInsight": {
+    "placeholders": {
+      "day": {},
+      "score": {}
+    }
+  },
   "reportsWeakestAmalInsight": "দুর্বলতম আমল: {label} — {total} দিনের মধ্যে {done} দিন সম্পন্ন",
-  "@reportsWeakestAmalInsight": {"placeholders": {"label": {}, "done": {}, "total": {}}},
+  "@reportsWeakestAmalInsight": {
+    "placeholders": {
+      "label": {},
+      "done": {},
+      "total": {}
+    }
+  },
   "reportsStrongestAmalInsight": "সবচেয়ে শক্তিশালী আমল: {label} — {total} দিনের মধ্যে {done} দিন সম্পন্ন",
-  "@reportsStrongestAmalInsight": {"placeholders": {"label": {}, "done": {}, "total": {}}},
+  "@reportsStrongestAmalInsight": {
+    "placeholders": {
+      "label": {},
+      "done": {},
+      "total": {}
+    }
+  },
   "reportsTrendUp": "আগের সময়কালের তুলনায় স্কোর +{points} পয়েন্ট বেড়েছে",
-  "@reportsTrendUp": {"placeholders": {"points": {}}},
+  "@reportsTrendUp": {
+    "placeholders": {
+      "points": {}
+    }
+  },
   "reportsTrendDown": "আগের সময়কালের তুলনায় স্কোর {points} পয়েন্ট কমেছে",
-  "@reportsTrendDown": {"placeholders": {"points": {}}},
+  "@reportsTrendDown": {
+    "placeholders": {
+      "points": {}
+    }
+  },
   "reportsTrendFlat": "আগের সময়কালের তুলনায় স্কোর অপরিবর্তিত",
   "reportsRankInsight": "এই সময়কালে কমিউনিটিতে আপনার র‍্যাঙ্ক #{rank}",
-  "@reportsRankInsight": {"placeholders": {"rank": {}}},
+  "@reportsRankInsight": {
+    "placeholders": {
+      "rank": {}
+    }
+  },
   "reportsHadithOfPeriod": "সময়কালের হাদিস",
   "reportsShare": "শেয়ার",
   "reportsSharing": "প্রস্তুত হচ্ছে…",
@@ -1025,5 +1329,25 @@
   "reportsCustomRangeTooLong": "সর্বোচ্চ রেঞ্জ ৯০ দিন।",
   "reportsInvalidRange": "শেষ তারিখ শুরুর তারিখের পরে বা সমান হতে হবে।",
   "reportsRangeHint": "শুরুর তারিখ, তারপর শেষ তারিখ ট্যাপ করুন (সর্বোচ্চ ৯০ দিন)।",
-  "reportsEmDash": "—"
+  "reportsEmDash": "—",
+  "updateModalTitle": "নতুন আপডেট পাওয়া গেছে",
+  "updateModalMessage": "আমল ট্র্যাকারের একটি নতুন সংস্করণ পাওয়া গেছে। সেরা অভিজ্ঞতার জন্য আপডেট করুন।",
+  "updateModalUpdateNow": "এখনই আপডেট করুন",
+  "updateModalMaybeLater": "পরে করব",
+  "adminAppConfigTitle": "অ্যাপ কনফিগ",
+  "adminAppConfigUpdateSettings": "আপডেট সেটিংস",
+  "adminAppConfigFlags": "ফ্ল্যাগ",
+  "adminAppConfigActive": "সক্রিয়",
+  "adminAppConfigActiveSubtitle": "সংস্করণ পরীক্ষা সক্রিয় করুন",
+  "adminAppConfigForceUpdate": "বাধ্যতামূলক আপডেট",
+  "adminAppConfigForceUpdateSubtitle": "ব্যবহারকারী মোডাল বন্ধ করতে পারবে না",
+  "adminAppConfigSaved": "অ্যাপ কনফিগ সংরক্ষিত হয়েছে।",
+  "adminAppConfigSaveFailed": "অ্যাপ কনফিগ সংরক্ষণ করা যায়নি।",
+  "adminAppConfigLatestVersion": "সর্বশেষ সংস্করণ (যেমন 1.1.0)",
+  "adminAppConfigLatestVersionCode": "সর্বশেষ সংস্করণ কোড (যেমন 10)",
+  "adminAppConfigPlayStoreUrl": "প্লে স্টোর URL",
+  "adminAppConfigUpdateTitle": "আপডেট শিরোনাম",
+  "adminAppConfigUpdateMessage": "আপডেট বার্তা",
+  "adminAppConfigMinVersionCode": "ন্যূনতম সমর্থিত সংস্করণ কোড (0 = নিষ্ক্রিয়)",
+  "adminAppConfigButtonLabel": "বাটন লেবেল (ঐচ্ছিক)"
 }

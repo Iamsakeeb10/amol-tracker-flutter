@@ -2720,4 +2720,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportsEmDash => '—';
+
+  @override
+  String get updateModalTitle => 'New Update Available';
+
+  @override
+  String get updateModalMessage =>
+      'A new version of Amol Tracker is available. Please update for the best experience.';
+
+  @override
+  String get updateModalUpdateNow => 'Update Now';
+
+  @override
+  String get updateModalMaybeLater => 'Maybe Later';
+
+  @override
+  String get adminAppConfigTitle => 'App Config';
+
+  @override
+  String get adminAppConfigUpdateSettings => 'UPDATE SETTINGS';
+
+  @override
+  String get adminAppConfigFlags => 'FLAGS';
+
+  @override
+  String get adminAppConfigActive => 'Active';
+
+  @override
+  String get adminAppConfigActiveSubtitle => 'Enable version checking';
+
+  @override
+  String get adminAppConfigForceUpdate => 'Force Update';
+
+  @override
+  String get adminAppConfigForceUpdateSubtitle =>
+      'User cannot dismiss the modal';
+
+  @override
+  String get adminAppConfigSaved => 'App config saved.';
+
+  @override
+  String get adminAppConfigSaveFailed => 'Could not save app config.';
+
+  @override
+  String get adminAppConfigLatestVersion => 'Latest Version (e.g. 1.1.0)';
+
+  @override
+  String get adminAppConfigLatestVersionCode => 'Latest Version Code (e.g. 10)';
+
+  @override
+  String get adminAppConfigPlayStoreUrl => 'Play Store URL';
+
+  @override
+  String get adminAppConfigUpdateTitle => 'Update Title';
+
+  @override
+  String get adminAppConfigUpdateMessage => 'Update Message';
+
+  @override
+  String get adminAppConfigMinVersionCode =>
+      'Min Supported Version Code (0 = disabled)';
+
+  @override
+  String get adminAppConfigButtonLabel => 'Button Label (optional)';
 }

@@ -5070,6 +5070,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'—'**
   String get reportsEmDash;
+
+  /// No description provided for @updateModalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Update Available'**
+  String get updateModalTitle;
+
+  /// No description provided for @updateModalMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of Amol Tracker is available. Please update for the best experience.'**
+  String get updateModalMessage;
+
+  /// No description provided for @updateModalUpdateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Now'**
+  String get updateModalUpdateNow;
+
+  /// No description provided for @updateModalMaybeLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe Later'**
+  String get updateModalMaybeLater;
+
+  /// No description provided for @adminAppConfigTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App Config'**
+  String get adminAppConfigTitle;
+
+  /// No description provided for @adminAppConfigUpdateSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'UPDATE SETTINGS'**
+  String get adminAppConfigUpdateSettings;
+
+  /// No description provided for @adminAppConfigFlags.
+  ///
+  /// In en, this message translates to:
+  /// **'FLAGS'**
+  String get adminAppConfigFlags;
+
+  /// No description provided for @adminAppConfigActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get adminAppConfigActive;
+
+  /// No description provided for @adminAppConfigActiveSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable version checking'**
+  String get adminAppConfigActiveSubtitle;
+
+  /// No description provided for @adminAppConfigForceUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Force Update'**
+  String get adminAppConfigForceUpdate;
+
+  /// No description provided for @adminAppConfigForceUpdateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'User cannot dismiss the modal'**
+  String get adminAppConfigForceUpdateSubtitle;
+
+  /// No description provided for @adminAppConfigSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'App config saved.'**
+  String get adminAppConfigSaved;
+
+  /// No description provided for @adminAppConfigSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save app config.'**
+  String get adminAppConfigSaveFailed;
+
+  /// No description provided for @adminAppConfigLatestVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Version (e.g. 1.1.0)'**
+  String get adminAppConfigLatestVersion;
+
+  /// No description provided for @adminAppConfigLatestVersionCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Version Code (e.g. 10)'**
+  String get adminAppConfigLatestVersionCode;
+
+  /// No description provided for @adminAppConfigPlayStoreUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Store URL'**
+  String get adminAppConfigPlayStoreUrl;
+
+  /// No description provided for @adminAppConfigUpdateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Title'**
+  String get adminAppConfigUpdateTitle;
+
+  /// No description provided for @adminAppConfigUpdateMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Message'**
+  String get adminAppConfigUpdateMessage;
+
+  /// No description provided for @adminAppConfigMinVersionCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Min Supported Version Code (0 = disabled)'**
+  String get adminAppConfigMinVersionCode;
+
+  /// No description provided for @adminAppConfigButtonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Button Label (optional)'**
+  String get adminAppConfigButtonLabel;
 }
 
 class _AppLocalizationsDelegate

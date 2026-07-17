@@ -298,7 +298,7 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
                     ),
                     if (isFullAdmin) const Divider(),
                   ],
-                  if (isFullAdmin)
+                  if (isFullAdmin) ...[
                     NavRow(
                       icon: Icons.notifications_active_outlined,
                       title: l10n.adminPushNotificationTitle,
@@ -307,6 +307,16 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
                         context.push(AppRoutes.adminPushNotification);
                       },
                     ),
+                    const Divider(),
+                    NavRow(
+                      icon: Icons.system_update_outlined,
+                      title: l10n.adminAppConfigTitle,
+                      onTap: () {
+                        AnalyticsService.instance.logFeatureTapped('admin_app_config', screen: 'more');
+                        context.push(AppRoutes.adminAppConfigList);
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -12,6 +12,7 @@ import '../../models/amal_log_model.dart';
 import '../../models/announcement_model.dart';
 import '../../models/notification_model.dart';
 import '../../models/user_model.dart';
+import '../../models/app_config_model.dart';
 
 class FirestoreService {
   FirestoreService({
@@ -935,5 +936,100 @@ class FirestoreService {
     final list = results.values.toList();
     if (list.length > 10) return list.sublist(0, 10);
     return list;
+  }
+
+  // ── App Config (version update) ──────────────────────────────────────
+
+  CollectionReference<Map<String, dynamic>> get _appConfigs =>
+      _firestore.collection('app_config');
+
+  Stream<List<AppConfigModel>> appConfigsStream() {
+    return _appConfigs.orderBy('createdAt', descending: true).snapshots().map(
+      (snap) => snap.docs.map(AppConfigModel.fromDoc).toList(),
+    );
+  }
+
+  Stream<AppConfigModel?> activeAppConfigStream() {
+    late StreamSubscription<QuerySnapshot<Map<String, dynamic>>> subscription;
+    final controller = StreamController<AppConfigModel?>();
+
+    void listenFallback() {
+      print('🔄 [FIRESTORE] Using fallback (no index)');
+      subscription = _appConfigs.snapshots().listen(
+        (snap) {
+          print('🔄 [FIRESTORE] Fallback: ${snap.docs.length} total docs');
+          for (final doc in snap.docs) {
+            print('🔄 [FIRESTORE]   doc ${doc.id}: isActive=${doc.data()["isActive"]} versionCode=${doc.data()["latestVersionCode"]}');
+          }
+          final active = snap.docs
+              .map(AppConfigModel.fromDoc)
+              .where((c) => c.isActive)
+              .toList()
+            ..sort((a, b) => b.latestVersionCode.compareTo(a.latestVersionCode));
+          print('🔄 [FIRESTORE] Active configs after filter: ${active.length}');
+          controller.add(active.isEmpty ? null : active.first);
+        },
+        onError: controller.addError,
+      );
+    }
+
+    void listenPrimary() {
+      subscription = _appConfigs
+          .where('isActive', isEqualTo: true)
+          .orderBy('latestVersionCode', descending: true)
+          .limit(1)
+          .snapshots()
+          .listen(
+        (snap) {
+          print('🔄 [FIRESTORE] Primary query returned ${snap.docs.length} docs');
+          for (final doc in snap.docs) {
+            print('🔄 [FIRESTORE]   doc ${doc.id}: isActive=${doc.data()["isActive"]} versionCode=${doc.data()["latestVersionCode"]}');
+          }
+          if (snap.docs.isEmpty) {
+            controller.add(null);
+          } else {
+            controller.add(AppConfigModel.fromDoc(snap.docs.first));
+          }
+        },
+        onError: (Object error) {
+          print('🔄 [FIRESTORE] ❌ Primary query error: $error');
+          if (error is FirebaseException && error.code == 'failed-precondition') {
+            subscription.cancel();
+            listenFallback();
+            return;
+          }
+          controller.addError(error);
+        },
+      );
+    }
+
+    listenPrimary();
+    controller.onCancel = () => subscription.cancel();
+    return controller.stream;
+  }
+
+  Future<String> createAppConfig({
+    required Map<String, dynamic> data,
+    required String adminUid,
+  }) async {
+    final doc = await _appConfigs.add(<String, dynamic>{
+      ...data,
+      'adminUid': adminUid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    return doc.id;
+  }
+
+  Future<void> updateAppConfig(
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    if (id.isEmpty) return;
+    await _appConfigs.doc(id).update(data);
+  }
+
+  Future<void> deleteAppConfig(String id) async {
+    if (id.isEmpty) return;
+    await _appConfigs.doc(id).delete();
   }
 }

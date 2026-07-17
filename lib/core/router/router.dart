@@ -16,6 +16,8 @@ import '../../features/admin/presentation/screens/admin_lesson_list_screen.dart'
 import '../../features/admin/presentation/screens/admin_question_editor_screen.dart';
 import '../../features/admin/presentation/screens/admin_quiz_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_push_notification_screen.dart';
+import '../../features/admin/presentation/screens/admin_app_config_list_screen.dart';
+import '../../features/admin/presentation/screens/admin_app_config_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/community/presentation/screens/community_screen.dart';
 import '../../features/community/presentation/screens/user_profile_screen.dart';
@@ -26,6 +28,7 @@ import '../../features/home/presentation/screens/day_complete_screen.dart';
 import '../../models/amal_log_model.dart';
 import '../../core/constants/amal_fields.dart';
 import '../../models/announcement_model.dart';
+import '../../models/app_config_model.dart';
 import '../../models/course_model.dart';
 import '../../features/admin/presentation/widgets/admin_course_helpers.dart';
 import '../../features/admin/presentation/widgets/admin_quiz_helpers.dart';
@@ -320,6 +323,21 @@ GoRouter buildAppRouter() {
         path: AppRoutes.adminPushNotification,
         name: 'adminPushNotification',
         builder: (_, _) => const AdminPushNotificationScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminAppConfigList,
+        name: 'adminAppConfigList',
+        builder: (_, _) => const AdminAppConfigListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminAppConfigForm,
+        name: 'adminAppConfigForm',
+        builder: (_, state) {
+          final extra = state.extra;
+          return AdminAppConfigFormScreen(
+            existing: extra is AppConfigModel ? extra : null,
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.adminAmalFields,

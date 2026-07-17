@@ -2724,4 +2724,67 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get reportsEmDash => '—';
+
+  @override
+  String get updateModalTitle => 'নতুন আপডেট পাওয়া গেছে';
+
+  @override
+  String get updateModalMessage =>
+      'আমল ট্র্যাকারের একটি নতুন সংস্করণ পাওয়া গেছে। সেরা অভিজ্ঞতার জন্য আপডেট করুন।';
+
+  @override
+  String get updateModalUpdateNow => 'এখনই আপডেট করুন';
+
+  @override
+  String get updateModalMaybeLater => 'পরে করব';
+
+  @override
+  String get adminAppConfigTitle => 'অ্যাপ কনফিগ';
+
+  @override
+  String get adminAppConfigUpdateSettings => 'আপডেট সেটিংস';
+
+  @override
+  String get adminAppConfigFlags => 'ফ্ল্যাগ';
+
+  @override
+  String get adminAppConfigActive => 'সক্রিয়';
+
+  @override
+  String get adminAppConfigActiveSubtitle => 'সংস্করণ পরীক্ষা সক্রিয় করুন';
+
+  @override
+  String get adminAppConfigForceUpdate => 'বাধ্যতামূলক আপডেট';
+
+  @override
+  String get adminAppConfigForceUpdateSubtitle =>
+      'ব্যবহারকারী মোডাল বন্ধ করতে পারবে না';
+
+  @override
+  String get adminAppConfigSaved => 'অ্যাপ কনফিগ সংরক্ষিত হয়েছে।';
+
+  @override
+  String get adminAppConfigSaveFailed => 'অ্যাপ কনফিগ সংরক্ষণ করা যায়নি।';
+
+  @override
+  String get adminAppConfigLatestVersion => 'সর্বশেষ সংস্করণ (যেমন 1.1.0)';
+
+  @override
+  String get adminAppConfigLatestVersionCode => 'সর্বশেষ সংস্করণ কোড (যেমন 10)';
+
+  @override
+  String get adminAppConfigPlayStoreUrl => 'প্লে স্টোর URL';
+
+  @override
+  String get adminAppConfigUpdateTitle => 'আপডেট শিরোনাম';
+
+  @override
+  String get adminAppConfigUpdateMessage => 'আপডেট বার্তা';
+
+  @override
+  String get adminAppConfigMinVersionCode =>
+      'ন্যূনতম সমর্থিত সংস্করণ কোড (0 = নিষ্ক্রিয়)';
+
+  @override
+  String get adminAppConfigButtonLabel => 'বাটন লেবেল (ঐচ্ছিক)';
 }

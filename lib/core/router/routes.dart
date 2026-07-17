@@ -97,6 +97,9 @@ class AppRoutes {
   static const adminQuizForm = '/admin/quiz-form';
   static const adminQuestionEditor = '/admin/question-editor';
 
+  static const adminAppConfigList = '/admin/app-configs';
+  static const adminAppConfigForm = '/admin/app-config-form';
+
   static String adminLessonsPath(String courseId) =>
       '/admin/courses/$courseId/lessons';
 }

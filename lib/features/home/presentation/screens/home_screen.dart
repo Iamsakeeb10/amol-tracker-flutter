@@ -22,7 +22,9 @@ import '../../../../providers/auth_provider.dart';
 import '../../../../providers/date_provider.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../core/services/jummah_modal_service.dart';
+import '../../../../providers/app_config_provider.dart';
 import '../../../../shared/widgets/announcement_modal.dart';
+import '../../../../shared/widgets/update_modal.dart';
 import '../../../../shared/widgets/jummah_reminder_modal.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../widgets/home_scroll_body.dart';
@@ -34,13 +36,15 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
   final Set<String> _sessionDismissedAnnouncementIds = <String>{};
   bool _isAnnouncementDialogOpen = false;
   String? _trackedUserId;
   String? _scheduledAnnouncementId;
   bool _didInitialAnnouncementCheck = false;
   bool _didJummahCheck = false;
+  bool _isUpdateDialogOpen = false;
 
   void _resetAnnouncementSessionForUser(String? uid) {
     _sessionDismissedAnnouncementIds.clear();
@@ -149,7 +153,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     AnalyticsService.instance.logScreenViewed('home');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _checkForUpdate();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _checkForUpdate();
+    }
+  }
+
+  void _checkForUpdate() {
+    print('🔄 [HOME] _checkForUpdate called — mounted=$mounted dialogOpen=$_isUpdateDialogOpen');
+    if (_isUpdateDialogOpen || !mounted) {
+      print('🔄 [HOME] ⏸️ Skipping — dialog open or not mounted');
+      return;
+    }
+    final status = ref.read(updateStatusProvider);
+    print('🔄 [HOME] status: isAvailable=${status.isAvailable} config=${status.config != null}');
+    if (!status.isAvailable || status.config == null) {
+      print('🔄 [HOME] ✅ No update to show');
+      return;
+    }
+    print('🔄 [HOME] 📅 Scheduling update dialog...');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isUpdateDialogOpen) {
+        print('🔄 [HOME] ⏸️ Post-frame: mounted=$mounted dialogOpen=$_isUpdateDialogOpen');
+        return;
+      }
+      _showUpdateDialog(status);
+    });
+  }
+
+  Future<void> _showUpdateDialog(UpdateStatus status) async {
+    print('🔄 [HOME] 🔔 Showing update dialog now!');
+    if (!mounted || _isUpdateDialogOpen) return;
+    _isUpdateDialogOpen = true;
+    await UpdateModal.show(
+      context,
+      config: status.config!,
+      installedVersionCode: status.installedVersionCode,
+    );
+    if (!mounted) return;
+    _isUpdateDialogOpen = false;
+    print('🔄 [HOME] ✅ Dialog dismissed');
   }
 
   @override
@@ -205,6 +263,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.listen(announcementsProvider, (previous, next) {
       if (!next.hasValue) return;
       _scheduleAnnouncementShow();
+    });
+    ref.listen<UpdateStatus>(updateStatusProvider, (previous, next) {
+      print('🔄 [HOME] updateStatusProvider changed: isAvailable=${next.isAvailable}');
+      if (next.isAvailable && !_isUpdateDialogOpen) {
+        _checkForUpdate();
+      }
     });
     ref.listen<AnnouncementModel?>(pendingAnnouncementProvider, (
       previous,

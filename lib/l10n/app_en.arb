@@ -126,8 +126,12 @@
   "duaPageCounter": "{current} / {total}",
   "@duaPageCounter": {
     "placeholders": {
-      "current": {"type": "int"},
-      "total": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "duaReaderOptions": "Reading options",
@@ -147,7 +151,13 @@
   "duaReaderTextSizeDecrease": "Decrease text size",
   "duaReaderTextSizeIncrease": "Increase text size",
   "routeNotFound": "Route not found: {path}",
-  "@routeNotFound": {"placeholders": {"path": {"type": "String"}}},
+  "@routeNotFound": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "account": "Account",
   "devMenu": "Dev menu",
   "profile": "Profile",
@@ -278,52 +288,100 @@
   "leaderboardBeFirstToday": "Be the first to log today!",
   "leaderboardYourRank": "Your rank: #{rank} · {score} {stat}",
   "@leaderboardYourRank": {
-    "placeholders": {"rank": {}, "score": {}, "stat": {}}
+    "placeholders": {
+      "rank": {},
+      "score": {},
+      "stat": {}
+    }
   },
   "leaderboardYourRankNumber": "Your rank: #{rank}",
   "@leaderboardYourRankNumber": {
-    "placeholders": {"rank": {"type": "int"}}
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
   },
   "leaderboardLoadFailed": "Could not load leaderboard right now.",
   "leaderboardNudgeKeepClimbing": "Keep climbing - every amal counts.",
   "leaderboardNudgeTop": "You are on top - stay consistent.",
   "leaderboardNudgeBehindDays": "{behind} days behind 2nd place - keep your streak alive.",
-  "@leaderboardNudgeBehindDays": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindDays": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardNudgeBehindPoints": "{behind} pts behind 2nd place - log today to close the gap.",
-  "@leaderboardNudgeBehindPoints": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindPoints": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardNudgeBehindFirstDays": "{behind} days behind 1st place - keep your streak alive.",
-  "@leaderboardNudgeBehindFirstDays": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindFirstDays": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardNudgeBehindFirstPoints": "{behind} pts behind 1st place - log today to take the lead.",
-  "@leaderboardNudgeBehindFirstPoints": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindFirstPoints": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardQuizTab": "Quiz",
   "leaderboardQuizBeFirst": "Be the first to pass a quiz!",
   "leaderboardNudgeBehindQuizPoints": "{behind} pts behind 2nd place - pass more quizzes to climb.",
-  "@leaderboardNudgeBehindQuizPoints": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindQuizPoints": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardNudgeBehindFirstQuizPoints": "{behind} pts behind 1st place - pass more quizzes to take the lead.",
-  "@leaderboardNudgeBehindFirstQuizPoints": {"placeholders": {"behind": {}}},
+  "@leaderboardNudgeBehindFirstQuizPoints": {
+    "placeholders": {
+      "behind": {}
+    }
+  },
   "leaderboardQuizAttempts": "attempts",
   "leaderboardQuizStat": "{points} pts · {attempts} attempts",
   "@leaderboardQuizStat": {
     "placeholders": {
-      "points": {"type": "int"},
-      "attempts": {"type": "int"}
+      "points": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
     }
   },
   "leaderboardYourRankQuiz": "Your rank: #{rank} · {stat}",
   "@leaderboardYourRankQuiz": {
     "placeholders": {
-      "rank": {"type": "int"},
-      "stat": {"type": "String"}
+      "rank": {
+        "type": "int"
+      },
+      "stat": {
+        "type": "String"
+      }
     }
   },
   "leaderboardQuizTiebreakerHint": "Equal points? Fewer total attempts rank higher.",
   "history": "HISTORY",
   "historyLoadFailed": "Could not load history.",
   "historyConsistency": "{value}% consistency",
-  "@historyConsistency": {"placeholders": {"value": {}}},
+  "@historyConsistency": {
+    "placeholders": {
+      "value": {}
+    }
+  },
   "historyLoggedDays": "Logged days",
   "historyOfDays": "of {days} days",
-  "@historyOfDays": {"placeholders": {"days": {}}},
+  "@historyOfDays": {
+    "placeholders": {
+      "days": {}
+    }
+  },
   "historyAvgScore": "Avg score",
   "historyNoLogsYet": "no logs yet",
   "historyThisMonth": "this month",
@@ -331,7 +389,12 @@
   "historyStartLogging": "Start logging to build your history",
   "historyWeakestAmal": "Weakest amal",
   "historyWeakestAmalDetail": "{label} - missed {days} days this month",
-  "@historyWeakestAmalDetail": {"placeholders": {"label": {}, "days": {}}},
+  "@historyWeakestAmalDetail": {
+    "placeholders": {
+      "label": {},
+      "days": {}
+    }
+  },
   "historyFull": "Full",
   "historyPartial": "Partial",
   "historyMiss": "Miss",
@@ -350,7 +413,11 @@
   "dayDetailGoToHome": "Go to Home",
   "editTodayAmal": "Edit today's amal",
   "memberSince": "Member since {year}",
-  "@memberSince": {"placeholders": {"year": {}}},
+  "@memberSince": {
+    "placeholders": {
+      "year": {}
+    }
+  },
   "best": "Best",
   "avg": "Avg",
   "thisWeek": "This week",
@@ -375,7 +442,11 @@
   "selected": "Selected",
   "todaysAmal": "Today's amal",
   "amalOnDate": "Amal on {date}",
-  "@amalOnDate": {"placeholders": {"date": {}}},
+  "@amalOnDate": {
+    "placeholders": {
+      "date": {}
+    }
+  },
   "last7Days": "Last 7 days",
   "profileSettings": "Profile settings",
   "saving": "Saving...",
@@ -399,7 +470,12 @@
   "yourGroup": "YOUR GROUP",
   "manage": "MANAGE",
   "groupMembersDesc": "{count} brothers · {desc}",
-  "@groupMembersDesc": {"placeholders": {"count": {}, "desc": {}}},
+  "@groupMembersDesc": {
+    "placeholders": {
+      "count": {},
+      "desc": {}
+    }
+  },
   "viewSheetArrow": "View sheet →",
   "done": "done",
   "pending": "pending",
@@ -434,15 +510,22 @@
   "deleteGroupWarning": "Members will lose access. This cannot be undone.",
   "delete": "Delete",
   "dayStreak": "{days} day streak",
-  "@dayStreak": {"placeholders": {"days": {}}},
+  "@dayStreak": {
+    "placeholders": {
+      "days": {}
+    }
+  },
   "groupSheet": "Group Sheet",
   "allActiveToday": "All {count} active today",
-  "@allActiveToday": {"placeholders": {"count": {}}},
+  "@allActiveToday": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "groupStreak": "group streak",
   "groupAvg": "Group avg",
   "memberUpper": "MEMBER",
-  "numericLegend": "Numeric (Fard, Takbir)"
-  ,
+  "numericLegend": "Numeric (Fard, Takbir)",
   "homeOfflineSyncMessage": "Offline - your log is saved on this device and will sync when you reconnect.",
   "loggedToday": "Logged today ✓",
   "markAllDone": "Mark all done",
@@ -450,7 +533,11 @@
   "submitTodaysLog": "Submit today's log",
   "saveTodaysAmal": "Save today's amal",
   "draftSavedTapSaveToFinish": "Draft saved. Tap {saveButton} to finish today.",
-  "@draftSavedTapSaveToFinish": {"placeholders": {"saveButton": {}}},
+  "@draftSavedTapSaveToFinish": {
+    "placeholders": {
+      "saveButton": {}
+    }
+  },
   "completeAllAmalAutoSave": "Complete every amal above to save today.",
   "amalAutoSaving": "Saving today's amal…",
   "progressAutosavedHint": "Your progress is auto-saved as draft.",
@@ -458,10 +545,19 @@
   "firstAmalStartsToday": "Your first amal starts today.",
   "onFire": "on fire",
   "bestStreakKeepGoing": "Best: {days} days · keep it going",
-  "@bestStreakKeepGoing": {"placeholders": {"days": {}}},
+  "@bestStreakKeepGoing": {
+    "placeholders": {
+      "days": {}
+    }
+  },
   "todaysProgress": "Today's progress",
   "scoreOutOfPoints": "{score} / {max} points",
-  "@scoreOutOfPoints": {"placeholders": {"score": {}, "max": {}}},
+  "@scoreOutOfPoints": {
+    "placeholders": {
+      "score": {},
+      "max": {}
+    }
+  },
   "outOf100Compact": "/100",
   "weekdayMon": "M",
   "weekdayTue": "T",
@@ -472,12 +568,20 @@
   "weekdaySun": "S",
   "dayCompleteSubtitle": "You completed today's amal.",
   "pointsEarned": "+{points} pts earned",
-  "@pointsEarned": {"placeholders": {"points": {}}},
+  "@pointsEarned": {
+    "placeholders": {
+      "points": {}
+    }
+  },
   "hadithOfDay": "HADITH OF THE DAY",
   "todaysSummary": "Today's summary",
   "backToHome": "Back to home",
   "pointsValue": "{points} pts",
-  "@pointsValue": {"placeholders": {"points": {}}},
+  "@pointsValue": {
+    "placeholders": {
+      "points": {}
+    }
+  },
   "tapScreenToJump": "Tap a screen to jump to it (UI testing)",
   "badgeThreeDaysTitle": "3-Day Streak",
   "badgeThreeDaysDesc": "Complete amal for 3 consecutive days.",
@@ -506,7 +610,13 @@
   "alhamdulillah": "Alhamdulillah",
   "allahuAkbar": "Allahu Akbar",
   "dhikrTarget": "Target: {count}",
-  "@dhikrTarget": {"placeholders": {"count": {"type": "int"}}},
+  "@dhikrTarget": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "dhikrCount": "Count",
   "dhikrCompleted": "Completed!",
   "dhikrReset": "Reset",
@@ -526,7 +636,13 @@
   "asmaUlHusna": "Asma ul Husna",
   "husnaSubtitle": "99 Names of Allah",
   "husnaLearnedCount": "{learned} of 99 learned",
-  "@husnaLearnedCount": {"placeholders": {"learned": {"type": "int"}}},
+  "@husnaLearnedCount": {
+    "placeholders": {
+      "learned": {
+        "type": "int"
+      }
+    }
+  },
   "husnaMarkLearned": "Mark as Learned",
   "husnaMarkNotLearned": "Unmark",
   "husnaQuiz": "Quiz Mode",
@@ -534,11 +650,26 @@
   "husnaQuizCorrect": "Correct!",
   "husnaQuizWrong": "Incorrect",
   "husnaQuizScore": "Score: {score} / {total}",
-  "@husnaQuizScore": {"placeholders": {"score": {"type": "int"}, "total": {"type": "int"}}},
+  "@husnaQuizScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "husnaQuizFinished": "Quiz Complete",
   "husnaNoNamesLearned": "Learn at least 4 names first to unlock quiz",
   "husnaNumber": "#{number}",
-  "@husnaNumber": {"placeholders": {"number": {"type": "int"}}},
+  "@husnaNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "husnaBenefit": "Reflection",
   "husnaMeaning": "Meaning",
   "husnaNextQuestion": "Next",
@@ -549,14 +680,29 @@
   "husnaFilterLearned": "Learned",
   "husnaFilterNotLearned": "Not Learned",
   "husnaQuizProgress": "Question {current} of {total}",
-  "@husnaQuizProgress": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "@husnaQuizProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "husnaQuizExcellent": "Excellent!",
   "husnaQuizGoodEffort": "Good effort!",
   "husnaQuizKeepLearning": "Keep learning!",
   "husnaSwipeHint": "Swipe to see next name",
   "husnaPronunciation": "Pronunciation",
   "husnaCorrectAnswer": "Correct answer: {name}",
-  "@husnaCorrectAnswer": {"placeholders": {"name": {"type": "String"}}},
+  "@husnaCorrectAnswer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "announcementDismiss": "Understood",
   "announcementTypeReminder": "Reminder",
   "announcementTypeAnnouncement": "Announcement",
@@ -601,10 +747,18 @@
   "adminAmalFieldTileSubtitle": "{id} · {type} · {points} · #{order}",
   "@adminAmalFieldTileSubtitle": {
     "placeholders": {
-      "id": {"type": "String"},
-      "type": {"type": "String"},
-      "points": {"type": "String"},
-      "order": {"type": "int"}
+      "id": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      },
+      "points": {
+        "type": "String"
+      },
+      "order": {
+        "type": "int"
+      }
     }
   },
   "adminStatusLive": "Live",
@@ -664,11 +818,12 @@
   "adminPushSendToUser": "Send to {name}",
   "@adminPushSendToUser": {
     "placeholders": {
-      "name": { "type": "String" }
+      "name": {
+        "type": "String"
+      }
     }
   },
   "adminPushSelectUser": "Select a user to target",
-
   "adminCoursesTitle": "Courses",
   "adminCourseCreateTitle": "Create course",
   "adminCourseEditTitle": "Edit course",
@@ -680,7 +835,13 @@
   "adminCourseFormSaved": "Course saved.",
   "adminCoursePublishedPushTitle": "New course available",
   "adminCoursePublishedPushMessage": "A new syllabus course is live: {title}. Open Syllabus to enroll.",
-  "@adminCoursePublishedPushMessage": {"placeholders": {"title": {"type": "String"}}},
+  "@adminCoursePublishedPushMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
   "adminCourseManageLessons": "Manage lessons",
   "adminCourseDescription": "Description",
   "adminCourseDescriptionRequired": "Description is required.",
@@ -692,7 +853,6 @@
   "adminCourseStatusSection": "Status",
   "adminCourseStatusPublished": "Published",
   "adminCourseStatusDraft": "Draft",
-
   "adminLessonsTitle": "Lessons",
   "adminLessonsSubtitle": "Drag to reorder lessons. Toggle publish when ready.",
   "adminLessonCreateTitle": "Add lesson",
@@ -720,7 +880,6 @@
   "adminLessonThumbnailUrl": "Thumbnail URL (optional)",
   "adminLessonDuration": "Duration (minutes, optional)",
   "adminLessonPublished": "Published",
-
   "adminQuizTitle": "Quizzes",
   "adminQuizCreateTitle": "Create quiz",
   "adminQuizEditTitle": "Edit quiz",
@@ -745,7 +904,13 @@
   "adminQuizOptionsSection": "Answer options",
   "adminQuizSelectCorrectHint": "Select the radio button for the correct answer.",
   "adminQuizOptionLabel": "Option {number}",
-  "@adminQuizOptionLabel": {"placeholders": {"number": {"type": "int"}}},
+  "@adminQuizOptionLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "adminQuizOptionRequired": "Option is required.",
   "adminQuizOptionsMinRequired": "At least two options are required.",
   "adminQuizCorrectAnswerRequired": "Select a correct answer with text.",
@@ -753,10 +918,21 @@
   "adminQuizExplanation": "Explanation (shown after quiz)",
   "adminQuizQuestionDone": "Done",
   "adminQuizCorrectAnswer": "Answer: {answer}",
-  "@adminQuizCorrectAnswer": {"placeholders": {"answer": {"type": "String"}}},
+  "@adminQuizCorrectAnswer": {
+    "placeholders": {
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
   "adminQuizOptionCount": "{count} opts",
-  "@adminQuizOptionCount": {"placeholders": {"count": {"type": "int"}}},
-
+  "@adminQuizOptionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusTitle": "Syllabus",
   "syllabusSearchHint": "Search courses…",
   "syllabusEmptyList": "No published courses yet.",
@@ -770,15 +946,25 @@
   "syllabusProgressLabel": "{completed} of {total} lessons",
   "@syllabusProgressLabel": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "syllabusCourseCompleted": "Course completed",
   "syllabusLessonsSection": "Lessons",
   "syllabusNoLessons": "No lessons published yet.",
   "syllabusLessonCount": "{count} lessons",
-  "@syllabusLessonCount": {"placeholders": {"count": {"type": "int"}}},
+  "@syllabusLessonCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusCourseLoadFailed": "Could not load course.",
   "syllabusLessonLoadFailed": "Could not load lesson.",
   "syllabusMarkComplete": "Mark as complete",
@@ -796,46 +982,105 @@
   "syllabusVideoUnmute": "Unmute",
   "syllabusVideoOpenYoutube": "Open in YouTube",
   "syllabusLaunchUrlFailed": "Could not open this resource.",
-
   "syllabusQuizTitle": "Quiz",
   "syllabusQuizLoadFailed": "Could not load this quiz.",
   "syllabusQuizRulesTitle": "Before you start",
   "syllabusQuizQuestionCount": "{count} questions",
-  "@syllabusQuizQuestionCount": {"placeholders": {"count": {"type": "int"}}},
+  "@syllabusQuizQuestionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizTimeLimitLabel": "Time limit: {limit}",
-  "@syllabusQuizTimeLimitLabel": {"placeholders": {"limit": {"type": "String"}}},
+  "@syllabusQuizTimeLimitLabel": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
   "syllabusQuizNoTimeLimit": "No time limit",
   "syllabusQuizPassingScoreLabel": "Pass with {score} correct answers",
-  "@syllabusQuizPassingScoreLabel": {"placeholders": {"score": {"type": "int"}}},
+  "@syllabusQuizPassingScoreLabel": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizPreviousAttempts": "Your attempts",
   "syllabusQuizAttemptCount": "{count} attempt(s)",
-  "@syllabusQuizAttemptCount": {"placeholders": {"count": {"type": "int"}}},
+  "@syllabusQuizAttemptCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizAttemptNumber": "Attempt #{number}",
-  "@syllabusQuizAttemptNumber": {"placeholders": {"number": {"type": "int"}}},
+  "@syllabusQuizAttemptNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizAttemptsLabel": "{count} attempt(s) · best {score}/{total}",
   "@syllabusQuizAttemptsLabel": {
     "placeholders": {
-      "count": {"type": "int"},
-      "score": {"type": "int"},
-      "total": {"type": "int"}
+      "count": {
+        "type": "int"
+      },
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "syllabusQuizAttemptHistoryRow": "{score}/{total} · {date}",
   "@syllabusQuizAttemptHistoryRow": {
     "placeholders": {
-      "score": {"type": "int"},
-      "total": {"type": "int"},
-      "date": {"type": "String"}
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
     }
   },
   "syllabusQuizAttemptPassed": "Passed",
   "syllabusQuizAttemptFailed": "Failed",
   "syllabusQuizBestScore": "Best score: {score} / {total}",
-  "@syllabusQuizBestScore": {"placeholders": {"score": {"type": "int"}, "total": {"type": "int"}}},
+  "@syllabusQuizBestScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizAlreadyPassed": "You passed this quiz",
   "syllabusQuizStart": "Start quiz",
   "syllabusQuizProgress": "Question {current} of {total}",
-  "@syllabusQuizProgress": {"placeholders": {"current": {"type": "int"}, "total": {"type": "int"}}},
+  "@syllabusQuizProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizQuestionLabel": "Question",
   "syllabusQuizNext": "Next",
   "syllabusQuizPrevious": "Previous",
@@ -849,12 +1094,33 @@
   "syllabusQuizResultPassed": "Passed!",
   "syllabusQuizResultFailed": "Not passed",
   "syllabusQuizYourScore": "Score: {score} / {total}",
-  "@syllabusQuizYourScore": {"placeholders": {"score": {"type": "int"}, "total": {"type": "int"}}},
+  "@syllabusQuizYourScore": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizTimeTaken": "Time taken: {time}",
-  "@syllabusQuizTimeTaken": {"placeholders": {"time": {"type": "String"}}},
+  "@syllabusQuizTimeTaken": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "syllabusQuizReviewSection": "Answer review",
   "syllabusQuizReviewQuestion": "Question {number}",
-  "@syllabusQuizReviewQuestion": {"placeholders": {"number": {"type": "int"}}},
+  "@syllabusQuizReviewQuestion": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "syllabusQuizYourAnswer": "Your answer",
   "syllabusQuizCorrectAnswer": "Correct answer",
   "syllabusQuizExplanation": "Explanation",
@@ -869,15 +1135,25 @@
   "syllabusQuizBismillahTranslation": "In the name of Allah, the Most Gracious, the Most Merciful.",
   "syllabusQuizBismillahIntention": "O Allah, grant me beneficial knowledge and a sound understanding.",
   "syllabusQuizBismillahBegin": "Begin quiz",
-
   "lmsXpSectionTitle": "Learning progress",
   "lmsXpLabel": "{xp} XP",
-  "@lmsXpLabel": {"placeholders": {"xp": {"type": "int"}}},
+  "@lmsXpLabel": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
   "lmsXpToNextLevel": "{xp} XP to next level",
-  "@lmsXpToNextLevel": {"placeholders": {"xp": {"type": "int"}}},
+  "@lmsXpToNextLevel": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
   "lmsLevelUpTitle": "Level up!",
   "lmsLevelUpTapToContinue": "Tap to continue",
-
   "lessonDiscussionTitle": "Discussion",
   "lessonDiscussionEmpty": "No comments yet. Start the conversation with your study group.",
   "lessonDiscussionHint": "Share your thoughts on this lesson…",
@@ -888,20 +1164,23 @@
   "lessonDiscussionEditTitle": "Edit comment",
   "lessonDiscussionEditFailed": "Could not save comment. Try again.",
   "lessonDiscussionEdited": "Edited",
-
   "courseCertificateTitle": "Certificate of Completion",
   "courseCertificateArabic": "بارك الله فيك",
   "courseCertificatePresentedTo": "Presented to",
   "courseCertificateForCourse": "For completing the course",
   "courseCertificateDate": "Completed on {date}",
-  "@courseCertificateDate": {"placeholders": {"date": {"type": "String"}}},
+  "@courseCertificateDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "courseCertificateShare": "Share",
   "courseCertificateView": "View certificate",
-
   "syllabusBookmarkedFilter": "Bookmarked",
   "syllabusBookmarksEmpty": "No bookmarked lessons yet.",
   "syllabusAudioLoadFailed": "Could not load this audio lesson.",
-
   "quranTitle": "Quran",
   "quranSurahList": "Surahs",
   "quranReader": "Mushaf Reader",
@@ -910,19 +1189,25 @@
   "quranAyahs": "{count} Ayahs",
   "@quranAyahs": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "quranPage": "Page {page}",
   "@quranPage": {
     "placeholders": {
-      "page": {"type": "int"}
+      "page": {
+        "type": "int"
+      }
     }
   },
   "quranJuz": "Juz {juz}",
   "@quranJuz": {
     "placeholders": {
-      "juz": {"type": "int"}
+      "juz": {
+        "type": "int"
+      }
     }
   },
   "quranTranslation": "Translation",
@@ -934,7 +1219,9 @@
   "quranContinueReading": "Continue from page {page}",
   "@quranContinueReading": {
     "placeholders": {
-      "page": {"type": "int"}
+      "page": {
+        "type": "int"
+      }
     }
   },
   "quranOpenReader": "Open",
@@ -943,7 +1230,9 @@
   "quranAyahLabel": "Ayah {ayah}",
   "@quranAyahLabel": {
     "placeholders": {
-      "ayah": {"type": "int"}
+      "ayah": {
+        "type": "int"
+      }
     }
   },
   "quranJumpToPage": "Jump to page",
@@ -953,8 +1242,12 @@
   "quranPageOf": "Page {page} of {total}",
   "@quranPageOf": {
     "placeholders": {
-      "page": {"type": "int"},
-      "total": {"type": "int"}
+      "page": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "quranTranslationFontSize": "Translation text size",
@@ -974,7 +1267,13 @@
   "historyLight": "Light",
   "historyMinimal": "Minimal",
   "historyMotivationFull": "MashaAllah! You have completed full amal for {days} days this month. May Allah accept it.",
-  "@historyMotivationFull": {"placeholders": {"days": {"type": "int"}}},
+  "@historyMotivationFull": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "historyMotivationPartial": "You are trying regularly — that is the most important thing. It will gradually increase InshaAllah.",
   "historyMotivationMinimal": "Every small amal is valuable to Allah. Try to do a little more today.",
   "historyMotivationNoData": "No logs for a few days — no problem. Start again from today, Allah is Most Forgiving.",
@@ -1001,7 +1300,6 @@
   "streakSheetFreezeUsed": "Freeze used this week",
   "streakSheetScore": "Score",
   "streakSheetBestStreak": "Best",
-
   "myReports": "My Reports",
   "reportsWeeklyTab": "Weekly",
   "reportsMonthlyTab": "Monthly",
@@ -1011,7 +1309,12 @@
   "reportsCustomTitle": "Custom report",
   "reportsAvgScore": "avg score / 100",
   "reportsDaysLogged": "{logged}/{total} days logged",
-  "@reportsDaysLogged": {"placeholders": {"logged": {}, "total": {}}},
+  "@reportsDaysLogged": {
+    "placeholders": {
+      "logged": {},
+      "total": {}
+    }
+  },
   "reportsCurrentStreak": "current streak",
   "reportsBestStreak": "best streak",
   "reportsConsistency": "consistency",
@@ -1025,18 +1328,47 @@
   "reportsAmalBreakdown": "Amal Performance",
   "reportsInsights": "Insights",
   "reportsBestDayInsight": "Best day was {day} with a score of {score}/100",
-  "@reportsBestDayInsight": {"placeholders": {"day": {}, "score": {}}},
+  "@reportsBestDayInsight": {
+    "placeholders": {
+      "day": {},
+      "score": {}
+    }
+  },
   "reportsWeakestAmalInsight": "Weakest amal: {label} — completed {done} of {total} days",
-  "@reportsWeakestAmalInsight": {"placeholders": {"label": {}, "done": {}, "total": {}}},
+  "@reportsWeakestAmalInsight": {
+    "placeholders": {
+      "label": {},
+      "done": {},
+      "total": {}
+    }
+  },
   "reportsStrongestAmalInsight": "Strongest amal: {label} — completed {done} of {total} days",
-  "@reportsStrongestAmalInsight": {"placeholders": {"label": {}, "done": {}, "total": {}}},
+  "@reportsStrongestAmalInsight": {
+    "placeholders": {
+      "label": {},
+      "done": {},
+      "total": {}
+    }
+  },
   "reportsTrendUp": "Score improved by +{points} pts vs previous period",
-  "@reportsTrendUp": {"placeholders": {"points": {}}},
+  "@reportsTrendUp": {
+    "placeholders": {
+      "points": {}
+    }
+  },
   "reportsTrendDown": "Score dropped by {points} pts vs previous period",
-  "@reportsTrendDown": {"placeholders": {"points": {}}},
+  "@reportsTrendDown": {
+    "placeholders": {
+      "points": {}
+    }
+  },
   "reportsTrendFlat": "Score is unchanged vs previous period",
   "reportsRankInsight": "You ranked #{rank} in the community this period",
-  "@reportsRankInsight": {"placeholders": {"rank": {}}},
+  "@reportsRankInsight": {
+    "placeholders": {
+      "rank": {}
+    }
+  },
   "reportsHadithOfPeriod": "Hadith of the period",
   "reportsShare": "Share",
   "reportsSharing": "Preparing…",
@@ -1053,5 +1385,25 @@
   "reportsCustomRangeTooLong": "Maximum range is 90 days.",
   "reportsInvalidRange": "End date must be on or after start date.",
   "reportsRangeHint": "Tap a start date, then an end date (max 90 days).",
-  "reportsEmDash": "—"
+  "reportsEmDash": "—",
+  "updateModalTitle": "New Update Available",
+  "updateModalMessage": "A new version of Amol Tracker is available. Please update for the best experience.",
+  "updateModalUpdateNow": "Update Now",
+  "updateModalMaybeLater": "Maybe Later",
+  "adminAppConfigTitle": "App Config",
+  "adminAppConfigUpdateSettings": "UPDATE SETTINGS",
+  "adminAppConfigFlags": "FLAGS",
+  "adminAppConfigActive": "Active",
+  "adminAppConfigActiveSubtitle": "Enable version checking",
+  "adminAppConfigForceUpdate": "Force Update",
+  "adminAppConfigForceUpdateSubtitle": "User cannot dismiss the modal",
+  "adminAppConfigSaved": "App config saved.",
+  "adminAppConfigSaveFailed": "Could not save app config.",
+  "adminAppConfigLatestVersion": "Latest Version (e.g. 1.1.0)",
+  "adminAppConfigLatestVersionCode": "Latest Version Code (e.g. 10)",
+  "adminAppConfigPlayStoreUrl": "Play Store URL",
+  "adminAppConfigUpdateTitle": "Update Title",
+  "adminAppConfigUpdateMessage": "Update Message",
+  "adminAppConfigMinVersionCode": "Min Supported Version Code (0 = disabled)",
+  "adminAppConfigButtonLabel": "Button Label (optional)"
 }

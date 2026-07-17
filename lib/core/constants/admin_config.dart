@@ -36,7 +36,9 @@ class AdminConfig {
         location == '/admin/announcement-form' ||
         location == '/admin/push-notification' ||
         location == '/admin/amal-fields' ||
-        location == '/admin/amal-field-form';
+        location == '/admin/amal-field-form' ||
+        location == '/admin/app-configs' ||
+        location == '/admin/app-config-form';
   }
 
   static bool isCourseAdminRoute(String location) {

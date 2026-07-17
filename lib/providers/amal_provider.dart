@@ -39,6 +39,48 @@ Map<String, dynamic> _emptyTogglesForFields(List<AmalField> fields) {
   };
 }
 
+/// Serialize lit-circle selections for the local draft (Set -> sorted List).
+Map<String, List<int>> _serializePrayerSelections(
+  Map<String, Set<int>> selections,
+) {
+  return <String, List<int>>{
+    for (final entry in selections.entries)
+      entry.key: (entry.value.toList()..sort()),
+  };
+}
+
+/// Parse persisted lit-circle selections from a draft map.
+Map<String, Set<int>> _parsePrayerSelections(dynamic raw) {
+  if (raw is! Map) return <String, Set<int>>{};
+  final result = <String, Set<int>>{};
+  raw.forEach((key, value) {
+    if (value is List) {
+      result[key.toString()] = value
+          .map((e) => (e as num?)?.toInt())
+          .whereType<int>()
+          .toSet();
+    }
+  });
+  return result;
+}
+
+/// Keep only expandable fields and reconcile each selection with its count.
+Map<String, Set<int>> _reconcilePrayerSelections(
+  Map<String, Set<int>> stored,
+  Map<String, dynamic> toggles,
+  List<AmalField> fields,
+) {
+  final result = <String, Set<int>>{};
+  for (final field in fields) {
+    if (!field.supportsExpansion) continue;
+    final count = getNumericValue(toggles[field.id], field.maxValue);
+    if (count <= 0) continue;
+    result[field.id] =
+        resolvePrayerSelection(stored[field.id], count, field.maxValue);
+  }
+  return result;
+}
+
 bool _isPerfectWeekChain(List<AmalLogModel> logs) {
   if (logs.length < 7) return false;
   final chain = logs.sublist(logs.length - 7);
@@ -62,6 +104,7 @@ class AmalState {
     required this.isLoading,
     this.error,
     this.submittedLog,
+    this.prayerSelections = const <String, Set<int>>{},
   });
 
   factory AmalState.initial({List<AmalField> fields = const []}) {
@@ -79,6 +122,10 @@ class AmalState {
   final bool isLoading;
   final String? error;
   final AmalLogModel? submittedLog;
+
+  /// UI-only positions of lit prayer circles per expandable field id. Persisted
+  /// to the local draft (not Firestore, which keeps count-only toggles).
+  final Map<String, Set<int>> prayerSelections;
 
   int get doneCount {
     final activeIds = resolveAmalFields(fields).map((f) => f.id).toSet();
@@ -106,6 +153,7 @@ class AmalState {
     bool? isLoading,
     String? error,
     AmalLogModel? submittedLog,
+    Map<String, Set<int>>? prayerSelections,
     bool clearError = false,
     bool clearSubmittedLog = false,
   }) {
@@ -118,6 +166,7 @@ class AmalState {
       submittedLog: clearSubmittedLog
           ? null
           : (submittedLog ?? this.submittedLog),
+      prayerSelections: prayerSelections ?? this.prayerSelections,
     );
   }
 }
@@ -177,9 +226,15 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
 
   void _applyFields(List<AmalField> fields) {
+    final nextToggles = normalizeTogglesForFields(state.toggles, fields);
     state = state.copyWith(
-      toggles: normalizeTogglesForFields(state.toggles, fields),
+      toggles: nextToggles,
       fields: fields,
+      prayerSelections: _reconcilePrayerSelections(
+        state.prayerSelections,
+        nextToggles,
+        fields,
+      ),
       clearError: true,
     );
   }
@@ -264,11 +319,19 @@ class AmalNotifier extends StateNotifier<AmalState> {
           Map<String, dynamic>.from(rawToggles),
           fields,
         );
+        final storedSelections = _parsePrayerSelections(
+          draft['prayerSelections'],
+        );
         state = AmalState(
           toggles: next,
           fields: fields,
           isSubmitted: false,
           isLoading: false,
+          prayerSelections: _reconcilePrayerSelections(
+            storedSelections,
+            next,
+            fields,
+          ),
         );
         // Update home widget when loading from draft
         await _updateHomeWidget();
@@ -293,6 +356,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       'uid': _uid,
       'hijriDate': hijri,
       'toggles': Map<String, dynamic>.from(state.toggles),
+      'prayerSelections': _serializePrayerSelections(state.prayerSelections),
     });
     await _updateHomeWidget();
   }
@@ -348,7 +412,50 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
     final next = Map<String, dynamic>.from(state.toggles);
     next[fieldId] = nextValue;
-    state = state.copyWith(toggles: next, clearError: true);
+
+    // Direct count changes reconcile the lit circles to a left-to-right fill.
+    Map<String, Set<int>>? nextSelections;
+    if (field.supportsExpansion) {
+      nextSelections = Map<String, Set<int>>.from(state.prayerSelections);
+      nextSelections[fieldId] = <int>{for (var i = 0; i < nextValue; i++) i};
+    }
+
+    state = state.copyWith(
+      toggles: next,
+      prayerSelections: nextSelections,
+      clearError: true,
+    );
+    Future<void>.microtask(_persistDraft);
+  }
+
+  /// Toggle a single prayer circle for an expandable field. Keeps the stored
+  /// count in sync (count = number of lit circles) while remembering the exact
+  /// positions so each prayer can be toggled independently.
+  void togglePrayer(String fieldId, int index) {
+    if (state.isSubmitted || state.isLoading) return;
+    final field = state.fields.where((f) => f.id == fieldId).firstOrNull;
+    if (field == null || !field.supportsExpansion) return;
+    if (index < 0 || index >= field.maxValue) return;
+
+    final currentCount = getNumericValue(state.toggles[fieldId], field.maxValue);
+    final base = resolvePrayerSelection(
+      state.prayerSelections[fieldId],
+      currentCount,
+      field.maxValue,
+    );
+    final nextSet = Set<int>.from(base);
+    if (!nextSet.remove(index)) nextSet.add(index);
+
+    final nextToggles = Map<String, dynamic>.from(state.toggles);
+    nextToggles[fieldId] = nextSet.length;
+    final nextSelections = Map<String, Set<int>>.from(state.prayerSelections);
+    nextSelections[fieldId] = nextSet;
+
+    state = state.copyWith(
+      toggles: nextToggles,
+      prayerSelections: nextSelections,
+      clearError: true,
+    );
     Future<void>.microtask(_persistDraft);
   }
 
@@ -356,10 +463,18 @@ class AmalNotifier extends StateNotifier<AmalState> {
     if (state.isSubmitted || state.isLoading) return;
     final activeFields = resolveAmalFields(state.fields);
     final next = Map<String, dynamic>.from(state.toggles);
+    final nextSelections = Map<String, Set<int>>.from(state.prayerSelections);
     for (final f in activeFields) {
       next[f.id] = f.type == AmalType.numeric ? f.maxValue : true;
+      if (f.supportsExpansion) {
+        nextSelections[f.id] = <int>{for (var i = 0; i < f.maxValue; i++) i};
+      }
     }
-    state = state.copyWith(toggles: next, clearError: true);
+    state = state.copyWith(
+      toggles: next,
+      prayerSelections: nextSelections,
+      clearError: true,
+    );
     Future<void>.microtask(_persistDraft);
   }
 
@@ -367,6 +482,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
     if (state.isSubmitted || state.isLoading) return;
     state = state.copyWith(
       toggles: _emptyTogglesForFields(state.fields),
+      prayerSelections: const <String, Set<int>>{},
       clearError: true,
     );
     Future<void>.microtask(_persistDraft);

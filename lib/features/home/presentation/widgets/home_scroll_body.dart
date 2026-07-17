@@ -6,6 +6,9 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
+import '../../../../providers/amal_expansion_provider.dart';
+import '../../../../providers/amal_fields_provider.dart';
+import '../../../../providers/amal_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 import 'home_editing_amal_sliver.dart';
 import 'home_header.dart';
@@ -99,6 +102,26 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    // Collapse any expanded amal tile if its field disappears from the list
+    // (e.g. admin removed it or the field set changed while viewing).
+    ref.listen<List<AmalField>>(
+      amalFieldsListProvider,
+      (previous, next) {
+        ref
+            .read(amalExpansionProvider.notifier)
+            .collapseIfMissing(next.map((f) => f.id).toSet());
+      },
+    );
+    // Once the day's amal is submitted, tiles become read-only, so collapse.
+    ref.listen<bool>(
+      amalProvider(widget.uid).select((s) => s.isSubmitted),
+      (previous, next) {
+        if (next) ref.read(amalExpansionProvider.notifier).collapse();
+      },
+    );
+
+    // Collapse-on-tap-outside is handled by a TapRegion around the expanded
+    // tile (see AmalFieldTile), which reliably routes pointer-downs globally.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

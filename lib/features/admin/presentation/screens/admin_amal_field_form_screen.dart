@@ -41,6 +41,7 @@ class _AdminAmalFieldFormScreenState
   late final TextEditingController _orderCtrl;
   late AmalType _type;
   late bool _isActive;
+  late bool _expandable;
   late IconSource _iconSource;
   late String? _iconName;
   bool _isSaving = false;
@@ -61,9 +62,22 @@ class _AdminAmalFieldFormScreenState
     _orderCtrl = TextEditingController(text: '${e?.order ?? 999}');
     _type = e?.type ?? AmalType.boolean;
     _isActive = e?.isActive ?? true;
+    _expandable = e?.expandable ?? false;
     _iconSource = e?.iconSource ?? IconSource.fontAwesome;
     _iconName = e?.iconName;
+    // Rebuild so the expansion toggle appears/disappears as max value edits
+    // cross the "== 5" eligibility threshold.
+    _maxValueCtrl.addListener(_onMaxValueChanged);
   }
+
+  void _onMaxValueChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// Expansion is only offered for numeric fields with exactly five slots.
+  bool get _canOfferExpansion =>
+      _type == AmalType.numeric &&
+      _parseInt(_maxValueCtrl, fallback: 1) == 5;
 
   @override
   void dispose() {
@@ -73,6 +87,7 @@ class _AdminAmalFieldFormScreenState
     _sublabelEnCtrl.dispose();
     _sublabelBnCtrl.dispose();
     _pointsCtrl.dispose();
+    _maxValueCtrl.removeListener(_onMaxValueChanged);
     _maxValueCtrl.dispose();
     _orderCtrl.dispose();
     super.dispose();
@@ -95,6 +110,7 @@ class _AdminAmalFieldFormScreenState
       isActive: _isActive,
       iconName: _iconName,
       iconSource: _iconSource,
+      expandable: _expandable,
     );
   }
 
@@ -141,6 +157,7 @@ class _AdminAmalFieldFormScreenState
       isActive: _isActive,
       iconName: _iconName,
       iconSource: _iconSource,
+      expandable: _expandable,
     );
 
     try {
@@ -364,6 +381,16 @@ class _AdminAmalFieldFormScreenState
                     value: _isActive,
                     onChanged: (v) => setState(() => _isActive = v),
                   ),
+                  if (_canOfferExpansion) ...[
+                    const Divider(),
+                    AdminToggleRow(
+                      icon: Icons.expand_circle_down_outlined,
+                      title: l10n.adminAmalFieldExpandable,
+                      subtitle: l10n.adminAmalFieldExpandableSubtitle,
+                      value: _expandable,
+                      onChanged: (v) => setState(() => _expandable = v),
+                    ),
+                  ],
                 ],
               ),
             ),

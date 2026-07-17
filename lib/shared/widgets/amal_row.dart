@@ -54,8 +54,24 @@ class AmalRow extends StatelessWidget {
   final ValueChanged<int>? onNumericChanged;
   final VoidCallback? onTapDetails;
   final bool readOnly;
+
   /// When set, caps numeric picker options (e.g. takbir max = fard).
   final int? numericPickerMax;
+
+  /// Whether this row supports the inline expandable section. When true the
+  /// numeric picker tap toggles [expandedContent] instead of opening its
+  /// value overlay.
+  final bool expandable;
+
+  /// Whether the expandable section is currently open.
+  final bool isExpanded;
+
+  /// Invoked when the picker is tapped to open/close the section.
+  final VoidCallback? onToggleExpand;
+
+  /// Content revealed below the main row when [isExpanded] is true
+  /// (e.g. the prayer-circle row).
+  final Widget? expandedContent;
 
   const AmalRow({
     super.key,
@@ -68,6 +84,10 @@ class AmalRow extends StatelessWidget {
     this.onTapDetails,
     this.readOnly = false,
     this.numericPickerMax,
+    this.expandable = false,
+    this.isExpanded = false,
+    this.onToggleExpand,
+    this.expandedContent,
   });
 
   @override
@@ -148,58 +168,82 @@ class AmalRow extends StatelessWidget {
       ],
     );
 
+    final mainRow = Row(
+      children: [
+        Expanded(
+          child: onTapDetails == null
+              ? detailsContent
+              : HitSlopWrapper(
+                  onTap: onTapDetails!,
+                  hitSlop: amalControlHitSlop(),
+                  child: IgnorePointer(child: detailsContent),
+                ),
+        ),
+        SizedBox(width: 8.w),
+        if (isNumeric)
+          AmalNumericPicker(
+            currentValue: currentNumeric,
+            maxValue: pickerMax,
+            fieldMaxValue: field.maxValue,
+            readOnly: readOnly,
+            onChanged: onNumericChanged,
+            onTapOverride: expandable ? onToggleExpand : null,
+            isExpanded: isExpanded,
+          )
+        else if (readOnly)
+          SizedBox(
+            width: 48.w,
+            height: 48.h,
+            child: Center(
+              child: Icon(
+                done ? Icons.check_circle : Icons.cancel_outlined,
+                color: done ? AppColors.success : AppColors.danger,
+                size: 22.r,
+              ),
+            ),
+          )
+        else
+          SizedBox(
+            width: 48.w,
+            height: 48.h,
+            child: Center(
+              child: Switch.adaptive(
+                value: done,
+                onChanged: onChanged,
+                activeThumbColor: AppColors.emeraldDeep,
+                activeTrackColor: AppColors.gold,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ),
+      ],
+    );
+
     return CardContainer(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       color: done ? AppColors.goldCard : AppColors.cardDark,
       borderColor: done ? AppColors.goldBorder : AppColors.cardBorder,
-      child: Row(
-        children: [
-          Expanded(
-            child: onTapDetails == null
-                ? detailsContent
-                : HitSlopWrapper(
-                    onTap: onTapDetails!,
-                    hitSlop: amalControlHitSlop(),
-                    child: IgnorePointer(child: detailsContent),
-                  ),
-          ),
-          SizedBox(width: 8.w),
-          if (isNumeric)
-            AmalNumericPicker(
-              currentValue: currentNumeric,
-              maxValue: pickerMax,
-              fieldMaxValue: field.maxValue,
-              readOnly: readOnly,
-              onChanged: onNumericChanged,
-            )
-          else if (readOnly)
-            SizedBox(
-              width: 48.w,
-              height: 48.h,
-              child: Center(
-                child: Icon(
-                  done ? Icons.check_circle : Icons.cancel_outlined,
-                  color: done ? AppColors.success : AppColors.danger,
-                  size: 22.r,
+      child: expandable
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                mainRow,
+                // Smoothly grow/shrink the prayer-circle section. Using an
+                // AnimatedSize keeps a single cheap layout animation that
+                // performs well even on low-end devices, while a full-width
+                // collapsed placeholder prevents any horizontal jump.
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeInOutCubic,
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.hardEdge,
+                  child: isExpanded && expandedContent != null
+                      ? SizedBox(width: double.infinity, child: expandedContent)
+                      : const SizedBox(width: double.infinity),
                 ),
-              ),
+              ],
             )
-          else
-            SizedBox(
-              width: 48.w,
-              height: 48.h,
-              child: Center(
-                child: Switch.adaptive(
-                  value: done,
-                  onChanged: onChanged,
-                  activeThumbColor: AppColors.emeraldDeep,
-                  activeTrackColor: AppColors.gold,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-            ),
-        ],
-      ),
+          : mainRow,
     );
   }
 }

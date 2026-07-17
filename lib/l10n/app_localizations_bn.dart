@@ -159,6 +159,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get prayerDhuhr => 'যোহর';
 
   @override
+  String get prayerJummah => 'জুমুআহ';
+
+  @override
   String get prayerAsr => 'আসর';
 
   @override
@@ -1574,6 +1577,13 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get adminAmalFieldIconClear => 'আইকন মুছুন';
+
+  @override
+  String get adminAmalFieldExpandable => 'নামাজের সার্কেল এক্সপ্যানশন';
+
+  @override
+  String get adminAmalFieldExpandableSubtitle =>
+      'দ্রুত ট্র্যাকিংয়ের জন্য পাঁচটি নামাজের সার্কেলসহ একটি ড্রপডাউন দেখান। সংখ্যাসূচক ফিল্ড ও সর্বোচ্চ মান ৫ প্রয়োজন।';
 
   @override
   String adminAmalFieldTileSubtitle(

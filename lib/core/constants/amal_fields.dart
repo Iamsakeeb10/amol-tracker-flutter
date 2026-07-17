@@ -17,6 +17,10 @@ class AmalField {
   final IconSource? iconSource;
   final DateTime? createdAt;
 
+  /// When true, the home tile shows a dropdown that expands to prayer circles.
+  /// Only meaningful for numeric fields with [maxValue] == 5.
+  final bool expandable;
+
   const AmalField({
     required this.id,
     required this.label,
@@ -29,7 +33,14 @@ class AmalField {
     this.iconName,
     this.iconSource,
     this.createdAt,
+    this.expandable = false,
   });
+
+  /// Whether this field can render the expandable prayer-circle UI.
+  /// Guards against misconfiguration: expansion needs a numeric field with
+  /// exactly five slots (the five daily prayers).
+  bool get supportsExpansion =>
+      expandable && type == AmalType.numeric && maxValue == 5;
 
   String getLabel(String locale) {
     final key = locale == 'bn' ? 'bn' : 'en';
@@ -76,6 +87,7 @@ class AmalField {
       iconName: (map['iconName'] as String?)?.trim(),
       iconSource: _parseIconSource(map['iconSource']),
       createdAt: createdAt,
+      expandable: _parseBool(map['expandable']),
     );
   }
 
@@ -102,6 +114,7 @@ class AmalField {
       'type': type == AmalType.numeric ? 'numeric' : 'boolean',
       'order': order,
       'isActive': isActive,
+      'expandable': expandable,
       if (iconName != null) 'iconName': iconName,
       if (iconSource != null) 'iconSource': iconSource == IconSource.material ? 'material' : 'fontAwesome',
     };
@@ -125,5 +138,16 @@ class AmalField {
     if (raw == 'material') return IconSource.material;
     if (raw == 'fontAwesome') return IconSource.fontAwesome;
     return null;
+  }
+
+  /// Firestore/console may store booleans as strings or numbers; default false.
+  static bool _parseBool(dynamic raw) {
+    if (raw is bool) return raw;
+    if (raw is num) return raw != 0;
+    if (raw is String) {
+      final v = raw.trim().toLowerCase();
+      return v == 'true' || v == '1' || v == 'yes';
+    }
+    return false;
   }
 }

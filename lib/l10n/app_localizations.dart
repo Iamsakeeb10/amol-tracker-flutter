@@ -374,6 +374,12 @@ abstract class AppLocalizations {
   /// **'Dhuhr'**
   String get prayerDhuhr;
 
+  /// No description provided for @prayerJummah.
+  ///
+  /// In en, this message translates to:
+  /// **'Jummah'**
+  String get prayerJummah;
+
   /// No description provided for @prayerAsr.
   ///
   /// In en, this message translates to:
@@ -2977,6 +2983,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear icon'**
   String get adminAmalFieldIconClear;
+
+  /// No description provided for @adminAmalFieldExpandable.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer circle expansion'**
+  String get adminAmalFieldExpandable;
+
+  /// No description provided for @adminAmalFieldExpandableSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show a dropdown with five prayer circles for quick tracking. Requires a numeric field with max value 5.'**
+  String get adminAmalFieldExpandableSubtitle;
 
   /// No description provided for @adminAmalFieldTileSubtitle.
   ///

@@ -56,7 +56,11 @@ Map<String, dynamic> amalFieldToFirestoreMap({
   String? id,
   String? iconName,
   IconSource? iconSource,
+  bool expandable = false,
 }) {
+  // Expansion only makes sense for numeric fields with exactly five slots.
+  final resolvedExpandable =
+      expandable && type == AmalType.numeric && maxValue == 5;
   final map = <String, dynamic>{
     'label': buildLocaleMap(en: labelEn, bn: labelBn),
     'sublabel': buildLocaleMap(en: sublabelEn, bn: sublabelBn),
@@ -65,6 +69,7 @@ Map<String, dynamic> amalFieldToFirestoreMap({
     'type': type == AmalType.numeric ? 'numeric' : 'boolean',
     'order': order,
     'isActive': isActive,
+    'expandable': resolvedExpandable,
   };
   if (id != null) map['id'] = id.trim();
   if (iconName != null && iconName.isNotEmpty) map['iconName'] = iconName;
@@ -91,6 +96,7 @@ AmalField buildDraftAmalField({
   required bool isActive,
   String? iconName,
   IconSource? iconSource,
+  bool expandable = false,
 }) {
   return AmalField(
     id: id.trim().isEmpty ? 'preview' : id.trim(),
@@ -103,6 +109,7 @@ AmalField buildDraftAmalField({
     isActive: isActive,
     iconName: iconName,
     iconSource: iconSource,
+    expandable: expandable && type == AmalType.numeric && maxValue == 5,
   );
 }
 

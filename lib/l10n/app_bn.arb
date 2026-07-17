@@ -56,6 +56,7 @@
   "prayerAdhanDisableBatteryOptimization": "ব্যাটারি অপ্টিমাইজেশন বন্ধ করুন",
   "prayerFajr": "ফজর",
   "prayerDhuhr": "যোহর",
+  "prayerJummah": "জুমুআহ",
   "prayerAsr": "আসর",
   "prayerMaghrib": "মাগরিব",
   "prayerIsha": "ইশা",
@@ -744,6 +745,8 @@
   "adminAmalFieldIconSourceFa": "ফন্ট অসাম",
   "adminAmalFieldIconSourceMaterial": "ম্যাটেরিয়াল",
   "adminAmalFieldIconClear": "আইকন মুছুন",
+  "adminAmalFieldExpandable": "নামাজের সার্কেল এক্সপ্যানশন",
+  "adminAmalFieldExpandableSubtitle": "দ্রুত ট্র্যাকিংয়ের জন্য পাঁচটি নামাজের সার্কেলসহ একটি ড্রপডাউন দেখান। সংখ্যাসূচক ফিল্ড ও সর্বোচ্চ মান ৫ প্রয়োজন।",
   "adminAmalFieldTileSubtitle": "{id} · {type} · {points} · #{order}",
   "@adminAmalFieldTileSubtitle": {
     "placeholders": {

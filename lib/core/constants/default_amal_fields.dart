@@ -33,6 +33,7 @@ const List<AmalField> kDefaultAmalFields = [
     maxValue: 5,
     type: AmalType.numeric,
     order: 1,
+    expandable: true,
   ),
   AmalField(
     id: 'fard',
@@ -45,6 +46,7 @@ const List<AmalField> kDefaultAmalFields = [
     maxValue: 5,
     type: AmalType.numeric,
     order: 2,
+    expandable: true,
   ),
   AmalField(
     id: 'takbir',
@@ -57,6 +59,7 @@ const List<AmalField> kDefaultAmalFields = [
     maxValue: 5,
     type: AmalType.numeric,
     order: 3,
+    expandable: true,
   ),
   AmalField(
     id: 'morning_azkar',

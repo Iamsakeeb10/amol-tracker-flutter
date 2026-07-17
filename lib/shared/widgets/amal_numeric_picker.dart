@@ -14,6 +14,8 @@ class AmalNumericPicker extends StatefulWidget {
     required this.fieldMaxValue,
     required this.readOnly,
     required this.onChanged,
+    this.onTapOverride,
+    this.isExpanded = false,
   });
 
   final int currentValue;
@@ -21,6 +23,13 @@ class AmalNumericPicker extends StatefulWidget {
   final int fieldMaxValue;
   final bool readOnly;
   final ValueChanged<int>? onChanged;
+
+  /// When provided, tapping the picker calls this instead of opening the
+  /// value-selection overlay (used to toggle the inline prayer-circle row).
+  final VoidCallback? onTapOverride;
+
+  /// Rotates the trailing chevron to indicate the inline row is open.
+  final bool isExpanded;
 
   @override
   State<AmalNumericPicker> createState() => _AmalNumericPickerState();
@@ -41,8 +50,14 @@ class _AmalNumericPickerState extends State<AmalNumericPicker> {
     _overlayEntry = null;
   }
 
-  void _toggleOverlay() {
-    if (widget.readOnly || widget.onChanged == null) return;
+  void _handleTap() {
+    if (widget.readOnly) return;
+    // Expandable fields toggle the inline prayer row instead of the overlay.
+    if (widget.onTapOverride != null) {
+      widget.onTapOverride!.call();
+      return;
+    }
+    if (widget.onChanged == null) return;
     if (_overlayEntry != null) {
       _removeOverlay();
       return;
@@ -109,10 +124,10 @@ class _AmalNumericPickerState extends State<AmalNumericPicker> {
     return CompositedTransformTarget(
       link: _layerLink,
       child: HitSlopWrapper(
-        onTap: _toggleOverlay,
+        onTap: _handleTap,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: _toggleOverlay,
+          onTap: _handleTap,
           child: ConstrainedBox(
             constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.h),
             child: Center(
@@ -150,10 +165,15 @@ class _AmalNumericPickerState extends State<AmalNumericPicker> {
                       ),
                     ),
                     SizedBox(width: 2.w),
-                    Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 18.r,
-                      color: hasValue ? AppColors.gold : AppColors.textMuted,
+                    AnimatedRotation(
+                      turns: widget.isExpanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeInOutCubic,
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 18.r,
+                        color: hasValue ? AppColors.gold : AppColors.textMuted,
+                      ),
                     ),
                   ],
                 ),

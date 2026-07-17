@@ -264,6 +264,20 @@ class IslamicDateService {
   /// English weekday name for the current Bangladesh-local calendar day.
   static String weekdayEnglishToday() => weekdayToday(languageCode: 'en');
 
+  /// Whether the current day is a Friday (Jummah day).
+  ///
+  /// Uses the Bangladesh-local calendar day — the same source as the home
+  /// header weekday ([weekdayToday]) — so the Jummah label always matches the
+  /// day shown on screen. Avoids the hijri roundtrip, which is skewed by
+  /// [AppConstants.hijriDayAdjustment].
+  static bool isCurrentPrayerDayFriday() {
+    try {
+      return nowInBD().weekday == DateTime.friday;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// English weekday for the Gregorian day mapped from a Hijri storage key.
   static String weekdayEnglishForStorage(String hijriYyyyMmDd) {
     final parts = hijriYyyyMmDd.split('-');

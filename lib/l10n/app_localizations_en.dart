@@ -157,6 +157,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prayerDhuhr => 'Dhuhr';
 
   @override
+  String get prayerJummah => 'Jummah';
+
+  @override
   String get prayerAsr => 'Asr';
 
   @override
@@ -1571,6 +1574,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminAmalFieldIconClear => 'Clear icon';
+
+  @override
+  String get adminAmalFieldExpandable => 'Prayer circle expansion';
+
+  @override
+  String get adminAmalFieldExpandableSubtitle =>
+      'Show a dropdown with five prayer circles for quick tracking. Requires a numeric field with max value 5.';
 
   @override
   String adminAmalFieldTileSubtitle(

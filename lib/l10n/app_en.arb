@@ -56,6 +56,7 @@
   "prayerAdhanDisableBatteryOptimization": "Disable battery optimization",
   "prayerFajr": "Fajr",
   "prayerDhuhr": "Dhuhr",
+  "prayerJummah": "Jummah",
   "prayerAsr": "Asr",
   "prayerMaghrib": "Maghrib",
   "prayerIsha": "Isha",
@@ -744,6 +745,8 @@
   "adminAmalFieldIconSourceFa": "Font Awesome",
   "adminAmalFieldIconSourceMaterial": "Material",
   "adminAmalFieldIconClear": "Clear icon",
+  "adminAmalFieldExpandable": "Prayer circle expansion",
+  "adminAmalFieldExpandableSubtitle": "Show a dropdown with five prayer circles for quick tracking. Requires a numeric field with max value 5.",
   "adminAmalFieldTileSubtitle": "{id} · {type} · {points} · #{order}",
   "@adminAmalFieldTileSubtitle": {
     "placeholders": {

@@ -34,3 +34,21 @@ double scoreRatio(int score, List<AmalField> fields) {
   final max = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
   return (score / max).clamp(0.0, 1.0);
 }
+
+/// Resolve the effective set of lit prayer-circle indices for an expandable
+/// field.
+///
+/// When the tracked [stored] selection is consistent with the authoritative
+/// [count] (same size, all indices within range) it is used as-is so
+/// independent toggles are preserved. Otherwise the selection is rebuilt as a
+/// left-to-right fill of [count] circles — reconciling external changes such
+/// as "mark all", "clear all", or a fresh reload where only the count is known.
+Set<int> resolvePrayerSelection(Set<int>? stored, int count, int slots) {
+  final safeCount = count.clamp(0, slots);
+  if (stored != null &&
+      stored.length == safeCount &&
+      stored.every((i) => i >= 0 && i < slots)) {
+    return stored;
+  }
+  return <int>{for (var i = 0; i < safeCount; i++) i};
+}

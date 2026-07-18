@@ -2793,4 +2793,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminAppConfigButtonLabel => 'Button Label (optional)';
+
+  @override
+  String get streakSheetFrozen => 'Frozen';
+
+  @override
+  String get streakFreezeTitle => 'Streak Freeze';
+
+  @override
+  String streakFreezeDescription(Object days) {
+    return 'You missed yesterday. Use a streak freeze to keep your streak alive — it will become a $days-day streak.';
+  }
+
+  @override
+  String get streakFreezesLeftThisWeek => 'Freezes left this week';
+
+  @override
+  String get streakFreezeUseButton => 'Yes, use my freeze';
+
+  @override
+  String get streakFreezeResetButton => 'No, reset my streak';
 }

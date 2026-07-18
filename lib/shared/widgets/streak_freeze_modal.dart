@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
+import '../../l10n/app_localizations.dart';
 import 'card_container.dart';
 
 class StreakFreezeModal extends StatelessWidget {
@@ -46,6 +47,9 @@ class StreakFreezeModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final newStreakDays = preservedStreak + 2;
+
     return Padding(
       padding: EdgeInsets.all(16.r),
       child: SafeArea(
@@ -91,13 +95,13 @@ class StreakFreezeModal extends StatelessWidget {
               SizedBox(height: 14.h),
               Center(
                 child: Text(
-                  'Streak Freeze',
+                  l10n.streakFreezeTitle,
                   style: AppTextStyles.headlineLarge(context),
                 ),
               ),
               SizedBox(height: 4.h),
               Text(
-                "You missed yesterday. Use a streak freeze to keep your streak alive — it will become a ${preservedStreak + 2}-day streak.",
+                l10n.streakFreezeDescription(newStreakDays),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium(context),
               ),
@@ -122,7 +126,7 @@ class StreakFreezeModal extends StatelessWidget {
                     SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
-                        'Freezes left this week',
+                        l10n.streakFreezesLeftThisWeek,
                         style: AppTextStyles.bodyMedium(context).copyWith(
                           color: AppColors.textPrimary,
                         ),
@@ -152,7 +156,7 @@ class StreakFreezeModal extends StatelessWidget {
                     Navigator.of(context).maybePop();
                   },
                   child: Text(
-                    'Yes, use my freeze',
+                    l10n.streakFreezeUseButton,
                     style: AppTextStyles.button(context).copyWith(
                       color: AppColors.emeraldDeep,
                       fontWeight: FontWeight.w600,
@@ -169,7 +173,7 @@ class StreakFreezeModal extends StatelessWidget {
                     Navigator.of(context).maybePop();
                   },
                   child: Text(
-                    'No, reset my streak',
+                    l10n.streakFreezeResetButton,
                     style: AppTextStyles.button(context).copyWith(
                       color: AppColors.textSecondary,
                     ),

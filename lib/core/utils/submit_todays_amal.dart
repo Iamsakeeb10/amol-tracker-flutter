@@ -6,6 +6,7 @@ import '../../core/router/routes.dart';
 import '../../core/utils/streak_helper.dart';
 import '../../models/user_model.dart';
 import '../../providers/amal_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../shared/widgets/streak_freeze_modal.dart';
 
 /*
@@ -46,12 +47,19 @@ Future<void> submitTodaysAmal(
       context,
       preservedStreak: result.streakResult.newCurrentStreak,
       onUseFreeze: () async {
-        await notifier.applyFreeze(user, hijri: result.log.hijriDate);
+        await notifier.applyFreeze(
+          user,
+          hijri: result.log.hijriDate,
+          preservedStreak: result.streakResult.newCurrentStreak,
+        );
+        // Invalidate so the bottomsheet and other UI see the updated streakFreezeDate immediately.
+        ref.invalidate(currentUserProvider);
         if (!context.mounted) return;
         context.push(AppRoutes.dayComplete, extra: result.log);
       },
       onResetStreak: () async {
         await notifier.resetStreak(user.uid);
+        ref.invalidate(currentUserProvider);
         if (!context.mounted) return;
         context.push(AppRoutes.dayComplete, extra: result.log);
       },

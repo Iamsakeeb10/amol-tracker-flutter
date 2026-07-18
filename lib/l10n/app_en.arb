@@ -1409,4 +1409,12 @@
   "adminAppConfigUpdateMessage": "Update Message",
   "adminAppConfigMinVersionCode": "Min Supported Version Code (0 = disabled)",
   "adminAppConfigButtonLabel": "Button Label (optional)"
+,
+  "streakSheetFrozen": "Frozen",
+  "streakFreezeTitle": "Streak Freeze",
+  "streakFreezeDescription": "You missed yesterday. Use a streak freeze to keep your streak alive — it will become a {days}-day streak.",
+  "@streakFreezeDescription": {"placeholders": {"days": {}}},
+  "streakFreezesLeftThisWeek": "Freezes left this week",
+  "streakFreezeUseButton": "Yes, use my freeze",
+  "streakFreezeResetButton": "No, reset my streak"
 }

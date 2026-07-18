@@ -17,7 +17,7 @@ import '../../../../providers/date_provider.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 
-enum StreakDayStatus { completed, missed, today, preAccount }
+enum StreakDayStatus { completed, missed, frozen, today, preAccount }
 
 class StreakDay {
   final String hijriDate;
@@ -262,6 +262,19 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
             ? StreakDayStatus.missed
             : StreakDayStatus.completed,
         score: log.score,
+        weekday: weekday,
+        hijriDisplay: hijriDisplay,
+      );
+    }
+
+    // No log exists — check if this date was frozen via streak freeze.
+    if (user != null &&
+        user.streakFreezeDate.isNotEmpty &&
+        hijriDate == user.streakFreezeDate) {
+      return StreakDay(
+        hijriDate: hijriDate,
+        status: StreakDayStatus.frozen,
+        score: 0,
         weekday: weekday,
         hijriDisplay: hijriDisplay,
       );
@@ -542,6 +555,7 @@ class _DayCard extends StatelessWidget {
   Color _borderColor() => switch (day.status) {
         StreakDayStatus.completed => AppColors.success.withValues(alpha: 0.4),
         StreakDayStatus.missed => AppColors.danger.withValues(alpha: 0.35),
+        StreakDayStatus.frozen => AppColors.ice.withValues(alpha: 0.4),
         StreakDayStatus.today => AppColors.goldBorder,
         StreakDayStatus.preAccount => AppColors.cardBorder,
       };
@@ -549,6 +563,7 @@ class _DayCard extends StatelessWidget {
   Color _bgColor() => switch (day.status) {
         StreakDayStatus.completed => AppColors.successLight,
         StreakDayStatus.missed => AppColors.dangerLight,
+        StreakDayStatus.frozen => AppColors.iceLight,
         StreakDayStatus.today => AppColors.goldCard,
         StreakDayStatus.preAccount => AppColors.cardDark,
       };
@@ -556,6 +571,7 @@ class _DayCard extends StatelessWidget {
   IconData _statusIcon() => switch (day.status) {
         StreakDayStatus.completed => Icons.check_circle,
         StreakDayStatus.missed => Icons.cancel,
+        StreakDayStatus.frozen => Icons.ac_unit,
         StreakDayStatus.today => Icons.schedule,
         StreakDayStatus.preAccount => Icons.remove_circle_outline,
       };
@@ -563,6 +579,7 @@ class _DayCard extends StatelessWidget {
   Color _iconColor() => switch (day.status) {
         StreakDayStatus.completed => AppColors.success,
         StreakDayStatus.missed => AppColors.danger,
+        StreakDayStatus.frozen => AppColors.ice,
         StreakDayStatus.today => AppColors.gold,
         StreakDayStatus.preAccount => AppColors.textMuted,
       };
@@ -671,6 +688,7 @@ class _DayCard extends StatelessWidget {
     return switch (day.status) {
       StreakDayStatus.completed => '',
       StreakDayStatus.missed => l10n.streakSheetMissed,
+      StreakDayStatus.frozen => l10n.streakSheetFrozen,
       StreakDayStatus.today => l10n.streakSheetToday,
       StreakDayStatus.preAccount => l10n.streakSheetPreAccount,
     };

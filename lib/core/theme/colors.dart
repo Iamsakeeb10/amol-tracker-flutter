@@ -22,6 +22,8 @@ class AppColors {
   static const warningLight = Color(0x33E67E22);
   static const danger = Color(0xFFE74C3C);
   static const dangerLight = Color(0x33E74C3C);
+  static const ice = Color(0xFF5DADE2);
+  static const iceLight = Color(0x335DADE2);
 
   // UI surface
   static const cardDark = Color(0x0FFFFFFF);

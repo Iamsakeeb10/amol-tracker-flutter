@@ -5208,6 +5208,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Button Label (optional)'**
   String get adminAppConfigButtonLabel;
+
+  /// No description provided for @streakSheetFrozen.
+  ///
+  /// In en, this message translates to:
+  /// **'Frozen'**
+  String get streakSheetFrozen;
+
+  /// No description provided for @streakFreezeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak Freeze'**
+  String get streakFreezeTitle;
+
+  /// No description provided for @streakFreezeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You missed yesterday. Use a streak freeze to keep your streak alive — it will become a {days}-day streak.'**
+  String streakFreezeDescription(Object days);
+
+  /// No description provided for @streakFreezesLeftThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Freezes left this week'**
+  String get streakFreezesLeftThisWeek;
+
+  /// No description provided for @streakFreezeUseButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, use my freeze'**
+  String get streakFreezeUseButton;
+
+  /// No description provided for @streakFreezeResetButton.
+  ///
+  /// In en, this message translates to:
+  /// **'No, reset my streak'**
+  String get streakFreezeResetButton;
 }
 
 class _AppLocalizationsDelegate

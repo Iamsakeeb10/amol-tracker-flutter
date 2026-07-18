@@ -488,11 +488,13 @@ class AmalNotifier extends StateNotifier<AmalState> {
     Future<void>.microtask(_persistDraft);
   }
 
-  Future<void> applyFreeze(UserModel user, {required String hijri}) async {
+  Future<void> applyFreeze(UserModel user, {
+    required String hijri,
+    required int preservedStreak,
+  }) async {
     final fs = _ref.read(firestoreServiceProvider);
-    final baseline = user.currentStreak <= 0 ? 1 : user.currentStreak;
     final frozenDate = IslamicDateService.shiftStorageByDays(hijri, -1);
-    final newCurrent = baseline + 2;
+    final newCurrent = preservedStreak + 2;
     final newBest = newCurrent > user.bestStreak ? newCurrent : user.bestStreak;
     await fs.updateStreak(
       user.uid,
@@ -508,7 +510,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   Future<void> resetStreak(String uid) async {
     final fs = _ref.read(firestoreServiceProvider);
-    await fs.updateStreak(uid, currentStreak: 1);
+    await fs.updateStreak(uid, currentStreak: 1, streakFreezeDate: '');
   }
 
   Future<SubmitResult?> submit(UserModel user) async {
@@ -540,7 +542,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       submittedAt: now,
     );
 
-    final streakResult = computeStreakResult(
+    var streakResult = computeStreakResult(
       lastLogDate: user.lastLogDate,
       todayHijri: hijri,
       currentStreak: user.currentStreak,
@@ -556,6 +558,26 @@ class AmalNotifier extends StateNotifier<AmalState> {
       await fs.saveAmalLog(log, state.fields);
       AnalyticsService.instance.logAmalCompleted(score: score);
       AnalyticsService.instance.logDailyScoreCompleted(totalScore: score);
+
+      // Recompute preserved streak from actual logs when showing freeze modal,
+      // to avoid stale Firestore currentStreak causing inconsistent counts.
+      if (streakResult.action == StreakAction.showFreeze) {
+        final recentLogs = await fs.getRecentLogs(user.uid, limit: 30);
+        final loggedDates = <String>{
+          for (final log in recentLogs)
+            if (!isBackfilledLog(log)) log.hijriDate,
+          hijri, // Include today's just-saved log
+        };
+        final preservedStreak = computeStreakFromLogs(
+          loggedDates: loggedDates,
+          todayHijri: hijri,
+        );
+        streakResult = StreakResult(
+          action: StreakAction.showFreeze,
+          newCurrentStreak: preservedStreak,
+          newBestStreak: streakResult.newBestStreak,
+        );
+      }
 
       // Field-level tracking
       final nowLocal = DateTime.now();
@@ -647,7 +669,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
               fs: fs,
               user: user,
               submittedLog: log,
-              resultingCurrentStreak: _streakAfterFreeze(user.currentStreak),
+              resultingCurrentStreak: _streakAfterFreeze(streakResult.newCurrentStreak),
               currentWeekKey: currentWeekKey,
             );
             break;
@@ -675,7 +697,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       );
       await _updateHomeWidget(
         streakOverride: streakResult.action == StreakAction.showFreeze
-            ? _streakAfterFreeze(user.currentStreak)
+            ? _streakAfterFreeze(streakResult.newCurrentStreak)
             : streakResult.newCurrentStreak,
       );
     }

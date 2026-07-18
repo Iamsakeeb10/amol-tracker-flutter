@@ -2797,4 +2797,24 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get adminAppConfigButtonLabel => 'বাটন লেবেল (ঐচ্ছিক)';
+
+  @override
+  String get streakSheetFrozen => 'ফ্রিজ';
+
+  @override
+  String get streakFreezeTitle => 'স্ট্রিক ফ্রিজ';
+
+  @override
+  String streakFreezeDescription(Object days) {
+    return 'আপনি গতকাল মিস করেছেন। আপনার স্ট্রিক বাঁচিয়ে রাখতে একটি স্ট্রিক ফ্রিজ ব্যবহার করুন — এটি $days দিনের স্ট্রিক হবে।';
+  }
+
+  @override
+  String get streakFreezesLeftThisWeek => 'এই সপ্তাহে অবশিষ্ট ফ্রিজ';
+
+  @override
+  String get streakFreezeUseButton => 'হ্যাঁ, আমার ফ্রিজ ব্যবহার করুন';
+
+  @override
+  String get streakFreezeResetButton => 'না, আমার স্ট্রিক রিসেট করুন';
 }

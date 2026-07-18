@@ -6,7 +6,7 @@ import '../../../../core/utils/score_calculator.dart';
 import '../../../../providers/amal_expansion_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
-import 'fard_prayer_expand_row.dart';
+import '../../../../shared/widgets/fard_prayer_expand_row.dart';
 
 /// One amal row that rebuilds only when its own toggle value changes.
 class AmalFieldTile extends ConsumerWidget {

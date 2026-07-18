@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/services/islamic_date_service.dart';
-import '../../../../core/theme/colors.dart';
-import '../../../../core/theme/text_styles.dart';
-import '../../../../l10n/app_localizations.dart';
+import '../../core/services/islamic_date_service.dart';
+import '../../core/theme/colors.dart';
+import '../../core/theme/text_styles.dart';
+import '../../l10n/app_localizations.dart';
 
 /// A horizontal row of prayer circles for an expandable numeric amal field.
 ///
@@ -215,8 +215,6 @@ class _PrayerCircleState extends State<_PrayerCircle>
       duration: const Duration(milliseconds: 420),
       value: widget.isChecked ? 1 : 0,
     );
-    // Overshoot slightly past full bloom before settling, giving a soft
-    // "pop" feel instead of a mechanical linear fill.
     _bloom = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOutBack,
@@ -252,8 +250,6 @@ class _PrayerCircleState extends State<_PrayerCircle>
         AnimatedBuilder(
           animation: _bloom,
           builder: (context, _) {
-            // Raw (non-overshooting) progress, used for anything that must
-            // stay within 0..1 such as colour lerps and icon swap timing.
             final linear = _controller.value.clamp(0.0, 1.0);
             return SizedBox(
               width: 36.r,
@@ -268,9 +264,6 @@ class _PrayerCircleState extends State<_PrayerCircle>
                 child: Center(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 120),
-                    // Only the checkmark gets a bounce-in pop; the idle
-                    // prayer icon always renders at its normal size so it
-                    // never gets stuck small at rest.
                     child: linear > 0.5
                         ? TweenAnimationBuilder<double>(
                             key: const ValueKey(true),
@@ -324,10 +317,6 @@ class _PrayerCircleState extends State<_PrayerCircle>
   }
 }
 
-/// Paints a circular border plus a fill disc that grows radially from the
-/// center outward as [bloom] goes from 0 to 1 (and slightly beyond, since
-/// the driving curve overshoots before settling — the painter clamps the
-/// drawn radius so it never visually exceeds the border).
 class _BloomFillPainter extends CustomPainter {
   _BloomFillPainter({
     required this.bloom,
@@ -336,7 +325,6 @@ class _BloomFillPainter extends CustomPainter {
     required this.strokeWidth,
   });
 
-  /// May slightly exceed 1.0 momentarily due to the overshoot curve.
   final double bloom;
   final Color fillColor;
   final Color borderColor;
@@ -348,8 +336,6 @@ class _BloomFillPainter extends CustomPainter {
     final ringRadius = (size.shortestSide - strokeWidth) / 2;
     final linear = bloom.clamp(0.0, 1.0);
 
-    // Border ring: colour transitions alongside the fill so the outline
-    // finishes turning gold as the bloom completes.
     final borderPaint = Paint()
       ..color = Color.lerp(borderColor, fillColor, linear)!
       ..style = PaintingStyle.stroke
@@ -358,9 +344,6 @@ class _BloomFillPainter extends CustomPainter {
 
     if (bloom <= 0) return;
 
-    // Fill disc grows from the center; radius can momentarily overshoot the
-    // ring (from the curve) which reads as a soft "pop" rather than a hard
-    // clip, so it is only clamped a touch past the ring rather than to it.
     final fillRadius = (ringRadius - strokeWidth / 2) * bloom.clamp(0.0, 1.06);
 
     final fillPaint = Paint()

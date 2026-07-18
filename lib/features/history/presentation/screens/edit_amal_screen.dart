@@ -20,6 +20,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/edit_amal_progress_card.dart';
 import '../../../../shared/widgets/edited_badge.dart';
+import '../../../../shared/widgets/fard_prayer_expand_row.dart';
 
 class EditAmalScreen extends ConsumerStatefulWidget {
   const EditAmalScreen({super.key, required this.hijriDate, this.existingLog});
@@ -38,6 +39,8 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
   bool _isSaving = false;
   String? _error;
   bool _togglesSyncedToFields = false;
+  String? _expandedFieldId;
+  final Map<String, Set<int>> _prayerSelections = {};
 
   @override
   void initState() {
@@ -60,6 +63,27 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
     if (_isSaving) return;
     setState(() {
       _toggles = setAmalNumeric(_toggles, fields, fieldId, value);
+      _error = null;
+    });
+  }
+
+  void _toggleExpand(String fieldId) {
+    setState(() {
+      _expandedFieldId = _expandedFieldId == fieldId ? null : fieldId;
+    });
+  }
+
+  void _togglePrayer(String fieldId, int index, AmalField field) {
+    if (_isSaving) return;
+    setState(() {
+      final current = Set<int>.from(_prayerSelections[fieldId] ?? const {});
+      if (current.contains(index)) {
+        current.remove(index);
+      } else {
+        current.add(index);
+      }
+      _prayerSelections[fieldId] = current;
+      _toggles = setAmalNumeric(_toggles, [field], fieldId, current.length);
       _error = null;
     });
   }
@@ -277,28 +301,60 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
                   ? (numericVal ?? 0) > 0
                   : (_toggles[field.id] as bool? ?? false);
               final isLocked = lockedFieldIds.contains(field.id);
-              return Padding(
+
+              final canExpand = !isLocked && !_isSaving && field.supportsExpansion;
+              final isExpanded = canExpand && _expandedFieldId == field.id;
+
+              Set<int> selection = const <int>{};
+              if (canExpand) {
+                selection = resolvePrayerSelection(
+                  _prayerSelections[field.id],
+                  numericVal ?? 0,
+                  field.maxValue,
+                );
+              }
+
+              final row = Opacity(
+                opacity: isLocked ? 0.5 : 1.0,
+                child: AmalRow(
+                  field: field,
+                  locale: locale,
+                  done: done,
+                  numericValue: numericVal,
+                  numericPickerMax: pickerMax,
+                  readOnly: isLocked || _isSaving,
+                  onNumericChanged: (isLocked || _isSaving)
+                      ? null
+                      : (v) => _setNumeric(field.id, v, fields),
+                  onChanged: (isLocked || _isSaving)
+                      ? null
+                      : (_) => _toggle(field.id, fields),
+                  expandable: canExpand,
+                  isExpanded: isExpanded,
+                  onToggleExpand: canExpand
+                      ? () => _toggleExpand(field.id)
+                      : null,
+                  expandedContent: canExpand
+                      ? FardPrayerExpandRow(
+                          selectedIndices: selection,
+                          slotCount: field.maxValue,
+                          onToggleIndex: (i) => _togglePrayer(field.id, i, field),
+                        )
+                      : null,
+                ),
+              );
+
+              final child = Padding(
                 padding: EdgeInsets.only(bottom: 8.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Opacity(
-                      opacity: isLocked ? 0.5 : 1.0,
-                      child: AmalRow(
-                        field: field,
-                        locale: locale,
-                        done: done,
-                        numericValue: numericVal,
-                        numericPickerMax: pickerMax,
-                        readOnly: isLocked,
-                        onNumericChanged: (isLocked || _isSaving)
-                            ? null
-                            : (v) => _setNumeric(field.id, v, fields),
-                        onChanged: (isLocked || _isSaving)
-                            ? null
-                            : (_) => _toggle(field.id, fields),
-                      ),
-                    ),
+                    isExpanded
+                        ? TapRegion(
+                            onTapOutside: (_) => setState(() => _expandedFieldId = null),
+                            child: row,
+                          )
+                        : row,
                     if (isLocked)
                       Padding(
                         padding: EdgeInsets.only(left: 14.w, top: 2.h, bottom: 4.h),
@@ -323,6 +379,8 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
                   ],
                 ),
               );
+
+              return child;
             },
           ),
           SliverPadding(

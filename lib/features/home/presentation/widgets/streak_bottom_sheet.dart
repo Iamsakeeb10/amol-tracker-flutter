@@ -65,7 +65,7 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _loadWeekLogs();
+    _loadWeekLogs(scrollToToday: true);
   }
 
   @override
@@ -101,7 +101,7 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
 
   bool get _canGoNext => _weekOffset < 0;
 
-  Future<void> _loadWeekLogs() async {
+  Future<void> _loadWeekLogs({bool scrollToToday = false}) async {
     setState(() => _isLoading = true);
     final dates = _visibleDates;
     final fs = ref.read(firestoreServiceProvider);
@@ -116,9 +116,11 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
       _isLoading = false;
     });
     _clampSelectedIndex();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToToday();
-    });
+    if (scrollToToday) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToToday();
+      });
+    }
   }
 
   void _clampSelectedIndex() {

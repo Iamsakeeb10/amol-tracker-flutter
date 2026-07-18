@@ -62,13 +62,13 @@ class ReportShareCard extends StatelessWidget {
     return ColoredBox(
       color: AppColors.emeraldDeep,
       child: Padding(
-        padding: EdgeInsets.fromLTRB(20.w, 28.h, 20.w, 28.h),
+        padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
             _BrandHeader(appTitle: l10n.appTitle),
-            SizedBox(height: 16.h),
+            SizedBox(height: 12.h),
             Text(
               dateMainLabel,
               textAlign: TextAlign.center,
@@ -76,13 +76,13 @@ class ReportShareCard extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(height: 4.h),
+            SizedBox(height: 2.h),
             Text(
               dateSubLabel,
               textAlign: TextAlign.center,
               style: AppTextStyles.bodySmall(context),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 12.h),
             CardContainer(
               color: AppColors.goldCard,
               borderColor: AppColors.goldBorder,
@@ -90,7 +90,7 @@ class ReportShareCard extends StatelessWidget {
               child: Column(
                 children: [
                   Padding(
-                    padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 14.h),
+                    padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 12.h),
                     child: Row(
                       children: [
                         Expanded(
@@ -206,7 +206,7 @@ class ReportShareCard extends StatelessWidget {
               ),
             ),
             if (summary.logs.isEmpty) ...[
-              SizedBox(height: 24.h),
+              SizedBox(height: 16.h),
               Text(
                 l10n.reportsEmptyPeriod,
                 textAlign: TextAlign.center,
@@ -216,32 +216,26 @@ class ReportShareCard extends StatelessWidget {
               ),
             ] else ...[
               if (summary.bars.isNotEmpty) ...[
-                SizedBox(height: 16.h),
+                SizedBox(height: 12.h),
                 SectionHeader(title: chartLabel),
                 ReportBarChart(bars: summary.bars, maxScore: maxScore),
               ],
               if (summary.amalBreakdown.isNotEmpty) ...[
-                SizedBox(height: 16.h),
+                SizedBox(height: 12.h),
                 SectionHeader(title: l10n.reportsAmalBreakdown),
                 ReportAmalBreakdownList(stats: summary.amalBreakdown),
-                SizedBox(height: 16.h),
+                SizedBox(height: 12.h),
                 SectionHeader(title: l10n.prayerBreakdown),
                 ReportPrayerBreakdownSection(
                   logs: summary.logs,
                   fields: fields,
                 ),
               ],
-              SizedBox(height: 16.h),
+              SizedBox(height: 12.h),
               SectionHeader(title: l10n.reportsInsights),
               ReportInsightsCard(summary: summary),
-              if (summary.hadithText != null &&
-                  summary.hadithText!.isNotEmpty) ...[
-                SizedBox(height: 16.h),
-                SectionHeader(title: l10n.reportsHadithOfPeriod),
-                ReportHadithCard(text: summary.hadithText!),
-              ],
             ],
-            SizedBox(height: 20.h),
+            SizedBox(height: 16.h),
             Text(
               l10n.appTitle,
               textAlign: TextAlign.center,
@@ -323,7 +317,7 @@ class _ShareMiniStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -338,7 +332,7 @@ class _ShareMiniStat extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 3.h),
+          SizedBox(height: 2.h),
           Text(
             label,
             maxLines: 2,

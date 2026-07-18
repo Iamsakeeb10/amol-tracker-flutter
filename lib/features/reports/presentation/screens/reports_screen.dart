@@ -210,7 +210,9 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           boundaryKey.currentContext?.findRenderObject()
               as RenderRepaintBoundary?;
       if (boundary == null) return;
-      final image = await boundary.toImage(pixelRatio: 3);
+      final dpr = MediaQuery.devicePixelRatioOf(context).toDouble();
+      final pixelRatio = dpr < 3.0 ? 3.0 : (dpr > 4.0 ? 4.0 : dpr);
+      final image = await boundary.toImage(pixelRatio: pixelRatio);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) return;
       final bytes = byteData.buffer.asUint8List();

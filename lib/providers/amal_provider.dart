@@ -281,9 +281,15 @@ class AmalNotifier extends StateNotifier<AmalState> {
         // Restore the exact prayer-circle positions saved locally (if any).
         // Firestore only stores counts, so without this the UI would default
         // to a left-to-right fill (Fajr+Dhuhr) instead of the actual prayers.
-        final storedSelections = _parsePrayerSelections(
+        var storedSelections = _parsePrayerSelections(
           LocalStorageService.getLog(_selectionsHiveKey(hijri)),
         );
+        // Fallback: use prayer selections persisted in Firestore (survives reinstall)
+        if (storedSelections.isEmpty && fromFs.prayers.isNotEmpty) {
+          storedSelections = fromFs.prayers.map(
+            (k, v) => MapEntry(k, v.toSet()),
+          );
+        }
         final resolvedSelections = _reconcilePrayerSelections(
           storedSelections,
           normalizedToggles,
@@ -316,9 +322,15 @@ class AmalNotifier extends StateNotifier<AmalState> {
         if (model.uid == _uid && model.hijriDate == hijri) {
           final normalizedToggles =
               normalizeTogglesForFields(model.toggles, fields);
-          final storedSelections = _parsePrayerSelections(
+          var storedSelections = _parsePrayerSelections(
             LocalStorageService.getLog(_selectionsHiveKey(hijri)),
           );
+          // Fallback: use prayer selections persisted in model (survives reinstall)
+          if (storedSelections.isEmpty && model.prayers.isNotEmpty) {
+            storedSelections = model.prayers.map(
+              (k, v) => MapEntry(k, v.toSet()),
+            );
+          }
           final resolvedSelections = _reconcilePrayerSelections(
             storedSelections,
             normalizedToggles,

@@ -74,6 +74,12 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
           }
         });
       }
+      // Fallback: use prayer selections from the Firestore model (survives reinstall)
+      if (_prayerSelections.isEmpty && widget.existingLog!.prayers.isNotEmpty) {
+        for (final entry in widget.existingLog!.prayers.entries) {
+          _prayerSelections[entry.key] = entry.value.toSet();
+        }
+      }
     }
   }
 
@@ -264,6 +270,12 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
                     .toSet();
               }
             });
+          }
+          // Fallback: use prayer selections from the Firestore model (survives reinstall)
+          if (_prayerSelections.isEmpty && widget.existingLog!.prayers.isNotEmpty) {
+            for (final entry in widget.existingLog!.prayers.entries) {
+              _prayerSelections[entry.key] = entry.value.toSet();
+            }
           }
         }
       });

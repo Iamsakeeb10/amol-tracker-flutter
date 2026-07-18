@@ -21,6 +21,7 @@ import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/edited_badge.dart';
+import '../../../../shared/widgets/fard_prayer_expand_row.dart';
 import '../../../../shared/widgets/stat_card.dart';
 
 class DayDetailScreen extends ConsumerWidget {
@@ -213,6 +214,13 @@ class DayDetailScreen extends ConsumerWidget {
                             ) >
                             0
                       : (log?.toggles[field.id] as bool? ?? false);
+                  // Show prayer circles when Firestore has individual selection
+                  // data (new logs). Fall back to count-only for old logs.
+                  final prayerSlots = field.supportsExpansion
+                      ? log?.prayers[field.id]
+                      : null;
+                  final hasPrayerData =
+                      prayerSlots != null && prayerSlots.isNotEmpty;
                   return Padding(
                     padding: EdgeInsets.only(bottom: 8.h),
                     child: AmalRow(
@@ -226,6 +234,16 @@ class DayDetailScreen extends ConsumerWidget {
                             )
                           : null,
                       readOnly: true,
+                      expandable: hasPrayerData,
+                      isExpanded: hasPrayerData,
+                      expandedContent: hasPrayerData
+                          ? FardPrayerExpandRow(
+                              selectedIndices: prayerSlots!.toSet(),
+                              onToggleIndex: (_) {},
+                              slotCount: field.maxValue,
+                              readOnly: true,
+                            )
+                          : null,
                     ),
                   );
                 },

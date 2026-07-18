@@ -9,8 +9,10 @@ import '../../../../providers/report_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/streak_badge.dart';
+import '../../../../core/constants/amal_fields.dart';
 import 'report_bar_chart.dart';
 import 'report_insights_section.dart';
+import 'report_prayer_breakdown.dart';
 
 /// Branded, padded layout used when exporting a report as an image.
 class ReportShareCard extends StatelessWidget {
@@ -22,6 +24,7 @@ class ReportShareCard extends StatelessWidget {
     required this.dateSubLabel,
     required this.maxScore,
     required this.periodType,
+    required this.fields,
   });
 
   final ReportSummary summary;
@@ -30,6 +33,7 @@ class ReportShareCard extends StatelessWidget {
   final String dateSubLabel;
   final int maxScore;
   final ReportPeriodType periodType;
+  final List<AmalField> fields;
 
   static const iconAsset = 'assets/images/icon_fg.png';
 
@@ -220,6 +224,12 @@ class ReportShareCard extends StatelessWidget {
                 SizedBox(height: 16.h),
                 SectionHeader(title: l10n.reportsAmalBreakdown),
                 ReportAmalBreakdownList(stats: summary.amalBreakdown),
+                SizedBox(height: 16.h),
+                SectionHeader(title: l10n.prayerBreakdown),
+                ReportPrayerBreakdownSection(
+                  logs: summary.logs,
+                  fields: fields,
+                ),
               ],
               SizedBox(height: 16.h),
               SectionHeader(title: l10n.reportsInsights),

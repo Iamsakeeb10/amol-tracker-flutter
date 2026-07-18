@@ -16,6 +16,7 @@ import '../../../../core/constants/default_amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/islamic_date_service.dart';
+import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/report_calculator.dart';
@@ -31,6 +32,7 @@ import '../../../../shared/widgets/streak_badge.dart';
 import '../widgets/report_bar_chart.dart';
 import '../widgets/report_custom_range_picker.dart';
 import '../widgets/report_insights_section.dart';
+import '../widgets/report_prayer_breakdown.dart';
 import '../widgets/report_share_card.dart';
 
 class ReportsScreen extends ConsumerStatefulWidget {
@@ -190,6 +192,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     ref.read(amalFieldsListProvider),
                   ).clamp(1, kDefaultMaxDailyScore),
                   periodType: _type,
+                  fields: ref.read(amalFieldsListProvider),
                 ),
               ),
             ),
@@ -416,6 +419,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 isSharing: _isSharing,
                 onShare: () => _shareReport(summary),
                 periodType: _type,
+                fields: fields,
               ),
             ),
           ),
@@ -610,6 +614,7 @@ class _ReportBody extends StatelessWidget {
     required this.isSharing,
     required this.onShare,
     required this.periodType,
+    required this.fields,
   });
 
   final ReportSummary summary;
@@ -618,6 +623,7 @@ class _ReportBody extends StatelessWidget {
   final bool isSharing;
   final VoidCallback onShare;
   final ReportPeriodType periodType;
+  final List<AmalField> fields;
 
   @override
   Widget build(BuildContext context) {
@@ -814,6 +820,12 @@ class _ReportBody extends StatelessWidget {
                               SectionHeader(title: l10n.reportsAmalBreakdown),
                               ReportAmalBreakdownList(
                                 stats: summary.amalBreakdown,
+                              ),
+                              SizedBox(height: 16.h),
+                              SectionHeader(title: l10n.prayerBreakdown),
+                              ReportPrayerBreakdownSection(
+                                logs: summary.logs,
+                                fields: fields,
                               ),
                             ],
                             SizedBox(height: 16.h),

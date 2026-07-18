@@ -168,6 +168,10 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
           toggles: toggles,
           score: score,
           submittedAt: now,
+          prayers: <String, List<int>>{
+            for (final e in _prayerSelections.entries)
+              e.key: (e.value.toList()..sort()),
+          },
         );
         await fs.saveAmalLog(saved, fields);
       } else {
@@ -182,6 +186,10 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
           submittedAt: existing.submittedAt,
           editedAt: now,
           editCount: existing.editCount + 1,
+          prayers: <String, List<int>>{
+            for (final e in _prayerSelections.entries)
+              e.key: (e.value.toList()..sort()),
+          },
         );
         await fs.editAmalLog(updatedLog: saved, fields: fields);
       }

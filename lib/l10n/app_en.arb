@@ -1329,6 +1329,10 @@
   "reportsChartDaily": "Daily scores",
   "reportsChartWeekly": "Weekly avg scores",
   "reportsAmalBreakdown": "Amal Performance",
+  "prayerBreakdown": "Prayer Consistency",
+  "prayerHabits": "Prayer Habits",
+  "prayerStats": "Prayer Stats",
+  "noBreakdownAvailable": "No detailed data yet",
   "reportsInsights": "Insights",
   "reportsBestDayInsight": "Best day was {day} with a score of {score}/100",
   "@reportsBestDayInsight": {

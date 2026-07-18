@@ -4939,6 +4939,30 @@ abstract class AppLocalizations {
   /// **'Amal Performance'**
   String get reportsAmalBreakdown;
 
+  /// No description provided for @prayerBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer Consistency'**
+  String get prayerBreakdown;
+
+  /// No description provided for @prayerHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer Habits'**
+  String get prayerHabits;
+
+  /// No description provided for @prayerStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer Stats'**
+  String get prayerStats;
+
+  /// No description provided for @noBreakdownAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No detailed data yet'**
+  String get noBreakdownAvailable;
+
   /// No description provided for @reportsInsights.
   ///
   /// In en, this message translates to:

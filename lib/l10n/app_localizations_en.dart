@@ -2643,6 +2643,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsAmalBreakdown => 'Amal Performance';
 
   @override
+  String get prayerBreakdown => 'Prayer Consistency';
+
+  @override
+  String get prayerHabits => 'Prayer Habits';
+
+  @override
+  String get prayerStats => 'Prayer Stats';
+
+  @override
+  String get noBreakdownAvailable => 'No detailed data yet';
+
+  @override
   String get reportsInsights => 'Insights';
 
   @override

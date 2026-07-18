@@ -569,6 +569,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       toggles: toggles,
       score: score,
       submittedAt: now,
+      prayers: _serializePrayerSelections(state.prayerSelections),
     );
 
     var streakResult = computeStreakResult(

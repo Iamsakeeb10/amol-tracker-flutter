@@ -1273,6 +1273,10 @@
   "reportsChartDaily": "দৈনিক স্কোর",
   "reportsChartWeekly": "সাপ্তাহিক গড় স্কোর",
   "reportsAmalBreakdown": "আমলের পারফরম্যান্স",
+  "prayerBreakdown": "নামাজের ধারাবাহিকতা",
+  "prayerHabits": "নামাজের অভ্যাস",
+  "prayerStats": "নামাজের পরিসংখ্যান",
+  "noBreakdownAvailable": "বিস্তারিত তথ্য নেই",
   "reportsInsights": "সারসংক্ষেপ",
   "reportsBestDayInsight": "সেরা দিন ছিল {day}, স্কোর {score}/১০০",
   "@reportsBestDayInsight": {

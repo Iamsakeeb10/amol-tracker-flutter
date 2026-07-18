@@ -2646,6 +2646,18 @@ class AppLocalizationsBn extends AppLocalizations {
   String get reportsAmalBreakdown => 'আমলের পারফরম্যান্স';
 
   @override
+  String get prayerBreakdown => 'নামাজের ধারাবাহিকতা';
+
+  @override
+  String get prayerHabits => 'নামাজের অভ্যাস';
+
+  @override
+  String get prayerStats => 'নামাজের পরিসংখ্যান';
+
+  @override
+  String get noBreakdownAvailable => 'বিস্তারিত তথ্য নেই';
+
+  @override
   String get reportsInsights => 'সারসংক্ষেপ';
 
   @override

@@ -28,6 +28,7 @@ import '../../../../shared/widgets/badge_tile.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
 import '../../../../shared/widgets/streak_badge.dart';
+import '../../../../features/reports/presentation/widgets/report_prayer_breakdown.dart';
 
 const _kDuaPhrases = [
   'মাশা আল্লাহ',
@@ -268,6 +269,17 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   ),
                   SizedBox(height: 8.h),
                   _WeeklyBars(logs: weekly, maxScore: maxScore),
+                  SizedBox(height: 16.h),
+                  Text(
+                    l10n.prayerStats,
+                    style: AppTextStyles.headlineMedium(context),
+                  ),
+                  SizedBox(height: 8.h),
+                  ReportPrayerBreakdownSection(
+                    logs: weekly,
+                    fields: fields,
+                    compact: true,
+                  ),
                   SizedBox(height: 16.h),
                   Text(
                     l10n.badges,

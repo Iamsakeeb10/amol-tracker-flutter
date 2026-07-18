@@ -21,6 +21,7 @@ import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
 import '../../../../features/syllabus/presentation/widgets/lms_xp_widgets.dart';
 import '../../../../shared/widgets/streak_badge.dart';
+import '../../../../features/reports/presentation/widgets/report_prayer_breakdown.dart';
 
 final profileRecentLogsProvider =
     FutureProvider.family<List<AmalLogModel>, int>((ref, limit) async {
@@ -62,6 +63,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final user = ref.watch(currentUserProvider).asData?.value;
     final weekLogs =
         ref.watch(profileRecentLogsProvider(7)).asData?.value ?? [];
+    final monthLogs = 
+        ref.watch(profileRecentLogsProvider(30)).asData?.value ?? [];
     final averageScore = ref.watch(profileMonthAvgScoreProvider);
 
     if (authUser == null || user == null) {
@@ -202,6 +205,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     logs: weekLogs,
                     createdAt: user.createdAt,
                     maxScore: maxScore,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 18.h),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.prayerHabits,
+                    style: AppTextStyles.headlineMedium(context),
+                  ),
+                  SizedBox(height: 8.h),
+                  ReportPrayerBreakdownSection(
+                    logs: monthLogs,
+                    fields: fields,
+                    compact: true,
                   ),
                 ],
               ),

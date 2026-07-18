@@ -15,6 +15,7 @@ const _logMetadataKeys = <String>{
   'toggles',
   'editedAt',
   'editCount',
+  'prayers',
 };
 
 Map<String, dynamic> _togglesFromSource(Map<String, dynamic> src) {
@@ -36,6 +37,25 @@ Map<String, dynamic> _togglesFromSource(Map<String, dynamic> src) {
     }
   }
   return toggles;
+}
+
+/// Parses the `prayers` map stored in Firestore or Hive.
+///
+/// Expected format: `{ "fard_salah": [0, 2, 4], "fard": [2, 4] }`.
+/// Returns an empty map if the field is absent or malformed (backward-compat
+/// with logs created before prayer tracking was added).
+Map<String, List<int>> _parsePrayers(dynamic raw) {
+  if (raw is! Map) return const <String, List<int>>{};
+  final result = <String, List<int>>{};
+  raw.forEach((key, value) {
+    if (value is List) {
+      result[key.toString()] = value
+          .map((e) => (e as num?)?.toInt())
+          .whereType<int>()
+          .toList();
+    }
+  });
+  return result;
 }
 
 Map<String, dynamic> normalizeTogglesForFields(
@@ -66,6 +86,7 @@ class AmalLogModel {
     required this.submittedAt,
     this.editedAt,
     this.editCount = 0,
+    this.prayers = const <String, List<int>>{},
   });
 
   final String uid;
@@ -78,6 +99,13 @@ class AmalLogModel {
   final DateTime submittedAt;
   final DateTime? editedAt;
   final int editCount;
+
+  /// Per-field prayer-slot selections persisted to Firestore on submit.
+  ///
+  /// Maps expandable field id → sorted list of lit slot indices (0 = Fajr,
+  /// 1 = Dhuhr, 2 = Asr, 3 = Maghrib, 4 = Isha).
+  /// Empty for old logs that pre-date this feature.
+  final Map<String, List<int>> prayers;
 
   String get docId => '${uid}_$hijriDate';
 
@@ -100,6 +128,7 @@ class AmalLogModel {
           ? (data['editedAt'] as Timestamp).toDate()
           : null,
       editCount: (data['editCount'] as num?)?.toInt() ?? 0,
+      prayers: _parsePrayers(data['prayers']),
     );
   }
 
@@ -125,6 +154,7 @@ class AmalLogModel {
           ? DateTime.fromMillisecondsSinceEpoch(map['editedAt'] as int, isUtc: true)
           : null,
       editCount: (map['editCount'] as num?)?.toInt() ?? 0,
+      prayers: _parsePrayers(map['prayers']),
     );
   }
 
@@ -145,6 +175,11 @@ class AmalLogModel {
         out[field.id] = toggles[field.id] == true;
       }
     }
+    if (prayers.isNotEmpty) {
+      out['prayers'] = <String, dynamic>{
+        for (final e in prayers.entries) e.key: List<int>.from(e.value),
+      };
+    }
     return out;
   }
 
@@ -160,6 +195,11 @@ class AmalLogModel {
       } else {
         out[field.id] = toggles[field.id] == true;
       }
+    }
+    if (prayers.isNotEmpty) {
+      out['prayers'] = <String, dynamic>{
+        for (final e in prayers.entries) e.key: List<int>.from(e.value),
+      };
     }
     return out;
   }
@@ -177,6 +217,10 @@ class AmalLogModel {
       if (editedAt != null)
         'editedAt': editedAt!.toUtc().millisecondsSinceEpoch,
       'editCount': editCount,
+      if (prayers.isNotEmpty)
+        'prayers': <String, dynamic>{
+          for (final e in prayers.entries) e.key: List<int>.from(e.value),
+        },
     };
   }
 }

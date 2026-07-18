@@ -41,6 +41,11 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
   bool _togglesSyncedToFields = false;
   String? _expandedFieldId;
   final Map<String, Set<int>> _prayerSelections = {};
+  /// Hive key for the prayer-circle lit positions for a specific submitted log.
+  /// Must match the key used by AmalNotifier so the home and edit screens share
+  /// the same cached selections.
+  static String _selectionsHiveKey(String uid, String hijriDate) =>
+      'selections_${uid}_$hijriDate';
 
   @override
   void initState() {
@@ -49,6 +54,27 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
     _toggles = widget.existingLog != null
         ? normalizeTogglesForFields(widget.existingLog!.toggles, fields)
         : emptyTogglesForFields(fields);
+    // Restore the exact prayer-circle positions from the local Hive cache
+    // (stored alongside each submitted log). Without this, the UI would
+    // default to a left-to-right fill (Fajr+Dhuhr) even if the user prayed
+    // Fajr+Isha, because Firestore only persists counts.
+    if (widget.existingLog != null) {
+      final key = _selectionsHiveKey(
+        widget.existingLog!.uid,
+        widget.existingLog!.hijriDate,
+      );
+      final raw = LocalStorageService.getLog(key);
+      if (raw != null) {
+        raw.forEach((fieldId, value) {
+          if (value is List) {
+            _prayerSelections[fieldId] = value
+                .map((e) => (e as num?)?.toInt())
+                .whereType<int>()
+                .toSet();
+          }
+        });
+      }
+    }
   }
 
   void _toggle(String fieldId, List<AmalField> fields) {
@@ -64,6 +90,18 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
     setState(() {
       _toggles = setAmalNumeric(_toggles, fields, fieldId, value);
       _error = null;
+      // When an expandable numeric field changes via the stepper, reconcile
+      // the prayer selection to a left-to-right fill so the expand row stays
+      // consistent. Without this, stale _prayerSelections would cause wrong
+      // circles to appear lit (or wrong circles to be toggled) on the next
+      // interaction.
+      final changedField =
+          fields.where((f) => f.id == fieldId).firstOrNull;
+      if (changedField != null && changedField.supportsExpansion) {
+        final clampedVal = value.clamp(0, changedField.maxValue);
+        _prayerSelections[fieldId] =
+            <int>{for (var i = 0; i < clampedVal; i++) i};
+      }
     });
   }
 
@@ -76,7 +114,13 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
   void _togglePrayer(String fieldId, int index, AmalField field) {
     if (_isSaving) return;
     setState(() {
-      final current = Set<int>.from(_prayerSelections[fieldId] ?? const {});
+      final numericVal = getNumericValue(_toggles[fieldId], field.maxValue);
+      final base = resolvePrayerSelection(
+        _prayerSelections[fieldId],
+        numericVal,
+        field.maxValue,
+      );
+      final current = Set<int>.from(base);
       if (current.contains(index)) {
         current.remove(index);
       } else {
@@ -156,6 +200,19 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
       'log_${user.uid}_${widget.hijriDate}',
       saved.toHiveMap(),
     );
+    // Persist the exact prayer-circle positions alongside the saved log so
+    // future reloads (both from Hive and after a Firestore refresh) can
+    // restore the correct circles rather than defaulting to a left-fill.
+    if (_prayerSelections.isNotEmpty) {
+      final selectionsMap = <String, dynamic>{
+        for (final entry in _prayerSelections.entries)
+          entry.key: (entry.value.toList()..sort()),
+      };
+      await LocalStorageService.saveLog(
+        _selectionsHiveKey(user.uid, widget.hijriDate),
+        selectionsMap,
+      );
+    }
 
     if (!mounted) return;
 
@@ -181,6 +238,26 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
         _toggles = widget.existingLog != null
             ? normalizeTogglesForFields(widget.existingLog!.toggles, next)
             : emptyTogglesForFields(next);
+        // Re-load prayer selections from Hive so the expand row shows the
+        // correct specific prayers (not a default left-fill). Only clear
+        // and re-populate; never wipe existing user edits already in memory.
+        if (widget.existingLog != null && _prayerSelections.isEmpty) {
+          final key = _selectionsHiveKey(
+            widget.existingLog!.uid,
+            widget.existingLog!.hijriDate,
+          );
+          final raw = LocalStorageService.getLog(key);
+          if (raw != null) {
+            raw.forEach((fieldId, value) {
+              if (value is List) {
+                _prayerSelections[fieldId] = value
+                    .map((e) => (e as num?)?.toInt())
+                    .whereType<int>()
+                    .toSet();
+              }
+            });
+          }
+        }
       });
     });
 

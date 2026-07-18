@@ -243,6 +243,10 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   String _draftHiveKey(String hijri) => 'draft_${_uid}_$hijri';
 
+  /// Key for the lit-circle positions that accompany a submitted/edited log.
+  /// Stored separately from the log map so we never risk corrupting the log.
+  String _selectionsHiveKey(String hijri) => 'selections_${_uid}_$hijri';
+
   Future<void> _trySyncSubmittedLog(AmalLogModel log) async {
     try {
       final fs = _ref.read(firestoreServiceProvider);
@@ -272,12 +276,26 @@ class AmalNotifier extends StateNotifier<AmalState> {
     try {
       final fromFs = await fs.getTodayLog(_uid, hijri);
       if (fromFs != null) {
+        final normalizedToggles =
+            normalizeTogglesForFields(fromFs.toggles, fields);
+        // Restore the exact prayer-circle positions saved locally (if any).
+        // Firestore only stores counts, so without this the UI would default
+        // to a left-to-right fill (Fajr+Dhuhr) instead of the actual prayers.
+        final storedSelections = _parsePrayerSelections(
+          LocalStorageService.getLog(_selectionsHiveKey(hijri)),
+        );
+        final resolvedSelections = _reconcilePrayerSelections(
+          storedSelections,
+          normalizedToggles,
+          fields,
+        );
         state = AmalState(
-          toggles: normalizeTogglesForFields(fromFs.toggles, fields),
+          toggles: normalizedToggles,
           fields: fields,
           isSubmitted: true,
           isLoading: false,
           submittedLog: fromFs,
+          prayerSelections: resolvedSelections,
         );
         await LocalStorageService.saveLog(
           _submittedHiveKey(hijri),
@@ -296,12 +314,23 @@ class AmalNotifier extends StateNotifier<AmalState> {
       try {
         final model = AmalLogModel.fromHiveMap(cached);
         if (model.uid == _uid && model.hijriDate == hijri) {
+          final normalizedToggles =
+              normalizeTogglesForFields(model.toggles, fields);
+          final storedSelections = _parsePrayerSelections(
+            LocalStorageService.getLog(_selectionsHiveKey(hijri)),
+          );
+          final resolvedSelections = _reconcilePrayerSelections(
+            storedSelections,
+            normalizedToggles,
+            fields,
+          );
           state = AmalState(
-            toggles: normalizeTogglesForFields(model.toggles, fields),
+            toggles: normalizedToggles,
             fields: fields,
             isSubmitted: true,
             isLoading: false,
             submittedLog: model,
+            prayerSelections: resolvedSelections,
           );
           // Update home widget when loading from Hive cache
           await _updateHomeWidget();
@@ -686,6 +715,16 @@ class AmalNotifier extends StateNotifier<AmalState> {
         log.toHiveMap(),
       );
       await LocalStorageService.deleteLog(_draftHiveKey(hijri));
+      // Persist the exact prayer-circle positions so they can be restored
+      // when the app reloads (Firestore only stores the count, not positions).
+      final submittedSelections = state.prayerSelections;
+      if (submittedSelections.isNotEmpty) {
+        await LocalStorageService.saveLog(
+          _selectionsHiveKey(hijri),
+          _serializePrayerSelections(submittedSelections)
+              .map((k, v) => MapEntry(k, v)),
+        );
+      }
 
       state = AmalState(
         toggles: toggles,
@@ -694,6 +733,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
         isLoading: false,
         error: submitWarning,
         submittedLog: log,
+        prayerSelections: submittedSelections,
       );
       await _updateHomeWidget(
         streakOverride: streakResult.action == StreakAction.showFreeze

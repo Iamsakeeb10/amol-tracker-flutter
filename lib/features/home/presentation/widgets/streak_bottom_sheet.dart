@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hijri/hijri_calendar.dart';
@@ -14,6 +15,7 @@ import '../../../../models/amal_log_model.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/date_provider.dart';
+import '../../../../models/user_model.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 
@@ -196,9 +198,8 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
     }
   }
 
-  StreakDay _resolveDay(String hijriDate, String locale) {
+  StreakDay _resolveDay(String hijriDate, String locale, UserModel? user) {
     final today = _today;
-    final user = ref.read(currentUserProvider).value;
     final accountCreated = user != null
         ? IslamicDateService.hijriStorageForAccountCreated(user.createdAt)
         : '';
@@ -223,6 +224,16 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
     }
 
     final log = _dayLogs[hijriDate];
+
+    // --- Debug: frozen-date resolution ---
+    developer.log(
+      '[StreakSheet] _resolveDay $hijriDate | today=$today | '
+      'log=${log != null ? 'exists' : 'null'} | '
+      'user=${user != null ? 'ok' : 'null'} | '
+      'freezeDate=${user?.streakFreezeDate ?? '(none)'} | '
+      'match=${user != null && user.streakFreezeDate.isNotEmpty && hijriDate == user.streakFreezeDate}',
+      name: 'StreakSheet.freeze',
+    );
 
     if (hijriDate == today) {
       final isSubmitted = ref.watch(
@@ -251,6 +262,24 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
       );
     }
 
+    // Check frozen BEFORE log — a frozen day keeps its frozen styling
+    // even if a backfilled log was later saved for that date.
+    if (user != null &&
+        user.streakFreezeDate.isNotEmpty &&
+        hijriDate == user.streakFreezeDate) {
+      developer.log(
+        '[StreakSheet] FROZEN match: $hijriDate == ${user.streakFreezeDate}',
+        name: 'StreakSheet.freeze',
+      );
+      return StreakDay(
+        hijriDate: hijriDate,
+        status: StreakDayStatus.frozen,
+        score: 0,
+        weekday: weekday,
+        hijriDisplay: hijriDisplay,
+      );
+    }
+
     if (log != null) {
       final backfilled = _isBackfilled(log, hijriDate);
       // A day is completed if a log was submitted on its own Islamic day.
@@ -262,19 +291,6 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
             ? StreakDayStatus.missed
             : StreakDayStatus.completed,
         score: log.score,
-        weekday: weekday,
-        hijriDisplay: hijriDisplay,
-      );
-    }
-
-    // No log exists — check if this date was frozen via streak freeze.
-    if (user != null &&
-        user.streakFreezeDate.isNotEmpty &&
-        hijriDate == user.streakFreezeDate) {
-      return StreakDay(
-        hijriDate: hijriDate,
-        status: StreakDayStatus.frozen,
-        score: 0,
         weekday: weekday,
         hijriDisplay: hijriDisplay,
       );
@@ -308,7 +324,7 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
     final freezeAvailable = user != null &&
         (user.streakFreezeWeekKey != currentWeekKey || !user.streakFreezeUsed);
 
-    final days = _visibleDates.map((d) => _resolveDay(d, locale)).toList();
+    final days = _visibleDates.map((d) => _resolveDay(d, locale, user)).toList();
 
     return Padding(
       padding: EdgeInsets.all(16.r),

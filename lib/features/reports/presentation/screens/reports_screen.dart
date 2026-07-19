@@ -364,6 +364,24 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           l10n.myReports,
           style: AppTextStyles.headlineMedium(context),
         ),
+        actions: [
+          if (summaryAsync.hasValue)
+            IconButton(
+              onPressed: summaryAsync.value!.logs.isEmpty || _isSharing
+                  ? null
+                  : () => _shareReport(summaryAsync.value!),
+              icon: _isSharing
+                  ? SizedBox(
+                      width: 18.r,
+                      height: 18.r,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.gold,
+                      ),
+                    )
+                  : Icon(Icons.ios_share, size: 20.r),
+            ),
+        ],
       ),
       body: Column(
         children: [
@@ -418,8 +436,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 summary: summary,
                 title: _title(l10n),
                 maxScore: maxScore,
-                isSharing: _isSharing,
-                onShare: () => _shareReport(summary),
                 periodType: _type,
                 fields: fields,
               ),
@@ -613,8 +629,6 @@ class _ReportBody extends StatelessWidget {
     required this.summary,
     required this.title,
     required this.maxScore,
-    required this.isSharing,
-    required this.onShare,
     required this.periodType,
     required this.fields,
   });
@@ -622,8 +636,6 @@ class _ReportBody extends StatelessWidget {
   final ReportSummary summary;
   final String title;
   final int maxScore;
-  final bool isSharing;
-  final VoidCallback onShare;
   final ReportPeriodType periodType;
   final List<AmalField> fields;
 
@@ -849,47 +861,8 @@ class _ReportBody extends StatelessWidget {
               ],
             ),
           ),
-        SafeArea(
-          top: false,
-          child: Container(
-            padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 12.h),
-            decoration: const BoxDecoration(
-              border: Border(
-                top: BorderSide(color: AppColors.goldBorder, width: 0.5),
-              ),
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: summary.logs.isEmpty || isSharing ? null : onShare,
-                icon: isSharing
-                    ? SizedBox(
-                        width: 16.r,
-                        height: 16.r,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.emeraldDeep,
-                        ),
-                      )
-                    : Icon(Icons.ios_share, size: 18.r),
-                label: Text(
-                  isSharing ? l10n.reportsSharing : l10n.reportsShare,
-                ),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.gold,
-                  foregroundColor: AppColors.emeraldDeep,
-                  disabledBackgroundColor: AppColors.cardBorder,
-                  padding: EdgeInsets.symmetric(vertical: 13.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.md.r),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+        ],
+      );
   }
 }
 

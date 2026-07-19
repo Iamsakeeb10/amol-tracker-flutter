@@ -2832,4 +2832,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get reportsPrayerEmptyMessage =>
       'Start logging your prayers to see consistency insights here.';
+
+  @override
+  String get tutorialPrayerTapHint => 'Tap a circle to mark your prayer';
+
+  @override
+  String get tutorialGotIt => 'Got it';
 }

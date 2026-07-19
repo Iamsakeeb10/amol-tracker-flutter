@@ -2836,4 +2836,11 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get reportsPrayerEmptyMessage =>
       'নামাযের ধারাবাহিকতা দেখতে নামায লগ করা শুরু করুন।';
+
+  @override
+  String get tutorialPrayerTapHint =>
+      'নামায চিহ্নিত করতে একটি বৃত্তে ট্যাপ করুন';
+
+  @override
+  String get tutorialGotIt => 'বুঝেছি';
 }

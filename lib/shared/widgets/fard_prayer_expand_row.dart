@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 import '../../core/services/islamic_date_service.dart';
+import '../../core/services/local_storage_service.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../l10n/app_localizations.dart';
@@ -13,7 +15,10 @@ import '../../l10n/app_localizations.dart';
 /// and off independently. On Fridays the second slot (Dhuhr) is relabelled as
 /// Jummah. The persisted field value stays a simple count (number of lit
 /// circles); the specific lit positions are tracked separately by the caller.
-class FardPrayerExpandRow extends StatelessWidget {
+///
+/// A one-time tutorial coach mark highlights the first prayer circle when the
+/// row is first expanded, teaching the user to tap a circle to toggle it.
+class FardPrayerExpandRow extends StatefulWidget {
   const FardPrayerExpandRow({
     super.key,
     required this.selectedIndices,
@@ -21,6 +26,11 @@ class FardPrayerExpandRow extends StatelessWidget {
     this.slotCount = 5,
     this.readOnly = false,
   });
+
+  /// Exposed to the parent so it can suppress `TapRegion.onTapOutside` while
+  /// the tutorial overlay is visible (tapping the overlay would otherwise
+  /// collapse the row because the overlay lives outside the TapRegion subtree).
+  static final ValueNotifier<bool> tutorialActive = ValueNotifier<bool>(false);
 
   /// Indices (0-based) of the currently lit prayer circles.
   final Set<int> selectedIndices;
@@ -32,52 +42,107 @@ class FardPrayerExpandRow extends StatelessWidget {
   final int slotCount;
   final bool readOnly;
 
-  /// Extra invisible tap area added around each circle on every side.
-  static const double _hitSlop = 10;
+  @override
+  State<FardPrayerExpandRow> createState() => FardPrayerExpandRowState();
+}
 
-  /// Canonical prayer keys in daily order.
-  static const List<String> _prayerKeys = [
-    'fajr',
-    'dhuhr',
-    'asr',
-    'maghrib',
-    'isha',
-  ];
+class FardPrayerExpandRowState extends State<FardPrayerExpandRow> {
+  static const String _tutorialShownKey = 'fard_prayer_tutorial_shown';
 
-  /// Material icons per prayer slot (Jummah reuses a mosque glyph).
-  static const Map<String, IconData> _prayerIcons = {
-    'fajr': Icons.wb_twilight,
-    'dhuhr': Icons.wb_sunny_outlined,
-    'jummah': Icons.mosque_outlined,
-    'asr': Icons.wb_cloudy_outlined,
-    'maghrib': Icons.nights_stay_outlined,
-    'isha': Icons.dark_mode_outlined,
-  };
+  /// In-memory flag so the tutorial is never re-shown within the same session,
+  /// even if the Hive write hasn't flushed yet.
+  static bool _tutorialShownThisSession = false;
 
-  String _prayerName(AppLocalizations l10n, String key) {
-    switch (key) {
-      case 'fajr':
-        return l10n.prayerFajr;
-      case 'dhuhr':
-        return l10n.prayerDhuhr;
-      case 'jummah':
-        return l10n.prayerJummah;
-      case 'asr':
-        return l10n.prayerAsr;
-      case 'maghrib':
-        return l10n.prayerMaghrib;
-      case 'isha':
-        return l10n.prayerIsha;
-      default:
-        return '';
+  /// Key attached to the first prayer circle icon so the coach mark can target it.
+  final GlobalKey _firstCircleIconKey = GlobalKey();
+
+  TutorialCoachMark? _coachMark;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.readOnly) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _showTutorialIfNew());
     }
+  }
+
+  void _showTutorialIfNew() {
+    if (_tutorialShownThisSession) return;
+    final alreadyShown = LocalStorageService.getPref(_tutorialShownKey, false);
+    if (alreadyShown) {
+      _tutorialShownThisSession = true;
+      return;
+    }
+    if (!mounted) return;
+
+    final l10n = AppLocalizations.of(context)!;
+
+    _coachMark = TutorialCoachMark(
+      targets: [
+        TargetFocus(
+          identify: 'prayer_circle_tap',
+          keyTarget: _firstCircleIconKey,
+          shape: ShapeLightFocus.Circle,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.tutorialPrayerTapHint,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
+          enableTargetTab: true,
+          enableOverlayTab: true,
+        ),
+      ],
+      colorShadow: Colors.black54,
+      opacityShadow: 0.7,
+      paddingFocus: 4,
+      textSkip: l10n.tutorialGotIt,
+      hideSkip: false,
+      onFinish: _onTutorialDone,
+      onSkip: () {
+        _onTutorialDone();
+        return true;
+      },
+      onClickTarget: (_) {
+        _onTutorialDone();
+      },
+      onClickOverlay: (_) {
+        _onTutorialDone();
+      },
+    );
+
+    FardPrayerExpandRow.tutorialActive.value = true;
+    _coachMark?.show(context: context);
+  }
+
+  void _onTutorialDone() {
+    _tutorialShownThisSession = true;
+    FardPrayerExpandRow.tutorialActive.value = false;
+    LocalStorageService.setPref(_tutorialShownKey, true);
+  }
+
+  @override
+  void dispose() {
+    _coachMark?.removeOverlayEntry();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isFriday = IslamicDateService.isCurrentPrayerDayFriday();
-    final slots = slotCount.clamp(1, _prayerKeys.length);
+    final slots = widget.slotCount.clamp(1, _prayerKeys.length);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -87,10 +152,8 @@ class FardPrayerExpandRow extends StatelessWidget {
           padding: EdgeInsets.fromLTRB(0.w, 10.h, 0.w, 0.h),
           child: Row(
             children: List.generate(slots, (index) {
-              final key = index == 1 && isFriday
-                  ? 'jummah'
-                  : _prayerKeys[index];
-              final isChecked = selectedIndices.contains(index);
+              final key = index == 1 && isFriday ? 'jummah' : _prayerKeys[index];
+              final isChecked = widget.selectedIndices.contains(index);
               return Expanded(
                 child: Semantics(
                   button: true,
@@ -101,17 +164,18 @@ class FardPrayerExpandRow extends StatelessWidget {
                     alignment: Alignment.center,
                     children: [
                       _TapScale(
-                        onTap: readOnly
+                        onTap: widget.readOnly
                             ? null
                             : () {
                                 HapticFeedback.selectionClick();
-                                onToggleIndex(index);
+                                widget.onToggleIndex(index);
                               },
                         hitSlop: _hitSlop,
                         child: _PrayerCircle(
                           isChecked: isChecked,
                           icon: _prayerIcons[key] ?? Icons.check,
                           label: _prayerName(l10n, key),
+                          circleKey: index == 0 ? _firstCircleIconKey : null,
                         ),
                       ),
                     ],
@@ -123,6 +187,47 @@ class FardPrayerExpandRow extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// Extra invisible tap area added around each circle on every side.
+const double _hitSlop = 10;
+
+/// Canonical prayer keys in daily order.
+const List<String> _prayerKeys = [
+  'fajr',
+  'dhuhr',
+  'asr',
+  'maghrib',
+  'isha',
+];
+
+/// Material icons per prayer slot (Jummah reuses a mosque glyph).
+const Map<String, IconData> _prayerIcons = {
+  'fajr': Icons.wb_twilight,
+  'dhuhr': Icons.wb_sunny_outlined,
+  'jummah': Icons.mosque_outlined,
+  'asr': Icons.wb_cloudy_outlined,
+  'maghrib': Icons.nights_stay_outlined,
+  'isha': Icons.dark_mode_outlined,
+};
+
+String _prayerName(AppLocalizations l10n, String key) {
+  switch (key) {
+    case 'fajr':
+      return l10n.prayerFajr;
+    case 'dhuhr':
+      return l10n.prayerDhuhr;
+    case 'jummah':
+      return l10n.prayerJummah;
+    case 'asr':
+      return l10n.prayerAsr;
+    case 'maghrib':
+      return l10n.prayerMaghrib;
+    case 'isha':
+      return l10n.prayerIsha;
+    default:
+      return '';
   }
 }
 
@@ -192,11 +297,15 @@ class _PrayerCircle extends StatefulWidget {
     required this.isChecked,
     required this.icon,
     required this.label,
+    this.circleKey,
   });
 
   final bool isChecked;
   final IconData icon;
   final String label;
+
+  /// Key attached to the painted circle SizedBox for coach mark targeting.
+  final GlobalKey? circleKey;
 
   @override
   State<_PrayerCircle> createState() => _PrayerCircleState();
@@ -252,6 +361,7 @@ class _PrayerCircleState extends State<_PrayerCircle>
           builder: (context, _) {
             final linear = _controller.value.clamp(0.0, 1.0);
             return SizedBox(
+              key: widget.circleKey,
               width: 36.r,
               height: 36.r,
               child: CustomPaint(

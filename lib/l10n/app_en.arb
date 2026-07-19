@@ -1422,5 +1422,7 @@
   "streakFreezeUseButton": "Yes, use my freeze",
   "streakFreezeResetButton": "No, reset my streak",
   "reportsPrayerEmptyTitle": "No Prayer Data Yet",
-  "reportsPrayerEmptyMessage": "Start logging your prayers to see consistency insights here."
+  "reportsPrayerEmptyMessage": "Start logging your prayers to see consistency insights here.",
+  "tutorialPrayerTapHint": "Tap a circle to mark your prayer",
+  "tutorialGotIt": "Got it"
 }

@@ -100,10 +100,16 @@ class AmalFieldTile extends ConsumerWidget {
     // While expanded, tapping anywhere outside this tile collapses it.
     // TapRegion routes pointer-downs globally (independent of the gesture
     // arena / scrollables), so this is reliable across the whole screen.
+    //
+    // During the one-time prayer tutorial the overlay sits outside the
+    // TapRegion subtree, so a tap on it would collapse the row. Suppress
+    // collapse while the tutorial is visible.
     final child = isExpanded
         ? TapRegion(
-            onTapOutside: (_) =>
-                ref.read(amalExpansionProvider.notifier).collapse(),
+            onTapOutside: (_) {
+              if (FardPrayerExpandRow.tutorialActive.value) return;
+              ref.read(amalExpansionProvider.notifier).collapse();
+            },
             child: row,
           )
         : row;

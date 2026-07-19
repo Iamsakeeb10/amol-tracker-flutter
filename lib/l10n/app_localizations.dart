@@ -5280,6 +5280,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start logging your prayers to see consistency insights here.'**
   String get reportsPrayerEmptyMessage;
+
+  /// No description provided for @tutorialPrayerTapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a circle to mark your prayer'**
+  String get tutorialPrayerTapHint;
+
+  /// No description provided for @tutorialGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get tutorialGotIt;
 }
 
 class _AppLocalizationsDelegate

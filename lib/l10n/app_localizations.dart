@@ -5268,6 +5268,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No, reset my streak'**
   String get streakFreezeResetButton;
+
+  /// No description provided for @reportsPrayerEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No Prayer Data Yet'**
+  String get reportsPrayerEmptyTitle;
+
+  /// No description provided for @reportsPrayerEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Start logging your prayers to see consistency insights here.'**
+  String get reportsPrayerEmptyMessage;
 }
 
 class _AppLocalizationsDelegate

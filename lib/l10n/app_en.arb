@@ -1420,5 +1420,7 @@
   "@streakFreezeDescription": {"placeholders": {"days": {}}},
   "streakFreezesLeftThisWeek": "Freezes left this week",
   "streakFreezeUseButton": "Yes, use my freeze",
-  "streakFreezeResetButton": "No, reset my streak"
+  "streakFreezeResetButton": "No, reset my streak",
+  "reportsPrayerEmptyTitle": "No Prayer Data Yet",
+  "reportsPrayerEmptyMessage": "Start logging your prayers to see consistency insights here."
 }

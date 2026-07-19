@@ -2829,4 +2829,11 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get streakFreezeResetButton => 'না, আমার স্ট্রিক রিসেট করুন';
+
+  @override
+  String get reportsPrayerEmptyTitle => 'এখনো নামাযের তথ্য নেই';
+
+  @override
+  String get reportsPrayerEmptyMessage =>
+      'নামাযের ধারাবাহিকতা দেখতে নামায লগ করা শুরু করুন।';
 }

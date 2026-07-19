@@ -2825,4 +2825,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get streakFreezeResetButton => 'No, reset my streak';
+
+  @override
+  String get reportsPrayerEmptyTitle => 'No Prayer Data Yet';
+
+  @override
+  String get reportsPrayerEmptyMessage =>
+      'Start logging your prayers to see consistency insights here.';
 }

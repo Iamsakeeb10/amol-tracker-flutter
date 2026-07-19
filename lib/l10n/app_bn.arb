@@ -1364,5 +1364,7 @@
   "@streakFreezeDescription": {"placeholders": {"days": {}}},
   "streakFreezesLeftThisWeek": "এই সপ্তাহে অবশিষ্ট ফ্রিজ",
   "streakFreezeUseButton": "হ্যাঁ, আমার ফ্রিজ ব্যবহার করুন",
-  "streakFreezeResetButton": "না, আমার স্ট্রিক রিসেট করুন"
+  "streakFreezeResetButton": "না, আমার স্ট্রিক রিসেট করুন",
+  "reportsPrayerEmptyTitle": "এখনো নামাযের তথ্য নেই",
+  "reportsPrayerEmptyMessage": "নামাযের ধারাবাহিকতা দেখতে নামায লগ করা শুরু করুন।"
 }

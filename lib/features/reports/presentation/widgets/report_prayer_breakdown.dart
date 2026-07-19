@@ -5,6 +5,7 @@ import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/prayer_analytics.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../shared/widgets/card_container.dart';
 const Map<String, Map<String, String>> _prayerTranslations = {
@@ -39,7 +40,41 @@ class ReportPrayerBreakdownSection extends StatelessWidget {
         .toList();
 
     if (activeFields.isEmpty) {
-      return const SizedBox.shrink();
+      final l10n = AppLocalizations.of(context);
+      if (l10n == null) return const SizedBox.shrink();
+      return CardContainer(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.mosque_outlined,
+                  size: 40.r,
+                  color: AppColors.textMuted,
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  l10n.reportsPrayerEmptyTitle,
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  l10n.reportsPrayerEmptyMessage,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall(context).copyWith(
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
     return CardContainer(

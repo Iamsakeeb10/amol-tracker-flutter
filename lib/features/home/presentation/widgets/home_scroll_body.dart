@@ -12,9 +12,6 @@ import '../../../../providers/amal_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 import 'home_editing_amal_sliver.dart';
 import 'home_header.dart';
-import 'home_progress_card.dart';
-import 'home_quick_nav_section.dart';
-import 'home_submitted_amal_sliver.dart';
 import 'home_welcome_card.dart';
 import 'home_widgets.dart';
 
@@ -214,6 +211,8 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                                 child: HomeWelcomeCard(l10n: l10n)),
                           ],
                           SliverToBoxAdapter(child: SizedBox(height: 14.h)),
+                          const HomeQuickNavSection(),
+                          SliverToBoxAdapter(child: SizedBox(height: 14.h)),
                           if (widget.isSubmitted)
                             ...buildHomeSubmittedAmalSlivers(
                               context: context,
@@ -238,7 +237,6 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                               onRetryFields: widget.onRetryFields,
                             ),
                           SliverToBoxAdapter(child: SizedBox(height: 20.h)),
-                          const HomeQuickNavSection(),
                         ],
                       ),
                     ),

@@ -7,6 +7,7 @@ import '../../../../providers/amal_expansion_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/fard_prayer_expand_row.dart';
+import '../../../../shared/widgets/swipe_to_toggle.dart';
 
 /// One amal row that rebuilds only when its own toggle value changes.
 class AmalFieldTile extends ConsumerWidget {
@@ -33,14 +34,24 @@ class AmalFieldTile extends ConsumerWidget {
     final notifier = ref.read(amalProvider(uid).notifier);
 
     if (field.type != AmalType.numeric) {
+      final done = toggleValue as bool? ?? false;
+      final row = AmalRow(
+        field: field,
+        locale: locale,
+        done: done,
+        onChanged: readOnly ? null : (_) => notifier.toggle(field.id),
+        onTapDetails: onTapDetails,
+        readOnly: readOnly,
+      );
+
+      if (readOnly) return RepaintBoundary(child: row);
+
       return RepaintBoundary(
-        child: AmalRow(
-          field: field,
-          locale: locale,
-          done: toggleValue as bool? ?? false,
-          onChanged: readOnly ? null : (_) => notifier.toggle(field.id),
-          onTapDetails: onTapDetails,
-          readOnly: readOnly,
+        child: SwipeToToggle(
+          isDone: done,
+          enabled: !readOnly,
+          onToggle: () => notifier.toggle(field.id),
+          child: row,
         ),
       );
     }

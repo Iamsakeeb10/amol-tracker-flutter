@@ -178,6 +178,23 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
     await _fetchFirstPage();
   }
 
+  /// Pull-to-refresh: re-fetch the currently selected date.
+  Future<void> refresh() async {
+    if (state.isToday) {
+      _subscribeToday();
+    } else {
+      state = state.copyWith(
+        rows: const <AmalLogModel>[],
+        isLoading: true,
+        isLoadingMore: false,
+        hasMore: true,
+        clearError: true,
+        clearLastDoc: true,
+      );
+      await _fetchFirstPage();
+    }
+  }
+
   Future<void> loadMore() async {
     if (state.isLoading || state.isLoadingMore || !state.hasMore) return;
     if (state.lastDoc == null) {

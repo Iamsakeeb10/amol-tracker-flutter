@@ -200,6 +200,18 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                     ],
                   ),
                 ),
+                IconButton(
+                  icon: Icon(
+                    Icons.refresh_rounded,
+                    color: AppColors.textSecondary,
+                    size: 22.r,
+                  ),
+                  onPressed: () {
+                    ref.read(communitySheetProvider.notifier).refresh();
+                    ref.invalidate(activityFeedProvider);
+                  },
+                  tooltip: l10n.refresh,
+                ),
               ],
             ),
             SizedBox(height: 12.h),
@@ -334,7 +346,15 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                             ? const _SheetLoadingShimmer()
                             : state.isLoading
                             ? const _SheetLoadingShimmer()
-                            : CustomScrollView(
+                            : RefreshIndicator(
+                                color: AppColors.gold,
+                                backgroundColor: AppColors.emeraldMid,
+                                onRefresh: () async {
+                                  await ref
+                                      .read(communitySheetProvider.notifier)
+                                      .refresh();
+                                },
+                                child: CustomScrollView(
                                 key: const PageStorageKey<String>(
                                   'community_sheet_scroll',
                                 ),
@@ -538,6 +558,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                                   ),
                                 ],
                               ),
+                            ),
                       ),
                     ],
                   ),
@@ -557,41 +578,53 @@ class _ActivityFeedTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final feed = ref.watch(activityFeedProvider);
-    return feed.when(
-      loading: () => const _FeedLoadingState(),
-      error: (_, _) => Center(
-        child: Text(
-          AppLocalizations.of(context)!.unableLoadActivityFeed,
-          style: AppTextStyles.bodyMedium(
-            context,
-          ).copyWith(color: AppColors.textMuted),
-        ),
-      ),
-      data: (items) {
-        if (items.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              child: Text(
-                AppLocalizations.of(context)!.noActivityYet,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium(
-                  context,
-                ).copyWith(color: AppColors.textMuted),
-              ),
-            ),
-          );
-        }
-        return ListView.separated(
-          key: const PageStorageKey<String>('community_feed_scroll'),
-          itemCount: items.length,
-          separatorBuilder: (_, _) => SizedBox(height: 8.h),
-          itemBuilder: (context, index) {
-            final item = items[index];
-            return _FeedItemCard(item: item);
-          },
-        );
+    return RefreshIndicator(
+      color: AppColors.gold,
+      backgroundColor: AppColors.emeraldMid,
+      onRefresh: () async {
+        ref.invalidate(activityFeedProvider);
       },
+      child: feed.when(
+        loading: () => const _FeedLoadingState(),
+        error: (_, _) => Center(
+          child: Text(
+            AppLocalizations.of(context)!.unableLoadActivityFeed,
+            style: AppTextStyles.bodyMedium(
+              context,
+            ).copyWith(color: AppColors.textMuted),
+          ),
+        ),
+        data: (items) {
+          if (items.isEmpty) {
+            return ListView(
+              children: [
+                SizedBox(height: 100.h),
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    child: Text(
+                      AppLocalizations.of(context)!.noActivityYet,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodyMedium(
+                        context,
+                      ).copyWith(color: AppColors.textMuted),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+          return ListView.separated(
+            key: const PageStorageKey<String>('community_feed_scroll'),
+            itemCount: items.length,
+            separatorBuilder: (_, _) => SizedBox(height: 8.h),
+            itemBuilder: (context, index) {
+              final item = items[index];
+              return _FeedItemCard(item: item);
+            },
+          );
+        },
+      ),
     );
   }
 }

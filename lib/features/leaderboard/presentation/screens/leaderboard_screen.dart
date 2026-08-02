@@ -165,6 +165,28 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           l10n.leaderboard,
           style: AppTextStyles.headlineMedium(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: AppColors.textSecondary,
+              size: 22.r,
+            ),
+            onPressed: () {
+              ref.invalidate(weeklyLeaderboardProvider);
+              ref.invalidate(monthlyLeaderboardProvider);
+              ref.invalidate(dailyLeaderboardProvider);
+              ref.invalidate(streakLeaderboardProvider);
+              ref.invalidate(quizLeaderboardProvider);
+              setState(() {
+                _initialLoadComplete = false;
+                _displayedCount = _pageSize;
+              });
+              _startLoadTimeout();
+            },
+            tooltip: l10n.refresh,
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -185,7 +207,22 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           ),
           SizedBox(height: 16.h),
           Expanded(
-            child: Stack(
+            child: RefreshIndicator(
+              color: AppColors.gold,
+              backgroundColor: AppColors.emeraldMid,
+              onRefresh: () async {
+                ref.invalidate(weeklyLeaderboardProvider);
+                ref.invalidate(monthlyLeaderboardProvider);
+                ref.invalidate(dailyLeaderboardProvider);
+                ref.invalidate(streakLeaderboardProvider);
+                ref.invalidate(quizLeaderboardProvider);
+                setState(() {
+                  _initialLoadComplete = false;
+                  _displayedCount = _pageSize;
+                });
+                _startLoadTimeout();
+              },
+              child: Stack(
               children: [
                 CustomScrollView(
                   controller: _scrollController,
@@ -260,6 +297,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   ),
                 ),
               ],
+            ),
             ),
           ),
           // Fixed bottom card for user ranked outside top 5.

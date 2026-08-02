@@ -69,6 +69,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.refresh_rounded,
+              color: AppColors.textSecondary,
+              size: 22.r,
+            ),
+            onPressed: () {
+              ref.invalidate(notificationsProvider);
+            },
+            tooltip: l10n.refresh,
+          ),
           TextButton.icon(
             onPressed: uid == null || unread == 0
                 ? null
@@ -88,27 +99,44 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           SizedBox(width: 4.w),
         ],
       ),
-      body: notifications.when(
-        loading: () => const _NotificationsLoadingShimmer(),
-        error: (_, _) => Center(
-          child: Text(
-            l10n.failedLoadNotifications,
-            style: AppTextStyles.bodyMedium(context),
-          ),
-        ),
-        data: (rows) {
-          if (rows.isEmpty) {
-            return Center(
-              child: _NotificationsEmptyState(text: l10n.noNotificationsYet),
-            );
-          }
-          return ListView.separated(
-            padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
-            itemCount: rows.length,
-            separatorBuilder: (_, _) => SizedBox(height: 8.h),
-            itemBuilder: (_, i) => _NotificationRow(item: rows[i]),
-          );
+      body: RefreshIndicator(
+        color: AppColors.gold,
+        backgroundColor: AppColors.emeraldMid,
+        onRefresh: () async {
+          ref.invalidate(notificationsProvider);
         },
+        child: notifications.when(
+          loading: () => const _NotificationsLoadingShimmer(),
+          error: (_, _) => ListView(
+            children: [
+              SizedBox(height: 100.h),
+              Center(
+                child: Text(
+                  l10n.failedLoadNotifications,
+                  style: AppTextStyles.bodyMedium(context),
+                ),
+              ),
+            ],
+          ),
+          data: (rows) {
+            if (rows.isEmpty) {
+              return ListView(
+                children: [
+                  SizedBox(height: 100.h),
+                  Center(
+                    child: _NotificationsEmptyState(text: l10n.noNotificationsYet),
+                  ),
+                ],
+              );
+            }
+            return ListView.separated(
+              padding: EdgeInsets.fromLTRB(0, 4.h, 0, 24.h),
+              itemCount: rows.length,
+              separatorBuilder: (_, _) => SizedBox(height: 8.h),
+              itemBuilder: (_, i) => _NotificationRow(item: rows[i]),
+            );
+          },
+        ),
       ),
     );
   }

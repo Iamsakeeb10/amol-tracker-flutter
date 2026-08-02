@@ -8,6 +8,7 @@ import 'dart:io' show Platform;
 
 import 'core/router/router.dart';
 import 'core/services/analytics_service.dart';
+import 'core/services/background_cleanup_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/theme/theme.dart';
 import 'features/badges/presentation/widgets/badge_celebration_overlay.dart';
@@ -84,6 +85,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     if (!mounted) return;
     ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
     ref.read(amalFieldsProvider.notifier).refreshIfStale();
+    unawaited(BackgroundCleanupService.runIfDue());
   }
 
   void _scheduleSmartReminders() {

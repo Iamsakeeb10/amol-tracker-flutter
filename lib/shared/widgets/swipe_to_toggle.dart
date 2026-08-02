@@ -31,7 +31,7 @@ class SwipeToToggle extends StatefulWidget {
 class _SwipeToToggleState extends State<SwipeToToggle>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _dragAnimation;
+  late Animation<double> _dragAnimation;
   double _dragExtent = 0;
   bool _needsConfirm = false;
 

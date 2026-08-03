@@ -24,4 +24,8 @@ class FeedbackService {
       return snapshot.docs.map((doc) => FeedbackModel.fromDoc(doc)).toList();
     });
   }
+
+  Future<void> deleteFeedback(String id) async {
+    await _firestore.collection('feedbacks').doc(id).delete();
+  }
 }

@@ -80,6 +80,37 @@ class AdminFeedbacksScreen extends ConsumerWidget {
                             color: AppColors.textMuted,
                           ),
                         ),
+                        SizedBox(width: 8.w),
+                        GestureDetector(
+                          onTap: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                backgroundColor: AppColors.emeraldDeep,
+                                title: Text(l10n.adminDeleteConfirm),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => context.pop(false),
+                                    child: Text(l10n.cancel, style: const TextStyle(color: AppColors.textPrimary)),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => context.pop(true),
+                                    child: Text(l10n.delete, style: const TextStyle(color: AppColors.danger)),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              await ref.read(feedbackServiceProvider).deleteFeedback(feedback.id);
+                            }
+                          },
+                          child: Icon(
+                            Icons.delete_outline,
+                            color: AppColors.danger,
+                            size: 20.r,
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 8.h),
@@ -98,6 +129,26 @@ class AdminFeedbacksScreen extends ConsumerWidget {
                         color: AppColors.textMuted,
                       ),
                     ),
+                    if (feedback.userEmail != null && feedback.userEmail!.isNotEmpty) ...[
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Email: ${feedback.userEmail}',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                    if (feedback.platform != null || feedback.appVersion != null) ...[
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Device: ${feedback.platform ?? "Unknown"} • App Version: ${feedback.appVersion ?? "Unknown"}',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: AppColors.textHint,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               );

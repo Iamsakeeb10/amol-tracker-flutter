@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/feedback_model.dart';
@@ -47,11 +49,18 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
       final user = ref.read(currentUserProvider).asData?.value;
       final userId = user?.uid ?? 'anonymous';
 
+      final packageInfo = await PackageInfo.fromPlatform();
+      final appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+      final platform = Platform.operatingSystem;
+
       final feedback = FeedbackModel(
         id: FirebaseFirestore.instance.collection('feedbacks').doc().id,
         userId: userId,
+        userEmail: user?.email,
         type: widget.type,
         content: content,
+        appVersion: appVersion,
+        platform: platform,
         createdAt: DateTime.now(),
         status: FeedbackStatus.pending,
       );

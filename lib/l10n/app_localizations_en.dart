@@ -2867,4 +2867,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rateAppError => 'Could not open the store listing.';
+
+  @override
+  String get sendFeedback => 'Send Feedback';
+
+  @override
+  String get sendFeedbackSubtitle => 'Report bugs or request new features';
+
+  @override
+  String get reportBug => 'Report a Bug';
+
+  @override
+  String get reportBugSubtitle => 'Let us know if something isn\'t working';
+
+  @override
+  String get requestFeature => 'Request a Feature';
+
+  @override
+  String get requestFeatureSubtitle => 'Have an idea? We\'d love to hear it!';
 }

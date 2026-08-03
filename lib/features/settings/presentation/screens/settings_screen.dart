@@ -633,6 +633,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Divider(),
                 NavRow(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  title: l10n.sendFeedback,
+                  subtitle: l10n.sendFeedbackSubtitle,
+                  onTap: () => context.push(AppRoutes.feedback),
+                ),
+                const Divider(),
+                NavRow(
                   icon: Icons.description_outlined,
                   title: l10n.termsAndConditions,
                   onTap: () => launchUrl(Uri.parse('https://iamsakeeb10.github.io/amol-tracker-legal/terms_conditions.html')),

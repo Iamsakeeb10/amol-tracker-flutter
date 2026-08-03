@@ -1436,5 +1436,11 @@
   "seeLess": "See less",
   "rateApp": "Rate Amol Tracker",
   "rateAppSubtitle": "Love the app? Let us know!",
-  "rateAppError": "Could not open the store listing."
+  "rateAppError": "Could not open the store listing.",
+  "sendFeedback": "Send Feedback",
+  "sendFeedbackSubtitle": "Report bugs or request new features",
+  "reportBug": "Report a Bug",
+  "reportBugSubtitle": "Let us know if something isn't working",
+  "requestFeature": "Request a Feature",
+  "requestFeatureSubtitle": "Have an idea? We'd love to hear it!"
 }

@@ -5346,6 +5346,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open the store listing.'**
   String get rateAppError;
+
+  /// No description provided for @sendFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Feedback'**
+  String get sendFeedback;
+
+  /// No description provided for @sendFeedbackSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report bugs or request new features'**
+  String get sendFeedbackSubtitle;
+
+  /// No description provided for @reportBug.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a Bug'**
+  String get reportBug;
+
+  /// No description provided for @reportBugSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let us know if something isn\'t working'**
+  String get reportBugSubtitle;
+
+  /// No description provided for @requestFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'Request a Feature'**
+  String get requestFeature;
+
+  /// No description provided for @requestFeatureSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Have an idea? We\'d love to hear it!'**
+  String get requestFeatureSubtitle;
 }
 
 class _AppLocalizationsDelegate

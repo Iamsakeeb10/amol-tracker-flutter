@@ -51,6 +51,7 @@ import '../../features/hijri_calendar/presentation/screens/hijri_calendar_screen
 import '../../features/qibla/presentation/screens/qibla_screen.dart';
 import '../../features/quran/presentation/screens/quran_screen.dart';
 import '../../features/quran/presentation/screens/quran_surah_scroll_screen.dart';
+import '../../features/settings/presentation/screens/feedback_screen.dart';
 import '../../features/syllabus/presentation/screens/course_detail_screen.dart';
 import '../../features/syllabus/presentation/screens/lesson_viewer_screen.dart';
 import '../../features/syllabus/presentation/screens/quiz_intro_screen.dart';
@@ -415,6 +416,11 @@ GoRouter buildAppRouter() {
         name: 'settings',
         builder: (_, _) => const SettingsScreen(),
         routes: [
+          GoRoute(
+            path: 'feedback',
+            name: 'feedback',
+            builder: (_, _) => const FeedbackScreen(),
+          ),
           GoRoute(
             path: 'quiet-hours',
             name: 'quietHours',

@@ -2872,4 +2872,23 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get rateAppError => 'স্টোর লিস্টিং খোলা সম্ভব হয়নি।';
+
+  @override
+  String get sendFeedback => 'মতামত পাঠান';
+
+  @override
+  String get sendFeedbackSubtitle =>
+      'ত্রুটি রিপোর্ট করুন বা নতুন ফিচারের অনুরোধ করুন';
+
+  @override
+  String get reportBug => 'ত্রুটি রিপোর্ট করুন';
+
+  @override
+  String get reportBugSubtitle => 'কোনো কিছু ঠিকমতো কাজ না করলে আমাদের জানান';
+
+  @override
+  String get requestFeature => 'নতুন ফিচারের অনুরোধ করুন';
+
+  @override
+  String get requestFeatureSubtitle => 'কোনো ধারণা আছে? আমরা শুনতে চাই!';
 }

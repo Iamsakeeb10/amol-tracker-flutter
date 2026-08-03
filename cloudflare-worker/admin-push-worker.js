@@ -246,11 +246,9 @@ async function fetchSingleUserWithToken(env, accessToken, uid) {
   const data = await resp.json();
   const fcmToken = readStringField(data.fields, 'fcmToken').trim();
   
-  if (fcmToken) {
-    return { ok: true, users: [{ uid, fcmToken }] };
-  }
-  
-  return { ok: true, users: [] };
+  // Always return the user so the inbox notification is written.
+  // FCM push is only attempted if a token exists.
+  return { ok: true, users: [{ uid, fcmToken }] };
 }
 
 async function writeNotificationItem(env, accessToken, uid, type, message) {
@@ -402,6 +400,11 @@ export default {
         continue;
       }
       inboxWritten.push(user.uid);
+
+      // Skip FCM if no token stored for this user.
+      if (!user.fcmToken) {
+        continue;
+      }
 
       if (seenTokens.has(user.fcmToken)) {
         fcmSkippedDuplicates += 1;

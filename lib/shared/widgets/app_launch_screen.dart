@@ -115,22 +115,6 @@ class _LaunchBackground extends StatelessWidget {
           ),
         ),
         Positioned(
-          top: -80.h,
-          right: -60.w,
-          child: _GlowOrb(
-            size: 220.r,
-            color: AppColors.gold.withValues(alpha: 0.08),
-          ),
-        ),
-        Positioned(
-          bottom: -100.h,
-          left: -70.w,
-          child: _GlowOrb(
-            size: 260.r,
-            color: AppColors.emeraldLight.withValues(alpha: 0.35),
-          ),
-        ),
-        Positioned(
           top: 0.42.sh,
           left: 0,
           right: 0,
@@ -149,22 +133,6 @@ class _LaunchBackground extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({required this.size, required this.color});
-
-  final double size;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }

@@ -42,6 +42,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
   double _horizontalOffset = 0;
   late final TabController _tabController;
   bool _isSheetTabActive = true;
+  bool _isFullScreen = false;
 
   @override
   void initState() {
@@ -185,21 +186,28 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
               children: [
                 // const BottomTabBackButton(),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.communityUpper,
-                        style: AppTextStyles.label(
-                          context,
-                        ).copyWith(color: AppColors.gold),
+                  child: AnimatedOpacity(
+                    opacity: _isFullScreen ? 0.0 : 1.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: IgnorePointer(
+                      ignoring: _isFullScreen,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.communityUpper,
+                            style: AppTextStyles.label(
+                              context,
+                            ).copyWith(color: AppColors.gold),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            l10n.community,
+                            style: AppTextStyles.displayMedium(context),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        l10n.community,
-                        style: AppTextStyles.displayMedium(context),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
                 AnimatedOpacity(
@@ -214,7 +222,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                         size: 24.r,
                       ),
                       onPressed: () {
-                        Navigator.of(context).push(
+                        setState(() => _isFullScreen = true);
+                        Navigator.of(context, rootNavigator: true).push(
                           PageRouteBuilder(
                             fullscreenDialog: true,
                             transitionDuration:
@@ -241,7 +250,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                               );
                             },
                           ),
-                        );
+                        ).then((_) {
+                          if (mounted) setState(() => _isFullScreen = false);
+                        });
                       },
                       tooltip: 'Full screen',
                     ),
@@ -263,7 +274,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
             ),
             SizedBox(height: 12.h),
             Container(
-              padding: EdgeInsets.all(3.r),
+              padding: EdgeInsets.all(2.r),
               decoration: BoxDecoration(
                 color: AppColors.cardDark,
                 border: Border.all(color: AppColors.cardBorder),
@@ -281,20 +292,20 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                 splashBorderRadius: BorderRadius.circular(AppRadius.md.r),
                 labelColor: AppColors.goldLight,
                 unselectedLabelColor: AppColors.textSecondary,
-                labelStyle: AppTextStyles.bodyMedium(
+                labelStyle: AppTextStyles.bodySmall(
                   context,
                 ).copyWith(fontWeight: FontWeight.w600),
-                unselectedLabelStyle: AppTextStyles.bodyMedium(context),
+                unselectedLabelStyle: AppTextStyles.bodySmall(context),
                 tabs: [
-                  Tab(text: l10n.sheet),
-                  Tab(text: l10n.feed),
+                  Tab(text: l10n.sheet, height: 40.h),
+                  Tab(text: l10n.feed, height: 40.h),
                 ],
               ),
             ),
             SizedBox(height: 12.h),
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
+              child: IndexedStack(
+                index: _tabController.index,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,11 +363,20 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                         controller: _searchController,
                         onChanged: notifier.setSearchQuery,
                         decoration: InputDecoration(
+                          isDense: true,
                           hintText: l10n.searchByName,
-                          hintStyle: AppTextStyles.bodyMedium(context),
+                          hintStyle: AppTextStyles.bodySmall(context),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 10.h,
+                          ),
                           filled: true,
                           fillColor: AppColors.cardDark,
-                          prefixIcon: const Icon(Icons.search_rounded),
+                          prefixIcon: Icon(Icons.search_rounded, size: 18.r),
+                          prefixIconConstraints: BoxConstraints(
+                            minWidth: 36.w,
+                            minHeight: 0,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(AppRadius.md.r),
                             borderSide: const BorderSide(
@@ -812,6 +832,7 @@ class _CommunitySheetFullScreenState
       canPop: true,
       child: Scaffold(
         backgroundColor: AppColors.emeraldDeep,
+        extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -851,7 +872,7 @@ class _CommunitySheetFullScreenState
                         color: AppColors.textSecondary,
                         size: 22.r,
                       ),
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
                       tooltip: 'Close full screen',
                     ),
                   ],

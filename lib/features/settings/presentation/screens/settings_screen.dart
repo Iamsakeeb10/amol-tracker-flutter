@@ -162,6 +162,91 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _showLanguageSheet() async {
+    final l10n = AppLocalizations.of(context)!;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.emeraldMid,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18.r)),
+      ),
+      builder: (ctx) {
+        return Consumer(
+          builder: (ctx, ref, _) {
+            final locale = ref.watch(localeProvider);
+            return Padding(
+              padding: EdgeInsets.fromLTRB(18.w, 16.h, 18.w, 22.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.language,
+                    style: AppTextStyles.headlineMedium(ctx),
+                  ),
+                  SizedBox(height: 16.h),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.cardDark,
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: AppColors.cardBorder),
+                    ),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+                          leading: Icon(Icons.language_outlined, size: 20.r, color: AppColors.gold),
+                          title: Text(
+                            l10n.english,
+                            style: AppTextStyles.bodyLarge(ctx),
+                          ),
+                          trailing: Icon(
+                            locale.languageCode == 'en'
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off,
+                            color: locale.languageCode == 'en'
+                                ? AppColors.gold
+                                : AppColors.textMuted,
+                          ),
+                          onTap: () {
+                            ref.read(localeProvider.notifier).setLocale(const Locale('en'));
+                            AnalyticsService.instance.logLanguageChanged(language: 'en');
+                            Navigator.pop(ctx);
+                          },
+                        ),
+                        const Divider(height: 1),
+                        ListTile(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
+                          leading: Icon(Icons.language_outlined, size: 20.r, color: AppColors.gold),
+                          title: Text(
+                            l10n.bangla,
+                            style: AppTextStyles.bodyLarge(ctx),
+                          ),
+                          trailing: Icon(
+                            locale.languageCode == 'bn'
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off,
+                            color: locale.languageCode == 'bn'
+                                ? AppColors.gold
+                                : AppColors.textMuted,
+                          ),
+                          onTap: () {
+                            ref.read(localeProvider.notifier).setLocale(const Locale('bn'));
+                            AnalyticsService.instance.logLanguageChanged(language: 'bn');
+                            Navigator.pop(ctx);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   Future<void> _showHomeWidgetSheet() async {
     final l10n = AppLocalizations.of(context)!;
@@ -518,46 +603,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
             child: Column(
               children: [
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(Icons.language_outlined, size: 20.r),
-                  title: Text(
-                    l10n.english,
-                    style: AppTextStyles.bodyLarge(context),
-                  ),
-                  trailing: Icon(
-                    locale.languageCode == 'en'
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_off,
-                    color: locale.languageCode == 'en'
-                        ? AppColors.gold
-                        : AppColors.textMuted,
-                  ),
-                  onTap: () {
-                    ref.read(localeProvider.notifier).setLocale(const Locale('en'));
-                    AnalyticsService.instance.logLanguageChanged(language: 'en');
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(Icons.language_outlined, size: 20.r),
-                  title: Text(
-                    l10n.bangla,
-                    style: AppTextStyles.bodyLarge(context),
-                  ),
-                  trailing: Icon(
-                    locale.languageCode == 'bn'
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_off,
-                    color: locale.languageCode == 'bn'
-                        ? AppColors.gold
-                        : AppColors.textMuted,
-                  ),
-                  onTap: () {
-                    ref.read(localeProvider.notifier).setLocale(const Locale('bn'));
-                    AnalyticsService.instance.logLanguageChanged(language: 'bn');
-                  },
+                NavRow(
+                  icon: Icons.language_outlined,
+                  title: l10n.language,
+                  trailing: locale.languageCode == 'bn' ? l10n.bangla : l10n.english,
+                  onTap: _showLanguageSheet,
                 ),
               ],
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -31,7 +32,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _showInLeaderboard = true;
   bool _anonymousDisplay = false;
-  bool _ramadanMode = false;
   String? _lastSyncedUid;
   String _version = '';
 
@@ -290,6 +290,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Future<void> _requestReview() async {
+    final l10n = AppLocalizations.of(context)!;
+    final inAppReview = InAppReview.instance;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    try {
+      debugPrint('[Rating] Checking if InAppReview is available...');
+      final isAvailable = await inAppReview.isAvailable();
+      debugPrint('[Rating] InAppReview available: $isAvailable');
+      
+      if (isAvailable) {
+        debugPrint('[Rating] Attempting to request in-app review dialog...');
+        await inAppReview.requestReview();
+        debugPrint('[Rating] requestReview completed (Note: dialog may not show if quota reached or on emulator).');
+      } else {
+        debugPrint('[Rating] In-app review unavailable, falling back to url launcher...');
+        final url = Uri.parse('https://play.google.com/store/apps/details?id=com.shakib.amol.amol_tracker_app');
+        if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+          throw Exception('Could not launch $url');
+        }
+      }
+    } catch (e, stack) {
+      debugPrint('[Rating] Error occurred during review process: $e');
+      debugPrint('[Rating] Stack trace: $stack');
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text(l10n.rateAppError)),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -537,25 +569,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Column(
               children: [
                 NavRow(
-                  icon: Icons.calendar_view_month_outlined,
-                  title: l10n.calendarType,
-                  trailing: l10n.hijri,
-                  onTap: () => context.push(AppRoutes.hijriCalendar),
-                ),
-                const Divider(),
-                NavRow(
                   icon: Icons.widgets_outlined,
                   title: l10n.homeWidgetSettingsTitle,
                   trailing: l10n.homeWidgetSettingsSubtitle,
                   onTap: _showHomeWidgetSheet,
                 ),
                 const Divider(),
-                ToggleRow(
-                  icon: Icons.brightness_2_outlined,
-                  title: l10n.ramadanMode,
-                  subtitle: l10n.ramadanModeSubtitle,
-                  value: _ramadanMode,
-                  onChanged: (v) => setState(() => _ramadanMode = v),
+                NavRow(
+                  icon: Icons.star_outline_rounded,
+                  title: l10n.rateApp,
+                  subtitle: l10n.rateAppSubtitle,
+                  onTap: _requestReview,
                 ),
                 const Divider(),
                 NavRow(

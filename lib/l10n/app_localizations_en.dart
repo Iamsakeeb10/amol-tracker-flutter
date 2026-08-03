@@ -2858,4 +2858,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seeLess => 'See less';
+
+  @override
+  String get rateApp => 'Rate Amol Tracker';
+
+  @override
+  String get rateAppSubtitle => 'Love the app? Let us know!';
+
+  @override
+  String get rateAppError => 'Could not open the store listing.';
 }

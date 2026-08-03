@@ -1433,5 +1433,8 @@
   "reportsPrayerEmptyMessage": "Start logging your prayers to see consistency insights here.",
   "tutorialPrayerTapHint": "Tap a circle to mark your prayer",
   "tutorialGotIt": "Got it",
-  "seeLess": "See less"
+  "seeLess": "See less",
+  "rateApp": "Rate Amol Tracker",
+  "rateAppSubtitle": "Love the app? Let us know!",
+  "rateAppError": "Could not open the store listing."
 }

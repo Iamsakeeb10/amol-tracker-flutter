@@ -5328,6 +5328,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See less'**
   String get seeLess;
+
+  /// No description provided for @rateApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Amol Tracker'**
+  String get rateApp;
+
+  /// No description provided for @rateAppSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Love the app? Let us know!'**
+  String get rateAppSubtitle;
+
+  /// No description provided for @rateAppError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the store listing.'**
+  String get rateAppError;
 }
 
 class _AppLocalizationsDelegate

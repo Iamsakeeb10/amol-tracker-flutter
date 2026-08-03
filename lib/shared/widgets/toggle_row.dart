@@ -74,6 +74,7 @@ class ToggleRow extends StatelessWidget {
 class NavRow extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
   final String? trailing;
   final VoidCallback? onTap;
   final Color? destructiveColor;
@@ -82,6 +83,7 @@ class NavRow extends StatelessWidget {
     super.key,
     required this.icon,
     required this.title,
+    this.subtitle,
     this.trailing,
     this.onTap,
     this.destructiveColor,
@@ -109,14 +111,29 @@ class NavRow extends StatelessWidget {
             ),
             SizedBox(width: 12.w),
             Expanded(
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodyLarge(context).copyWith(
-                  fontSize: 14.sp,
-                  color: destructiveColor ?? AppColors.textPrimary,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyLarge(context).copyWith(
+                      fontSize: 14.sp,
+                      color: destructiveColor ?? AppColors.textPrimary,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      subtitle!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.bodySmall(context).copyWith(fontSize: 11.sp),
+                    ),
+                  ],
+                ],
               ),
             ),
             if (trailing != null) ...[

@@ -2863,4 +2863,13 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get seeLess => 'কম দেখুন';
+
+  @override
+  String get rateApp => 'আমল ট্র্যাকার রেট করুন';
+
+  @override
+  String get rateAppSubtitle => 'অ্যাপটি ভালো লাগলে আমাদের জানান!';
+
+  @override
+  String get rateAppError => 'স্টোর লিস্টিং খোলা সম্ভব হয়নি।';
 }

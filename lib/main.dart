@@ -35,6 +35,7 @@ Future<void> main() async {
   await Future.wait([
     Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
     LocalStorageService.initialize(),
+    ScreenUtil.ensureScreenSize(),
   ]);
 
   // Capture Flutter framework errors and Dart isolate errors (release only)

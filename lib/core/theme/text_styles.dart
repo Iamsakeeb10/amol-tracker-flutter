@@ -6,26 +6,12 @@ import 'colors.dart';
 class AppTextStyles {
   AppTextStyles._();
 
-  static final Map<String, TextStyle> _cache = {};
-
-  static TextStyle _cached(String key, TextStyle Function() build) {
-    return _cache.putIfAbsent(key, build);
-  }
-
   static String _localeCode(BuildContext context, {Locale? locale}) {
     return locale?.languageCode ?? Localizations.localeOf(context).languageCode;
   }
 
   static bool _isBn(BuildContext context, {Locale? locale}) {
     return _localeCode(context, locale: locale) == 'bn';
-  }
-
-  static String _cacheKey(
-    BuildContext context,
-    String key, {
-    Locale? locale,
-  }) {
-    return '${_localeCode(context, locale: locale)}_$key';
   }
 
   static TextStyle _displayFont(
@@ -71,120 +57,95 @@ class AppTextStyles {
   }
 
   static TextStyle displayLarge(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'displayLarge', locale: locale), () {
-        return _displayFont(
-          context,
-          locale: locale,
-          fontSize: 36.sp,
-          height: 1.1,
-        );
-      });
+      _displayFont(
+        context,
+        locale: locale,
+        fontSize: 36.sp,
+        height: 1.1,
+      );
 
   static TextStyle displayMedium(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'displayMedium', locale: locale), () {
-        return _displayFont(
-          context,
-          locale: locale,
-          fontSize: 28.sp,
-          height: 1.15,
-        );
-      });
+      _displayFont(
+        context,
+        locale: locale,
+        fontSize: 28.sp,
+        height: 1.15,
+      );
 
   static TextStyle headlineLarge(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'headlineLarge', locale: locale), () {
-        return _displayFont(
-          context,
-          locale: locale,
-          fontSize: 22.sp,
-          letterSpacing: 0.2,
-        );
-      });
+      _displayFont(
+        context,
+        locale: locale,
+        fontSize: 22.sp,
+        letterSpacing: 0.2,
+      );
 
   static TextStyle headlineMedium(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'headlineMedium', locale: locale), () {
-        return _displayFont(
-          context,
-          locale: locale,
-          fontSize: 18.sp,
-          fontWeight: FontWeight.w500,
-        );
-      });
+      _displayFont(
+        context,
+        locale: locale,
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w500,
+      );
 
   static TextStyle goldNumeric(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'goldNumeric', locale: locale), () {
-        return _displayFont(
-          context,
-          locale: locale,
-          fontSize: 26.sp,
-          color: AppColors.goldLight,
-        );
-      });
+      _displayFont(
+        context,
+        locale: locale,
+        fontSize: 26.sp,
+        color: AppColors.goldLight,
+      );
 
   static TextStyle bodyLarge(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'bodyLarge', locale: locale), () {
-        return _bodyFont(
-          context,
-          locale: locale,
-          fontSize: 15.sp,
-          height: 1.5,
-        );
-      });
+      _bodyFont(
+        context,
+        locale: locale,
+        fontSize: 15.sp,
+        height: 1.5,
+      );
 
   static TextStyle bodyMedium(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'bodyMedium', locale: locale), () {
-        return _bodyFont(
-          context,
-          locale: locale,
-          fontSize: 13.5.sp,
-          color: AppColors.textSecondary,
-          height: 1.45,
-        );
-      });
+      _bodyFont(
+        context,
+        locale: locale,
+        fontSize: 13.5.sp,
+        color: AppColors.textSecondary,
+        height: 1.45,
+      );
 
   static TextStyle bodySmall(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'bodySmall', locale: locale), () {
-        return _bodyFont(
-          context,
-          locale: locale,
-          fontSize: 12.sp,
-          color: AppColors.textMuted,
-          height: 1.4,
-        );
-      });
+      _bodyFont(
+        context,
+        locale: locale,
+        fontSize: 12.sp,
+        color: AppColors.textMuted,
+        height: 1.4,
+      );
 
-  static TextStyle label(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'label', locale: locale), () {
-        return _bodyFont(
-          context,
-          locale: locale,
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textMuted,
-          letterSpacing: _isBn(context, locale: locale) ? 0 : 1.4,
-        );
-      });
+  static TextStyle label(BuildContext context, {Locale? locale}) => _bodyFont(
+        context,
+        locale: locale,
+        fontSize: 11.sp,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textMuted,
+        letterSpacing: _isBn(context, locale: locale) ? 0 : 1.4,
+      );
 
-  static TextStyle button(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'button', locale: locale), () {
-        return _bodyFont(
-          context,
-          locale: locale,
-          fontSize: 14.sp,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.4,
-        );
-      });
+  static TextStyle button(BuildContext context, {Locale? locale}) => _bodyFont(
+        context,
+        locale: locale,
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.4,
+      );
 
-  static TextStyle pill(BuildContext context, {Locale? locale}) =>
-      _cached(_cacheKey(context, 'pill', locale: locale), () {
-        return _bodyFont(
-          context,
-          locale: locale,
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.4,
-        );
-      });
+  static TextStyle pill(BuildContext context, {Locale? locale}) => _bodyFont(
+        context,
+        locale: locale,
+        fontSize: 11.sp,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.4,
+      );
 
   static TextStyle navLabel(
     BuildContext context, {

@@ -145,9 +145,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
       theme: AppTheme.build(context, locale: locale),
       builder: (context, child) {
         return MediaQuery(
-          data: MediaQueryData.fromView(
-            View.of(context),
-          ).copyWith(alwaysUse24HourFormat: false),
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
           child: LmsLevelUpHost(
             child: BadgeCelebrationHost(child: child!),
           ),

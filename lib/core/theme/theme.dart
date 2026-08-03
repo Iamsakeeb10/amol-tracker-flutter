@@ -7,23 +7,14 @@ import 'text_styles.dart';
 class AppTheme {
   AppTheme._();
 
-  static ThemeData? _cachedTheme;
-  static String? _cachedLocaleTag;
-
   static ThemeData build(BuildContext context, {Locale? locale}) {
-    final localeTag = locale?.toLanguageTag() ?? 'default';
-    if (_cachedTheme != null && _cachedLocaleTag == localeTag) {
-      return _cachedTheme!;
-    }
-
     final base = ThemeData.dark(useMaterial3: true);
     final isBn = locale?.languageCode == 'bn';
     final baseTextTheme = isBn
         ? base.textTheme.apply(fontFamily: 'NotoSansBengali')
         : base.textTheme.apply(fontFamily: 'PlusJakartaSans');
 
-    _cachedLocaleTag = localeTag;
-    _cachedTheme = base.copyWith(
+    return base.copyWith(
       scaffoldBackgroundColor: AppColors.emeraldDeep,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.gold,
@@ -121,6 +112,5 @@ class AppTheme {
       ),
       iconTheme: IconThemeData(color: AppColors.textPrimary, size: 20.r),
     );
-    return _cachedTheme!;
   }
 }

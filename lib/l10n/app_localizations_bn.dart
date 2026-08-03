@@ -610,25 +610,32 @@ class AppLocalizationsBn extends AppLocalizations {
   String get next => 'পরেরটা';
 
   @override
-  String get buildDailyHabitTitle => 'প্রতিদিনের অভ্যাস গড়ে তুলুন';
+  String get howAmolLoggingWorksTitle => 'মনে রাখবেন';
+
+  @override
+  String get howAmolLoggingWorksBody =>
+      'এই অ্যাপে একটি দিন শুরু হয় মাগরিবে এবং শেষ হয় পরবর্তী মাগরিবে। তাই আজকের আমল সবসময় পরবর্তী মাগরিবের আগেই লগ করুন। মাগরিবের পর করা সব আমল নতুন দিনের হিসাবেই গণনা হবে।';
+
+  @override
+  String get buildDailyHabitTitle => 'প্রতিদিনের আমল গড়ে তুলুন';
 
   @override
   String get buildDailyHabitBody =>
-      '৯টি দৈনিক আমল ট্র্যাক করুন - ফরজ, সুন্নাহ, আযকার, কুরআন। ছোট ছোট ধারাবাহিক স্টেপ।';
+      'প্রতিদিন ৯টি গুরুত্বপূর্ণ আমল ট্র্যাক করুন—ফরজ, সুন্নাহ, আযকার, কুরআনসহ আরও অনেক কিছু। ধারাবাহিকতাই সফলতার চাবিকাঠি।';
 
   @override
-  String get streaksKeepYouGoingTitle => 'স্ট্রিক আপনাকে চালিয়ে রাখবে';
+  String get streaksKeepYouGoingTitle => 'স্ট্রিক ধরে রাখুন';
 
   @override
   String get streaksKeepYouGoingBody =>
-      'চেইন ভাঙবেন না। ৭, ৩০, ১০০ দিন পূর্ণ করুন - নেকি অর্জন করুন।';
+      'প্রতিদিন অন্তত একটি আমল লগ করুন। মাগরিবের আগে লগ করলে আপনার স্ট্রিক ও অগ্রগতি বজায় থাকবে।';
 
   @override
   String get setupProfileTitle => 'প্রোফাইল সেটআপ করুন';
 
   @override
   String get setupProfileBody =>
-      'কমিউনিটিতে যোগ দেওয়ার আগে নাম আর প্রাইভেসি সেট করুন।';
+      'নাম ও প্রাইভেসি সেট করে কমিউনিটিতে যুক্ত হন এবং আপনার অগ্রগতি শেয়ার করুন।';
 
   @override
   String get starter => 'স্টার্টার';

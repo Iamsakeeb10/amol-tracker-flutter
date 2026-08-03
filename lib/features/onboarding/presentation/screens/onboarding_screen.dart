@@ -37,6 +37,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   List<_SlideData> _slides(AppLocalizations l10n) => <_SlideData>[
     _SlideData(
+      icon: Icons.push_pin_outlined,
+      title: l10n.howAmolLoggingWorksTitle,
+      body: l10n.howAmolLoggingWorksBody,
+      kind: _SlideKind.simple,
+    ),
+    _SlideData(
       icon: Icons.calendar_month_outlined,
       title: l10n.buildDailyHabitTitle,
       body: l10n.buildDailyHabitBody,

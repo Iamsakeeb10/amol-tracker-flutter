@@ -608,25 +608,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get next => 'Next';
 
   @override
-  String get buildDailyHabitTitle => 'Build a daily habit';
+  String get howAmolLoggingWorksTitle => 'Reminder';
+
+  @override
+  String get howAmolLoggingWorksBody =>
+      'In this app, a day starts at Maghrib and ends at the next Maghrib. So, log today\'s amal before the next Maghrib. Any amal logged after Maghrib will be counted as part of the new day.';
+
+  @override
+  String get buildDailyHabitTitle => 'Build Daily Habits';
 
   @override
   String get buildDailyHabitBody =>
-      'Track 9 daily amal - fard, sunnah, azkar, Quran. Tiny, consistent steps.';
+      'Track 9 daily amal, including Salah, Sunnah, Adhkar, and Quran. Small consistent steps lead to lasting habits.';
 
   @override
-  String get streaksKeepYouGoingTitle => 'Streaks keep you going';
+  String get streaksKeepYouGoingTitle => 'Keep Your Streak';
 
   @override
   String get streaksKeepYouGoingBody =>
-      'Don\'t break the chain. Hit 7, 30, 100 days - earn your khair.';
+      'Log at least one amal every Hijri day before the next Maghrib to keep your streak and stay consistent.';
 
   @override
-  String get setupProfileTitle => 'Set up your profile';
+  String get setupProfileTitle => 'Set Up Your Profile';
 
   @override
   String get setupProfileBody =>
-      'Set your name and privacy before joining the community.';
+      'Choose your name and privacy settings to personalize your experience and join the community.';
 
   @override
   String get starter => 'Starter';

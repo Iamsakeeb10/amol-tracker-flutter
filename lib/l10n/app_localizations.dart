@@ -1208,40 +1208,52 @@ abstract class AppLocalizations {
   /// **'Next'**
   String get next;
 
+  /// No description provided for @howAmolLoggingWorksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get howAmolLoggingWorksTitle;
+
+  /// No description provided for @howAmolLoggingWorksBody.
+  ///
+  /// In en, this message translates to:
+  /// **'In this app, a day starts at Maghrib and ends at the next Maghrib. So, log today\'s amal before the next Maghrib. Any amal logged after Maghrib will be counted as part of the new day.'**
+  String get howAmolLoggingWorksBody;
+
   /// No description provided for @buildDailyHabitTitle.
   ///
   /// In en, this message translates to:
-  /// **'Build a daily habit'**
+  /// **'Build Daily Habits'**
   String get buildDailyHabitTitle;
 
   /// No description provided for @buildDailyHabitBody.
   ///
   /// In en, this message translates to:
-  /// **'Track 9 daily amal - fard, sunnah, azkar, Quran. Tiny, consistent steps.'**
+  /// **'Track 9 daily amal, including Salah, Sunnah, Adhkar, and Quran. Small consistent steps lead to lasting habits.'**
   String get buildDailyHabitBody;
 
   /// No description provided for @streaksKeepYouGoingTitle.
   ///
   /// In en, this message translates to:
-  /// **'Streaks keep you going'**
+  /// **'Keep Your Streak'**
   String get streaksKeepYouGoingTitle;
 
   /// No description provided for @streaksKeepYouGoingBody.
   ///
   /// In en, this message translates to:
-  /// **'Don\'t break the chain. Hit 7, 30, 100 days - earn your khair.'**
+  /// **'Log at least one amal every Hijri day before the next Maghrib to keep your streak and stay consistent.'**
   String get streaksKeepYouGoingBody;
 
   /// No description provided for @setupProfileTitle.
   ///
   /// In en, this message translates to:
-  /// **'Set up your profile'**
+  /// **'Set Up Your Profile'**
   String get setupProfileTitle;
 
   /// No description provided for @setupProfileBody.
   ///
   /// In en, this message translates to:
-  /// **'Set your name and privacy before joining the community.'**
+  /// **'Choose your name and privacy settings to personalize your experience and join the community.'**
   String get setupProfileBody;
 
   /// No description provided for @starter.

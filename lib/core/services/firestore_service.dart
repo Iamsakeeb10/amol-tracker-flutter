@@ -961,19 +961,13 @@ class FirestoreService {
     final controller = StreamController<AppConfigModel?>();
 
     void listenFallback() {
-      print('🔄 [FIRESTORE] Using fallback (no index)');
       subscription = _appConfigs.snapshots().listen(
         (snap) {
-          print('🔄 [FIRESTORE] Fallback: ${snap.docs.length} total docs');
-          for (final doc in snap.docs) {
-            print('🔄 [FIRESTORE]   doc ${doc.id}: isActive=${doc.data()["isActive"]} versionCode=${doc.data()["latestVersionCode"]}');
-          }
           final active = snap.docs
               .map(AppConfigModel.fromDoc)
               .where((c) => c.isActive)
               .toList()
             ..sort((a, b) => b.latestVersionCode.compareTo(a.latestVersionCode));
-          print('🔄 [FIRESTORE] Active configs after filter: ${active.length}');
           controller.add(active.isEmpty ? null : active.first);
         },
         onError: controller.addError,
@@ -988,10 +982,6 @@ class FirestoreService {
           .snapshots()
           .listen(
         (snap) {
-          print('🔄 [FIRESTORE] Primary query returned ${snap.docs.length} docs');
-          for (final doc in snap.docs) {
-            print('🔄 [FIRESTORE]   doc ${doc.id}: isActive=${doc.data()["isActive"]} versionCode=${doc.data()["latestVersionCode"]}');
-          }
           if (snap.docs.isEmpty) {
             controller.add(null);
           } else {
@@ -999,7 +989,6 @@ class FirestoreService {
           }
         },
         onError: (Object error) {
-          print('🔄 [FIRESTORE] ❌ Primary query error: $error');
           if (error is FirebaseException && error.code == 'failed-precondition') {
             subscription.cancel();
             listenFallback();

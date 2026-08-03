@@ -9,15 +9,11 @@ class LocalStorageService {
 
   static Future<void> initialize() async {
     await Hive.initFlutter();
-    if (!Hive.isBoxOpen(amalLogsBox)) {
-      await Hive.openBox<dynamic>(amalLogsBox);
-    }
-    if (!Hive.isBoxOpen(prefsBox)) {
-      await Hive.openBox<dynamic>(prefsBox);
-    }
-    if (!Hive.isBoxOpen(cacheBox)) {
-      await Hive.openBox<dynamic>(cacheBox);
-    }
+    await Future.wait([
+      if (!Hive.isBoxOpen(amalLogsBox)) Hive.openBox<dynamic>(amalLogsBox),
+      if (!Hive.isBoxOpen(prefsBox)) Hive.openBox<dynamic>(prefsBox),
+      if (!Hive.isBoxOpen(cacheBox)) Hive.openBox<dynamic>(cacheBox),
+    ]);
   }
 
   static Future<void> clearAll() async {

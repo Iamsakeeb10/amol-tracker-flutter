@@ -27,11 +27,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 Future<void> main() async {
-  final binding = WidgetsFlutterBinding.ensureInitialized(); // CHANGE THIS LINE
-  FlutterNativeSplash.preserve(widgetsBinding: binding); // ADD THIS
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: binding);
 
   tz.initializeTimeZones();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  await Future.wait([
+    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+    LocalStorageService.initialize(),
+  ]);
 
   // Capture Flutter framework errors and Dart isolate errors (release only)
   if (kReleaseMode) {
@@ -46,7 +50,7 @@ Future<void> main() async {
     persistenceEnabled: true,
   );
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  await LocalStorageService.initialize();
+
   // Immediately push hijri date + cached streak to widget (no auth needed).
   unawaited(HomeWidgetService.quickPreloadWidget());
 

@@ -134,10 +134,7 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
           child: Stack(
             children: [
               NotificationListener<ScrollNotification>(
-                onNotification: (notification) {
-                  _onScroll();
-                  return false;
-                },
+                onNotification: (_) => false,
                 child: RefreshIndicator(
                   onRefresh: widget.onRefreshAll,
                   color: AppColors.gold,

@@ -175,21 +175,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   void _checkForUpdate() {
-    print('🔄 [HOME] _checkForUpdate called — mounted=$mounted dialogOpen=$_isUpdateDialogOpen');
     if (_isUpdateDialogOpen || !mounted) {
-      print('🔄 [HOME] ⏸️ Skipping — dialog open or not mounted');
       return;
     }
     final status = ref.read(updateStatusProvider);
-    print('🔄 [HOME] status: isAvailable=${status.isAvailable} config=${status.config != null}');
     if (!status.isAvailable || status.config == null) {
-      print('🔄 [HOME] ✅ No update to show');
       return;
     }
-    print('🔄 [HOME] 📅 Scheduling update dialog...');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _isUpdateDialogOpen) {
-        print('🔄 [HOME] ⏸️ Post-frame: mounted=$mounted dialogOpen=$_isUpdateDialogOpen');
         return;
       }
       _showUpdateDialog(status);
@@ -197,7 +191,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Future<void> _showUpdateDialog(UpdateStatus status) async {
-    print('🔄 [HOME] 🔔 Showing update dialog now!');
     if (!mounted || _isUpdateDialogOpen) return;
     _isUpdateDialogOpen = true;
     await UpdateModal.show(
@@ -207,7 +200,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
     if (!mounted) return;
     _isUpdateDialogOpen = false;
-    print('🔄 [HOME] ✅ Dialog dismissed');
   }
 
   @override
@@ -265,7 +257,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       _scheduleAnnouncementShow();
     });
     ref.listen<UpdateStatus>(updateStatusProvider, (previous, next) {
-      print('🔄 [HOME] updateStatusProvider changed: isAvailable=${next.isAvailable}');
       if (next.isAvailable && !_isUpdateDialogOpen) {
         _checkForUpdate();
       }

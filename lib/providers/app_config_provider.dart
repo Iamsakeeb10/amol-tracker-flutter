@@ -26,25 +26,17 @@ final updateStatusProvider = Provider<UpdateStatus>((ref) {
   final configAsync = ref.watch(activeAppConfigProvider);
   final versionAsync = ref.watch(installedVersionCodeProvider);
 
-  print('🔄 [UPDATE] activeAppConfigProvider: ${configAsync.value != null ? "found: ${configAsync.value!.latestVersion} (code ${configAsync.value!.latestVersionCode}, active ${configAsync.value!.isActive})" : "null"}');
-  print('🔄 [UPDATE] installedVersionCode: ${versionAsync.value}');
-
   final config = configAsync.value;
   final versionCode = versionAsync.value;
 
   if (config == null || versionCode == null) {
-    print('🔄 [UPDATE] ⏸️ Skipping — config or versionCode is null');
     return const UpdateStatus.noUpdate();
   }
-
-  print('🔄 [UPDATE] comparing: installed=$versionCode vs latest=${config.latestVersionCode} (isActive=${config.isActive})');
 
   if (!config.isUpdateAvailable(versionCode)) {
-    print('🔄 [UPDATE] ✅ No update needed');
     return const UpdateStatus.noUpdate();
   }
 
-  print('🔄 [UPDATE] 🔔 Update AVAILABLE! force=${config.forceUpdate}');
   return UpdateStatus.available(
     config: config,
     installedVersionCode: versionCode,

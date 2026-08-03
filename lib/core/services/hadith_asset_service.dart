@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'analytics_service.dart';
@@ -17,17 +18,21 @@ class HadithAssetService {
   static Future<List<String>> _loadHadithTexts() async {
     try {
       final raw = await rootBundle.loadString(assetPath);
-      final decoded = jsonDecode(raw);
-      if (decoded is! List) return const [];
-
-      return decoded
-          .map(_formatHadith)
-          .where((hadith) => hadith.isNotEmpty)
-          .toList(growable: false);
+      // Offload JSON parsing to a background isolate to avoid jank.
+      return await compute(_decodeHadithJson, raw);
     } catch (e, st) {
       AnalyticsService.instance.recordError(e, st, reason: 'Hadith asset load failed');
       return const [];
     }
+  }
+
+  static List<String> _decodeHadithJson(String raw) {
+    final decoded = jsonDecode(raw);
+    if (decoded is! List) return const [];
+    return decoded
+        .map(_formatHadith)
+        .where((hadith) => hadith.isNotEmpty)
+        .toList(growable: false);
   }
 
   static String _formatHadith(Object? entry) {
@@ -41,3 +46,4 @@ class HadithAssetService {
     return '$text - $reference';
   }
 }
+

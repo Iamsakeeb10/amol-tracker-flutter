@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/feedback_provider.dart';
+import '../../../../providers/admin_push_provider.dart';
+import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../core/theme/colors.dart';
@@ -149,6 +151,44 @@ class AdminFeedbacksScreen extends ConsumerWidget {
                         ),
                       ),
                     ],
+                    SizedBox(height: 12.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton.icon(
+                          icon: Icon(Icons.reply_outlined, size: 16.r),
+                          label: Text('Acknowledge', style: TextStyle(fontSize: 12.sp)),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.gold,
+                            side: const BorderSide(color: AppColors.goldBorder),
+                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          onPressed: () async {
+                            final adminUid = ref.read(authStateProvider).asData?.value?.uid;
+                            if (adminUid == null) return;
+                            final gateway = ref.read(adminPushGatewayServiceProvider);
+                            if (!gateway.isConfigured) return;
+                            final isBug = feedback.type.name == 'bug';
+                            final result = await gateway.sendAdminPush(
+                              adminUid: adminUid,
+                              title: isBug ? '🐛 Bug Report Received' : '💡 Feature Request Received',
+                              message: 'We got your ${isBug ? 'bug report' : 'feature request'} and our team is looking into it. Thank you!',
+                              type: 'feedback_received',
+                              targetUid: feedback.userId,
+                            );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(result.success ? 'Acknowledgment sent!' : 'Failed: ${result.error}'),
+                                  backgroundColor: result.success ? AppColors.success : AppColors.danger,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               );

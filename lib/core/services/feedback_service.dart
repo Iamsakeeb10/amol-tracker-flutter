@@ -28,4 +28,14 @@ class FeedbackService {
   Future<void> deleteFeedback(String id) async {
     await _firestore.collection('feedbacks').doc(id).delete();
   }
+
+  /// Returns the Firebase UID for a user by email, or null if not found.
+  Future<String?> getUidByEmail(String email) async {
+    final snap = await _firestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+    return snap.docs.isEmpty ? null : snap.docs.first.id;
+  }
 }

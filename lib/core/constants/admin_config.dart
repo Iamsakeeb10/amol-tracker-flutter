@@ -6,6 +6,9 @@ class AdminConfig {
 
   static const Set<String> _adminEmails = {'shakibshovon.10@gmail.com'};
 
+  /// The primary admin email used for targeted push notifications.
+  static String? get adminEmail => _adminEmails.isNotEmpty ? _adminEmails.first : null;
+
   static bool isEmailAdmin(String? email) =>
       email != null && _adminEmails.contains(email);
 

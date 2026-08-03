@@ -27,6 +27,8 @@ class AdminPushGatewayService {
     'dua',
     'hadith',
     'syllabus_course',
+    'feedback_received',
+    'feedback_submitted',
   ];
 
   static const String _defaultGatewayUrl =

@@ -231,6 +231,50 @@ async function fetchAllUsersWithTokens(env, accessToken) {
   return { ok: true, users };
 }
 
+async function fetchAdminsWithTokens(env, accessToken) {
+  const url = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents:runQuery`;
+  const query = {
+    structuredQuery: {
+      from: [{ collectionId: 'users' }],
+      where: {
+        fieldFilter: {
+          field: { fieldPath: 'role' },
+          op: 'EQUAL',
+          value: { stringValue: 'admin' },
+        }
+      }
+    }
+  };
+
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(query),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    return { ok: false, error: `admin fetch failed: ${resp.status} ${text}` };
+  }
+
+  const data = await resp.json();
+  const users = [];
+  for (const item of data) {
+    const doc = item.document;
+    if (!doc) continue;
+    const uid = doc.name?.split('/').pop() || '';
+    const fcmToken = readStringField(doc.fields, 'fcmToken').trim();
+    if (uid) {
+      // Return user even if empty fcmToken so inbox gets written
+      users.push({ uid, fcmToken });
+    }
+  }
+  return { ok: true, users };
+}
+
 async function fetchSingleUserWithToken(env, accessToken, uid) {
   const url = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}`;
   const resp = await fetch(url, {
@@ -238,7 +282,7 @@ async function fetchSingleUserWithToken(env, accessToken, uid) {
   });
   
   if (!resp.ok) {
-    if (resp.status === 404) return { ok: true, users: [] };
+    if (resp.status === 404) return { ok: true, users: [{ uid, fcmToken: '' }] };
     const text = await resp.text();
     return { ok: false, error: `user fetch failed: ${resp.status} ${text}` };
   }
@@ -362,16 +406,21 @@ export default {
       logAdminPush('reject', roleResult.error);
       return jsonResponse({ error: 'failed_to_verify_role' }, 500);
     }
-    if (roleResult.role !== 'admin') {
+    if (roleResult.role !== 'admin' && type !== 'feedback_submitted') {
       logAdminPush('reject', `not_admin role=${roleResult.role} uid=${adminUid}`);
       return jsonResponse({ error: 'not_admin' }, 403);
     }
 
     logAdminPush('auth_ok', `adminUid=${adminUid} type=${type} targetUid=${targetUid || 'all'}`);
 
-    const usersResult = targetUid
-      ? await fetchSingleUserWithToken(env, oauth.accessToken, targetUid)
-      : await fetchAllUsersWithTokens(env, oauth.accessToken);
+    let usersResult;
+    if (type === 'feedback_submitted') {
+      usersResult = await fetchAdminsWithTokens(env, oauth.accessToken);
+    } else if (targetUid) {
+      usersResult = await fetchSingleUserWithToken(env, oauth.accessToken, targetUid);
+    } else {
+      usersResult = await fetchAllUsersWithTokens(env, oauth.accessToken);
+    }
 
     if (!usersResult.ok) {
       logAdminPush('reject', usersResult.error);

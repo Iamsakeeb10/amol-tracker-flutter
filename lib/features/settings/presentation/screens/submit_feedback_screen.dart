@@ -10,6 +10,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../models/feedback_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/feedback_provider.dart';
+import '../../../../providers/admin_push_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../core/theme/colors.dart';
@@ -66,6 +67,18 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
       );
 
       await ref.read(feedbackServiceProvider).submitFeedback(feedback);
+
+      final gateway = ref.read(adminPushGatewayServiceProvider);
+      if (gateway.isConfigured) {
+        final isBug = widget.type == FeedbackType.bug;
+        // ignore result as it's non-blocking for user feedback success
+        gateway.sendAdminPush(
+          adminUid: userId,
+          title: isBug ? '🐛 New Bug Report' : '💡 New Feature Request',
+          message: content.length > 100 ? '${content.substring(0, 97)}...' : content,
+          type: 'feedback_submitted',
+        );
+      }
 
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;

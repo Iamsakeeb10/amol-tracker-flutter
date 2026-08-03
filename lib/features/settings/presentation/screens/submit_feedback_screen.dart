@@ -14,6 +14,7 @@ import '../../../../providers/admin_push_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../../core/theme/text_styles.dart';
 
 class SubmitFeedbackScreen extends ConsumerStatefulWidget {
   final FeedbackType type;
@@ -120,95 +121,137 @@ class _SubmitFeedbackScreenState extends ConsumerState<SubmitFeedbackScreen> {
         ),
         title: Text(
           isBug ? l10n.reportBug : l10n.requestFeature,
-          style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.headlineMedium(context),
         ),
-        actions: [
-          if (_isSubmitting)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-            )
-          else
-            TextButton(
-              onPressed: _controller.text.trim().isNotEmpty ? _submit : null,
-              child: Text(
-                l10n.save,
-                style: TextStyle(
-                  color: _controller.text.trim().isNotEmpty
-                      ? AppColors.gold
-                      : AppColors.textMuted,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-        ],
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 16.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (isBug) ...[
-                Wrap(
-                  spacing: 8.w,
-                  runSpacing: 8.h,
-                  children: [
-                    'UI Issue',
-                    'Crash',
-                    'Performance',
-                    'Typo',
-                  ].map((preset) {
-                    return ActionChip(
-                      label: Text(
-                        preset,
-                        style: TextStyle(fontSize: 12.sp, color: AppColors.textPrimary),
-                      ),
-                      backgroundColor: AppColors.emeraldMid,
-                      side: const BorderSide(color: AppColors.cardBorder),
-                      onPressed: () {
-                        final currentText = _controller.text.trim();
-                        if (currentText.isEmpty) {
-                          _controller.text = '[$preset] ';
-                        } else if (!currentText.startsWith('[$preset]')) {
-                          _controller.text = '[$preset] $currentText';
-                        }
-                        setState(() {});
-                      },
-                    );
-                  }).toList(),
-                ),
-                SizedBox(height: 12.h),
-              ],
-              CardContainer(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 14.w,
-                  vertical: 14.h,
-                ),
-                child: TextField(
-                  controller: _controller,
-                  maxLines: 10,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: l10n.feedbackContentHint,
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      'UI Issue',
+                      'Crash',
+                      'Performance',
+                      'Typo',
+                    ].map((preset) {
+                      return Padding(
+                        padding: EdgeInsets.only(right: 8.w),
+                        child: _FeedbackPresetChip(
+                          label: preset,
+                          onTap: () {
+                            final currentText = _controller.text.trim();
+                            if (currentText.isEmpty) {
+                              _controller.text = '[$preset] ';
+                            } else if (!currentText.startsWith('[$preset]')) {
+                              _controller.text = '[$preset] $currentText';
+                            }
+                            setState(() {});
+                          },
+                        ),
+                      );
+                    }).toList(),
                   ),
-                  onChanged: (_) => setState(() {}),
+                ),
+                SizedBox(height: 16.h),
+              ],
+              Expanded(
+                child: CardContainer(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 16.h,
+                  ),
+                  child: TextField(
+                    controller: _controller,
+                    maxLines: null,
+                    expands: true,
+                    autofocus: true,
+                    style: AppTextStyles.bodyLarge(context),
+                    decoration: InputDecoration(
+                      hintText: l10n.feedbackContentHint,
+                      hintStyle: AppTextStyles.bodyLarge(context).copyWith(
+                        color: AppColors.textHint,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              SizedBox(
+                width: double.infinity,
+                height: 50.h,
+                child: ElevatedButton(
+                  onPressed: (_controller.text.trim().isNotEmpty && !_isSubmitting) ? _submit : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: AppColors.emeraldDeep,
+                    disabledBackgroundColor: AppColors.cardBorder,
+                    disabledForegroundColor: AppColors.textHint,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: _isSubmitting
+                      ? SizedBox(
+                          width: 22.r,
+                          height: 22.r,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.emeraldDeep,
+                          ),
+                        )
+                      : Text(
+                          l10n.save,
+                          style: AppTextStyles.button(context).copyWith(
+                            color: _controller.text.trim().isNotEmpty ? AppColors.emeraldDeep : AppColors.textHint,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedbackPresetChip extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _FeedbackPresetChip({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.gold,
+      borderRadius: BorderRadius.circular(100.r),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+          child: Text(
+            label,
+            style: AppTextStyles.pill(context).copyWith(
+              color: AppColors.emeraldDeep,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),

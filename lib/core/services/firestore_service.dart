@@ -148,6 +148,13 @@ class FirestoreService {
     });
   }
 
+  Future<void> dismissLoggingReminder(String uid) async {
+    if (uid.isEmpty) return;
+    await _users.doc(uid).update(<String, dynamic>{
+      'hasDismissedLoggingReminder': true,
+    });
+  }
+
   CollectionReference<Map<String, dynamic>> get _announcements =>
       _firestore.collection('announcements');
 

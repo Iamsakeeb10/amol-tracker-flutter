@@ -1699,6 +1699,16 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminToggleFailed => 'ঘোষণা আপডেট করা যায়নি।';
 
   @override
+  String get homeReminderTitle => 'মনে রাখবেন';
+
+  @override
+  String get homeReminderBody =>
+      'এই অ্যাপে \"দিন\" শুরু হয় **মাগরিব** থেকে—রাত ১২টায় নয়। মাগরিবের পর নতুন আরবি দিন শুরু হয়, তাই আপনার প্রতিদিনের আমল পরবর্তী **মাগরিবের** আগেই লগ করুন। আপনার স্ট্রিক ও সব হিসাব এই নিয়মেই গণনা করা হয়।';
+
+  @override
+  String get seeMore => 'আরও দেখুন';
+
+  @override
   String get adminDateRangeInvalid => 'শেষ সময় শুরুর সময়ের পরে হতে হবে।';
 
   @override
@@ -2850,4 +2860,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get tutorialGotIt => 'বুঝেছি';
+
+  @override
+  String get seeLess => 'কম দেখুন';
 }

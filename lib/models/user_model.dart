@@ -21,6 +21,7 @@ class UserModel {
   final List<String> seenAnnouncements;
   final UserRole role;
   final int lmsXp;
+  final bool hasDismissedLoggingReminder;
 
   const UserModel({
     required this.uid,
@@ -41,6 +42,7 @@ class UserModel {
     required this.seenAnnouncements,
     this.role = UserRole.user,
     this.lmsXp = 0,
+    this.hasDismissedLoggingReminder = false,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
@@ -72,6 +74,7 @@ class UserModel {
               .toList(),
       role: UserRole.fromString(map['role'] as String?),
       lmsXp: (map['lmsXp'] as num?)?.toInt() ?? 0,
+      hasDismissedLoggingReminder: (map['hasDismissedLoggingReminder'] as bool?) ?? false,
     );
   }
 
@@ -98,6 +101,7 @@ class UserModel {
       'seenAnnouncements': seenAnnouncements,
       if (role != UserRole.user) 'role': role.firestoreValue,
       if (lmsXp > 0) 'lmsXp': lmsXp,
+      'hasDismissedLoggingReminder': hasDismissedLoggingReminder,
     };
   }
 }

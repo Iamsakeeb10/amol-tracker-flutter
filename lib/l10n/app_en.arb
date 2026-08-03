@@ -798,6 +798,9 @@
   "adminSaveFailed": "Could not save announcement.",
   "adminDeleteFailed": "Could not delete announcement.",
   "adminToggleFailed": "Could not update announcement.",
+  "homeReminderTitle": "Reminder",
+  "homeReminderBody": "In this app, a \"day\" runs from **Maghrib** to the next **Maghrib**—not from midnight. Since a new day begins at sunset, please log your daily deeds before Maghrib. Your streak and all progress are calculated based on this schedule.",
+  "seeMore": "See more",
   "adminDateRangeInvalid": "Expires at must be after starts at.",
   "adminPreviewRequired": "Add a title and message to preview.",
   "adminPushNotificationTitle": "Push Notification",
@@ -1414,17 +1417,21 @@
   "adminAppConfigUpdateTitle": "Update Title",
   "adminAppConfigUpdateMessage": "Update Message",
   "adminAppConfigMinVersionCode": "Min Supported Version Code (0 = disabled)",
-  "adminAppConfigButtonLabel": "Button Label (optional)"
-,
+  "adminAppConfigButtonLabel": "Button Label (optional)",
   "streakSheetFrozen": "Frozen",
   "streakFreezeTitle": "Streak Freeze",
   "streakFreezeDescription": "You missed yesterday. Use a streak freeze to keep your streak alive — it will become a {days}-day streak.",
-  "@streakFreezeDescription": {"placeholders": {"days": {}}},
+  "@streakFreezeDescription": {
+    "placeholders": {
+      "days": {}
+    }
+  },
   "streakFreezesLeftThisWeek": "Freezes left this week",
   "streakFreezeUseButton": "Yes, use my freeze",
   "streakFreezeResetButton": "No, reset my streak",
   "reportsPrayerEmptyTitle": "No Prayer Data Yet",
   "reportsPrayerEmptyMessage": "Start logging your prayers to see consistency insights here.",
   "tutorialPrayerTapHint": "Tap a circle to mark your prayer",
-  "tutorialGotIt": "Got it"
+  "tutorialGotIt": "Got it",
+  "seeLess": "See less"
 }

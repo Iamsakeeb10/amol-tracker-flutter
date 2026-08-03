@@ -10,9 +10,10 @@ import '../../../../providers/amal_expansion_provider.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
+import '../../../../providers/auth_provider.dart';
 import 'home_editing_amal_sliver.dart';
 import 'home_header.dart';
-import 'home_welcome_card.dart';
+import 'home_reminder_card.dart';
 import 'home_widgets.dart';
 
 class HomeScrollBody extends ConsumerStatefulWidget {
@@ -98,6 +99,8 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final user = ref.watch(currentUserProvider).asData?.value;
+    final showReminder = user != null && !user.hasDismissedLoggingReminder;
 
     // Collapse any expanded amal tile if its field disappears from the list
     // (e.g. admin removed it or the field set changed while viewing).
@@ -205,10 +208,17 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                           const SliverToBoxAdapter(
                             child: HomeTopPerformers(),
                           ),
-                          if (widget.isNewUser) ...[
+
+                          if (showReminder) ...[
                             SliverToBoxAdapter(child: SizedBox(height: 14.h)),
                             SliverToBoxAdapter(
-                                child: HomeWelcomeCard(l10n: l10n)),
+                              child: HomeReminderCard(
+                                l10n: l10n,
+                                onDismiss: () {
+                                  ref.read(firestoreServiceProvider).dismissLoggingReminder(widget.uid);
+                                },
+                              ),
+                            ),
                           ],
                           SliverToBoxAdapter(child: SizedBox(height: 14.h)),
                           const HomeQuickNavSection(),

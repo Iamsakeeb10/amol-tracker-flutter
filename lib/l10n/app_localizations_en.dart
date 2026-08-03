@@ -1696,6 +1696,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminToggleFailed => 'Could not update announcement.';
 
   @override
+  String get homeReminderTitle => 'Reminder';
+
+  @override
+  String get homeReminderBody =>
+      'In this app, a \"day\" runs from **Maghrib** to the next **Maghrib**—not from midnight. Since a new day begins at sunset, please log your daily deeds before Maghrib. Your streak and all progress are calculated based on this schedule.';
+
+  @override
+  String get seeMore => 'See more';
+
+  @override
   String get adminDateRangeInvalid => 'Expires at must be after starts at.';
 
   @override
@@ -2845,4 +2855,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialGotIt => 'Got it';
+
+  @override
+  String get seeLess => 'See less';
 }

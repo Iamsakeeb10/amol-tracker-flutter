@@ -3211,6 +3211,24 @@ abstract class AppLocalizations {
   /// **'Could not update announcement.'**
   String get adminToggleFailed;
 
+  /// No description provided for @homeReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get homeReminderTitle;
+
+  /// No description provided for @homeReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'In this app, a \"day\" runs from **Maghrib** to the next **Maghrib**—not from midnight. Since a new day begins at sunset, please log your daily deeds before Maghrib. Your streak and all progress are calculated based on this schedule.'**
+  String get homeReminderBody;
+
+  /// No description provided for @seeMore.
+  ///
+  /// In en, this message translates to:
+  /// **'See more'**
+  String get seeMore;
+
   /// No description provided for @adminDateRangeInvalid.
   ///
   /// In en, this message translates to:
@@ -5304,6 +5322,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Got it'**
   String get tutorialGotIt;
+
+  /// No description provided for @seeLess.
+  ///
+  /// In en, this message translates to:
+  /// **'See less'**
+  String get seeLess;
 }
 
 class _AppLocalizationsDelegate

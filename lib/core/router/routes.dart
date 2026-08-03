@@ -33,6 +33,7 @@ class AppRoutes {
   static const profile = '/profile';
   static const settings = '/settings';
   static const feedback = '/settings/feedback';
+  static const submitFeedback = '/settings/feedback/submit';
   static const quietHours = '/settings/quiet-hours';
   static const reminderTimes = '/settings/reminder-times';
   static const prayerAdhan = '/settings/prayer-adhan';
@@ -86,6 +87,7 @@ class AppRoutes {
   static const dev = '/dev';
 
   static const adminAnnouncements = '/admin/announcements';
+  static const adminFeedbacks = '/admin/feedbacks';
   static const adminAnnouncementForm = '/admin/announcement-form';
   static const adminPushNotification = '/admin/push-notification';
   static const adminAmalFields = '/admin/amal-fields';

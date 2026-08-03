@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/routes.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../models/feedback_model.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
@@ -51,7 +54,10 @@ class FeedbackScreen extends ConsumerWidget {
                       title: l10n.reportBug,
                       subtitle: l10n.reportBugSubtitle,
                       onTap: () {
-                        // TODO: Implement report a bug
+                        context.push(
+                          AppRoutes.submitFeedback,
+                          extra: FeedbackType.bug,
+                        );
                       },
                     ),
                     const Divider(),
@@ -60,7 +66,10 @@ class FeedbackScreen extends ConsumerWidget {
                       title: l10n.requestFeature,
                       subtitle: l10n.requestFeatureSubtitle,
                       onTap: () {
-                        // TODO: Implement request a feature
+                        context.push(
+                          AppRoutes.submitFeedback,
+                          extra: FeedbackType.feature,
+                        );
                       },
                     ),
                   ],

@@ -1386,5 +1386,8 @@
   "reportBug": "ত্রুটি রিপোর্ট করুন",
   "reportBugSubtitle": "কোনো কিছু ঠিকমতো কাজ না করলে আমাদের জানান",
   "requestFeature": "নতুন ফিচারের অনুরোধ করুন",
-  "requestFeatureSubtitle": "কোনো ধারণা আছে? আমরা শুনতে চাই!"
+  "requestFeatureSubtitle": "কোনো ধারণা আছে? আমরা শুনতে চাই!",
+  "adminFeedbacksTitle": "ব্যবহারকারীর মতামত",
+  "submitFeedbackSuccess": "মতামত সফলভাবে জমা দেওয়া হয়েছে। আপনাকে ধন্যবাদ!",
+  "feedbackContentHint": "আপনার মতামত বিস্তারিত লিখুন..."
 }

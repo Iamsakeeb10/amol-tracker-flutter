@@ -5382,6 +5382,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Have an idea? We\'d love to hear it!'**
   String get requestFeatureSubtitle;
+
+  /// No description provided for @adminFeedbacksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'User Feedbacks'**
+  String get adminFeedbacksTitle;
+
+  /// No description provided for @submitFeedbackSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback submitted successfully. Thank you!'**
+  String get submitFeedbackSuccess;
+
+  /// No description provided for @feedbackContentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe your feedback...'**
+  String get feedbackContentHint;
 }
 
 class _AppLocalizationsDelegate

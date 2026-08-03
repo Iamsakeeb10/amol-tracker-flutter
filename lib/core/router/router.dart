@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../features/admin/presentation/screens/admin_announcement_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_announcements_screen.dart';
+import '../../features/admin/presentation/screens/admin_feedbacks_screen.dart';
 import '../../features/admin/presentation/screens/admin_amal_field_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_amal_fields_screen.dart';
 import '../../features/admin/presentation/screens/admin_course_form_screen.dart';
@@ -52,6 +53,7 @@ import '../../features/qibla/presentation/screens/qibla_screen.dart';
 import '../../features/quran/presentation/screens/quran_screen.dart';
 import '../../features/quran/presentation/screens/quran_surah_scroll_screen.dart';
 import '../../features/settings/presentation/screens/feedback_screen.dart';
+import '../../features/settings/presentation/screens/submit_feedback_screen.dart';
 import '../../features/syllabus/presentation/screens/course_detail_screen.dart';
 import '../../features/syllabus/presentation/screens/lesson_viewer_screen.dart';
 import '../../features/syllabus/presentation/screens/quiz_intro_screen.dart';
@@ -67,6 +69,7 @@ import '../services/firestore_service.dart';
 import '../theme/colors.dart';
 import 'app_redirect.dart';
 import 'routes.dart';
+import '../../models/feedback_model.dart';
 
 GoRouter buildAppRouter() {
   final firestoreService = FirestoreService();
@@ -311,6 +314,11 @@ GoRouter buildAppRouter() {
         builder: (_, _) => const AdminAnnouncementsScreen(),
       ),
       GoRoute(
+        path: AppRoutes.adminFeedbacks,
+        name: 'adminFeedbacks',
+        builder: (_, _) => const AdminFeedbacksScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.adminAnnouncementForm,
         name: 'adminAnnouncementForm',
         builder: (_, state) {
@@ -420,6 +428,15 @@ GoRouter buildAppRouter() {
             path: 'feedback',
             name: 'feedback',
             builder: (_, _) => const FeedbackScreen(),
+          ),
+          GoRoute(
+            path: 'feedback/submit',
+            name: 'submitFeedback',
+            builder: (_, state) {
+              final extra = state.extra;
+              final type = extra is FeedbackType ? extra : FeedbackType.bug;
+              return SubmitFeedbackScreen(type: type);
+            },
           ),
           GoRoute(
             path: 'quiet-hours',

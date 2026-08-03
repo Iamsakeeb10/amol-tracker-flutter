@@ -2885,4 +2885,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get requestFeatureSubtitle => 'Have an idea? We\'d love to hear it!';
+
+  @override
+  String get adminFeedbacksTitle => 'User Feedbacks';
+
+  @override
+  String get submitFeedbackSuccess =>
+      'Feedback submitted successfully. Thank you!';
+
+  @override
+  String get feedbackContentHint => 'Describe your feedback...';
 }

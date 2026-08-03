@@ -2891,4 +2891,14 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get requestFeatureSubtitle => 'কোনো ধারণা আছে? আমরা শুনতে চাই!';
+
+  @override
+  String get adminFeedbacksTitle => 'ব্যবহারকারীর মতামত';
+
+  @override
+  String get submitFeedbackSuccess =>
+      'মতামত সফলভাবে জমা দেওয়া হয়েছে। আপনাকে ধন্যবাদ!';
+
+  @override
+  String get feedbackContentHint => 'আপনার মতামত বিস্তারিত লিখুন...';
 }

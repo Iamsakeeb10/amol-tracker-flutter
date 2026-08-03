@@ -157,7 +157,7 @@ class AdminFeedbacksScreen extends ConsumerWidget {
                       children: [
                         OutlinedButton.icon(
                           icon: Icon(Icons.reply_outlined, size: 16.r),
-                          label: Text('Acknowledge', style: TextStyle(fontSize: 12.sp)),
+                          label: Text('প্রাপ্তিস্বীকার পাঠান', style: TextStyle(fontSize: 12.sp)),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.gold,
                             side: const BorderSide(color: AppColors.goldBorder),
@@ -172,15 +172,15 @@ class AdminFeedbacksScreen extends ConsumerWidget {
                             final isBug = feedback.type.name == 'bug';
                             final result = await gateway.sendAdminPush(
                               adminUid: adminUid,
-                              title: isBug ? '🐛 Bug Report Received' : '💡 Feature Request Received',
-                              message: 'We got your ${isBug ? 'bug report' : 'feature request'} and our team is looking into it. Thank you!',
+                              title: isBug ? '🐛 বাগ রিপোর্ট গ্রহণ করা হয়েছে' : '💡 ফিচার রিকোয়েস্ট গ্রহণ করা হয়েছে',
+                              message: 'আপনার ${isBug ? 'বাগ রিপোর্টটি' : 'ফিচার রিকোয়েস্টটি'} আমরা পেয়েছি এবং আমাদের টিম এটি দেখছে। ধন্যবাদ!',
                               type: 'feedback_received',
                               targetUid: feedback.userId,
                             );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(result.success ? 'Acknowledgment sent!' : 'Failed: ${result.error}'),
+                                  content: Text(result.success ? 'নোটিফিকেশন পাঠানো হয়েছে!' : 'ব্যর্থ হয়েছে: ${result.error}'),
                                   backgroundColor: result.success ? AppColors.success : AppColors.danger,
                                 ),
                               );

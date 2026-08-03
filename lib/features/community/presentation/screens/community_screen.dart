@@ -41,6 +41,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
   bool _isSyncingHorizontal = false;
   double _horizontalOffset = 0;
   late final TabController _tabController;
+  bool _isSheetTabActive = true;
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
 
   void _onTabChanged() {
     if (_tabController.indexIsChanging) return;
+    setState(() => _isSheetTabActive = _tabController.index == 0);
     if (_tabController.index == 1) {
       AnalyticsService.instance.logActivityFeedOpened();
     }
@@ -198,6 +200,51 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                         style: AppTextStyles.displayMedium(context),
                       ),
                     ],
+                  ),
+                ),
+                AnimatedOpacity(
+                  opacity: _isSheetTabActive ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: IgnorePointer(
+                    ignoring: !_isSheetTabActive,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.fullscreen_rounded,
+                        color: AppColors.textSecondary,
+                        size: 24.r,
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          PageRouteBuilder(
+                            fullscreenDialog: true,
+                            transitionDuration:
+                                const Duration(milliseconds: 320),
+                            reverseTransitionDuration:
+                                const Duration(milliseconds: 280),
+                            pageBuilder: (ctx, animation, secondaryAnimation) =>
+                                const _CommunitySheetFullScreen(),
+                            transitionsBuilder: (
+                              ctx,
+                              animation,
+                              secondaryAnimation,
+                              child,
+                            ) {
+                              final tween = Tween(
+                                begin: const Offset(0, 1),
+                                end: Offset.zero,
+                              ).chain(
+                                CurveTween(curve: Curves.easeOutCubic),
+                              );
+                              return SlideTransition(
+                                position: animation.drive(tween),
+                                child: child,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      tooltip: 'Full screen',
+                    ),
                   ),
                 ),
                 IconButton(
@@ -569,6 +616,487 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
           ],
         ),
       );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Full-Screen Community Sheet
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CommunitySheetFullScreen extends ConsumerStatefulWidget {
+  const _CommunitySheetFullScreen();
+
+  @override
+  ConsumerState<_CommunitySheetFullScreen> createState() =>
+      _CommunitySheetFullScreenState();
+}
+
+class _CommunitySheetFullScreenState
+    extends ConsumerState<_CommunitySheetFullScreen> {
+  late final ScrollController _headerHorizontalController;
+  late final ScrollController _verticalController;
+  late final TextEditingController _searchController;
+  final Map<String, ScrollController> _rowHorizontalControllers = {};
+  bool _isSyncingHorizontal = false;
+  double _horizontalOffset = 0;
+  bool _searchExpanded = false;
+  bool _offlineSnackBarShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _headerHorizontalController = ScrollController();
+    _headerHorizontalController.addListener(
+      () => _syncHorizontalOffsets(_headerHorizontalController),
+    );
+    _verticalController = ScrollController()..addListener(_onVerticalScroll);
+    _searchController = TextEditingController();
+
+    // Sync initial search query from the shared provider.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final query = ref.read(communitySheetProvider).searchQuery;
+      if (query.isNotEmpty) {
+        _searchController.value = TextEditingValue(
+          text: query,
+          selection: TextSelection.collapsed(offset: query.length),
+        );
+        setState(() => _searchExpanded = true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _verticalController
+      ..removeListener(_onVerticalScroll)
+      ..dispose();
+    _headerHorizontalController.dispose();
+    for (final controller in _rowHorizontalControllers.values) {
+      controller.dispose();
+    }
+    _rowHorizontalControllers.clear();
+    super.dispose();
+  }
+
+  void _onVerticalScroll() {
+    if (!_verticalController.hasClients) return;
+    final max = _verticalController.position.maxScrollExtent;
+    final cur = _verticalController.offset;
+    if (max - cur < 180) {
+      ref.read(communitySheetProvider.notifier).loadMore();
+    }
+  }
+
+  ScrollController _controllerForRow(String key) {
+    return _rowHorizontalControllers.putIfAbsent(key, () {
+      final controller = ScrollController(
+        initialScrollOffset: _horizontalOffset,
+      );
+      controller.addListener(() => _syncHorizontalOffsets(controller));
+      return controller;
+    });
+  }
+
+  void _syncHorizontalOffsets(ScrollController source) {
+    if (_isSyncingHorizontal || !source.hasClients) return;
+    _isSyncingHorizontal = true;
+    _horizontalOffset = source.offset;
+    final allControllers = <ScrollController>[
+      _headerHorizontalController,
+      ..._rowHorizontalControllers.values,
+    ];
+    for (final controller in allControllers) {
+      if (identical(controller, source) || !controller.hasClients) continue;
+      final max = controller.position.maxScrollExtent;
+      final nextOffset = _horizontalOffset.clamp(0.0, max);
+      if ((controller.offset - nextOffset).abs() > 0.5) {
+        controller.jumpTo(nextOffset);
+      }
+    }
+    _isSyncingHorizontal = false;
+  }
+
+  void _cleanupStaleRowControllers(Iterable<String> activeKeys) {
+    final active = activeKeys.toSet();
+    final stale = _rowHorizontalControllers.keys
+        .where((k) => !active.contains(k))
+        .toList();
+    for (final key in stale) {
+      _rowHorizontalControllers.remove(key)?.dispose();
+    }
+  }
+
+  void _maybeShowOfflineSnackBar(BuildContext ctx, bool isOffline) {
+    if (!isOffline || _offlineSnackBarShown) return;
+    _offlineSnackBarShown = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(ctx)!;
+      ScaffoldMessenger.of(ctx).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.wifi_off, color: Colors.white, size: 16),
+              SizedBox(width: 8.w),
+              Expanded(child: Text(l10n.offlineShowingLatest)),
+            ],
+          ),
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.warning.withValues(alpha: 0.92),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md.r),
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).languageCode;
+    final fieldsAsync = ref.watch(amalFieldsProvider);
+    final fields = ref.watch(amalFieldsListProvider);
+    final state = ref.watch(communitySheetProvider);
+    final notifier = ref.read(communitySheetProvider.notifier);
+    final currentUser = ref.watch(currentUserProvider).asData?.value;
+    final connectivity = ref.watch(connectivityListProvider);
+    final dates = ref.watch(communityRecentDatesProvider);
+    final accountCreatedHijri = ref.watch(communityAccountCreatedHijriProvider);
+    final isPreAccountDate =
+        accountCreatedHijri != null &&
+        state.selectedDate.compareTo(accountCreatedHijri) < 0;
+
+    // Transient offline notice — shown once via SnackBar
+    final isOffline =
+        connectivity.asData?.value.any(
+          (r) => r == ConnectivityResult.none,
+        ) ??
+        false;
+    _maybeShowOfflineSnackBar(context, isOffline);
+
+    final ownRow = state.ownRow(currentUser?.uid);
+    final otherRows = state.filteredRowsExcludingUid(currentUser?.uid);
+    final ownPlaceholder = currentUser == null
+        ? null
+        : _buildOwnPlaceholder(
+            currentUser.uid,
+            currentUser.name,
+            state.selectedDate,
+            fields,
+          );
+
+    // Keep search field in sync with provider (e.g. if cleared elsewhere)
+    ref.listen(communitySheetProvider.select((s) => s.searchQuery), (
+      _,
+      query,
+    ) {
+      if (_searchController.text != query) {
+        _searchController.value = TextEditingValue(
+          text: query,
+          selection: TextSelection.collapsed(offset: query.length),
+        );
+      }
+    });
+
+    final activeRowKeys = <String>[
+      if (ownRow != null || ownPlaceholder != null)
+        'fs-own-${currentUser?.uid ?? 'me'}',
+      ...otherRows.map((row) => 'fs-row-${row.uid}'),
+    ];
+    _cleanupStaleRowControllers(activeRowKeys);
+
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
+        backgroundColor: AppColors.emeraldDeep,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Top actions: [search icon] [close X] ──
+              Padding(
+                padding: EdgeInsets.only(top: 8.h, right: 8.w, left: 16.w),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Search toggle
+                    IconButton(
+                      icon: Icon(
+                        _searchExpanded
+                            ? Icons.search_off_rounded
+                            : Icons.search_rounded,
+                        color: _searchExpanded
+                            ? AppColors.goldLight
+                            : AppColors.textSecondary,
+                        size: 22.r,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _searchExpanded = !_searchExpanded;
+                          if (!_searchExpanded) {
+                            notifier.setSearchQuery('');
+                          }
+                        });
+                      },
+                      tooltip: _searchExpanded ? 'Hide search' : 'Search',
+                    ),
+                    SizedBox(width: 4.w),
+                    // Close full-screen
+                    IconButton(
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: AppColors.textSecondary,
+                        size: 22.r,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                      tooltip: 'Close full screen',
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Animated Full-Width Search Field ──
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SizeTransition(
+                    sizeFactor: animation,
+                    axisAlignment: -1.0,
+                    child: child,
+                  ),
+                ),
+                child: _searchExpanded
+                    ? Padding(
+                        key: const ValueKey('fs-search-field'),
+                        padding: EdgeInsets.only(
+                          left: 16.w,
+                          right: 16.w,
+                          bottom: 16.h,
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          autofocus: true,
+                          onChanged: notifier.setSearchQuery,
+                          style: AppTextStyles.bodyMedium(context)
+                              .copyWith(color: AppColors.textPrimary),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            hintText: l10n.searchByName,
+                            hintStyle: AppTextStyles.bodyMedium(context)
+                                .copyWith(color: AppColors.textMuted),
+                            filled: true,
+                            fillColor: AppColors.cardDark,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 12.h,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.md.r,
+                              ),
+                              borderSide: const BorderSide(
+                                color: AppColors.cardBorder,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.md.r,
+                              ),
+                              borderSide: const BorderSide(
+                                color: AppColors.cardBorder,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.md.r,
+                              ),
+                              borderSide: const BorderSide(
+                                color: AppColors.goldBorder,
+                              ),
+                            ),
+                            suffixIcon: state.searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: Icon(
+                                      Icons.close_rounded,
+                                      size: 18.r,
+                                      color: AppColors.textMuted,
+                                    ),
+                                    onPressed: () {
+                                      notifier.setSearchQuery('');
+                                    },
+                                  )
+                                : null,
+                          ),
+                        ),
+                      )
+                    : SizedBox.shrink(
+                        key: const ValueKey('fs-search-hidden'),
+                      ),
+              ),
+              
+              if (!_searchExpanded) SizedBox(height: 8.h),
+
+              // ── Date tabs (your only navigation) ───────────────────────
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: _DateTabsRow(
+                  options: dates,
+                  selectedDate: state.selectedDate,
+                  onTapDate: notifier.selectDate,
+                  locale: locale,
+                ),
+              ),
+              SizedBox(height: 12.h),
+
+              // ── Data grid ──────────────────────────────────────────────
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: fieldsAsync.isLoading || state.isLoading
+                      ? const _SheetLoadingShimmer()
+                      : RefreshIndicator(
+                          color: AppColors.gold,
+                          backgroundColor: AppColors.emeraldMid,
+                          onRefresh: () async {
+                            await ref
+                                .read(communitySheetProvider.notifier)
+                                .refresh();
+                          },
+                          child: CustomScrollView(
+                            key: const PageStorageKey<String>(
+                              'fs_community_sheet_scroll',
+                            ),
+                            controller: _verticalController,
+                            slivers: [
+                              SliverPersistentHeader(
+                                pinned: true,
+                                delegate: _StickyHeaderDelegate(
+                                  minHeight: kCommunityHeaderRowHeight.h,
+                                  maxHeight: kCommunityHeaderRowHeight.h,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.md.r,
+                                    ),
+                                    child: CommunityHeaderRow(
+                                      horizontalController:
+                                          _headerHorizontalController,
+                                      fields: fields,
+                                      locale: locale,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (ownRow != null || ownPlaceholder != null)
+                                SliverToBoxAdapter(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(top: 6.h),
+                                    child: CommunityRowCard(
+                                      log: ownRow ?? ownPlaceholder!,
+                                      fields: fields,
+                                      locale: locale,
+                                      horizontalController: _controllerForRow(
+                                        'fs-own-${currentUser?.uid ?? 'me'}',
+                                      ),
+                                      isToday: state.isToday,
+                                      isPinned: true,
+                                      isPending:
+                                          ownRow == null && state.isToday,
+                                      isPreAccount:
+                                          ownRow == null && isPreAccountDate,
+                                      compact: true,
+                                      onTap: ownRow == null
+                                          ? null
+                                          : () {
+                                              context.push(
+                                                '${AppRoutes.userProfile}/${ownRow.uid}?date=${state.selectedDate}',
+                                                extra: ownRow,
+                                              );
+                                            },
+                                    ),
+                                  ),
+                                ),
+                              if (otherRows.isEmpty)
+                                SliverFillRemaining(
+                                  hasScrollBody: false,
+                                  child: Center(
+                                    child: Text(
+                                      l10n.noLogsForDay,
+                                      textAlign: TextAlign.center,
+                                      style: AppTextStyles.bodyMedium(
+                                        context,
+                                      ).copyWith(color: AppColors.textMuted),
+                                    ),
+                                  ),
+                                )
+                              else
+                                SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      final row = otherRows[index];
+                                      return Padding(
+                                        padding: EdgeInsets.only(top: 6.h),
+                                        child: RepaintBoundary(
+                                          key: ValueKey('fs-${row.uid}'),
+                                          child: CommunityRowCard(
+                                            log: row,
+                                            fields: fields,
+                                            locale: locale,
+                                            horizontalController:
+                                                _controllerForRow(
+                                                  'fs-row-${row.uid}',
+                                                ),
+                                            isToday: state.isToday,
+                                            compact: true,
+                                            onTap: () {
+                                              context.push(
+                                                '${AppRoutes.userProfile}/${row.uid}?date=${state.selectedDate}',
+                                                extra: row,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    childCount: otherRows.length,
+                                  ),
+                                ),
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    top: 12.h,
+                                    bottom: 16.h,
+                                  ),
+                                  child: Center(
+                                    child: state.isLoadingMore
+                                        ? CircularProgressIndicator(
+                                            color: AppColors.gold,
+                                          )
+                                        : (!state.hasMore
+                                              ? Text(
+                                                  l10n.noMoreRows,
+                                                  style:
+                                                      AppTextStyles.bodySmall(
+                                                        context,
+                                                      ),
+                                                )
+                                              : const SizedBox.shrink()),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

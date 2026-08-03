@@ -86,6 +86,7 @@ class CommunityRowCard extends StatelessWidget {
     this.isPinned = false,
     this.isPending = false,
     this.isPreAccount = false,
+    this.compact = false,
     this.onTap,
   });
 
@@ -97,6 +98,7 @@ class CommunityRowCard extends StatelessWidget {
   final bool isPinned;
   final bool isPending;
   final bool isPreAccount;
+  final bool compact;
   final VoidCallback? onTap;
 
   @override
@@ -135,6 +137,7 @@ class CommunityRowCard extends StatelessWidget {
                 initial: initial,
                 isAnonymousDisplay: log.isAnonymousDisplay,
                 isPinned: isPinned,
+                compact: compact,
               ),
               for (final field in fields)
                 field.type == AmalType.numeric
@@ -146,17 +149,20 @@ class CommunityRowCard extends StatelessWidget {
                         ),
                         pending: isPending && isToday,
                         preAccount: isPreAccount,
+                        compact: compact,
                       )
                     : _StatusCell(
                         width: kCommunityAmalColWidth,
                         isDone: _toBool(log.toggles[field.id]),
                         pending: isPending && isToday,
                         preAccount: isPreAccount,
+                        compact: compact,
                       ),
               _ScoreCell(
                 width: kCommunityScoreColWidth,
                 scoreLabel: (isPending || isPreAccount) ? '--' : '${log.score}',
                 isPinned: isPinned,
+                compact: compact,
               ),
             ],
           ),
@@ -218,6 +224,7 @@ class _NameCell extends StatelessWidget {
     required this.initial,
     required this.isAnonymousDisplay,
     required this.isPinned,
+    this.compact = false,
   });
 
   final double width;
@@ -225,12 +232,15 @@ class _NameCell extends StatelessWidget {
   final String initial;
   final bool isAnonymousDisplay;
   final bool isPinned;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final rowH = compact ? 36.h : 46.h;
+    final avatarSize = compact ? 20.0 : 24.0;
     return Container(
       width: width.w,
-      height: 46.h,
+      height: rowH,
       padding: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: const BoxDecoration(
         border: Border(right: BorderSide(color: AppColors.cardBorder)),
@@ -242,7 +252,7 @@ class _NameCell extends StatelessWidget {
             color: isAnonymousDisplay
                 ? AppColors.emeraldLight
                 : AppColors.emeraldMid,
-            size: 24,
+            size: avatarSize,
           ),
           SizedBox(width: 6.w),
           Expanded(
@@ -268,15 +278,18 @@ class _StatusCell extends StatelessWidget {
     required this.isDone,
     required this.pending,
     required this.preAccount,
+    this.compact = false,
   });
 
   final double width;
   final bool isDone;
   final bool pending;
   final bool preAccount;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final rowH = compact ? 36.h : 46.h;
     final color = preAccount
         ? AppColors.textMuted
         : pending
@@ -291,7 +304,7 @@ class _StatusCell extends StatelessWidget {
         : (isDone ? Icons.check_circle_rounded : Icons.cancel_rounded);
     return Container(
       width: width.w,
-      height: 46.h,
+      height: rowH,
       decoration: const BoxDecoration(
         border: Border(right: BorderSide(color: AppColors.cardBorder)),
       ),
@@ -308,19 +321,22 @@ class _NumericCell extends StatelessWidget {
     required this.value,
     required this.pending,
     required this.preAccount,
+    this.compact = false,
   });
 
   final double width;
   final int value;
   final bool pending;
   final bool preAccount;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final rowH = compact ? 36.h : 46.h;
     if (pending || preAccount) {
       return Container(
         width: width.w,
-        height: 46.h,
+        height: rowH,
         decoration: const BoxDecoration(
           border: Border(right: BorderSide(color: AppColors.cardBorder)),
         ),
@@ -344,7 +360,7 @@ class _NumericCell extends StatelessWidget {
 
     return Container(
       width: width.w,
-      height: 46.h,
+      height: rowH,
       decoration: const BoxDecoration(
         border: Border(right: BorderSide(color: AppColors.cardBorder)),
       ),
@@ -379,17 +395,20 @@ class _ScoreCell extends StatelessWidget {
     required this.width,
     required this.scoreLabel,
     required this.isPinned,
+    this.compact = false,
   });
 
   final double width;
   final String scoreLabel;
   final bool isPinned;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final rowH = compact ? 36.h : 46.h;
     return Container(
       width: width.w,
-      height: 46.h,
+      height: rowH,
       decoration: const BoxDecoration(
         border: Border(right: BorderSide(color: AppColors.cardBorder)),
       ),

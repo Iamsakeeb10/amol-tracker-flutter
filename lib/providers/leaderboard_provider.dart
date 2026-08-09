@@ -161,6 +161,11 @@ final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
     final user = users[uid];
     final showOnLeaderboard = user?.showOnLeaderboard ?? true;
     if (!showOnLeaderboard) continue;
+
+    // Filter by gender
+    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
+    if (currentUserGender != null && user?.gender == null) continue;
+
     // Override the current user's score with the live streak value.
     final score = (uid == authUid && liveStreak != null)
         ? liveStreak

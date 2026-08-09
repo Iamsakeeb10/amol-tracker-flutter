@@ -370,19 +370,20 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             ),
           ),
         ),
-      SliverPadding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
-        sliver: SliverToBoxAdapter(
-          child: SizedBox(
-            height: 220.h,
-            child: _Podium(
-              top3: top3,
-              displayName: _displayName,
-              isQuiz: _isQuiz,
+      if (entries.length >= 3)
+        SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          sliver: SliverToBoxAdapter(
+            child: SizedBox(
+              height: 220.h,
+              child: _Podium(
+                top3: top3,
+                displayName: _displayName,
+                isQuiz: _isQuiz,
+              ),
             ),
           ),
         ),
-      ),
       SliverToBoxAdapter(child: SizedBox(height: 18.h)),
       SliverPadding(
         padding: EdgeInsets.zero,

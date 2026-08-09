@@ -79,7 +79,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).languageCode;
     final fields = ref.watch(amalFieldsListProvider);
-    final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+    const maxScore = kDefaultMaxDailyScore;
     final fs = ref.read(firestoreServiceProvider);
     final me = ref.watch(currentUserProvider).asData?.value;
     final isOwn = me?.uid == widget.userId;
@@ -249,17 +249,29 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   ),
                   SizedBox(height: 8.h),
                   CardContainer(
-                    child: Column(
-                      children: [
-                        for (var i = 0; i < fields.length; i++) ...[
-                          _AmalReadOnlyRow(
-                            field: fields[i],
-                            locale: locale,
-                            value: selectedLog?.toggles[fields[i].id],
-                          ),
-                          if (i != fields.length - 1) SizedBox(height: 8.h),
-                        ],
-                      ],
+                    child: Builder(
+                      builder: (context) {
+                        final activeIds =
+                            selectedLog?.activeFieldIds.toSet() ?? const <String>{};
+                        final displayFields = activeIds.isEmpty
+                            ? fields
+                            : fields
+                                .where((f) => activeIds.contains(f.id))
+                                .toList();
+                        return Column(
+                          children: [
+                            for (var i = 0; i < displayFields.length; i++) ...[
+                              _AmalReadOnlyRow(
+                                field: displayFields[i],
+                                locale: locale,
+                                value: selectedLog?.toggles[displayFields[i].id],
+                              ),
+                              if (i != displayFields.length - 1)
+                                SizedBox(height: 8.h),
+                            ],
+                          ],
+                        );
+                      },
                     ),
                   ),
                   SizedBox(height: 16.h),
@@ -268,7 +280,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     style: AppTextStyles.headlineMedium(context),
                   ),
                   SizedBox(height: 8.h),
-                  _WeeklyBars(logs: weekly, maxScore: maxScore),
+                   _WeeklyBars(logs: weekly),
                   SizedBox(height: 16.h),
                   Text(
                     l10n.prayerStats,
@@ -382,6 +394,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                                     : (me.name.trim().isEmpty
                                           ? l10n.communityMember
                                           : me.name.trim()),
+                                senderGender: me.gender,
                               ),
                         icon: Icon(
                           Icons.volunteer_activism_outlined,
@@ -434,9 +447,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     );
     final avgScore = allLogs.isEmpty
         ? 0
-        : (allLogs.map((e) => e.score).reduce((a, b) => a + b) /
-                  allLogs.length)
-              .round();
+        : (allLogs
+                  .map((e) =>
+                      e.maxScore > 0 ? (e.score / e.maxScore) * 100 : 0.0)
+                  .reduce((a, b) => a + b) /
+              allLogs.length)
+            .round();
     return _ProfileData(
       selectedLog: selectedLog ?? fallback,
       weeklyLogs: allLogs,
@@ -452,6 +468,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     required String senderUid,
     required String recipientUid,
     required String senderName,
+    String? senderGender,
   }) async {
     await showModalBottomSheet<void>(
       context: context,
@@ -471,6 +488,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               recipientUid: recipientUid,
               senderName: senderName,
               message: message,
+              senderGender: senderGender,
             );
           },
         );
@@ -485,6 +503,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     required String recipientUid,
     required String senderName,
     required String message,
+    String? senderGender,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _sendingDua = true);
@@ -516,6 +535,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         recipientUid: recipientUid,
         hijriDate: today,
         message: message,
+        senderGender: senderGender,
       );
       logDuaPushDebug(
         'user profile send dua finished (see Firestore/gateway logs for push): '
@@ -774,10 +794,9 @@ String _toBengaliNumeral(int number) {
 }
 
 class _WeeklyBars extends StatelessWidget {
-  const _WeeklyBars({required this.logs, required this.maxScore});
+  const _WeeklyBars({required this.logs});
 
   final List<AmalLogModel> logs;
-  final int maxScore;
 
   @override
   Widget build(BuildContext context) {
@@ -796,8 +815,9 @@ class _WeeklyBars extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: bars.map((log) {
-            final ratio = (log.score / maxScore).clamp(0.0, 1.0);
-            final missed = log.score < (maxScore * 0.5).round();
+            final barMax = log.maxScore <= 0 ? 1 : log.maxScore;
+            final ratio = (log.score / barMax).clamp(0.0, 1.0);
+            final missed = log.score < (barMax * 0.5).round();
             return Expanded(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),

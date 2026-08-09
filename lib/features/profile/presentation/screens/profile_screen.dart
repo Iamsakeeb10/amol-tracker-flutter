@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/default_amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/analytics_service.dart';
-import '../../../../core/constants/default_amal_fields.dart';
-import '../../../../core/utils/score_calculator.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -36,7 +35,10 @@ final profileRecentLogsProvider =
 final profileMonthAvgScoreProvider = Provider.autoDispose<int>((ref) {
   final logs = ref.watch(profileRecentLogsProvider(30)).asData?.value ?? [];
   if (logs.isEmpty) return 0;
-  return (logs.map((e) => e.score).reduce((a, b) => a + b) / logs.length)
+  return (logs
+              .map((e) => e.maxScore > 0 ? (e.score / e.maxScore) * 100 : 0.0)
+              .reduce((a, b) => a + b) /
+          logs.length)
       .round();
 });
 
@@ -77,7 +79,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ? '?'
         : user.name.trim().substring(0, 1).toUpperCase();
     final fields = ref.watch(amalFieldsListProvider);
-    final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+    const maxScore = kDefaultMaxDailyScore;
     final liveStreak = ref.watch(liveStreakProvider).value ?? user.currentStreak;
 
     return AppScaffold(
@@ -204,7 +206,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _WeekChart(
                     logs: weekLogs,
                     createdAt: user.createdAt,
-                    maxScore: maxScore,
                   ),
                 ],
               ),
@@ -473,12 +474,10 @@ class _WeekChart extends StatelessWidget {
   const _WeekChart({
     required this.logs,
     required this.createdAt,
-    required this.maxScore,
   });
 
   final List<AmalLogModel> logs;
   final DateTime createdAt;
-  final int maxScore;
 
   @override
   Widget build(BuildContext context) {
@@ -499,7 +498,7 @@ class _WeekChart extends StatelessWidget {
                         Text(
                           b.notJoined
                               ? '--'
-                              : '${(b.value * maxScore).round()}',
+                              : '${b.displayScore}',
                           style: AppTextStyles.bodySmall(context).copyWith(
                             fontSize: 9.sp,
                             color: b.notJoined
@@ -511,7 +510,11 @@ class _WeekChart extends StatelessWidget {
                         ),
                         SizedBox(height: 4.h),
                         Container(
-                          height: 80.h * b.value,
+                          height: 80.h *
+                              (b.notJoined
+                                  ? 0
+                                  : (b.displayScore / b.maxScore)
+                                      .clamp(0.0, 1.0)),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
@@ -556,13 +559,13 @@ class _WeekChart extends StatelessWidget {
 
   List<_ChartBar> _buildBars(AppLocalizations l10n) {
     final seed = <_ChartBar>[
-      _ChartBar(label: l10n.weekdayMon, value: 0),
-      _ChartBar(label: l10n.weekdayTue, value: 0),
-      _ChartBar(label: l10n.weekdayWed, value: 0),
-      _ChartBar(label: l10n.weekdayThu, value: 0),
-      _ChartBar(label: l10n.weekdayFri, value: 0),
-      _ChartBar(label: l10n.weekdaySat, value: 0),
-      _ChartBar(label: l10n.weekdaySun, value: 0),
+      _ChartBar(label: l10n.weekdayMon, displayScore: 0, maxScore: 1),
+      _ChartBar(label: l10n.weekdayTue, displayScore: 0, maxScore: 1),
+      _ChartBar(label: l10n.weekdayWed, displayScore: 0, maxScore: 1),
+      _ChartBar(label: l10n.weekdayThu, displayScore: 0, maxScore: 1),
+      _ChartBar(label: l10n.weekdayFri, displayScore: 0, maxScore: 1),
+      _ChartBar(label: l10n.weekdaySat, displayScore: 0, maxScore: 1),
+      _ChartBar(label: l10n.weekdaySun, displayScore: 0, maxScore: 1),
     ];
     final createdDate = DateTime(
       createdAt.toLocal().year,
@@ -579,19 +582,26 @@ class _WeekChart extends StatelessWidget {
     for (var i = 0; i < 7; i++) {
       final day = DateTime(weekStart.year, weekStart.month, weekStart.day + i);
       if (day.isBefore(createdDate)) {
-        bars[i] = _ChartBar(label: bars[i].label, value: 0, notJoined: true);
+        bars[i] = _ChartBar(
+          label: bars[i].label,
+          displayScore: 0,
+          maxScore: 1,
+          notJoined: true,
+        );
       }
     }
     if (logs.isEmpty) return bars;
     final tail = logs.length <= 7 ? logs : logs.sublist(logs.length - 7);
     for (var i = 0; i < tail.length; i++) {
-      final score = tail[i].score.clamp(0, maxScore);
+      final logMax = tail[i].maxScore <= 0 ? 1 : tail[i].maxScore;
+      final score = tail[i].score.clamp(0, logMax);
       final index = 7 - tail.length + i;
       if (bars[index].notJoined) continue;
       bars[index] = _ChartBar(
         label: bars[index].label,
-        value: score / maxScore,
-        missed: score < (maxScore * 0.5).round(),
+        displayScore: score,
+        maxScore: logMax,
+        missed: score < (logMax * 0.5).round(),
       );
     }
     return bars;
@@ -601,12 +611,14 @@ class _WeekChart extends StatelessWidget {
 class _ChartBar {
   const _ChartBar({
     required this.label,
-    required this.value,
+    required this.displayScore,
+    required this.maxScore,
     this.missed = false,
     this.notJoined = false,
   });
   final String label;
-  final double value;
+  final int displayScore;
+  final int maxScore;
   final bool missed;
   final bool notJoined;
 }

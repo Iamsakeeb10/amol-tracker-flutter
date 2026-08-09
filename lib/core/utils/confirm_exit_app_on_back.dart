@@ -43,6 +43,13 @@ class ConfirmExitAppOnBack extends StatelessWidget {
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) return;
+        final rootNavigator = Navigator.of(context, rootNavigator: true);
+        if (rootNavigator.canPop()) {
+          exitAppDebug(
+            'ConfirmExitAppOnBack — dialog/route active on root navigator, ignoring',
+          );
+          return;
+        }
         exitAppDebug('ConfirmExitAppOnBack — back intercepted, showing dialog');
         final shouldExit = await showExitAppDialog(context);
         exitAppDebug('ConfirmExitAppOnBack — dialog result=$shouldExit');

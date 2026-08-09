@@ -1445,5 +1445,46 @@
   "requestFeatureSubtitle": "Have an idea? We'd love to hear it!",
   "adminFeedbacksTitle": "User Feedbacks",
   "submitFeedbackSuccess": "Feedback submitted successfully. Thank you!",
-  "feedbackContentHint": "Describe your feedback..."
+  "feedbackContentHint": "Describe your feedback...",
+  "personalizationSection": "PERSONALIZATION",
+  "settingsGender": "Gender",
+  "genderSelectionTitle": "Select your gender",
+  "genderSelectionSubtitle": "Your amal list will be arranged based on your selection. You can change it later from Settings.",
+  "genderMale": "Male",
+  "genderFemale": "Female",
+  "genderConfirm": "Confirm",
+  "genderSkip": "Skip for now",
+  "specialTimeToggleTitle": "Special Time",
+  "specialTimeToggleSubtitle": "Prioritize essential amals during certain times",
+  "optionalAmalSection": "{count} optional amals",
+  "@optionalAmalSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "optionalAmalSectionTitle": "Optional Amal",
+  "optionalAmalSectionHint": "Fine even without congregation",
+  "inactiveSpecialTimeSection": "{count} inactive during special time",
+  "@inactiveSpecialTimeSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inactiveSpecialTimeExcusedSection": "The following amals are excused during this time.",
+  "@inactiveSpecialTimeExcusedSection": {},
+  "adminAmalFieldPersonalizationSection": "PERSONALIZATION",
+  "adminAmalFieldGenderVisibility": "Gender visibility",
+  "adminAmalFieldGenderVisibilityAll": "All",
+  "adminAmalFieldGenderVisibilityMaleOnly": "Male only",
+  "adminAmalFieldGenderVisibilityFemaleOnly": "Female only",
+  "adminAmalFieldFemaleDeprioritized": "Female deprioritized",
+  "adminAmalFieldFemaleDeprioritizedSubtitle": "Reduce this amal's points in score calculation for female users",
+  "adminAmalFieldDisableDuringSpecialTime": "Disable during special time",
+  "adminAmalFieldDisableDuringSpecialTimeSubtitle": "Hide this amal from users during special time periods",
+  "reportsSpecialTimeLegend": "Special time day",
+  "reportsSpecialTimeLegendHint": "Muted bars were logged during special time"
 }

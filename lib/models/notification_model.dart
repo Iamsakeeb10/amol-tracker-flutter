@@ -11,6 +11,7 @@ class NotificationModel {
     this.senderName,
     this.courseId,
     this.lessonId,
+    this.senderGender,
   });
 
   final String id;
@@ -22,6 +23,7 @@ class NotificationModel {
   final String? senderName;
   final String? courseId;
   final String? lessonId;
+  final String? senderGender;
 
   factory NotificationModel.fromDoc(
     DocumentSnapshot<Map<String, dynamic>> doc,
@@ -38,6 +40,7 @@ class NotificationModel {
       senderName: data['senderName'] as String?,
       courseId: data['courseId'] as String?,
       lessonId: data['lessonId'] as String?,
+      senderGender: data['senderGender'] as String?,
     );
   }
 }

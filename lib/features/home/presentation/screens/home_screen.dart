@@ -9,24 +9,25 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/default_amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/analytics_service.dart';
+import '../../../../core/services/jummah_modal_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../core/utils/score_calculator.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../models/announcement_model.dart';
+import '../../../../models/user_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/announcement_provider.dart';
+import '../../../../providers/app_config_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/date_provider.dart';
 import '../../../../providers/history_provider.dart';
-import '../../../../core/services/jummah_modal_service.dart';
-import '../../../../providers/app_config_provider.dart';
 import '../../../../shared/widgets/announcement_modal.dart';
-import '../../../../shared/widgets/update_modal.dart';
-import '../../../../shared/widgets/jummah_reminder_modal.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../shared/widgets/gender_selection_modal.dart';
+import '../../../../shared/widgets/jummah_reminder_modal.dart';
+import '../../../../shared/widgets/update_modal.dart';
 import '../widgets/home_scroll_body.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -45,6 +46,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   bool _didInitialAnnouncementCheck = false;
   bool _didJummahCheck = false;
   bool _isUpdateDialogOpen = false;
+  bool _isGenderPromptPending = false;
+  // Tracks whether a required gender dialog is currently on screen.
+  // Without this, every currentUserProvider emission that happens before
+  // amalProfile actually updates (Firestore write -> stream re-emit lag)
+  // would call showDialog again, stacking multiple canPop:false dialogs
+  // on the root navigator. Dismissing the top one then leaves another
+  // required dialog underneath, which looks exactly like "hardware back
+  // stopped working" even though it's technically working per-dialog.
+  bool _isGenderDialogOpen = false;
 
   void _resetAnnouncementSessionForUser(String? uid) {
     _sessionDismissedAnnouncementIds.clear();
@@ -53,6 +63,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _trackedUserId = uid;
     _didInitialAnnouncementCheck = false;
     _didJummahCheck = false;
+    _isGenderPromptPending = false;
+    // Deliberately not resetting _isGenderDialogOpen here. If a dialog is
+    // genuinely still visible when the tracked user changes, we want to
+    // keep treating it as open rather than silently "forgetting" it while
+    // it's still on screen.
   }
 
   AnnouncementModel? _resolveNextAnnouncement() {
@@ -136,6 +151,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     });
   }
 
+  void _scheduleGenderPrompt() {
+    // Guard #1: a required gender dialog is already visible — never stack
+    // a second one on top of it. This is the actual fix for the "hardware
+    // back button stopped working" symptom.
+    if (_isGenderDialogOpen) return;
+
+    final user = ref.read(currentUserProvider).asData?.value;
+    if (user == null) return;
+    if (user.amalProfile != UserAmalProfile.unset) return;
+    // Guard #2: a postFrameCallback is already queued to show it.
+    if (_isGenderPromptPending) return;
+
+    _isGenderPromptPending = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _isGenderPromptPending = false;
+      if (!mounted) return;
+      // Re-check both guards inside the callback too, since provider
+      // state (and _isGenderDialogOpen) may have changed between when
+      // this callback was scheduled and when it actually runs.
+      if (_isGenderDialogOpen) return;
+      final latestUser = ref.read(currentUserProvider).asData?.value;
+      if (latestUser == null) return;
+      if (latestUser.amalProfile != UserAmalProfile.unset) return;
+
+      _isGenderDialogOpen = true;
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        barrierColor: Colors.black.withValues(alpha: 0.54),
+        builder: (_) => const GenderSelectionModal(isRequired: true),
+      ).then((_) {
+        if (!mounted) return;
+        _isGenderDialogOpen = false;
+      });
+    });
+  }
+
   Future<void> _retryAmalFields(String uid) async {
     await ref.read(amalFieldsProvider.notifier).forceRefresh();
     if (!mounted) return;
@@ -171,6 +223,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       _checkForUpdate();
+      _scheduleGenderPrompt();
     }
   }
 
@@ -218,6 +271,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         if (nextUid != null) {
           _scheduleAnnouncementShow();
           _scheduleJummahModalShow();
+          _scheduleGenderPrompt();
         }
       },
     );
@@ -229,6 +283,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       }
       _scheduleAnnouncementShow();
       _scheduleJummahModalShow();
+      _scheduleGenderPrompt();
 
       // Push widget update immediately with the live streak.
       final liveValue = ref.read(liveStreakProvider).value;
@@ -270,13 +325,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     });
 
     if (authUser == null) {
-      return AppScaffold(
+      return AppScaffold(handleExitBack: false,
         body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
       );
     }
 
     if (userAsync.hasError) {
-      return AppScaffold(
+      return AppScaffold(handleExitBack: false,
         body: Center(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -301,7 +356,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     if (user == null) {
-      return AppScaffold(
+      return AppScaffold(handleExitBack: false,
         body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
       );
     }
@@ -311,6 +366,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scheduleAnnouncementShow();
         _scheduleJummahModalShow();
+        _scheduleGenderPrompt();
       });
     }
 
@@ -318,8 +374,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final fieldsAsync = ref.watch(amalFieldsProvider);
     final fields = ref.watch(amalFieldsListProvider);
     final locale = Localizations.localeOf(context).languageCode;
-    final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+    final maxScore = ref
+        .watch(amalProvider(uid).select((s) => s.maxScore))
+        .clamp(1, kDefaultMaxDailyScore);
     final doneCount = ref.watch(amalProvider(uid).select((s) => s.doneCount));
+    final activeFieldCount = ref.watch(
+      amalProvider(uid).select((s) => s.activeFieldCount),
+    );
     final totalScore = ref.watch(amalProvider(uid).select((s) => s.totalScore));
     final isSubmitted = ref.watch(
       amalProvider(uid).select((s) => s.isSubmitted),
@@ -333,7 +394,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       if (!mounted || next == null || previous == next) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next)));
     });
-
     final offline =
         connectivity != null && connectivity.contains(ConnectivityResult.none);
     final liveStreakAsync = ref.watch(liveStreakProvider);
@@ -349,7 +409,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
     ref.watch(amalLogRefreshProvider);
 
-    return AppScaffold(
+    return AppScaffold(handleExitBack: false,
       padding: EdgeInsets.zero,
       body: HomeScrollBody(
         uid: uid,
@@ -359,6 +419,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         offline: offline,
         amalError: amalError,
         doneCount: doneCount,
+        activeFieldCount: activeFieldCount,
         totalScore: totalScore,
         maxScore: maxScore,
         isSubmitted: isSubmitted,

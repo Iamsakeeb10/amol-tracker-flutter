@@ -12,7 +12,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../../../core/constants/default_amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/islamic_date_service.dart';
@@ -20,7 +19,6 @@ import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/report_calculator.dart';
-import '../../../../core/utils/score_calculator.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
@@ -188,9 +186,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   title: _title(l10n),
                   dateMainLabel: _dateMainLabel(context),
                   dateSubLabel: _dateSubLabel(context, l10n),
-                  maxScore: getMaxScore(
-                    ref.read(amalFieldsListProvider),
-                  ).clamp(1, kDefaultMaxDailyScore),
                   periodType: _type,
                   fields: ref.read(amalFieldsListProvider),
                 ),
@@ -349,7 +344,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     );
     final summaryAsync = ref.watch(reportSummaryProvider(key));
     final fields = ref.watch(amalFieldsListProvider);
-    final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
 
     return AppScaffold(
       handleExitBack: false,
@@ -435,7 +429,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
               data: (summary) => _ReportBody(
                 summary: summary,
                 title: _title(l10n),
-                maxScore: maxScore,
                 periodType: _type,
                 fields: fields,
               ),
@@ -628,14 +621,12 @@ class _ReportBody extends StatelessWidget {
   const _ReportBody({
     required this.summary,
     required this.title,
-    required this.maxScore,
     required this.periodType,
     required this.fields,
   });
 
   final ReportSummary summary;
   final String title;
-  final int maxScore;
   final ReportPeriodType periodType;
   final List<AmalField> fields;
 
@@ -824,10 +815,9 @@ class _ReportBody extends StatelessWidget {
                             if (summary.bars.isNotEmpty) ...[
                               SizedBox(height: 16.h),
                               SectionHeader(title: chartLabel),
-                              ReportBarChart(
-                                bars: summary.bars,
-                                maxScore: maxScore,
-                              ),
+                               ReportBarChart(
+                                 bars: summary.bars,
+                               ),
                             ],
                             if (summary.amalBreakdown.isNotEmpty) ...[
                               SizedBox(height: 16.h),

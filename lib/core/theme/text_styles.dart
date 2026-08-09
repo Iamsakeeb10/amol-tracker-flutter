@@ -57,20 +57,10 @@ class AppTextStyles {
   }
 
   static TextStyle displayLarge(BuildContext context, {Locale? locale}) =>
-      _displayFont(
-        context,
-        locale: locale,
-        fontSize: 36.sp,
-        height: 1.1,
-      );
+      _displayFont(context, locale: locale, fontSize: 36.sp, height: 1.1);
 
   static TextStyle displayMedium(BuildContext context, {Locale? locale}) =>
-      _displayFont(
-        context,
-        locale: locale,
-        fontSize: 28.sp,
-        height: 1.15,
-      );
+      _displayFont(context, locale: locale, fontSize: 28.sp, height: 1.40);
 
   static TextStyle headlineLarge(BuildContext context, {Locale? locale}) =>
       _displayFont(
@@ -97,12 +87,7 @@ class AppTextStyles {
       );
 
   static TextStyle bodyLarge(BuildContext context, {Locale? locale}) =>
-      _bodyFont(
-        context,
-        locale: locale,
-        fontSize: 15.sp,
-        height: 1.5,
-      );
+      _bodyFont(context, locale: locale, fontSize: 15.sp, height: 1.5);
 
   static TextStyle bodyMedium(BuildContext context, {Locale? locale}) =>
       _bodyFont(
@@ -123,29 +108,29 @@ class AppTextStyles {
       );
 
   static TextStyle label(BuildContext context, {Locale? locale}) => _bodyFont(
-        context,
-        locale: locale,
-        fontSize: 11.sp,
-        fontWeight: FontWeight.w500,
-        color: AppColors.textMuted,
-        letterSpacing: _isBn(context, locale: locale) ? 0 : 1.4,
-      );
+    context,
+    locale: locale,
+    fontSize: 11.sp,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textMuted,
+    letterSpacing: _isBn(context, locale: locale) ? 0 : 1.4,
+  );
 
   static TextStyle button(BuildContext context, {Locale? locale}) => _bodyFont(
-        context,
-        locale: locale,
-        fontSize: 14.sp,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.4,
-      );
+    context,
+    locale: locale,
+    fontSize: 14.sp,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.4,
+  );
 
   static TextStyle pill(BuildContext context, {Locale? locale}) => _bodyFont(
-        context,
-        locale: locale,
-        fontSize: 11.sp,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.4,
-      );
+    context,
+    locale: locale,
+    fontSize: 11.sp,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.4,
+  );
 
   static TextStyle navLabel(
     BuildContext context, {

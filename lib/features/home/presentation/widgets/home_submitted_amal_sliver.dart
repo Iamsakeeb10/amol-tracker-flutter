@@ -71,11 +71,41 @@ List<Widget> buildHomeSubmittedAmalSlivers({
     SliverToBoxAdapter(child: SizedBox(height: 12.h)),
     ...buildHomeAmalFieldSlivers(
       uid: uid,
+      context: context,
       fieldsAsync: fieldsAsync,
       locale: locale,
       readOnly: true,
       onRetry: onRetryFields,
       onTapDetails: (f) => showHomeAmalDetailsDialog(context, f, locale),
+      mainFields: _mainFieldsForSubmitted(fieldsAsync, submittedLog),
+      inactiveSpecialTimeFields:
+          _inactiveFieldsForSubmitted(fieldsAsync, submittedLog),
     ),
   ];
+}
+
+List<AmalField>? _mainFieldsForSubmitted(
+  AsyncValue<List<AmalField>> fieldsAsync,
+  AmalLogModel? submittedLog,
+) {
+  final fields = fieldsAsync.asData?.value;
+  if (fields == null || submittedLog == null) return null;
+  final activeIds = submittedLog.activeFieldIds.toSet();
+  if (activeIds.isEmpty) return null;
+  return fields.where((f) => activeIds.contains(f.id)).toList();
+}
+
+List<AmalField>? _inactiveFieldsForSubmitted(
+  AsyncValue<List<AmalField>> fieldsAsync,
+  AmalLogModel? submittedLog,
+) {
+  final fields = fieldsAsync.asData?.value;
+  if (fields == null || submittedLog == null) return null;
+  final activeIds = submittedLog.activeFieldIds.toSet();
+  if (activeIds.isEmpty) return null;
+  // Only show inactive section when special-time was applied at submit.
+  if (!submittedLog.specialTimeApplied) return const [];
+  return fields
+      .where((f) => f.isActive && f.id.isNotEmpty && !activeIds.contains(f.id))
+      .toList();
 }

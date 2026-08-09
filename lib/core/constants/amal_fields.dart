@@ -4,6 +4,8 @@ enum AmalType { boolean, numeric }
 
 enum IconSource { fontAwesome, material }
 
+enum GenderVisibility { all, maleOnly, femaleOnly }
+
 class AmalField {
   final String id;
   final Map<String, String> label;
@@ -17,9 +19,11 @@ class AmalField {
   final IconSource? iconSource;
   final DateTime? createdAt;
 
-  /// When true, the home tile shows a dropdown that expands to prayer circles.
-  /// Only meaningful for numeric fields with [maxValue] == 5.
   final bool expandable;
+
+  final GenderVisibility genderVisibility;
+  final bool femaleDeprioritized;
+  final bool disableDuringSpecialTime;
 
   const AmalField({
     required this.id,
@@ -34,11 +38,11 @@ class AmalField {
     this.iconSource,
     this.createdAt,
     this.expandable = false,
+    this.genderVisibility = GenderVisibility.all,
+    this.femaleDeprioritized = false,
+    this.disableDuringSpecialTime = false,
   });
 
-  /// Whether this field can render the expandable prayer-circle UI.
-  /// Guards against misconfiguration: expansion needs a numeric field with
-  /// exactly five slots (the five daily prayers).
   bool get supportsExpansion =>
       expandable && type == AmalType.numeric && maxValue == 5;
 
@@ -88,10 +92,12 @@ class AmalField {
       iconSource: _parseIconSource(map['iconSource']),
       createdAt: createdAt,
       expandable: _parseBool(map['expandable']),
+      genderVisibility: _parseGenderVisibility(map['genderVisibility']),
+      femaleDeprioritized: _parseBool(map['femaleDeprioritized']),
+      disableDuringSpecialTime: _parseBool(map['disableDuringSpecialTime']),
     );
   }
 
-  /// Firestore/console may store booleans as strings; missing field = active.
   static bool parseIsActive(dynamic raw) {
     if (raw == null) return true;
     if (raw is bool) return raw;
@@ -115,6 +121,9 @@ class AmalField {
       'order': order,
       'isActive': isActive,
       'expandable': expandable,
+      'genderVisibility': _genderVisibilityToString(genderVisibility),
+      'femaleDeprioritized': femaleDeprioritized,
+      'disableDuringSpecialTime': disableDuringSpecialTime,
       if (iconName != null) 'iconName': iconName,
       if (iconSource != null) 'iconSource': iconSource == IconSource.material ? 'material' : 'fontAwesome',
     };
@@ -140,7 +149,6 @@ class AmalField {
     return null;
   }
 
-  /// Firestore/console may store booleans as strings or numbers; default false.
   static bool _parseBool(dynamic raw) {
     if (raw is bool) return raw;
     if (raw is num) return raw != 0;
@@ -149,5 +157,24 @@ class AmalField {
       return v == 'true' || v == '1' || v == 'yes';
     }
     return false;
+  }
+
+  static GenderVisibility _parseGenderVisibility(dynamic raw) {
+    if (raw == null) return GenderVisibility.all;
+    final value = raw.toString().trim().toLowerCase();
+    if (value == 'male_only') return GenderVisibility.maleOnly;
+    if (value == 'female_only') return GenderVisibility.femaleOnly;
+    return GenderVisibility.all;
+  }
+
+  static String _genderVisibilityToString(GenderVisibility value) {
+    switch (value) {
+      case GenderVisibility.maleOnly:
+        return 'male_only';
+      case GenderVisibility.femaleOnly:
+        return 'female_only';
+      case GenderVisibility.all:
+        return 'all';
+    }
   }
 }

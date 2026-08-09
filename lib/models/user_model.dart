@@ -2,6 +2,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'user_role.dart';
 
+enum UserAmalProfile {
+  unset,
+  male,
+  female;
+
+  static UserAmalProfile fromString(String? value) {
+    switch (value) {
+      case 'male':
+        return UserAmalProfile.male;
+      case 'female':
+        return UserAmalProfile.female;
+      default:
+        return UserAmalProfile.unset;
+    }
+  }
+}
+
 class UserModel {
   final String uid;
   final String name;
@@ -22,6 +39,9 @@ class UserModel {
   final UserRole role;
   final int lmsXp;
   final bool hasDismissedLoggingReminder;
+  final String? gender;
+  final bool specialTimeActive;
+  final bool genderPromptDismissed;
 
   const UserModel({
     required this.uid,
@@ -43,7 +63,12 @@ class UserModel {
     this.role = UserRole.user,
     this.lmsXp = 0,
     this.hasDismissedLoggingReminder = false,
+    this.gender,
+    this.specialTimeActive = false,
+    this.genderPromptDismissed = false,
   });
+
+  UserAmalProfile get amalProfile => UserAmalProfile.fromString(gender);
 
   factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
     final createdAt = map['createdAt'];
@@ -75,6 +100,9 @@ class UserModel {
       role: UserRole.fromString(map['role'] as String?),
       lmsXp: (map['lmsXp'] as num?)?.toInt() ?? 0,
       hasDismissedLoggingReminder: (map['hasDismissedLoggingReminder'] as bool?) ?? false,
+      gender: map['gender'] as String?,
+      specialTimeActive: (map['specialTimeActive'] as bool?) ?? false,
+      genderPromptDismissed: (map['genderPromptDismissed'] as bool?) ?? false,
     );
   }
 
@@ -102,6 +130,9 @@ class UserModel {
       if (role != UserRole.user) 'role': role.firestoreValue,
       if (lmsXp > 0) 'lmsXp': lmsXp,
       'hasDismissedLoggingReminder': hasDismissedLoggingReminder,
+      if (gender != null) 'gender': gender,
+      if (specialTimeActive) 'specialTimeActive': true,
+      if (genderPromptDismissed) 'genderPromptDismissed': true,
     };
   }
 }

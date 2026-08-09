@@ -44,6 +44,9 @@ class _AdminAmalFieldFormScreenState
   late bool _expandable;
   late IconSource _iconSource;
   late String? _iconName;
+  late GenderVisibility _genderVisibility;
+  late bool _femaleDeprioritized;
+  late bool _disableDuringSpecialTime;
   bool _isSaving = false;
 
   bool get _isEdit => widget.existing != null;
@@ -65,6 +68,9 @@ class _AdminAmalFieldFormScreenState
     _expandable = e?.expandable ?? false;
     _iconSource = e?.iconSource ?? IconSource.fontAwesome;
     _iconName = e?.iconName;
+    _genderVisibility = e?.genderVisibility ?? GenderVisibility.all;
+    _femaleDeprioritized = e?.femaleDeprioritized ?? false;
+    _disableDuringSpecialTime = e?.disableDuringSpecialTime ?? false;
     // Rebuild so the expansion toggle appears/disappears as max value edits
     // cross the "== 5" eligibility threshold.
     _maxValueCtrl.addListener(_onMaxValueChanged);
@@ -111,6 +117,9 @@ class _AdminAmalFieldFormScreenState
       iconName: _iconName,
       iconSource: _iconSource,
       expandable: _expandable,
+      genderVisibility: _genderVisibility,
+      femaleDeprioritized: _femaleDeprioritized,
+      disableDuringSpecialTime: _disableDuringSpecialTime,
     );
   }
 
@@ -158,6 +167,9 @@ class _AdminAmalFieldFormScreenState
       iconName: _iconName,
       iconSource: _iconSource,
       expandable: _expandable,
+      genderVisibility: _genderVisibility,
+      femaleDeprioritized: _femaleDeprioritized,
+      disableDuringSpecialTime: _disableDuringSpecialTime,
     );
 
     try {
@@ -391,6 +403,43 @@ class _AdminAmalFieldFormScreenState
                       onChanged: (v) => setState(() => _expandable = v),
                     ),
                   ],
+                ],
+              ),
+            ),
+            SizedBox(height: 16.h),
+            SectionHeader(title: l10n.adminAmalFieldPersonalizationSection.toUpperCase()),
+            CardContainer(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 12.h),
+                    child: Text(
+                      l10n.adminAmalFieldGenderVisibility,
+                      style: AppTextStyles.label(context),
+                    ),
+                  ),
+                  AdminGenderVisibilitySelector(
+                    selected: _genderVisibility,
+                    onChanged: (v) => setState(() => _genderVisibility = v),
+                  ),
+                  SizedBox(height: 12.h),
+                  const Divider(),
+                  AdminToggleRow(
+                    icon: Icons.priority_high_outlined,
+                    title: l10n.adminAmalFieldFemaleDeprioritized,
+                    subtitle: l10n.adminAmalFieldFemaleDeprioritizedSubtitle,
+                    value: _femaleDeprioritized,
+                    onChanged: (v) => setState(() => _femaleDeprioritized = v),
+                  ),
+                  const Divider(),
+                  AdminToggleRow(
+                    icon: Icons.pause_circle_outline,
+                    title: l10n.adminAmalFieldDisableDuringSpecialTime,
+                    subtitle: l10n.adminAmalFieldDisableDuringSpecialTimeSubtitle,
+                    value: _disableDuringSpecialTime,
+                    onChanged: (v) => setState(() => _disableDuringSpecialTime = v),
+                  ),
                 ],
               ),
             ),

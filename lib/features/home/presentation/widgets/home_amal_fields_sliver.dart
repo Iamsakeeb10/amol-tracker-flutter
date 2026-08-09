@@ -5,15 +5,21 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/amal_fields.dart';
 import 'amal_field_tile.dart';
 import 'home_amal_loading_shimmer.dart';
+import 'home_inactive_special_time_section.dart';
+import 'home_optional_amal_section.dart';
 import 'home_widgets.dart';
 
 List<Widget> buildHomeAmalFieldSlivers({
   required String uid,
+  required BuildContext context,
   required AsyncValue<List<AmalField>> fieldsAsync,
   required String locale,
   required void Function(AmalField field) onTapDetails,
   Future<void> Function()? onRetry,
   bool readOnly = false,
+  List<AmalField>? mainFields,
+  List<AmalField>? optionalFields,
+  List<AmalField>? inactiveSpecialTimeFields,
 }) {
   return fieldsAsync.when(
     loading: () => [
@@ -31,15 +37,22 @@ List<Widget> buildHomeAmalFieldSlivers({
       ),
     ],
     data: (loadedFields) {
-      if (loadedFields.isEmpty) {
+      final main = mainFields ?? loadedFields;
+      final optional = optionalFields;
+      final inactive = inactiveSpecialTimeFields;
+
+      if (main.isEmpty &&
+          (optional == null || optional.isEmpty) &&
+          (inactive == null || inactive.isEmpty)) {
         return const [SliverToBoxAdapter(child: SizedBox.shrink())];
       }
-      return [
+
+      final widgets = <Widget>[
         SliverList.builder(
           addAutomaticKeepAlives: false,
-          itemCount: loadedFields.length,
+          itemCount: main.length,
           itemBuilder: (context, index) {
-            final field = loadedFields[index];
+            final field = main[index];
             return Padding(
               key: ValueKey(field.id),
               padding: EdgeInsets.only(bottom: 8.h),
@@ -54,6 +67,36 @@ List<Widget> buildHomeAmalFieldSlivers({
           },
         ),
       ];
+
+      if (optional != null && optional.isNotEmpty) {
+        widgets.add(
+          SliverToBoxAdapter(
+            child: HomeOptionalAmalSection(
+              fields: optional,
+              uid: uid,
+              locale: locale,
+              readOnly: readOnly,
+              onTapDetails: onTapDetails,
+            ),
+          ),
+        );
+      }
+
+      if (inactive != null && inactive.isNotEmpty) {
+        widgets.add(
+          SliverToBoxAdapter(
+            child: HomeInactiveSpecialTimeSection(
+              fields: inactive,
+              uid: uid,
+              locale: locale,
+              readOnly: true,
+              onTapDetails: onTapDetails,
+            ),
+          ),
+        );
+      }
+
+      return widgets;
     },
   );
 }

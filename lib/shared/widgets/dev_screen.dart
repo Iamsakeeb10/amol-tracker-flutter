@@ -6,6 +6,7 @@ import '../../core/router/routes.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/utils/data_migration_util.dart';
 import 'app_scaffold.dart';
 import 'card_container.dart';
 import 'streak_freeze_modal.dart';
@@ -29,6 +30,7 @@ class DevScreen extends StatelessWidget {
     _DevEntry('S-15', 'Empty State', AppRoutes.emptyState),
     _DevEntry('S-16', 'Streak Freeze (modal)', '__modal_freeze__'),
     _DevEntry('S-17', 'Quiet Hours', AppRoutes.quietHours),
+    _DevEntry('M-01', 'Data Migration (Gender)', '__migration_gender__'),
     _DevEntry('—', 'More Hub', AppRoutes.more),
   ];
 
@@ -65,9 +67,34 @@ class DevScreen extends StatelessWidget {
                   ),
                   color: AppColors.goldCard,
                   borderColor: AppColors.goldBorder,
-                  onTap: () {
+                  onTap: () async {
                     if (e.path == '__modal_freeze__') {
                       StreakFreezeModal.show(context, preservedStreak: 23);
+                    } else if (e.path == '__migration_gender__') {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Run Migration?'),
+                          content: const Text('This will backfill gender fields on old documents without deleting anything. Check console for progress.'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Run')),
+                          ],
+                        ),
+                      );
+                      if (confirm == true && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Migration started. Check debug console.')));
+                        try {
+                          await DataMigrationUtil.runGenderMigration();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Migration completed successfully!')));
+                          }
+                        } catch (err) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Migration failed: $err')));
+                          }
+                        }
+                      }
                     } else {
                       context.go(e.path);
                     }

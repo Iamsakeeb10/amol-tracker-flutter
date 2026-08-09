@@ -20,7 +20,9 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
 import '../../../../shared/widgets/toggle_row.dart';
+import '../../../../shared/widgets/gender_selection_modal.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../models/user_model.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -594,6 +596,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   value: me?.isAnonymousDisplay ?? _anonymousDisplay,
                   onChanged: _setAnonymous,
                 ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16.h),
+          SectionHeader(title: l10n.personalizationSection),
+          CardContainer(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+            child: Column(
+              children: [
+                NavRow(
+                  icon: Icons.person_outline_rounded,
+                  title: l10n.settingsGender,
+                  trailing: me?.gender != null
+                      ? (me!.gender == 'male' ? l10n.genderMale : l10n.genderFemale)
+                      : null,
+                  onTap: () {
+                    showDialog<void>(
+                      context: context,
+                      barrierDismissible: true,
+                      barrierColor: Colors.black.withValues(alpha: 0.54),
+                      builder: (_) => const GenderSelectionModal(),
+                    );
+                  },
+                ),
+                if (me?.amalProfile == UserAmalProfile.female) ...[
+                  const Divider(),
+                  ToggleRow(
+                    icon: Icons.wb_twilight_rounded,
+                    title: l10n.specialTimeToggleTitle,
+                    subtitle: l10n.specialTimeToggleSubtitle,
+                    value: me?.specialTimeActive ?? false,
+                    onChanged: (v) async {
+                      final authUid = ref.read(authStateProvider).asData?.value?.uid;
+                      if (authUid == null) return;
+                      await ref
+                          .read(firestoreServiceProvider)
+                          .updateUserGenderPreferences(
+                            authUid,
+                            specialTimeActive: v,
+                          );
+                      ref.invalidate(currentUserProvider);
+                    },
+                  ),
+                ],
               ],
             ),
           ),

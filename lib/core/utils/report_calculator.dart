@@ -1,5 +1,4 @@
 import '../constants/amal_fields.dart' as amal_const;
-import '../constants/default_amal_fields.dart';
 import '../services/islamic_date_service.dart';
 import '../../models/amal_log_model.dart';
 import 'score_calculator.dart';
@@ -10,12 +9,16 @@ class ReportBarPoint {
     required this.label,
     required this.score,
     required this.hasLog,
+    required this.maxScore,
+    required this.specialTimeApplied,
     this.hijriDate,
   });
 
   final String label;
   final int score;
   final bool hasLog;
+  final int maxScore;
+  final bool specialTimeApplied;
   final String? hijriDate;
 }
 
@@ -136,7 +139,6 @@ class ReportCalculator {
     required String endHijri,
     required String todayStr,
     required String accountCreatedHijri,
-    required int maxScore,
     required String locale,
     List<AmalLogModel> previousPeriodLogs = const [],
     ReportRankInfo? rankInfo,
@@ -172,17 +174,23 @@ class ReportCalculator {
 
     final avgScore = scoredLogs.isEmpty
         ? 0.0
-        : scoredLogs.map((l) => l.score).reduce((a, b) => a + b) /
-              scoredLogs.length;
+        : scoredLogs
+                .map((l) => l.maxScore > 0 ? (l.score / l.maxScore) * 100 : 0.0)
+                .reduce((a, b) => a + b) /
+            scoredLogs.length;
 
     AmalLogModel? bestLog;
     for (final log in scoredLogs) {
       if (bestLog == null || log.score > bestLog.score) bestLog = log;
     }
 
-    final halfScore = (maxScore * 0.5).round().clamp(1, maxScore);
     final consistentCount = loggedKeys
-        .where((k) => (byDate[k]?.score ?? 0) >= halfScore)
+        .where((k) {
+          final log = byDate[k];
+          if (log == null) return false;
+          final halfScore = (log.maxScore * 0.5).round().clamp(1, log.maxScore);
+          return log.score >= halfScore;
+        })
         .length;
     final consistency = eligibleKeys.isEmpty
         ? 0
@@ -226,8 +234,9 @@ class ReportCalculator {
     int? trendDelta;
     final prevScored = previousPeriodLogs.where((l) => l.score > 0).toList();
     if (scoredLogs.isNotEmpty && prevScored.isNotEmpty) {
-      final prevAvg =
-          prevScored.map((l) => l.score).reduce((a, b) => a + b) /
+      final prevAvg = prevScored
+              .map((l) => l.maxScore > 0 ? (l.score / l.maxScore) * 100 : 0.0)
+              .reduce((a, b) => a + b) /
           prevScored.length;
       trendDelta = (avgScore - prevAvg).round();
     }
@@ -284,11 +293,14 @@ class ReportCalculator {
     required String locale,
     required int totalEligibleDays,
   }) {
-    final active = resolveAmalFields(fields);
-    if (active.isEmpty) return const [];
+    final fieldMap = <String, amal_const.AmalField>{};
+    for (final f in fields) {
+      if (f.isActive && f.id.isNotEmpty) fieldMap[f.id] = f;
+    }
+
     final eligible = totalEligibleDays;
     if (eligible == 0) {
-      return active
+      return fieldMap.values
           .map(
             (f) => ReportAmalStat(
               id: f.id,
@@ -301,10 +313,23 @@ class ReportCalculator {
           .toList();
     }
 
-    final done = <String, int>{for (final f in active) f.id: 0};
-    final numericSums = <String, int>{for (final f in active) f.id: 0};
+    final done = <String, int>{};
+    final numericSums = <String, int>{};
+    // Logged days where a field was inactive (e.g. special-time disabled)
+    // must not count against that field's completion rate.
+    final inactiveLoggedDays = <String, int>{
+      for (final id in fieldMap.keys) id: 0,
+    };
     for (final log in logs) {
-      for (final f in active) {
+      final activeIds = log.activeFieldIds.toSet();
+      for (final id in fieldMap.keys) {
+        if (!activeIds.contains(id)) {
+          inactiveLoggedDays[id] = (inactiveLoggedDays[id] ?? 0) + 1;
+        }
+      }
+      for (final id in activeIds) {
+        final f = fieldMap[id];
+        if (f == null) continue;
         if (f.type == amal_const.AmalType.numeric) {
           final value = getNumericValue(log.toggles[f.id], f.maxValue);
           numericSums[f.id] = (numericSums[f.id] ?? 0) + value;
@@ -317,17 +342,21 @@ class ReportCalculator {
       }
     }
 
-    final stats = active
+    final stats = fieldMap.values
         .map((f) {
+          final fieldEligible =
+              (eligible - (inactiveLoggedDays[f.id] ?? 0)).clamp(0, eligible);
           final count = done[f.id] ?? 0;
-          final rate = f.type == amal_const.AmalType.numeric
-              ? (numericSums[f.id] ?? 0) / (eligible * f.maxValue)
-              : count / eligible;
+          final rate = fieldEligible == 0
+              ? 0.0
+              : f.type == amal_const.AmalType.numeric
+                  ? (numericSums[f.id] ?? 0) / (fieldEligible * f.maxValue)
+                  : count / fieldEligible;
           return ReportAmalStat(
             id: f.id,
             label: f.getLabel(locale),
             doneCount: count,
-            eligibleDays: eligible,
+            eligibleDays: fieldEligible,
             rate: rate,
           );
         })
@@ -377,6 +406,8 @@ class ReportCalculator {
           label: _shortWeekdayLabel(key, locale),
           score: log?.score ?? 0,
           hasLog: log != null,
+          maxScore: log?.maxScore ?? 100,
+          specialTimeApplied: log?.specialTimeApplied ?? false,
           hijriDate: key,
         );
       }).toList();
@@ -399,12 +430,19 @@ class ReportCalculator {
           ? 0
           : (scored.map((l) => l.score).reduce((a, b) => a + b) / scored.length)
                 .round();
+      final avgMax = scored.isEmpty
+          ? 100
+          : (scored.map((l) => l.maxScore).reduce((a, b) => a + b) / scored.length)
+                .round();
+      final anySpecialTime = scored.any((l) => l.specialTimeApplied);
       final weekIndex = (i ~/ bucketSize) + 1;
       bars.add(
         ReportBarPoint(
           label: locale == 'bn' ? 'স$weekIndex' : 'W$weekIndex',
           score: avg,
           hasLog: scored.isNotEmpty,
+          maxScore: avgMax,
+          specialTimeApplied: anySpecialTime,
           hijriDate: chunk.first,
         ),
       );

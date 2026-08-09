@@ -11,7 +11,9 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/amal_edit_debug.dart';
 import '../../../../core/utils/amal_edit_toggles.dart';
+import '../../../../core/utils/amal_entry_policy.dart';
 import '../../../../core/utils/score_calculator.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
@@ -146,16 +148,29 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
       setState(() => _error = 'কমপক্ষে একটি আমল নির্বাচন করুন');
       return;
     }
-    if (!isTakbirWithinFard(_toggles, fields)) {
+
+    final existing = widget.existingLog;
+    late final List<AmalField> activeFields;
+    late final AmalScoreResult scoreResult;
+
+    if (existing == null) {
+      final policy = ref.read(amalEntryPolicyProvider);
+      activeFields = policy.activeFields;
+    } else {
+      final existingActiveIds = existing.activeFieldIds;
+      activeFields = fields.where((f) => existingActiveIds.contains(f.id)).toList();
+    }
+
+    if (!isTakbirWithinFard(_toggles, activeFields)) {
       setState(() => _error = 'তাকবীর ফরযের চেয়ে বেশি হতে পারে না');
       return;
     }
 
-    final toggles = normalizeTogglesForFields(_toggles, fields);
-    final score = calculateScore(toggles, fields);
+    final toggles = normalizeTogglesForFields(_toggles, activeFields);
+    scoreResult = calculateAmalScore(toggles: toggles, activeFields: activeFields);
+    final score = scoreResult.score;
     final now = DateTime.now().toUtc();
     final fs = ref.read(firestoreServiceProvider);
-    final existing = widget.existingLog;
     final AmalLogModel saved;
 
     setState(() {
@@ -165,6 +180,7 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
 
     try {
       if (existing == null) {
+        final policy = ref.read(amalEntryPolicyProvider);
         saved = AmalLogModel(
           uid: user.uid,
           displayName: user.name,
@@ -174,12 +190,15 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
           toggles: toggles,
           score: score,
           submittedAt: now,
+          maxScore: scoreResult.maxScore,
+          activeFieldIds: scoreResult.activeFieldIds,
+          specialTimeApplied: policy.isSpecialTimeActive,
           prayers: <String, List<int>>{
             for (final e in _prayerSelections.entries)
               e.key: (e.value.toList()..sort()),
           },
         );
-        await fs.saveAmalLog(saved, fields);
+        await fs.saveAmalLog(saved, activeFields);
       } else {
         saved = AmalLogModel(
           uid: existing.uid,
@@ -192,12 +211,15 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
           submittedAt: existing.submittedAt,
           editedAt: now,
           editCount: existing.editCount + 1,
+          maxScore: scoreResult.maxScore,
+          activeFieldIds: scoreResult.activeFieldIds,
+          specialTimeApplied: existing.specialTimeApplied,
           prayers: <String, List<int>>{
             for (final e in _prayerSelections.entries)
               e.key: (e.value.toList()..sort()),
           },
         );
-        await fs.editAmalLog(updatedLog: saved, fields: fields);
+        await fs.editAmalLog(updatedLog: saved, fields: activeFields);
       }
     } catch (_) {
       if (!mounted) return;
@@ -299,14 +321,50 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
         );
       }
     }
-    final maxScore = editAmalMaxScore(fields);
-    final score = calculateScore(_toggles, fields);
-    final doneCount = _toggles.values
-        .where((v) => v == true || (v is int && v > 0))
+    final existing = widget.existingLog;
+    final policy = ref.watch(amalEntryPolicyProvider);
+    late final List<AmalField> mainFields;
+    late final List<AmalField> optionalFields;
+    late final List<AmalField> inactiveFields;
+    late final List<AmalField> activeFields;
+    late final bool isSpecialTimeActive;
+    if (existing == null) {
+      mainFields = policy.mainFields;
+      optionalFields = policy.optionalFields;
+      inactiveFields = policy.inactiveSpecialTimeFields;
+      activeFields = policy.activeFields;
+      isSpecialTimeActive = policy.isSpecialTimeActive;
+    } else {
+      final existingActiveIds = existing.activeFieldIds.toSet();
+      activeFields =
+          fields.where((f) => existingActiveIds.contains(f.id)).toList();
+      mainFields = activeFields;
+      optionalFields = const [];
+      isSpecialTimeActive = existing.specialTimeApplied;
+      inactiveFields = isSpecialTimeActive
+          ? fields
+              .where(
+                (f) =>
+                    f.isActive &&
+                    f.id.isNotEmpty &&
+                    !existingActiveIds.contains(f.id),
+              )
+              .toList()
+          : const [];
+    }
+    final maxScore = editAmalMaxScore(activeFields);
+    final score = editAmalScore(_toggles, activeFields);
+    final activeIds = activeFields.map((f) => f.id).toSet();
+    final doneCount = _toggles.entries
+        .where((e) => activeIds.contains(e.key))
+        .where((e) => e.value == true || (e.value is int && e.value > 0))
         .length;
     final title = IslamicDateService.displayFromStorageBn(widget.hijriDate);
-    final hasAnyDone = hasAnyAmalDone(_toggles);
+    final hasAnyDone = _toggles.entries
+        .where((e) => activeIds.contains(e.key))
+        .any((e) => e.value == true || (e.value is int && e.value > 0));
     final isBackfill = widget.existingLog == null;
+    final l10n = AppLocalizations.of(context)!;
 
     return AppScaffold(
       appBar: AppBar(
@@ -366,7 +424,7 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
                   SizedBox(height: 14.h),
                   EditAmalProgressCard(
                     done: doneCount,
-                    total: fields.length,
+                    total: activeFields.length,
                     score: score,
                     maxScore: maxScore,
                   ),
@@ -387,99 +445,71 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
             ),
           ),
           SliverList.builder(
-            itemCount: fields.length,
-            itemBuilder: (context, index) {
-              final field = fields[index];
-              final pickerMax = amalEditNumericMax(field, _toggles, fields);
-              final numericVal = field.type == AmalType.numeric
-                  ? getNumericValue(_toggles[field.id], field.maxValue)
-                  : null;
-              final done = field.type == AmalType.numeric
-                  ? (numericVal ?? 0) > 0
-                  : (_toggles[field.id] as bool? ?? false);
-              final isLocked = lockedFieldIds.contains(field.id);
-
-              final canExpand = !isLocked && !_isSaving && field.supportsExpansion;
-              final isExpanded = canExpand && _expandedFieldId == field.id;
-
-              Set<int> selection = const <int>{};
-              if (canExpand) {
-                selection = resolvePrayerSelection(
-                  _prayerSelections[field.id],
-                  numericVal ?? 0,
-                  field.maxValue,
-                );
-              }
-
-              final row = Opacity(
-                opacity: isLocked ? 0.5 : 1.0,
-                child: AmalRow(
+            itemCount: mainFields.length,
+            itemBuilder: (context, index) => _buildEditFieldRow(
+              field: mainFields[index],
+              fields: fields,
+              locale: locale,
+              lockedFieldIds: lockedFieldIds,
+              readOnly: false,
+            ),
+          ),
+          if (optionalFields.isNotEmpty)
+            SliverToBoxAdapter(
+              child: _EditOptionalFieldsSection(
+                fields: optionalFields,
+                buildRow: (field) => _buildEditFieldRow(
                   field: field,
+                  fields: fields,
                   locale: locale,
-                  done: done,
-                  numericValue: numericVal,
-                  numericPickerMax: pickerMax,
-                  readOnly: isLocked || _isSaving,
-                  onNumericChanged: (isLocked || _isSaving)
-                      ? null
-                      : (v) => _setNumeric(field.id, v, fields),
-                  onChanged: (isLocked || _isSaving)
-                      ? null
-                      : (_) => _toggle(field.id, fields),
-                  expandable: canExpand,
-                  isExpanded: isExpanded,
-                  onToggleExpand: canExpand
-                      ? () => _toggleExpand(field.id)
-                      : null,
-                  expandedContent: canExpand
-                      ? FardPrayerExpandRow(
-                          selectedIndices: selection,
-                          slotCount: field.maxValue,
-                          onToggleIndex: (i) => _togglePrayer(field.id, i, field),
-                        )
-                      : null,
+                  lockedFieldIds: lockedFieldIds,
+                  readOnly: false,
                 ),
-              );
-
-              final child = Padding(
-                padding: EdgeInsets.only(bottom: 8.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+            ),
+          if (inactiveFields.isNotEmpty) ...[
+            SliverToBoxAdapter(child: SizedBox(height: 8.h)),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
+                child: Row(
                   children: [
-                    isExpanded
-                        ? TapRegion(
-                            onTapOutside: (_) => setState(() => _expandedFieldId = null),
-                            child: row,
-                          )
-                        : row,
-                    if (isLocked)
-                      Padding(
-                        padding: EdgeInsets.only(left: 14.w, top: 2.h, bottom: 4.h),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.lock_outline,
-                              size: 12.r,
-                              color: AppColors.textMuted,
-                            ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              'এই দিনে এই আমল ছিল না',
-                              style: AppTextStyles.bodySmall(context).copyWith(
-                                color: AppColors.textMuted,
-                                fontSize: 11.sp,
+                    Icon(
+                      Icons.pause_circle_outline_rounded,
+                      size: 20.r,
+                      color: AppColors.textMuted,
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        isSpecialTimeActive
+                            ? l10n.inactiveSpecialTimeExcusedSection
+                            : l10n.inactiveSpecialTimeSection(
+                                inactiveFields.length,
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
+                        style: AppTextStyles.bodySmall(context).copyWith(
+                           color: AppColors.textSecondary,
+                           fontSize: 12.sp,
+                           fontWeight: FontWeight.w600,
+                           overflow: TextOverflow.ellipsis,
+                         ),
+                       ),
+                    ),
                   ],
                 ),
-              );
-
-              return child;
-            },
-          ),
+              ),
+            ),
+            SliverList.builder(
+              itemCount: inactiveFields.length,
+              itemBuilder: (context, index) => _buildEditFieldRow(
+                field: inactiveFields[index],
+                fields: fields,
+                locale: locale,
+                lockedFieldIds: lockedFieldIds,
+                readOnly: true,
+              ),
+            ),
+          ],
           SliverPadding(
             padding: EdgeInsets.only(top: 14.h, bottom: 24.h),
             sliver: SliverToBoxAdapter(
@@ -520,6 +550,170 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildEditFieldRow({
+    required AmalField field,
+    required List<AmalField> fields,
+    required String locale,
+    required Set<String> lockedFieldIds,
+    required bool readOnly,
+  }) {
+    final pickerMax = amalEditNumericMax(field, _toggles, fields);
+    final numericVal = field.type == AmalType.numeric
+        ? getNumericValue(_toggles[field.id], field.maxValue)
+        : null;
+    final done = field.type == AmalType.numeric
+        ? (numericVal ?? 0) > 0
+        : (_toggles[field.id] as bool? ?? false);
+    final isLocked = lockedFieldIds.contains(field.id) || readOnly;
+    final canExpand = !isLocked && !_isSaving && field.supportsExpansion;
+    final isExpanded = canExpand && _expandedFieldId == field.id;
+
+    Set<int> selection = const <int>{};
+    if (canExpand) {
+      selection = resolvePrayerSelection(
+        _prayerSelections[field.id],
+        numericVal ?? 0,
+        field.maxValue,
+      );
+    }
+
+    final row = Opacity(
+      opacity: isLocked ? 0.5 : 1.0,
+      child: AmalRow(
+        field: field,
+        locale: locale,
+        done: done,
+        numericValue: numericVal,
+        numericPickerMax: pickerMax,
+        readOnly: isLocked || _isSaving,
+        onNumericChanged: (isLocked || _isSaving)
+            ? null
+            : (v) => _setNumeric(field.id, v, fields),
+        onChanged: (isLocked || _isSaving)
+            ? null
+            : (_) => _toggle(field.id, fields),
+        expandable: canExpand,
+        isExpanded: isExpanded,
+        onToggleExpand: canExpand ? () => _toggleExpand(field.id) : null,
+        expandedContent: canExpand
+            ? FardPrayerExpandRow(
+                selectedIndices: selection,
+                slotCount: field.maxValue,
+                onToggleIndex: (i) => _togglePrayer(field.id, i, field),
+              )
+            : null,
+      ),
+    );
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          isExpanded
+              ? TapRegion(
+                  onTapOutside: (_) => setState(() => _expandedFieldId = null),
+                  child: row,
+                )
+              : row,
+          if (lockedFieldIds.contains(field.id))
+            Padding(
+              padding: EdgeInsets.only(left: 14.w, top: 2.h, bottom: 4.h),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    size: 12.r,
+                    color: AppColors.textMuted,
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'এই দিনে এই আমল ছিল না',
+                    style: AppTextStyles.bodySmall(context).copyWith(
+                      color: AppColors.textMuted,
+                      fontSize: 11.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EditOptionalFieldsSection extends StatefulWidget {
+  const _EditOptionalFieldsSection({
+    required this.fields,
+    required this.buildRow,
+  });
+
+  final List<AmalField> fields;
+  final Widget Function(AmalField field) buildRow;
+
+  @override
+  State<_EditOptionalFieldsSection> createState() =>
+      _EditOptionalFieldsSectionState();
+}
+
+class _EditOptionalFieldsSectionState extends State<_EditOptionalFieldsSection> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      children: [
+        InkWell(
+          onTap: () => setState(() => _expanded = !_expanded),
+          borderRadius: BorderRadius.circular(12.r),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.arrow_right_rounded,
+                  size: 20.r,
+                  color: AppColors.textMuted,
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    l10n.optionalAmalSection(widget.fields.length),
+                    style: AppTextStyles.bodySmall(context).copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _expanded
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
+                  size: 20.r,
+                  color: AppColors.textMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: _expanded
+              ? Column(
+                  children: [
+                    for (final field in widget.fields) widget.buildRow(field),
+                  ],
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 }

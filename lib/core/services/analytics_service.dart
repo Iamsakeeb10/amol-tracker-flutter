@@ -550,6 +550,19 @@ class AnalyticsService {
     );
   }
 
+  Future<void> logGenderSelected({required String gender}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'gender_selected',
+      parameters: {'gender': gender},
+    );
+  }
+
+  Future<void> logGenderSkipped() async {
+    if (!_enabled) return;
+    await _analytics.logEvent(name: 'gender_skipped');
+  }
+
   // -- User properties --
   Future<void> updateUserProperties({
     required int currentStreak,

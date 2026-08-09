@@ -12,6 +12,7 @@ import '../core/services/firestore_service.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/services/local_storage_service.dart';
 import '../core/services/notification_service.dart';
+import '../core/utils/amal_entry_policy.dart';
 import '../core/utils/hijri_helper.dart';
 import '../core/utils/score_calculator.dart';
 import '../core/utils/streak_helper.dart';
@@ -97,7 +98,7 @@ bool _isPerfectWeekChain(List<AmalLogModel> logs) {
 int _streakAfterFreeze(int currentStreak) => streakAfterFreeze(currentStreak);
 
 class AmalState {
-  const AmalState({
+  const   AmalState({
     required this.toggles,
     required this.fields,
     required this.isSubmitted,
@@ -105,6 +106,7 @@ class AmalState {
     this.error,
     this.submittedLog,
     this.prayerSelections = const <String, Set<int>>{},
+    this.activeFieldIds,
   });
 
   factory AmalState.initial({List<AmalField> fields = const []}) {
@@ -127,20 +129,58 @@ class AmalState {
   /// to the local draft (not Firestore, which keeps count-only toggles).
   final Map<String, Set<int>> prayerSelections;
 
+  /// Policy-derived active field IDs for the current (unsubmitted) session.
+  /// When null, getters fall back to all resolved fields (legacy behavior).
+  final List<String>? activeFieldIds;
+
+  /// Resolves the set of field IDs that are active for scoring purposes.
+  /// Priority: submitted log's stored ids > policy active ids > all resolved fields.
+  Set<String> _activeFieldIdSet() {
+    if (submittedLog != null && submittedLog!.activeFieldIds.isNotEmpty) {
+      return submittedLog!.activeFieldIds.toSet();
+    }
+    if (activeFieldIds != null && activeFieldIds!.isNotEmpty) {
+      return activeFieldIds!.toSet();
+    }
+    return resolveAmalFields(fields).map((f) => f.id).toSet();
+  }
+
+  List<AmalField> _activeFields() {
+    final ids = _activeFieldIdSet();
+    return fields.where((f) => ids.contains(f.id)).toList();
+  }
+
   int get doneCount {
-    final activeIds = resolveAmalFields(fields).map((f) => f.id).toSet();
+    final activeIds = _activeFieldIdSet();
     return toggles.entries
         .where((e) => activeIds.contains(e.key))
         .where((e) => e.value == true || (e.value is int && e.value > 0))
         .length;
   }
 
-  int get totalScore => calculateScore(toggles, fields);
+  int get totalScore => calculateAmalScore(
+    toggles: toggles,
+    activeFields: _activeFields(),
+  ).score;
 
-  int get maxScore => getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+  int get maxScore {
+    if (submittedLog != null) {
+      return submittedLog!.maxScore.clamp(1, kDefaultMaxDailyScore);
+    }
+    final result = calculateAmalScore(
+      toggles: <String, dynamic>{},
+      activeFields: _activeFields(),
+    );
+    return result.maxScore.clamp(1, kDefaultMaxDailyScore);
+  }
+
+  int get activeFieldCount {
+    final ids = _activeFieldIdSet();
+    return fields.where((f) => ids.contains(f.id)).length;
+  }
 
   bool get hasAnyDone {
-    final activeIds = resolveAmalFields(fields).map((f) => f.id).toSet();
+    final activeIds = _activeFieldIdSet();
     return toggles.entries
         .where((e) => activeIds.contains(e.key))
         .any((e) => e.value == true || (e.value is int && e.value > 0));
@@ -154,6 +194,7 @@ class AmalState {
     String? error,
     AmalLogModel? submittedLog,
     Map<String, Set<int>>? prayerSelections,
+    List<String>? activeFieldIds,
     bool clearError = false,
     bool clearSubmittedLog = false,
   }) {
@@ -167,6 +208,7 @@ class AmalState {
           ? null
           : (submittedLog ?? this.submittedLog),
       prayerSelections: prayerSelections ?? this.prayerSelections,
+      activeFieldIds: activeFieldIds ?? this.activeFieldIds,
     );
   }
 }
@@ -189,13 +231,38 @@ class AmalNotifier extends StateNotifier<AmalState> {
     Future<void>.microtask(_load);
     _ref.listen<String>(currentHijriDateProvider, (prev, next) {
       if (prev == null || prev == next) return;
-      reloadForNewDay();
+      Future.microtask(() {
+        if (!mounted) return;
+        reloadForNewDay();
+      });
     });
     _ref.listen<AsyncValue<List<AmalField>>>(amalFieldsProvider, (prev, next) {
       next.whenData((fields) {
         if (fields.isEmpty) return;
-        if (listEquals(state.fields, fields)) return;
-        _applyFields(fields);
+        Future.microtask(() {
+          if (!mounted) return;
+          if (listEquals(state.fields, fields)) return;
+          _applyFields(fields);
+        });
+      });
+    });
+    _ref.listen<AmalEntryPolicy>(amalEntryPolicyProvider, (prev, next) {
+      Future.microtask(() {
+        if (!mounted) return;
+        if (state.isSubmitted) return;
+        final nextIds = next.activeFieldIds;
+        if (listEquals(state.activeFieldIds, nextIds)) return;
+        final nextToggles = normalizeTogglesForFields(state.toggles, state.fields);
+        state = state.copyWith(
+          toggles: nextToggles,
+          activeFieldIds: nextIds,
+          prayerSelections: _reconcilePrayerSelections(
+            state.prayerSelections,
+            nextToggles,
+            state.fields,
+          ),
+          clearError: true,
+        );
       });
     });
   }
@@ -209,11 +276,13 @@ class AmalNotifier extends StateNotifier<AmalState> {
   /// Clear stale toggles and reload when the Islamic day rolls over.
   Future<void> reloadForNewDay() async {
     final fields = state.fields.isNotEmpty ? state.fields : const <AmalField>[];
+    final policy = _ref.read(amalEntryPolicyProvider);
     state = AmalState(
       toggles: _emptyTogglesForFields(fields),
       fields: fields,
       isSubmitted: false,
       isLoading: true,
+      activeFieldIds: policy.activeFieldIds,
     );
     await _load();
   }
@@ -227,6 +296,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   void _applyFields(List<AmalField> fields) {
     final nextToggles = normalizeTogglesForFields(state.toggles, fields);
+    final policy = _ref.read(amalEntryPolicyProvider);
     state = state.copyWith(
       toggles: nextToggles,
       fields: fields,
@@ -235,6 +305,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
         nextToggles,
         fields,
       ),
+      activeFieldIds: policy.activeFieldIds,
       clearError: true,
     );
   }
@@ -272,6 +343,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
     final hijri = _ref.read(currentHijriDateProvider);
     final fs = _ref.read(firestoreServiceProvider);
+    final policy = _ref.read(amalEntryPolicyProvider);
 
     try {
       final fromFs = await fs.getTodayLog(_uid, hijri);
@@ -302,6 +374,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
           isLoading: false,
           submittedLog: fromFs,
           prayerSelections: resolvedSelections,
+          activeFieldIds: policy.activeFieldIds,
         );
         await LocalStorageService.saveLog(
           _submittedHiveKey(hijri),
@@ -343,6 +416,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
             isLoading: false,
             submittedLog: model,
             prayerSelections: resolvedSelections,
+            activeFieldIds: policy.activeFieldIds,
           );
           // Update home widget when loading from Hive cache
           await _updateHomeWidget();
@@ -368,6 +442,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
           fields: fields,
           isSubmitted: false,
           isLoading: false,
+          activeFieldIds: policy.activeFieldIds,
           prayerSelections: _reconcilePrayerSelections(
             storedSelections,
             next,
@@ -385,6 +460,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       fields: fields,
       isSubmitted: false,
       isLoading: false,
+      activeFieldIds: policy.activeFieldIds,
     );
     // Update home widget on initial load
     await _updateHomeWidget();
@@ -408,8 +484,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
       final score = state.totalScore;
       final maxScore = state.maxScore;
       final completedCount = state.doneCount;
-      final activeFields = HomeWidgetService.getActiveFields(state.fields);
-      final totalCount = activeFields.length;
+      final totalCount = state.activeFieldCount;
 
       // Use the same live streak source as the home screen, bottom sheet,
       // and profile screens. Fall back to Firestore only if the provider
@@ -502,7 +577,8 @@ class AmalNotifier extends StateNotifier<AmalState> {
 
   void markAllDone() {
     if (state.isSubmitted || state.isLoading) return;
-    final activeFields = resolveAmalFields(state.fields);
+    final policy = _ref.read(amalEntryPolicyProvider);
+    final activeFields = policy.activeFields;
     final next = Map<String, dynamic>.from(state.toggles);
     final nextSelections = Map<String, Set<int>>.from(state.prayerSelections);
     for (final f in activeFields) {
@@ -564,8 +640,11 @@ class AmalNotifier extends StateNotifier<AmalState> {
     }
 
     final hijri = IslamicDateService.getCurrentIslamicDateStringSafe();
-    final toggles = normalizeTogglesForFields(state.toggles, state.fields);
-    final score = calculateScore(toggles, state.fields);
+    final policy = _ref.read(amalEntryPolicyProvider);
+    final activeFields = policy.activeFields;
+    final toggles = normalizeTogglesForFields(state.toggles, activeFields);
+    final result = calculateAmalScore(toggles: toggles, activeFields: activeFields);
+    final score = result.score;
     final now = DateTime.now().toUtc();
     final currentWeekKey = weekKeyFromDate(HijriHelper.bangladeshNow());
     final freezeAvailableThisWeek = user.streakFreezeWeekKey != currentWeekKey
@@ -581,7 +660,11 @@ class AmalNotifier extends StateNotifier<AmalState> {
       toggles: toggles,
       score: score,
       submittedAt: now,
+      maxScore: result.maxScore,
+      activeFieldIds: result.activeFieldIds,
+      specialTimeApplied: policy.isSpecialTimeActive,
       prayers: _serializePrayerSelections(state.prayerSelections),
+      gender: user.gender,
     );
 
     var streakResult = computeStreakResult(
@@ -747,6 +830,7 @@ class AmalNotifier extends StateNotifier<AmalState> {
         error: submitWarning,
         submittedLog: log,
         prayerSelections: submittedSelections,
+        activeFieldIds: result.activeFieldIds,
       );
       await _updateHomeWidget(
         streakOverride: streakResult.action == StreakAction.showFreeze
@@ -780,7 +864,6 @@ class AmalNotifier extends StateNotifier<AmalState> {
     required String currentWeekKey,
   }) async {
     final nextBadges = <String>{...user.badges};
-    final maxScore = getMaxScore(state.fields).clamp(1, kDefaultMaxDailyScore);
 
     // Recompute streak from actual logs instead of using the potentially
     // stale Firestore currentStreak, so badges match what the UI shows.
@@ -807,10 +890,9 @@ class AmalNotifier extends StateNotifier<AmalState> {
     }
 
     final recent = await fs.getRecentLogs(user.uid, limit: 7);
-    final threshold = (maxScore * 0.8).round();
     final perfectWeek =
         _isPerfectWeekChain(recent) &&
-        recent.every((log) => log.score >= threshold);
+        recent.every((log) => log.score >= (log.maxScore * 0.8).round());
     if (perfectWeek) nextBadges.add('perfectWeek');
 
     final weeklyRows = await fs.weeklyLeaderboard();

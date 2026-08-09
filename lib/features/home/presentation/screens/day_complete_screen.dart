@@ -95,14 +95,14 @@ class _DayCompleteScreenState extends ConsumerState<DayCompleteScreen> {
           loading: () => const Center(
             child: CircularProgressIndicator(color: AppColors.gold),
           ),
-          error: (_, __) => Center(
+          error: (_, _) => Center(
             child: Text(
               l10n.dayDetailLoadFailed,
               style: AppTextStyles.bodyMedium(context),
             ),
           ),
           data: (fields) {
-            final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+            final maxScore = (widget.log.maxScore).clamp(1, kDefaultMaxDailyScore);
             return CustomScrollView(
               slivers: [
                 SliverPadding(

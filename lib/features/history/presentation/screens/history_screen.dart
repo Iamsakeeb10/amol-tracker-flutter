@@ -71,7 +71,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final user = userAsync.asData?.value;
 
     if (authUser == null || user == null) {
-      return AppScaffold(
+      return AppScaffold(handleExitBack: false,
         body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
       );
     }
@@ -99,7 +99,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     );
     final daysInMonth = HijriCalendar().getDaysInMonth(_hijriYear, _hijriMonth);
 
-    return AppScaffold(
+    return AppScaffold(handleExitBack: false,
       padding: EdgeInsets.zero,
       body: summaryAsync.when(
         loading: () => _HistorySkeleton(),

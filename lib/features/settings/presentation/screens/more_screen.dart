@@ -53,7 +53,7 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
     final canManageCourses =
         AdminConfig.canAccessCourseAdmin(user?.email, role: user?.role) ||
         isListedModerator;
-    return AppScaffold(
+    return AppScaffold(handleExitBack: false,
       padding: EdgeInsets.zero,
       body: ListView(
         padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 100.h),

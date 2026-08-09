@@ -177,7 +177,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
     ];
     _cleanupStaleRowControllers(activeRowKeys);
 
-    return AppScaffold(
+    return AppScaffold(handleExitBack: false,
       body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

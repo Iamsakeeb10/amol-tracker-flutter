@@ -1,12 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hijri/hijri_calendar.dart';
 
-import '../core/constants/default_amal_fields.dart';
 import '../core/services/analytics_service.dart';
 import '../core/services/hadith_asset_service.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/utils/report_calculator.dart';
-import '../core/utils/score_calculator.dart';
 import '../core/utils/streak_helper.dart';
 import '../models/amal_log_model.dart';
 import 'amal_fields_provider.dart';
@@ -126,7 +124,6 @@ final reportSummaryProvider =
       ref.watch(amalLogRefreshProvider);
       final fs = ref.read(firestoreServiceProvider);
       final fields = ref.watch(amalFieldsListProvider);
-      final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
       final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
       final user = await ref.watch(currentUserProvider.future);
       if (user == null) {
@@ -198,7 +195,6 @@ final reportSummaryProvider =
           endHijri: key.endHijri,
           todayStr: todayStr,
           accountCreatedHijri: accountCreatedHijri,
-          maxScore: maxScore,
           locale: locale,
           previousPeriodLogs: previousLogs,
           rankInfo: rankInfo,

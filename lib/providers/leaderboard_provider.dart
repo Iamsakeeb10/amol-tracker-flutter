@@ -29,15 +29,24 @@ String _safeName(String value) =>
     value.trim().isEmpty ? 'Anonymous' : value.trim();
 
 final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
+  final authState = ref.watch(currentUserProvider).asData?.value;
+  final currentUserGender = authState?.gender;
+
   final today = IslamicDateService.getCurrentIslamicDateStringSafe();
   final fs = ref.read(firestoreServiceProvider);
-  return fs.communityDayStream(today).asyncMap((rows) async {
+  return fs.communityDayStream(today, genderFilter: currentUserGender).asyncMap((rows) async {
     final users = await fs.usersByIds(rows.map((r) => r.uid));
     final entries = <LeaderboardEntry>[];
     for (final row in rows) {
       final user = users[row.uid];
       final showOnLeaderboard = user?.showOnLeaderboard ?? true;
       if (!showOnLeaderboard) continue;
+      
+      // Filter by gender locally as a fallback (though the server stream also filters)
+      if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
+      // If user gender is completely unknown, we might still want to skip them if we strictly enforce it
+      if (currentUserGender != null && user?.gender == null) continue;
+
       entries.add(
         LeaderboardEntry(
           uid: row.uid,
@@ -55,6 +64,9 @@ final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
 final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   ref,
 ) async {
+  final authState = ref.watch(currentUserProvider).asData?.value;
+  final currentUserGender = authState?.gender;
+
   final fs = ref.read(firestoreServiceProvider);
   final rows = await fs.weeklyLeaderboard();
   final users = await fs.usersByIds(
@@ -67,6 +79,11 @@ final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
     final user = users[uid];
     final showOnLeaderboard = user?.showOnLeaderboard ?? true;
     if (!showOnLeaderboard) continue;
+
+    // Filter by gender
+    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
+    if (currentUserGender != null && user?.gender == null) continue;
+
     entries.add(
       LeaderboardEntry(
         uid: uid,
@@ -86,6 +103,9 @@ final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
 final monthlyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   ref,
 ) async {
+  final authState = ref.watch(currentUserProvider).asData?.value;
+  final currentUserGender = authState?.gender;
+
   final fs = ref.read(firestoreServiceProvider);
   final rows = await fs.monthlyLeaderboard();
   final users = await fs.usersByIds(
@@ -98,6 +118,11 @@ final monthlyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
     final user = users[uid];
     final showOnLeaderboard = user?.showOnLeaderboard ?? true;
     if (!showOnLeaderboard) continue;
+
+    // Filter by gender
+    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
+    if (currentUserGender != null && user?.gender == null) continue;
+
     entries.add(
       LeaderboardEntry(
         uid: uid,
@@ -117,8 +142,11 @@ final monthlyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
 final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   ref,
 ) async {
+  final authState = ref.watch(currentUserProvider).asData?.value;
+  final currentUserGender = authState?.gender;
+
   final fs = ref.read(firestoreServiceProvider);
-  final result = await fs.streakLeaderboard();
+  final result = await fs.streakLeaderboard(genderFilter: currentUserGender);
   final rows = result.rows;
   final users = await fs.usersByIds(
     rows.map((row) => (row['uid'] as String?) ?? ''),
@@ -158,6 +186,9 @@ final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
 final quizLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   ref,
 ) async {
+  final authState = ref.watch(currentUserProvider).asData?.value;
+  final currentUserGender = authState?.gender;
+
   final rows =
       await ref.read(quizLeaderboardServiceProvider).fetchLeaderboard();
   final fs = ref.read(firestoreServiceProvider);
@@ -171,6 +202,10 @@ final quizLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
     final user = users[uid];
     final showOnLeaderboard = user?.showOnLeaderboard ?? true;
     if (!showOnLeaderboard) continue;
+
+    // Filter by gender
+    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
+
     entries.add(
       LeaderboardEntry(
         uid: uid,

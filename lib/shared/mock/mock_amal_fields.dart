@@ -1,6 +1,5 @@
 import '../../core/constants/amal_fields.dart';
 
-/// Mock-only amal definitions for friend/group preview screens (not used in production).
 const List<AmalField> kMockAmalFields = [
   AmalField(
     id: 'fard',

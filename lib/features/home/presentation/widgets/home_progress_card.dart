@@ -14,12 +14,16 @@ class HomeProgressCard extends StatelessWidget {
     required this.total,
     required this.score,
     required this.maxScore,
+    this.header,
   });
 
   final int done;
   final int total;
   final int score;
   final int maxScore;
+
+  /// Optional row rendered above the progress content, separated by a divider.
+  final Widget? header;
 
   @override
   Widget build(BuildContext context) {
@@ -29,15 +33,20 @@ class HomeProgressCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (header != null) ...[
+            header!,
+            // SizedBox(height: 10.h),
+            // Divider(height: 1.h, thickness: 1, color: AppColors.cardBorder),
+            // SizedBox(height: 12.h),
+          ],
           Row(
             children: [
               Expanded(
                 child: Text(
                   l10n.todaysProgress,
-                  style: AppTextStyles.bodySmall(context).copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 13.sp,
-                  ),
+                  style: AppTextStyles.bodySmall(
+                    context,
+                  ).copyWith(color: AppColors.textSecondary, fontSize: 13.sp),
                 ),
               ),
               Text(
@@ -66,10 +75,7 @@ class HomeProgressCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodySmall(
                     context,
-                  ).copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.sp,
-                  ),
+                  ).copyWith(color: AppColors.textSecondary, fontSize: 12.sp),
                 ),
               ),
             ],

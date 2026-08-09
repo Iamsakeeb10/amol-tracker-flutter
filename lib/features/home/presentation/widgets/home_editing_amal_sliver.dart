@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/amal_entry_policy.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/amal_provider.dart';
 import 'home_amal_details_dialog.dart';
@@ -24,6 +25,7 @@ List<Widget> buildHomeEditingAmalSlivers({
   required Future<void> Function() onRetryFields,
 }) {
   final amalNotifier = ref.read(amalProvider(uid).notifier);
+  final policy = ref.watch(amalEntryPolicyProvider);
 
   return [
     SliverToBoxAdapter(
@@ -80,10 +82,14 @@ List<Widget> buildHomeEditingAmalSlivers({
     else
       ...buildHomeAmalFieldSlivers(
         uid: uid,
+        context: context,
         fieldsAsync: fieldsAsync,
         locale: locale,
         onRetry: onRetryFields,
         onTapDetails: (f) => showHomeAmalDetailsDialog(context, f, locale),
+        mainFields: policy.mainFields,
+        optionalFields: policy.optionalFields,
+        inactiveSpecialTimeFields: policy.inactiveSpecialTimeFields,
       ),
     SliverToBoxAdapter(child: SizedBox(height: 14.h)),
     SliverToBoxAdapter(

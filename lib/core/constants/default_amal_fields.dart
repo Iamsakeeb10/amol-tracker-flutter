@@ -1,6 +1,5 @@
 import 'amal_fields.dart';
 
-/// UI cap when Firestore max score exceeds 100 (misconfiguration guard).
 const int kDefaultMaxDailyScore = 100;
 
 int _amalFieldSortOrder(AmalField a, AmalField b) {
@@ -9,18 +8,15 @@ int _amalFieldSortOrder(AmalField a, AmalField b) {
   return a.id.compareTo(b.id);
 }
 
-/// Active Firestore fields with valid ids, sorted by [AmalField.order].
 List<AmalField> activeAmalFields(List<AmalField> fields) {
   final active = fields.where((f) => f.isActive && f.id.isNotEmpty).toList();
   active.sort(_amalFieldSortOrder);
   return active;
 }
 
-/// Alias for [activeAmalFields] — provider already returns Firestore-only data.
 List<AmalField> resolveAmalFields(List<AmalField> fields) =>
     activeAmalFields(fields);
 
-/// Bundled fallback when Hive cache and Firestore are both unavailable.
 const List<AmalField> kDefaultAmalFields = [
   AmalField(
     id: 'fard_salah',
@@ -34,6 +30,9 @@ const List<AmalField> kDefaultAmalFields = [
     type: AmalType.numeric,
     order: 1,
     expandable: true,
+    genderVisibility: GenderVisibility.all,
+    femaleDeprioritized: false,
+    disableDuringSpecialTime: true,
   ),
   AmalField(
     id: 'fard',
@@ -47,6 +46,9 @@ const List<AmalField> kDefaultAmalFields = [
     type: AmalType.numeric,
     order: 2,
     expandable: true,
+    genderVisibility: GenderVisibility.all,
+    femaleDeprioritized: true,
+    disableDuringSpecialTime: true,
   ),
   AmalField(
     id: 'takbir',
@@ -60,6 +62,9 @@ const List<AmalField> kDefaultAmalFields = [
     type: AmalType.numeric,
     order: 3,
     expandable: true,
+    genderVisibility: GenderVisibility.all,
+    femaleDeprioritized: true,
+    disableDuringSpecialTime: true,
   ),
   AmalField(
     id: 'morning_azkar',
@@ -67,6 +72,9 @@ const List<AmalField> kDefaultAmalFields = [
     sublabel: {'en': 'Morning azkar completed', 'bn': 'সকালের আযকার সম্পন্ন'},
     points: 10,
     order: 4,
+    genderVisibility: GenderVisibility.all,
+    femaleDeprioritized: false,
+    disableDuringSpecialTime: false,
   ),
   AmalField(
     id: 'evening_azkar',
@@ -74,6 +82,9 @@ const List<AmalField> kDefaultAmalFields = [
     sublabel: {'en': 'Evening azkar completed', 'bn': 'সন্ধ্যার আযকার সম্পন্ন'},
     points: 10,
     order: 5,
+    genderVisibility: GenderVisibility.all,
+    femaleDeprioritized: false,
+    disableDuringSpecialTime: false,
   ),
   AmalField(
     id: 'quran',
@@ -84,6 +95,9 @@ const List<AmalField> kDefaultAmalFields = [
     },
     points: 10,
     order: 6,
+    genderVisibility: GenderVisibility.all,
+    femaleDeprioritized: false,
+    disableDuringSpecialTime: true,
   ),
   AmalField(
     id: 'mulk',
@@ -94,6 +108,9 @@ const List<AmalField> kDefaultAmalFields = [
     },
     points: 10,
     order: 7,
+    genderVisibility: GenderVisibility.all,
+    femaleDeprioritized: false,
+    disableDuringSpecialTime: true,
   ),
   AmalField(
     id: 'miswak',
@@ -104,6 +121,9 @@ const List<AmalField> kDefaultAmalFields = [
     },
     points: 5,
     order: 8,
+    genderVisibility: GenderVisibility.all,
+    femaleDeprioritized: false,
+    disableDuringSpecialTime: false,
   ),
   AmalField(
     id: 'sunnah',
@@ -114,6 +134,9 @@ const List<AmalField> kDefaultAmalFields = [
     },
     points: 10,
     order: 9,
+    genderVisibility: GenderVisibility.all,
+    femaleDeprioritized: false,
+    disableDuringSpecialTime: true,
   ),
   AmalField(
     id: 'post_azkar',
@@ -124,5 +147,8 @@ const List<AmalField> kDefaultAmalFields = [
     },
     points: 5,
     order: 10,
+    genderVisibility: GenderVisibility.all,
+    femaleDeprioritized: false,
+    disableDuringSpecialTime: true,
   ),
 ];

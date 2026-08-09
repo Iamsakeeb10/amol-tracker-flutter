@@ -14,6 +14,7 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/amal_edit_debug.dart';
 import '../../../../core/utils/score_calculator.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../models/amal_log_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
@@ -59,8 +60,28 @@ class DayDetailScreen extends ConsumerWidget {
       ),
       data: (log) {
         final fields = ref.watch(amalFieldsListProvider);
-        final maxScore = getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+        final computedMax = fields
+            .where((f) => f.isActive && f.id.isNotEmpty)
+            .fold<int>(0, (sum, f) => sum + f.points);
+        final maxScore =
+            (log?.maxScore ?? computedMax).clamp(1, kDefaultMaxDailyScore);
         final score = log?.score ?? 0;
+        final activeIds = log?.activeFieldIds.toSet() ?? const <String>{};
+        final mainFields = activeIds.isEmpty
+            ? fields
+            : fields.where((f) => activeIds.contains(f.id)).toList();
+        final inactiveFields = (log != null &&
+                log.specialTimeApplied &&
+                activeIds.isNotEmpty)
+            ? fields
+                .where(
+                  (f) =>
+                      f.isActive &&
+                      f.id.isNotEmpty &&
+                      !activeIds.contains(f.id),
+                )
+                .toList()
+            : const <amal_const.AmalField>[];
         final editableDay = editableAsync.asData?.value;
         final editableResolved = editableAsync.hasValue;
         final showEditFab = editableDay?.canEdit ?? false;
@@ -204,50 +225,60 @@ class DayDetailScreen extends ConsumerWidget {
                 ),
               ),
               SliverList.builder(
-                itemCount: fields.length,
+                itemCount: mainFields.length,
                 itemBuilder: (context, index) {
-                  final field = fields[index];
-                  final done = field.type == amal_const.AmalType.numeric
-                      ? getNumericValue(
-                              log?.toggles[field.id],
-                              field.maxValue,
-                            ) >
-                            0
-                      : (log?.toggles[field.id] as bool? ?? false);
-                  // Show prayer circles when Firestore has individual selection
-                  // data (new logs). Fall back to count-only for old logs.
-                  final prayerSlots = field.supportsExpansion
-                      ? log?.prayers[field.id]
-                      : null;
-                  final hasPrayerData =
-                      prayerSlots != null && prayerSlots.isNotEmpty;
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 8.h),
-                    child: AmalRow(
-                      field: field,
-                      locale: locale,
-                      done: done,
-                      numericValue: field.type == amal_const.AmalType.numeric
-                          ? getNumericValue(
-                              log?.toggles[field.id],
-                              field.maxValue,
-                            )
-                          : null,
-                      readOnly: true,
-                      expandable: hasPrayerData,
-                      isExpanded: hasPrayerData,
-                      expandedContent: hasPrayerData
-                          ? FardPrayerExpandRow(
-                              selectedIndices: prayerSlots!.toSet(),
-                              onToggleIndex: (_) {},
-                              slotCount: field.maxValue,
-                              readOnly: true,
-                            )
-                          : null,
-                    ),
+                  final field = mainFields[index];
+                  return _DayDetailAmalRow(
+                    field: field,
+                    locale: locale,
+                    log: log,
                   );
                 },
               ),
+              if (inactiveFields.isNotEmpty) ...[
+                SliverToBoxAdapter(child: SizedBox(height: 8.h)),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.pause_circle_outline_rounded,
+                          size: 20.r,
+                          color: AppColors.textMuted,
+                        ),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                         child: Text(
+                           l10n.inactiveSpecialTimeExcusedSection,
+                           style: AppTextStyles.bodySmall(context).copyWith(
+                             color: AppColors.textSecondary,
+                             fontSize: 12.sp,
+                             fontWeight: FontWeight.w600,
+                             overflow: TextOverflow.ellipsis,
+                           ),
+                         ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverList.builder(
+                  itemCount: inactiveFields.length,
+                  itemBuilder: (context, index) {
+                    final field = inactiveFields[index];
+                    return Opacity(
+                      opacity: 0.5,
+                      child: _DayDetailAmalRow(
+                        field: field,
+                        locale: locale,
+                        log: log,
+                      ),
+                    );
+                  },
+                ),
+              ],
               if (editableResolved && !showEditFab)
                 SliverPadding(
                   padding: EdgeInsets.only(top: 14.h),
@@ -328,6 +359,52 @@ class DayDetailScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _DayDetailAmalRow extends StatelessWidget {
+  const _DayDetailAmalRow({
+    required this.field,
+    required this.locale,
+    required this.log,
+  });
+
+  final amal_const.AmalField field;
+  final String locale;
+  final AmalLogModel? log;
+
+  @override
+  Widget build(BuildContext context) {
+    final done = field.type == amal_const.AmalType.numeric
+        ? getNumericValue(log?.toggles[field.id], field.maxValue) > 0
+        : (log?.toggles[field.id] as bool? ?? false);
+    // Show prayer circles when Firestore has individual selection
+    // data (new logs). Fall back to count-only for old logs.
+    final prayerSlots =
+        field.supportsExpansion ? log?.prayers[field.id] : null;
+    final hasPrayerData = prayerSlots != null && prayerSlots.isNotEmpty;
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: AmalRow(
+        field: field,
+        locale: locale,
+        done: done,
+        numericValue: field.type == amal_const.AmalType.numeric
+            ? getNumericValue(log?.toggles[field.id], field.maxValue)
+            : null,
+        readOnly: true,
+        expandable: hasPrayerData,
+        isExpanded: hasPrayerData,
+        expandedContent: hasPrayerData
+            ? FardPrayerExpandRow(
+                selectedIndices: prayerSlots.toSet(),
+                onToggleIndex: (_) {},
+                slotCount: field.maxValue,
+                readOnly: true,
+              )
+            : null,
+      ),
     );
   }
 }

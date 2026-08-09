@@ -2895,4 +2895,93 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedbackContentHint => 'Describe your feedback...';
+
+  @override
+  String get personalizationSection => 'PERSONALIZATION';
+
+  @override
+  String get settingsGender => 'Gender';
+
+  @override
+  String get genderSelectionTitle => 'Select your gender';
+
+  @override
+  String get genderSelectionSubtitle =>
+      'Your amal list will be arranged based on your selection. You can change it later from Settings.';
+
+  @override
+  String get genderMale => 'Male';
+
+  @override
+  String get genderFemale => 'Female';
+
+  @override
+  String get genderConfirm => 'Confirm';
+
+  @override
+  String get genderSkip => 'Skip for now';
+
+  @override
+  String get specialTimeToggleTitle => 'Special Time';
+
+  @override
+  String get specialTimeToggleSubtitle =>
+      'Prioritize essential amals during certain times';
+
+  @override
+  String optionalAmalSection(int count) {
+    return '$count optional amals';
+  }
+
+  @override
+  String get optionalAmalSectionTitle => 'Optional Amal';
+
+  @override
+  String get optionalAmalSectionHint => 'Fine even without congregation';
+
+  @override
+  String inactiveSpecialTimeSection(int count) {
+    return '$count inactive during special time';
+  }
+
+  @override
+  String get inactiveSpecialTimeExcusedSection =>
+      'The following amals are excused during this time.';
+
+  @override
+  String get adminAmalFieldPersonalizationSection => 'PERSONALIZATION';
+
+  @override
+  String get adminAmalFieldGenderVisibility => 'Gender visibility';
+
+  @override
+  String get adminAmalFieldGenderVisibilityAll => 'All';
+
+  @override
+  String get adminAmalFieldGenderVisibilityMaleOnly => 'Male only';
+
+  @override
+  String get adminAmalFieldGenderVisibilityFemaleOnly => 'Female only';
+
+  @override
+  String get adminAmalFieldFemaleDeprioritized => 'Female deprioritized';
+
+  @override
+  String get adminAmalFieldFemaleDeprioritizedSubtitle =>
+      'Reduce this amal\'s points in score calculation for female users';
+
+  @override
+  String get adminAmalFieldDisableDuringSpecialTime =>
+      'Disable during special time';
+
+  @override
+  String get adminAmalFieldDisableDuringSpecialTimeSubtitle =>
+      'Hide this amal from users during special time periods';
+
+  @override
+  String get reportsSpecialTimeLegend => 'Special time day';
+
+  @override
+  String get reportsSpecialTimeLegendHint =>
+      'Muted bars were logged during special time';
 }

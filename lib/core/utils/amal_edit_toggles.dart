@@ -95,12 +95,20 @@ Map<String, dynamic> setAmalNumeric(
   return next;
 }
 
-int editAmalScore(Map<String, dynamic> toggles, List<AmalField> fields) {
-  return calculateScore(toggles, fields);
+int editAmalScore(
+  Map<String, dynamic> toggles,
+  List<AmalField> activeFields,
+) {
+  final result = calculateAmalScore(toggles: toggles, activeFields: activeFields);
+  return result.score;
 }
 
-int editAmalMaxScore(List<AmalField> fields) {
-  return getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
+int editAmalMaxScore(List<AmalField> activeFields) {
+  final result = calculateAmalScore(
+    toggles: <String, dynamic>{},
+    activeFields: activeFields,
+  );
+  return result.maxScore.clamp(1, kDefaultMaxDailyScore);
 }
 
 Map<String, dynamic> emptyTogglesForFields(List<AmalField> fields) {

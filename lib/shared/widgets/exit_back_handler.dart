@@ -7,52 +7,48 @@ import '../../core/utils/show_exit_app_dialog.dart';
 
 /// Intercepts only the system back button. Safe to use inside route pages —
 /// unlike [GoRoute.onExit], this does not run during [GoRouter.go] redirects.
+///
+/// NOTE: This now uses PopScope only (no BackButtonListener). Mixing the two
+/// caused a bug where this handler's BackButtonListener — which is not
+/// route-stack-aware — intercepted every back press ahead of any dialog's
+/// own PopScope (e.g. a required showDialog on top of Home), always
+/// self-reported `return true` regardless of what _handleBack actually did,
+/// and swallowed the event even when it correctly detected a dialog was
+/// open and chose to no-op. PopScope alone respects route stack ordering
+/// the same way ConfirmExitAppOnBack does, so a dialog above this in the
+/// Navigator gets first right of refusal automatically.
 class ExitBackHandler extends StatelessWidget {
   final Widget child;
 
   const ExitBackHandler({super.key, required this.child});
 
-  Future<void> _handleBack(BuildContext context) async {
-    final router = GoRouter.of(context);
-    final route = GoRouterState.of(context).matchedLocation;
-    exitAppDebug(
-      'back — route=$route canPop=${router.canPop()} '
-      'mounted=${context.mounted}',
-    );
-
-    if (router.canPop()) {
-      exitAppDebug('back — router.pop()');
-      router.pop();
-      return;
-    }
-
-    if (!context.mounted) return;
-
-    exitAppDebug('back — show exit dialog');
-    final shouldExit = await showExitAppDialog(context);
-    exitAppDebug('back — dialog result=$shouldExit');
-
-    if (shouldExit == true && context.mounted) {
-      exitAppDebug('back — SystemNavigator.pop()');
-      SystemNavigator.pop();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final router = GoRouter.of(context);
+    final canPop = router.canPop();
+
     return PopScope(
-      canPop: false,
+      canPop: canPop,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        await _handleBack(context);
+        
+        // If router.canPop() was true but didPop is false, another PopScope
+        // further down the widget tree blocked the pop (e.g. unsaved changes).
+        // We should respect that and NOT show the exit app dialog.
+        if (canPop) return;
+        
+        if (!context.mounted) return;
+
+        exitAppDebug('back — show exit dialog');
+        final shouldExit = await showExitAppDialog(context);
+        exitAppDebug('back — dialog result=$shouldExit');
+
+        if (shouldExit == true && context.mounted) {
+          exitAppDebug('back — SystemNavigator.pop()');
+          SystemNavigator.pop();
+        }
       },
-      child: BackButtonListener(
-        onBackButtonPressed: () async {
-          await _handleBack(context);
-          return true;
-        },
-        child: child,
-      ),
+      child: child,
     );
   }
 }

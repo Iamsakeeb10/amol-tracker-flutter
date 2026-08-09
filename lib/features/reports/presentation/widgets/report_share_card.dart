@@ -22,7 +22,6 @@ class ReportShareCard extends StatelessWidget {
     required this.title,
     required this.dateMainLabel,
     required this.dateSubLabel,
-    required this.maxScore,
     required this.periodType,
     required this.fields,
   });
@@ -31,7 +30,6 @@ class ReportShareCard extends StatelessWidget {
   final String title;
   final String dateMainLabel;
   final String dateSubLabel;
-  final int maxScore;
   final ReportPeriodType periodType;
   final List<AmalField> fields;
 
@@ -218,7 +216,7 @@ class ReportShareCard extends StatelessWidget {
               if (summary.bars.isNotEmpty) ...[
                 SizedBox(height: 12.h),
                 SectionHeader(title: chartLabel),
-                ReportBarChart(bars: summary.bars, maxScore: maxScore),
+                ReportBarChart(bars: summary.bars),
               ],
               if (summary.amalBreakdown.isNotEmpty) ...[
                 SizedBox(height: 12.h),

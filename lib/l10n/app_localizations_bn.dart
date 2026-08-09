@@ -2901,4 +2901,93 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get feedbackContentHint => 'আপনার মতামত বিস্তারিত লিখুন...';
+
+  @override
+  String get personalizationSection => 'ব্যক্তিগতকরণ';
+
+  @override
+  String get settingsGender => 'লিঙ্গ';
+
+  @override
+  String get genderSelectionTitle => 'আপনার লিঙ্গ নির্বাচন করুন';
+
+  @override
+  String get genderSelectionSubtitle =>
+      'আপনার নির্বাচন অনুযায়ী আমলের তালিকা সাজানো হবে। পরে সেটিংস থেকে পরিবর্তন করা যাবে।';
+
+  @override
+  String get genderMale => 'পুরুষ';
+
+  @override
+  String get genderFemale => 'মহিলা';
+
+  @override
+  String get genderConfirm => 'নিশ্চিত করুন';
+
+  @override
+  String get genderSkip => 'এখনো এড়িয়ে যান';
+
+  @override
+  String get specialTimeToggleTitle => 'বিশেষ ওজরের সময়';
+
+  @override
+  String get specialTimeToggleSubtitle => 'নির্দিষ্ট সময়ে প্রাধান্যামূলক আমল';
+
+  @override
+  String optionalAmalSection(int count) {
+    return '$count ঐচ্ছিক আমল';
+  }
+
+  @override
+  String get optionalAmalSectionTitle => 'ঐচ্ছিক আমল';
+
+  @override
+  String get optionalAmalSectionHint => 'জামাতে না গেলেও চলবে';
+
+  @override
+  String inactiveSpecialTimeSection(int count) {
+    return '$count বিশেষ সময়ে নিষ্ক্রিয়';
+  }
+
+  @override
+  String get inactiveSpecialTimeExcusedSection =>
+      'বিশেষ ওজরের সময় নিচের নির্দিষ্ট আমলগুলো মাফ।';
+
+  @override
+  String get adminAmalFieldPersonalizationSection => 'ব্যক্তিগতকরণ';
+
+  @override
+  String get adminAmalFieldGenderVisibility => 'লিঙ্গ ভিত্তিক দৃশ্যমানতা';
+
+  @override
+  String get adminAmalFieldGenderVisibilityAll => 'সব';
+
+  @override
+  String get adminAmalFieldGenderVisibilityMaleOnly => 'শুধু পুরুষ';
+
+  @override
+  String get adminAmalFieldGenderVisibilityFemaleOnly => 'শুধুমহিলা';
+
+  @override
+  String get adminAmalFieldFemaleDeprioritized =>
+      'মহিলা ব্যবহারকারীদের জন্য অগ্রাধিকার হ্রাস';
+
+  @override
+  String get adminAmalFieldFemaleDeprioritizedSubtitle =>
+      'মহিলা ব্যবহারকারীদের স্কোর গণনায় এই আমলের পয়েন্ট কমবে';
+
+  @override
+  String get adminAmalFieldDisableDuringSpecialTime =>
+      'বিশেষ ওজরের সময় বন্ধ রাখুন';
+
+  @override
+  String get adminAmalFieldDisableDuringSpecialTimeSubtitle =>
+      'বিশেষ ওজরের সময়ে এই আমল ব্যবহারকারীদের কাছে দেখাবে না';
+
+  @override
+  String get reportsSpecialTimeLegend => 'বিশেষ ওজরের সময়ের দিন';
+
+  @override
+  String get reportsSpecialTimeLegendHint =>
+      'ম্লান বারগুলো বিশেষ ওজরের সময়ে লগ করা হয়েছিল';
 }

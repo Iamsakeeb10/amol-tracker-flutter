@@ -27,7 +27,7 @@ class ActivityFeedItemModel {
       type: (data['type'] as String?) ?? 'system',
       message: (data['message'] as String?) ?? '',
       createdAt: ts is Timestamp ? ts.toDate() : DateTime.now(),
-      actorUid: data['actorUid'] as String?,
+      actorUid: (data['actorUid'] as String?) ?? (data['uid'] as String?),
       targetUid: data['targetUid'] as String?,
     );
   }

@@ -11,10 +11,27 @@ final notificationServiceProvider = Provider<NotificationService>(
 );
 
 final notificationsProvider = StreamProvider<List<NotificationModel>>((ref) {
-  final uid = ref.watch(authStateProvider).asData?.value?.uid;
+  final userModel = ref.watch(currentUserProvider).asData?.value;
+  final uid = userModel?.uid;
+  final currentUserGender = userModel?.gender;
+
   if (uid == null) return const Stream<List<NotificationModel>>.empty();
   final fs = ref.read(firestoreServiceProvider);
-  return fs.notificationStream(uid);
+  
+  return fs.notificationStream(uid).map((items) {
+    return items.where((item) {
+      if (item.type == 'dua') {
+        if (currentUserGender != null && item.senderGender != null && item.senderGender != currentUserGender) {
+          return false;
+        }
+        if (currentUserGender != null && item.senderGender == null) {
+          return false;
+        }
+        return true; 
+      }
+      return true;
+    }).toList();
+  });
 });
 
 final unreadNotificationsCountProvider = Provider<int>((ref) {

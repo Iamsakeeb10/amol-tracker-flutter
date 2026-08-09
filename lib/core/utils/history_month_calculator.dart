@@ -1,7 +1,6 @@
 import '../../models/amal_log_model.dart';
 import '../../shared/mock/mock_data.dart';
 import '../constants/amal_fields.dart' as amal_const;
-import '../constants/default_amal_fields.dart';
 import '../services/islamic_date_service.dart';
 import 'score_calculator.dart';
 
@@ -56,7 +55,6 @@ class HistoryMonthCalculator {
     required String todayStr,
     required String accountCreatedHijri,
     required int daysInMonth,
-    required int maxScore,
     required String locale,
   }) {
     final days = _buildDays(
@@ -66,12 +64,13 @@ class HistoryMonthCalculator {
       todayStr: todayStr,
       accountCreatedHijri: accountCreatedHijri,
       daysInMonth: daysInMonth,
-      maxScore: maxScore,
     );
     final logsWithScore = logs.where((l) => l.score > 0).toList();
     final avgScore = logsWithScore.isEmpty
         ? 0.0
-        : logsWithScore.map((l) => l.score).reduce((a, b) => a + b) /
+        : logsWithScore
+                .map((l) => l.maxScore > 0 ? (l.score / l.maxScore) * 100 : 0.0)
+                .reduce((a, b) => a + b) /
               logsWithScore.length;
 
     return HistoryMonthSummary(
@@ -80,7 +79,6 @@ class HistoryMonthCalculator {
       consistency: _calcConsistency(
         days: days,
         logs: logs,
-        maxScore: maxScore,
         todayStr: todayStr,
       ),
       avgScore: avgScore,
@@ -96,7 +94,6 @@ class HistoryMonthCalculator {
     required String todayStr,
     required String accountCreatedHijri,
     required int daysInMonth,
-    required int maxScore,
   }) {
     final byDay = <int, AmalLogModel>{};
     for (final log in logs) {
@@ -129,7 +126,7 @@ class HistoryMonthCalculator {
         final score = log?.score ?? 0;
         var todayState = DayCompletion.today;
         if (log != null) {
-          todayState = _scoreToState(score, hasLog: true, maxScore: maxScore);
+          todayState = _scoreToState(score, hasLog: true, maxScore: log.maxScore);
         }
         out.add(
           MockDay(
@@ -152,7 +149,7 @@ class HistoryMonthCalculator {
         MockDay(
           day: d,
           score: sc,
-          state: _scoreToState(sc, hasLog: true, maxScore: maxScore),
+          state: _scoreToState(sc, hasLog: true, maxScore: log.maxScore),
           isEdited: log.editedAt != null,
         ),
       );
@@ -179,7 +176,6 @@ class HistoryMonthCalculator {
   static int _calcConsistency({
     required List<MockDay> days,
     required List<AmalLogModel> logs,
-    required int maxScore,
     required String todayStr,
   }) {
     final activePastDays = days
@@ -193,10 +189,12 @@ class HistoryMonthCalculator {
         .length;
     if (activePastDays == 0) return 0;
 
-    final halfScore = (maxScore * 0.5).round();
     final pastLogs = logs.where((l) => l.hijriDate != todayStr);
     final logged50Plus =
-        pastLogs.where((l) => l.score >= halfScore).length;
+        pastLogs.where((l) {
+          final halfScore = (l.maxScore * 0.5).round();
+          return l.score >= halfScore;
+        }).length;
     return ((logged50Plus / activePastDays) * 100).round().clamp(0, 100);
   }
 
@@ -206,11 +204,17 @@ class HistoryMonthCalculator {
     String locale,
   ) {
     if (logs.isEmpty || fields.isEmpty) return null;
-    final activeFields = resolveAmalFields(fields);
-    if (activeFields.isEmpty) return null;
-    final counts = <String, int>{for (final f in activeFields) f.id: 0};
+    final fieldMap = <String, amal_const.AmalField>{};
+    for (final f in fields) {
+      if (f.isActive && f.id.isNotEmpty) fieldMap[f.id] = f;
+    }
+
+    final counts = <String, int>{};
     for (final log in logs) {
-      for (final f in activeFields) {
+      final activeIds = log.activeFieldIds;
+      for (final id in activeIds) {
+        final f = fieldMap[id];
+        if (f == null) continue;
         final isDone = f.type == amal_const.AmalType.numeric
             ? getNumericValue(log.toggles[f.id], f.maxValue) > 0
             : (log.toggles[f.id] == true);
@@ -227,7 +231,7 @@ class HistoryMonthCalculator {
       }
     });
     if (maxId == null || maxC <= 0) return null;
-    final field = activeFields.firstWhere((f) => f.id == maxId);
+    final field = fieldMap[maxId]!;
     return (id: maxId!, label: field.getLabel(locale), misses: maxC);
   }
 }

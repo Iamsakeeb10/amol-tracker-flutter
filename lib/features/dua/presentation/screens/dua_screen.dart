@@ -352,7 +352,7 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return AppScaffold(
+    return AppScaffold(handleExitBack: false,
       padding: EdgeInsets.zero,
       appBar: AppBar(
         centerTitle: false,

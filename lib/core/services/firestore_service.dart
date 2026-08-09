@@ -356,6 +356,26 @@ class FirestoreService {
     }
   }
 
+  /// Updates gender-related preferences on `users/{uid}` (only sends non-null keys).
+  Future<void> updateUserGenderPreferences(
+    String uid, {
+    String? gender,
+    bool? specialTimeActive,
+    bool? genderPromptDismissed,
+  }) async {
+    final fields = <String, dynamic>{};
+    if (gender != null) fields['gender'] = gender;
+    if (specialTimeActive != null) {
+      fields['specialTimeActive'] = specialTimeActive;
+    }
+    if (genderPromptDismissed != null) {
+      fields['genderPromptDismissed'] = genderPromptDismissed;
+    }
+    if (fields.isNotEmpty) {
+      await _users.doc(uid).update(fields);
+    }
+  }
+
   Stream<UserModel?> userStream(String uid) {
     return _users.doc(uid).snapshots().map((doc) {
       if (!doc.exists) return null;
@@ -518,10 +538,12 @@ class FirestoreService {
   }
 
   /// Real-time stream of submitted logs for a Hijri day, sorted by score.
-  Stream<List<AmalLogModel>> communityDayStream(String hijriDate) {
-    return _amalLogs.where('hijriDate', isEqualTo: hijriDate).snapshots().map((
-      snap,
-    ) {
+  Stream<List<AmalLogModel>> communityDayStream(String hijriDate, {String? genderFilter}) {
+    var query = _amalLogs.where('hijriDate', isEqualTo: hijriDate);
+    if (genderFilter != null) {
+      query = query.where('gender', isEqualTo: genderFilter);
+    }
+    return query.snapshots().map((snap) {
       final rows = snap.docs.map(AmalLogModel.fromDoc).toList()
         ..sort((a, b) => b.score.compareTo(a.score));
       if (rows.length <= _communityPageSize) return rows;
@@ -536,12 +558,19 @@ class FirestoreService {
   communityDayFetch(
     String hijriDate, {
     DocumentSnapshot<Map<String, dynamic>>? startAfter,
+    String? genderFilter,
   }) async {
     try {
       var query = _amalLogs
-          .where('hijriDate', isEqualTo: hijriDate)
-          .orderBy('score', descending: true)
+          .where('hijriDate', isEqualTo: hijriDate);
+          
+      if (genderFilter != null) {
+        query = query.where('gender', isEqualTo: genderFilter);
+      }
+      
+      query = query.orderBy('score', descending: true)
           .limit(_communityPageSize);
+
       if (startAfter != null) {
         query = query.startAfterDocument(startAfter);
       }
@@ -550,10 +579,12 @@ class FirestoreService {
       final lastDoc = snap.docs.isNotEmpty ? snap.docs.last : null;
       return (rows: rows, lastDoc: lastDoc);
     } on FirebaseException {
-      // Index fallback: query by date only, sort client-side, then paginate locally.
-      final snap = await _amalLogs
-          .where('hijriDate', isEqualTo: hijriDate)
-          .get();
+      // Index fallback: query by date and gender, sort client-side, then paginate locally.
+      var query = _amalLogs.where('hijriDate', isEqualTo: hijriDate);
+      if (genderFilter != null) {
+        query = query.where('gender', isEqualTo: genderFilter);
+      }
+      final snap = await query.get();
       final docs = snap.docs.toList()
         ..sort((a, b) {
           final aScore = (a.data()['score'] as num?)?.toInt() ?? 0;
@@ -575,10 +606,18 @@ class FirestoreService {
   }
 
   /// Real-time activity feed in reverse chronological order.
-  Stream<List<ActivityFeedItemModel>> activityFeedStream() {
-    return _activityFeed
-        .orderBy('createdAt', descending: true)
-        .limit(_activityFeedPageSize)
+  Stream<List<ActivityFeedItemModel>> activityFeedStream({int limit = _activityFeedPageSize, String? genderFilter}) {
+    var query = _activityFeed.orderBy('createdAt', descending: true);
+    
+    if (genderFilter != null) {
+      // Note: This requires a composite index on actorGender and createdAt.
+      query = _activityFeed
+          .where('actorGender', isEqualTo: genderFilter)
+          .orderBy('createdAt', descending: true);
+    }
+    
+    return query
+        .limit(limit)
         .snapshots()
         .map((snap) => snap.docs.map(ActivityFeedItemModel.fromDoc).toList());
   }
@@ -732,10 +771,18 @@ class FirestoreService {
   Future<
     ({List<Map<String, dynamic>> rows, DocumentSnapshot<Map<String, dynamic>>? lastDoc})
   >
-  streakLeaderboard({DocumentSnapshot<Map<String, dynamic>>? startAfter}) async {
+  streakLeaderboard({DocumentSnapshot<Map<String, dynamic>>? startAfter, String? genderFilter}) async {
     var query = _users
-        .orderBy('currentStreak', descending: true)
-        .limit(_leaderboardPageSize);
+        .orderBy('currentStreak', descending: true);
+        
+    if (genderFilter != null) {
+       query = _users
+           .where('gender', isEqualTo: genderFilter)
+           .orderBy('currentStreak', descending: true);
+    }
+    
+    query = query.limit(_leaderboardPageSize);
+
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
     }
@@ -773,11 +820,13 @@ class FirestoreService {
     required String recipientUid,
     required String message,
     required String hijriDate,
+    String? senderGender,
   }) async {
     final notificationRef = await _notificationItems(recipientUid)
         .add(<String, dynamic>{
           'type': 'dua',
           'message': message,
+          if (senderGender != null) 'senderGender': senderGender,
           'isRead': false,
           'createdAt': FieldValue.serverTimestamp(),
           'senderUid': senderUid,

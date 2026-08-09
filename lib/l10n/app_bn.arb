@@ -1389,5 +1389,46 @@
   "requestFeatureSubtitle": "কোনো ধারণা আছে? আমরা শুনতে চাই!",
   "adminFeedbacksTitle": "ব্যবহারকারীর মতামত",
   "submitFeedbackSuccess": "মতামত সফলভাবে জমা দেওয়া হয়েছে। আপনাকে ধন্যবাদ!",
-  "feedbackContentHint": "আপনার মতামত বিস্তারিত লিখুন..."
+  "feedbackContentHint": "আপনার মতামত বিস্তারিত লিখুন...",
+  "personalizationSection": "ব্যক্তিগতকরণ",
+  "settingsGender": "লিঙ্গ",
+  "genderSelectionTitle": "আপনার লিঙ্গ নির্বাচন করুন",
+  "genderSelectionSubtitle": "আপনার নির্বাচন অনুযায়ী আমলের তালিকা সাজানো হবে। পরে সেটিংস থেকে পরিবর্তন করা যাবে।",
+  "genderMale": "পুরুষ",
+  "genderFemale": "মহিলা",
+  "genderConfirm": "নিশ্চিত করুন",
+  "genderSkip": "এখনো এড়িয়ে যান",
+  "specialTimeToggleTitle": "বিশেষ ওজরের সময়",
+  "specialTimeToggleSubtitle": "নির্দিষ্ট সময়ে প্রাধান্যামূলক আমল",
+  "optionalAmalSection": "{count} ঐচ্ছিক আমল",
+  "@optionalAmalSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "optionalAmalSectionTitle": "ঐচ্ছিক আমল",
+  "optionalAmalSectionHint": "জামাতে না গেলেও চলবে",
+  "inactiveSpecialTimeSection": "{count} বিশেষ সময়ে নিষ্ক্রিয়",
+  "@inactiveSpecialTimeSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inactiveSpecialTimeExcusedSection": "বিশেষ ওজরের সময় নিচের নির্দিষ্ট আমলগুলো মাফ।",
+  "@inactiveSpecialTimeExcusedSection": {},
+  "adminAmalFieldPersonalizationSection": "ব্যক্তিগতকরণ",
+  "adminAmalFieldGenderVisibility": "লিঙ্গ ভিত্তিক দৃশ্যমানতা",
+  "adminAmalFieldGenderVisibilityAll": "সব",
+  "adminAmalFieldGenderVisibilityMaleOnly": "শুধু পুরুষ",
+  "adminAmalFieldGenderVisibilityFemaleOnly": "শুধুমহিলা",
+  "adminAmalFieldFemaleDeprioritized": "মহিলা ব্যবহারকারীদের জন্য অগ্রাধিকার হ্রাস",
+  "adminAmalFieldFemaleDeprioritizedSubtitle": "মহিলা ব্যবহারকারীদের স্কোর গণনায় এই আমলের পয়েন্ট কমবে",
+  "adminAmalFieldDisableDuringSpecialTime": "বিশেষ ওজরের সময় বন্ধ রাখুন",
+  "adminAmalFieldDisableDuringSpecialTimeSubtitle": "বিশেষ ওজরের সময়ে এই আমল ব্যবহারকারীদের কাছে দেখাবে না",
+  "reportsSpecialTimeLegend": "বিশেষ ওজরের সময়ের দিন",
+  "reportsSpecialTimeLegendHint": "ম্লান বারগুলো বিশেষ ওজরের সময়ে লগ করা হয়েছিল"
 }

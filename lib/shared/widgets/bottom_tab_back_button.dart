@@ -24,6 +24,12 @@ class BottomTabBackButton extends StatelessWidget {
   }
 
   Future<void> _handlePress(BuildContext context) async {
+    final rootNavigator = Navigator.of(context, rootNavigator: true);
+    if (rootNavigator.canPop()) {
+      rootNavigator.pop();
+      return;
+    }
+
     final router = GoRouter.of(context);
     if (router.canPop()) {
       router.pop();

@@ -6,6 +6,7 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
+import '../../../../models/user_model.dart';
 import '../../../../providers/amal_expansion_provider.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
@@ -14,6 +15,7 @@ import '../../../../providers/auth_provider.dart';
 import 'home_editing_amal_sliver.dart';
 import 'home_header.dart';
 import 'home_reminder_card.dart';
+import 'home_special_time_toggle.dart';
 import 'home_widgets.dart';
 
 class HomeScrollBody extends ConsumerStatefulWidget {
@@ -26,6 +28,7 @@ class HomeScrollBody extends ConsumerStatefulWidget {
     required this.offline,
     required this.amalError,
     required this.doneCount,
+    required this.activeFieldCount,
     required this.totalScore,
     required this.maxScore,
     required this.isSubmitted,
@@ -47,6 +50,7 @@ class HomeScrollBody extends ConsumerStatefulWidget {
   final bool offline;
   final String? amalError;
   final int doneCount;
+  final int activeFieldCount;
   final int totalScore;
   final int maxScore;
   final bool isSubmitted;
@@ -101,6 +105,7 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
     final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider).asData?.value;
     final showReminder = user != null && !user.hasDismissedLoggingReminder;
+    final showSpecialTime = user?.amalProfile == UserAmalProfile.female;
 
     // Collapse any expanded amal tile if its field disappears from the list
     // (e.g. admin removed it or the field set changed while viewing).
@@ -196,9 +201,12 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                           SliverToBoxAdapter(
                             child: HomeProgressCard(
                               done: widget.doneCount,
-                              total: widget.fields.length,
+                              total: widget.activeFieldCount,
                               score: widget.totalScore,
                               maxScore: widget.maxScore,
+                              header: showSpecialTime
+                                  ? const HomeSpecialTimeToggle()
+                                  : null,
                             ),
                           ),
                           SliverToBoxAdapter(child: SizedBox(height: 14.h)),

@@ -27,22 +27,6 @@ Map<String, String> buildLocaleMap({required String en, String? bn}) {
   return map;
 }
 
-/*
-Purpose:
-Build Firestore payload for create/update from admin form values.
-
-Response:
-Map ready for AmalFieldsService create/update.
-
-Business Rules:
-English label required; id only included on create; maxValue >= 1 for numeric.
-
-Validation logic:
-Caller validates id/labels/points before invoking.
-
-Failure Cases:
-Returns structurally valid map; invalid input should be caught by form validators.
-*/
 Map<String, dynamic> amalFieldToFirestoreMap({
   required String labelEn,
   String? labelBn,
@@ -57,8 +41,10 @@ Map<String, dynamic> amalFieldToFirestoreMap({
   String? iconName,
   IconSource? iconSource,
   bool expandable = false,
+  GenderVisibility genderVisibility = GenderVisibility.all,
+  bool femaleDeprioritized = false,
+  bool disableDuringSpecialTime = false,
 }) {
-  // Expansion only makes sense for numeric fields with exactly five slots.
   final resolvedExpandable =
       expandable && type == AmalType.numeric && maxValue == 5;
   final map = <String, dynamic>{
@@ -70,13 +56,15 @@ Map<String, dynamic> amalFieldToFirestoreMap({
     'order': order,
     'isActive': isActive,
     'expandable': resolvedExpandable,
+    'genderVisibility': genderVisibility == GenderVisibility.all ? 'all' : (genderVisibility == GenderVisibility.maleOnly ? 'male_only' : 'female_only'),
+    'femaleDeprioritized': femaleDeprioritized,
+    'disableDuringSpecialTime': disableDuringSpecialTime,
   };
   if (id != null) map['id'] = id.trim();
   if (iconName != null && iconName.isNotEmpty) map['iconName'] = iconName;
   if (iconSource != null) {
     map['iconSource'] = iconSource == IconSource.material ? 'material' : 'fontAwesome';
   } else if (iconName == null || iconName.isEmpty) {
-    // Explicitly clear icon fields when no icon is selected
     map['iconName'] = null;
     map['iconSource'] = null;
   }
@@ -97,6 +85,9 @@ AmalField buildDraftAmalField({
   String? iconName,
   IconSource? iconSource,
   bool expandable = false,
+  GenderVisibility genderVisibility = GenderVisibility.all,
+  bool femaleDeprioritized = false,
+  bool disableDuringSpecialTime = false,
 }) {
   return AmalField(
     id: id.trim().isEmpty ? 'preview' : id.trim(),
@@ -110,6 +101,9 @@ AmalField buildDraftAmalField({
     iconName: iconName,
     iconSource: iconSource,
     expandable: expandable && type == AmalType.numeric && maxValue == 5,
+    genderVisibility: genderVisibility,
+    femaleDeprioritized: femaleDeprioritized,
+    disableDuringSpecialTime: disableDuringSpecialTime,
   );
 }
 
@@ -187,7 +181,7 @@ class AdminAmalTypeSelector extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Row(
       children: AmalType.values.map((type) {
-        final isSelected = selected == type;
+        final isSelected = type == selected;
         return Expanded(
           child: Padding(
             padding: EdgeInsets.only(
@@ -236,7 +230,65 @@ class AdminAmalTypeSelector extends StatelessWidget {
   }
 }
 
-// --- Icon resolution maps ---
+class AdminGenderVisibilitySelector extends StatelessWidget {
+  const AdminGenderVisibilitySelector({
+    super.key,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final GenderVisibility selected;
+  final ValueChanged<GenderVisibility> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      children: GenderVisibility.values.map((visibility) {
+        final isSelected = visibility == selected;
+        String label;
+        switch (visibility) {
+          case GenderVisibility.all:
+            label = l10n.adminAmalFieldGenderVisibilityAll;
+          case GenderVisibility.maleOnly:
+            label = l10n.adminAmalFieldGenderVisibilityMaleOnly;
+          case GenderVisibility.femaleOnly:
+            label = l10n.adminAmalFieldGenderVisibilityFemaleOnly;
+        }
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: visibility == GenderVisibility.femaleOnly ? 0 : 8.w,
+            ),
+            child: InkWell(
+              onTap: () => onChanged(visibility),
+              borderRadius: BorderRadius.circular(99.r),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.goldCard : AppColors.cardDark,
+                  borderRadius: BorderRadius.circular(99.r),
+                  border: Border.all(
+                    color: isSelected ? AppColors.gold : AppColors.cardBorder,
+                  ),
+                ),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.pill(context).copyWith(
+                    color: isSelected
+                        ? AppColors.gold
+                        : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
 
 final Map<String, IconData> kFontAwesomeIconMap = {
   'fa_mosque': FontAwesomeIcons.mosque.data,

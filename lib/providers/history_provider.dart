@@ -5,9 +5,7 @@ import '../core/services/islamic_date_service.dart';
 import '../core/services/local_storage_service.dart';
 import '../core/utils/amal_edit_debug.dart';
 import '../core/utils/history_month_calculator.dart';
-import '../core/utils/score_calculator.dart';
 import '../core/utils/streak_helper.dart';
-import '../core/constants/default_amal_fields.dart';
 import '../models/amal_log_model.dart';
 import '../models/user_model.dart';
 import 'amal_fields_provider.dart';
@@ -89,8 +87,6 @@ final historyMonthSummaryProvider =
 ) {
   final logsAsync = ref.watch(historyMonthProvider(input.monthKey));
   final fields = ref.watch(amalFieldsListProvider);
-  final maxScore =
-      getMaxScore(fields).clamp(1, kDefaultMaxDailyScore);
   final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
   final accountCreatedHijri =
       IslamicDateService.hijriStorageForAccountCreated(input.accountCreatedAt);
@@ -109,7 +105,6 @@ final historyMonthSummaryProvider =
         todayStr: todayStr,
         accountCreatedHijri: accountCreatedHijri,
         daysInMonth: daysInMonth,
-        maxScore: maxScore,
         locale: input.locale,
       ),
     ),

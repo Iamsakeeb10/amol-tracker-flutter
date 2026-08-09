@@ -5400,6 +5400,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Describe your feedback...'**
   String get feedbackContentHint;
+
+  /// No description provided for @personalizationSection.
+  ///
+  /// In en, this message translates to:
+  /// **'PERSONALIZATION'**
+  String get personalizationSection;
+
+  /// No description provided for @settingsGender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get settingsGender;
+
+  /// No description provided for @genderSelectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your gender'**
+  String get genderSelectionTitle;
+
+  /// No description provided for @genderSelectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your amal list will be arranged based on your selection. You can change it later from Settings.'**
+  String get genderSelectionSubtitle;
+
+  /// No description provided for @genderMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get genderMale;
+
+  /// No description provided for @genderFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get genderFemale;
+
+  /// No description provided for @genderConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get genderConfirm;
+
+  /// No description provided for @genderSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now'**
+  String get genderSkip;
+
+  /// No description provided for @specialTimeToggleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Time'**
+  String get specialTimeToggleTitle;
+
+  /// No description provided for @specialTimeToggleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prioritize essential amals during certain times'**
+  String get specialTimeToggleSubtitle;
+
+  /// No description provided for @optionalAmalSection.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} optional amals'**
+  String optionalAmalSection(int count);
+
+  /// No description provided for @optionalAmalSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional Amal'**
+  String get optionalAmalSectionTitle;
+
+  /// No description provided for @optionalAmalSectionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fine even without congregation'**
+  String get optionalAmalSectionHint;
+
+  /// No description provided for @inactiveSpecialTimeSection.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} inactive during special time'**
+  String inactiveSpecialTimeSection(int count);
+
+  /// No description provided for @inactiveSpecialTimeExcusedSection.
+  ///
+  /// In en, this message translates to:
+  /// **'The following amals are excused during this time.'**
+  String get inactiveSpecialTimeExcusedSection;
+
+  /// No description provided for @adminAmalFieldPersonalizationSection.
+  ///
+  /// In en, this message translates to:
+  /// **'PERSONALIZATION'**
+  String get adminAmalFieldPersonalizationSection;
+
+  /// No description provided for @adminAmalFieldGenderVisibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender visibility'**
+  String get adminAmalFieldGenderVisibility;
+
+  /// No description provided for @adminAmalFieldGenderVisibilityAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get adminAmalFieldGenderVisibilityAll;
+
+  /// No description provided for @adminAmalFieldGenderVisibilityMaleOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Male only'**
+  String get adminAmalFieldGenderVisibilityMaleOnly;
+
+  /// No description provided for @adminAmalFieldGenderVisibilityFemaleOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Female only'**
+  String get adminAmalFieldGenderVisibilityFemaleOnly;
+
+  /// No description provided for @adminAmalFieldFemaleDeprioritized.
+  ///
+  /// In en, this message translates to:
+  /// **'Female deprioritized'**
+  String get adminAmalFieldFemaleDeprioritized;
+
+  /// No description provided for @adminAmalFieldFemaleDeprioritizedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce this amal\'s points in score calculation for female users'**
+  String get adminAmalFieldFemaleDeprioritizedSubtitle;
+
+  /// No description provided for @adminAmalFieldDisableDuringSpecialTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable during special time'**
+  String get adminAmalFieldDisableDuringSpecialTime;
+
+  /// No description provided for @adminAmalFieldDisableDuringSpecialTimeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide this amal from users during special time periods'**
+  String get adminAmalFieldDisableDuringSpecialTimeSubtitle;
+
+  /// No description provided for @reportsSpecialTimeLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Special time day'**
+  String get reportsSpecialTimeLegend;
+
+  /// No description provided for @reportsSpecialTimeLegendHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Muted bars were logged during special time'**
+  String get reportsSpecialTimeLegendHint;
 }
 
 class _AppLocalizationsDelegate

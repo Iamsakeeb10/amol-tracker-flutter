@@ -16,7 +16,24 @@ const _logMetadataKeys = <String>{
   'editedAt',
   'editCount',
   'prayers',
+  'maxScore',
+  'activeFieldIds',
+  'specialTimeApplied',
+  'gender',
 };
+
+const List<String> kLegacyActiveFieldIds = [
+  'fard_salah',
+  'fard',
+  'takbir',
+  'morning_azkar',
+  'evening_azkar',
+  'quran',
+  'mulk',
+  'miswak',
+  'sunnah',
+  'post_azkar',
+];
 
 Map<String, dynamic> _togglesFromSource(Map<String, dynamic> src) {
   final togglesRaw = src['toggles'];
@@ -58,6 +75,16 @@ Map<String, List<int>> _parsePrayers(dynamic raw) {
   return result;
 }
 
+/// Parses the `activeFieldIds` list stored in Firestore or Hive.
+/// Falls back to [kLegacyActiveFieldIds] when absent or malformed.
+List<String> _parseActiveFieldIds(dynamic raw) {
+  if (raw is List) {
+    final ids = raw.map((e) => e.toString()).toList();
+    if (ids.isNotEmpty) return ids;
+  }
+  return List<String>.from(kLegacyActiveFieldIds);
+}
+
 Map<String, dynamic> normalizeTogglesForFields(
   Map<String, dynamic> src,
   List<AmalField> fields,
@@ -87,6 +114,10 @@ class AmalLogModel {
     this.editedAt,
     this.editCount = 0,
     this.prayers = const <String, List<int>>{},
+    this.maxScore = 100,
+    this.activeFieldIds = kLegacyActiveFieldIds,
+    this.specialTimeApplied = false,
+    this.gender,
   });
 
   final String uid;
@@ -106,6 +137,20 @@ class AmalLogModel {
   /// 1 = Dhuhr, 2 = Asr, 3 = Maghrib, 4 = Isha).
   /// Empty for old logs that pre-date this feature.
   final Map<String, List<int>> prayers;
+
+  /// Maximum achievable score for this log (policy-derived at submit time).
+  /// Legacy logs default to 100.
+  final int maxScore;
+
+  /// IDs of the fields that were active (contributed to score) at submit time.
+  /// Legacy logs default to all 10 default fields.
+  final List<String> activeFieldIds;
+
+  /// Whether special-time rules were active when this log was submitted.
+  final bool specialTimeApplied;
+  
+  /// Gender of the user at the time of submission.
+  final String? gender;
 
   String get docId => '${uid}_$hijriDate';
 
@@ -129,6 +174,10 @@ class AmalLogModel {
           : null,
       editCount: (data['editCount'] as num?)?.toInt() ?? 0,
       prayers: _parsePrayers(data['prayers']),
+      maxScore: (data['maxScore'] as num?)?.toInt() ?? 100,
+      activeFieldIds: _parseActiveFieldIds(data['activeFieldIds']),
+      specialTimeApplied: (data['specialTimeApplied'] as bool?) ?? false,
+      gender: data['gender'] as String?,
     );
   }
 
@@ -155,6 +204,10 @@ class AmalLogModel {
           : null,
       editCount: (map['editCount'] as num?)?.toInt() ?? 0,
       prayers: _parsePrayers(map['prayers']),
+      maxScore: (map['maxScore'] as num?)?.toInt() ?? 100,
+      activeFieldIds: _parseActiveFieldIds(map['activeFieldIds']),
+      specialTimeApplied: (map['specialTimeApplied'] as bool?) ?? false,
+      gender: map['gender'] as String?,
     );
   }
 
@@ -180,6 +233,10 @@ class AmalLogModel {
         for (final e in prayers.entries) e.key: List<int>.from(e.value),
       };
     }
+    out['maxScore'] = maxScore;
+    out['activeFieldIds'] = List<String>.from(activeFieldIds);
+    out['specialTimeApplied'] = specialTimeApplied;
+    if (gender != null) out['gender'] = gender;
     return out;
   }
 
@@ -201,6 +258,10 @@ class AmalLogModel {
         for (final e in prayers.entries) e.key: List<int>.from(e.value),
       };
     }
+    out['maxScore'] = maxScore;
+    out['activeFieldIds'] = List<String>.from(activeFieldIds);
+    out['specialTimeApplied'] = specialTimeApplied;
+    if (gender != null) out['gender'] = gender;
     return out;
   }
 
@@ -221,6 +282,10 @@ class AmalLogModel {
         'prayers': <String, dynamic>{
           for (final e in prayers.entries) e.key: List<int>.from(e.value),
         },
+      'maxScore': maxScore,
+      'activeFieldIds': List<String>.from(activeFieldIds),
+      'specialTimeApplied': specialTimeApplied,
+      if (gender != null) 'gender': gender,
     };
   }
 }

@@ -110,7 +110,28 @@ final communitySheetProvider =
 
 final activityFeedProvider = StreamProvider.autoDispose<List<ActivityFeedItemModel>>((ref) {
   final fs = ref.read(firestoreServiceProvider);
-  return fs.activityFeedStream();
+  final currentUserGender = ref.watch(currentUserProvider).asData?.value?.gender;
+  
+  // Fetch up to 100 items, then filter locally, taking up to 25.
+  // This avoids empty lists if we can't do server-side filtering on actorGender.
+  return fs.activityFeedStream(limit: 100).asyncMap((items) async {
+    final users = await fs.usersByIds(items.map((item) => item.actorUid ?? ''));
+    final filtered = <ActivityFeedItemModel>[];
+    for (final item in items) {
+      if (item.actorUid != null) {
+        final actor = users[item.actorUid];
+        if (currentUserGender != null && actor?.gender != null && actor?.gender != currentUserGender) {
+          continue;
+        }
+        if (currentUserGender != null && actor?.gender == null) {
+          continue;
+        }
+      }
+      filtered.add(item);
+      if (filtered.length >= 25) break;
+    }
+    return filtered;
+  });
 });
 
 class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
@@ -206,9 +227,12 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
     state = state.copyWith(isLoadingMore: true, clearError: true);
     try {
       final fs = _ref.read(firestoreServiceProvider);
+      final currentUserGender = _ref.read(currentUserProvider).asData?.value?.gender;
+      
       final page = await fs.communityDayFetch(
         state.selectedDate,
         startAfter: state.lastDoc,
+        genderFilter: currentUserGender,
       );
       final merged = <AmalLogModel>[
         ...state.rows,
@@ -254,7 +278,11 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
     );
     Future<void>.microtask(() async {
       try {
-        final firstPage = await fs.communityDayFetch(today);
+        final currentUserGender = _ref.read(currentUserProvider).asData?.value?.gender;
+        final firstPage = await fs.communityDayFetch(
+          today, 
+          genderFilter: currentUserGender,
+        );
         if (mounted && state.selectedDate == today) {
           state = state.copyWith(
             hasMore: firstPage.rows.length == 20,
@@ -268,7 +296,9 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
         }
       }
     });
-    _todaySub = fs.communityDayStream(today).listen(
+    
+    final currentUserGender = _ref.read(currentUserProvider).asData?.value?.gender;
+    _todaySub = fs.communityDayStream(today, genderFilter: currentUserGender).listen(
       (rows) {
         _liveTopRows = rows;
         _rebuildFromLiveAndPaged();
@@ -287,7 +317,12 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
   Future<void> _fetchFirstPage() async {
     try {
       final fs = _ref.read(firestoreServiceProvider);
-      final page = await fs.communityDayFetch(state.selectedDate);
+      final currentUserGender = _ref.read(currentUserProvider).asData?.value?.gender;
+      
+      final page = await fs.communityDayFetch(
+        state.selectedDate,
+        genderFilter: currentUserGender,
+      );
       _pagedRows = page.rows;
       state = state.copyWith(
         rows: page.rows,
@@ -312,7 +347,12 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
     if (!state.isToday || state.lastDoc != null) return;
     try {
       final fs = _ref.read(firestoreServiceProvider);
-      final firstPage = await fs.communityDayFetch(state.selectedDate);
+      final currentUserGender = _ref.read(currentUserProvider).asData?.value?.gender;
+      
+      final firstPage = await fs.communityDayFetch(
+        state.selectedDate,
+        genderFilter: currentUserGender,
+      );
       if (!mounted) return;
       state = state.copyWith(
         hasMore: firstPage.rows.length == 20,

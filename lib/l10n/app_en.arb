@@ -1486,5 +1486,15 @@
   "adminAmalFieldDisableDuringSpecialTime": "Disable during special time",
   "adminAmalFieldDisableDuringSpecialTimeSubtitle": "Hide this amal from users during special time periods",
   "reportsSpecialTimeLegend": "Special time day",
-  "reportsSpecialTimeLegendHint": "Muted bars were logged during special time"
+  "reportsSpecialTimeLegendHint": "Muted bars were logged during special time",
+  "battleTeaserTitle": "Coming soon: Challenge your friends 🏆",
+  "battleTeaserSubtitle": "Quiz battles on Quran, Hadith, Seerah & more — quick, fun, and a great way to learn together.",
+  "battleTeaserYes": "Sounds great!",
+  "battleTeaserNo": "Not interested",
+  "adminKnowledgeBattleTitle": "Knowledge Battle Stats",
+  "adminKnowledgeBattleSeen": "Seen",
+  "adminKnowledgeBattleInterested": "Interested",
+  "adminKnowledgeBattleNotInterested": "Not Interested",
+  "adminKnowledgeBattleDismissed": "Dismissed",
+  "adminKnowledgeBattleInterestRate": "Interest Rate"
 }

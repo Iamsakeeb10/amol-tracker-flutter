@@ -1430,5 +1430,15 @@
   "adminAmalFieldDisableDuringSpecialTime": "বিশেষ ওজরের সময় বন্ধ রাখুন",
   "adminAmalFieldDisableDuringSpecialTimeSubtitle": "বিশেষ ওজরের সময়ে এই আমল ব্যবহারকারীদের কাছে দেখাবে না",
   "reportsSpecialTimeLegend": "বিশেষ ওজরের সময়ের দিন",
-  "reportsSpecialTimeLegendHint": "ম্লান বারগুলো বিশেষ ওজরের সময়ে লগ করা হয়েছিল"
+  "reportsSpecialTimeLegendHint": "ম্লান বারগুলো বিশেষ ওজরের সময়ে লগ করা হয়েছিল",
+  "battleTeaserTitle": "শীঘ্রই আসছে: ফ্রেন্ডদের চ্যালেঞ্জ করুন 🏆",
+  "battleTeaserSubtitle": "কুরআন, হাদিস, সীরাহ ও আরও অনেক বিষয়ে কুইজ ব্যাটেল — মজার, দ্রুত, আর একসাথে শেখার দারুণ একটা উপায়।",
+  "battleTeaserYes": "দারুণ হবে!",
+  "battleTeaserNo": "ভালো হবে না",
+  "adminKnowledgeBattleTitle": "নলেজ ব্যাটেল স্ট্যাটস",
+  "adminKnowledgeBattleSeen": "দেখেছেন",
+  "adminKnowledgeBattleInterested": "আগ্রহী",
+  "adminKnowledgeBattleNotInterested": "আগ্রহী নয়",
+  "adminKnowledgeBattleDismissed": "কেটে দিয়েছেন",
+  "adminKnowledgeBattleInterestRate": "আগ্রহের হার"
 }

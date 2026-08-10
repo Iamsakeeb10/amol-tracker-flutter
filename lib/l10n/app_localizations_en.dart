@@ -2984,4 +2984,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get reportsSpecialTimeLegendHint =>
       'Muted bars were logged during special time';
+
+  @override
+  String get battleTeaserTitle => 'Coming soon: Challenge your friends 🏆';
+
+  @override
+  String get battleTeaserSubtitle =>
+      'Quiz battles on Quran, Hadith, Seerah & more — quick, fun, and a great way to learn together.';
+
+  @override
+  String get battleTeaserYes => 'Sounds great!';
+
+  @override
+  String get battleTeaserNo => 'Not interested';
+
+  @override
+  String get adminKnowledgeBattleTitle => 'Knowledge Battle Stats';
+
+  @override
+  String get adminKnowledgeBattleSeen => 'Seen';
+
+  @override
+  String get adminKnowledgeBattleInterested => 'Interested';
+
+  @override
+  String get adminKnowledgeBattleNotInterested => 'Not Interested';
+
+  @override
+  String get adminKnowledgeBattleDismissed => 'Dismissed';
+
+  @override
+  String get adminKnowledgeBattleInterestRate => 'Interest Rate';
 }

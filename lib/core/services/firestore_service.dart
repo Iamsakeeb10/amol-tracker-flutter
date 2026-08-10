@@ -994,6 +994,53 @@ class FirestoreService {
     return list;
   }
 
+  // ── Knowledge Battle Validation ──────────────────────────────────────
+
+  CollectionReference<Map<String, dynamic>> get _battleInterest =>
+      _firestore.collection('battleInterest');
+
+  Future<bool> hasRespondedToBattleTeaser(String uid) async {
+    if (uid.isEmpty) return false;
+    final doc = await _battleInterest.doc(uid).get();
+    return doc.exists;
+  }
+
+  Future<void> saveBattleInterest({
+    required String uid,
+    required String response,
+    required String locale,
+  }) async {
+    if (uid.isEmpty) return;
+    await _battleInterest.doc(uid).set(<String, dynamic>{
+      'uid': uid,
+      'response': response,
+      'respondedAt': FieldValue.serverTimestamp(),
+      'locale': locale,
+    });
+  }
+
+  Future<Map<String, int>> getBattleInterestMetrics() async {
+    final query = await _battleInterest.get();
+    int yes = 0;
+    int no = 0;
+    int dismissed = 0;
+    for (final doc in query.docs) {
+      final response = doc.data()['response'] as String?;
+      if (response == 'yes') {
+        yes++;
+      } else if (response == 'no') {
+        no++;
+      } else if (response == 'dismissed') {
+        dismissed++;
+      }
+    }
+    return {
+      'yes': yes,
+      'no': no,
+      'dismissed': dismissed,
+    };
+  }
+
   // ── App Config (version update) ──────────────────────────────────────
 
   CollectionReference<Map<String, dynamic>> get _appConfigs =>

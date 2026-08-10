@@ -2990,4 +2990,35 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get reportsSpecialTimeLegendHint =>
       'ম্লান বারগুলো বিশেষ ওজরের সময়ে লগ করা হয়েছিল';
+
+  @override
+  String get battleTeaserTitle => 'শীঘ্রই আসছে: ফ্রেন্ডদের চ্যালেঞ্জ করুন 🏆';
+
+  @override
+  String get battleTeaserSubtitle =>
+      'কুরআন, হাদিস, সীরাহ ও আরও অনেক বিষয়ে কুইজ ব্যাটেল — মজার, দ্রুত, আর একসাথে শেখার দারুণ একটা উপায়।';
+
+  @override
+  String get battleTeaserYes => 'দারুণ হবে!';
+
+  @override
+  String get battleTeaserNo => 'ভালো হবে না';
+
+  @override
+  String get adminKnowledgeBattleTitle => 'নলেজ ব্যাটেল স্ট্যাটস';
+
+  @override
+  String get adminKnowledgeBattleSeen => 'দেখেছেন';
+
+  @override
+  String get adminKnowledgeBattleInterested => 'আগ্রহী';
+
+  @override
+  String get adminKnowledgeBattleNotInterested => 'আগ্রহী নয়';
+
+  @override
+  String get adminKnowledgeBattleDismissed => 'কেটে দিয়েছেন';
+
+  @override
+  String get adminKnowledgeBattleInterestRate => 'আগ্রহের হার';
 }

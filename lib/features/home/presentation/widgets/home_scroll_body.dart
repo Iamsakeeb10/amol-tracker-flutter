@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/constants/amal_fields.dart';
+import '../../../../core/services/local_storage_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -10,6 +11,7 @@ import '../../../../models/user_model.dart';
 import '../../../../providers/amal_expansion_provider.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
+import '../../../../providers/battle_teaser_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../providers/auth_provider.dart';
 import 'home_editing_amal_sliver.dart';
@@ -226,6 +228,56 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                             ),
                           ],
                           SliverToBoxAdapter(child: SizedBox(height: 14.h)),
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final showTeaserAsync = ref.watch(showBattleTeaserProvider(widget.uid));
+                              return showTeaserAsync.when(
+                                data: (show) {
+                                  if (!show) return const SliverToBoxAdapter(child: SizedBox.shrink());
+                                  return SliverMainAxisGroup(
+                                    slivers: [
+                                      SliverToBoxAdapter(
+                                        child: KnowledgeBattleBanner(
+                                          l10n: l10n,
+                                          locale: widget.locale,
+                                          onYes: () async {
+                                            await LocalStorageService.saveHasSeenBattleTeaser(true);
+                                            await ref.read(firestoreServiceProvider).saveBattleInterest(
+                                              uid: widget.uid,
+                                              response: 'yes',
+                                              locale: widget.locale,
+                                            );
+                                            ref.invalidate(showBattleTeaserProvider(widget.uid));
+                                          },
+                                          onNo: () async {
+                                            await LocalStorageService.saveHasSeenBattleTeaser(true);
+                                            await ref.read(firestoreServiceProvider).saveBattleInterest(
+                                              uid: widget.uid,
+                                              response: 'no',
+                                              locale: widget.locale,
+                                            );
+                                            ref.invalidate(showBattleTeaserProvider(widget.uid));
+                                          },
+                                          onDismiss: () async {
+                                            await LocalStorageService.saveHasSeenBattleTeaser(true);
+                                            await ref.read(firestoreServiceProvider).saveBattleInterest(
+                                              uid: widget.uid,
+                                              response: 'dismissed',
+                                              locale: widget.locale,
+                                            );
+                                            ref.invalidate(showBattleTeaserProvider(widget.uid));
+                                          },
+                                        ),
+                                      ),
+                                      SliverToBoxAdapter(child: SizedBox(height: 14.h)),
+                                    ],
+                                  );
+                                },
+                                loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                              );
+                            },
+                          ),
                           const HomeQuickNavSection(),
                           SliverToBoxAdapter(child: SizedBox(height: 14.h)),
                           if (widget.isSubmitted)

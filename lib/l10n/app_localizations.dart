@@ -5556,6 +5556,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Muted bars were logged during special time'**
   String get reportsSpecialTimeLegendHint;
+
+  /// No description provided for @battleTeaserTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon: Challenge your friends 🏆'**
+  String get battleTeaserTitle;
+
+  /// No description provided for @battleTeaserSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz battles on Quran, Hadith, Seerah & more — quick, fun, and a great way to learn together.'**
+  String get battleTeaserSubtitle;
+
+  /// No description provided for @battleTeaserYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Sounds great!'**
+  String get battleTeaserYes;
+
+  /// No description provided for @battleTeaserNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Not interested'**
+  String get battleTeaserNo;
+
+  /// No description provided for @adminKnowledgeBattleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Knowledge Battle Stats'**
+  String get adminKnowledgeBattleTitle;
+
+  /// No description provided for @adminKnowledgeBattleSeen.
+  ///
+  /// In en, this message translates to:
+  /// **'Seen'**
+  String get adminKnowledgeBattleSeen;
+
+  /// No description provided for @adminKnowledgeBattleInterested.
+  ///
+  /// In en, this message translates to:
+  /// **'Interested'**
+  String get adminKnowledgeBattleInterested;
+
+  /// No description provided for @adminKnowledgeBattleNotInterested.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Interested'**
+  String get adminKnowledgeBattleNotInterested;
+
+  /// No description provided for @adminKnowledgeBattleDismissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismissed'**
+  String get adminKnowledgeBattleDismissed;
+
+  /// No description provided for @adminKnowledgeBattleInterestRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest Rate'**
+  String get adminKnowledgeBattleInterestRate;
 }
 
 class _AppLocalizationsDelegate

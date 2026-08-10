@@ -9,6 +9,7 @@ export 'home_progress_card.dart';
 export 'home_quick_nav_section.dart';
 export 'home_top_performers.dart';
 export 'home_submitted_amal_sliver.dart';
+export 'knowledge_battle_banner.dart';
 abstract final class HomeUiColors {
   static final offlineBannerBg =
       AppColors.warningLight.withValues(alpha: 0.35);

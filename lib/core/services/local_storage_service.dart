@@ -182,4 +182,14 @@ class LocalStorageService {
       return <int>{};
     }
   }
+  static const String _hasSeenBattleTeaserKey = 'has_seen_battle_teaser';
+
+  static Future<void> saveHasSeenBattleTeaser(bool value) async {
+    await _prefs.put(_hasSeenBattleTeaserKey, value);
+  }
+
+  static bool getHasSeenBattleTeaser() {
+    final value = _prefs.get(_hasSeenBattleTeaserKey);
+    return value is bool ? value : false;
+  }
 }

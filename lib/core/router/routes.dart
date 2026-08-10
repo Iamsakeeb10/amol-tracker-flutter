@@ -102,6 +102,7 @@ class AppRoutes {
 
   static const adminAppConfigList = '/admin/app-configs';
   static const adminAppConfigForm = '/admin/app-config-form';
+  static const adminKnowledgeBattle = '/admin/knowledge-battle';
 
   static String adminLessonsPath(String courseId) =>
       '/admin/courses/$courseId/lessons';

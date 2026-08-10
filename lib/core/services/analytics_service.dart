@@ -581,6 +581,18 @@ class AnalyticsService {
     await _analytics.logEvent(name: 'gender_skipped');
   }
 
+  // -- Battle Teaser --
+  Future<void> logBattleTeaserAction({
+    required String action, // impression, yes, no, dismissed
+    required String locale,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'battle_teaser_$action',
+      parameters: {'locale': locale},
+    );
+  }
+
   // -- User properties --
   Future<void> updateUserProperties({
     required int currentStreak,

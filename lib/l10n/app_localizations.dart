@@ -632,6 +632,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @readAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get readAction;
+
   /// No description provided for @more.
   ///
   /// In en, this message translates to:

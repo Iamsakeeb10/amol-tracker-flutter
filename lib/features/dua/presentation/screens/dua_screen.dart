@@ -90,6 +90,9 @@ class _DuaScreenState extends ConsumerState<DuaScreen>
           builder: (_) => DuaSubCategoriesScreen(category: resolvedCategory),
         ),
       );
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
     } catch (_) {
       // Keep the main dua screen visible if category navigation fails.
     }

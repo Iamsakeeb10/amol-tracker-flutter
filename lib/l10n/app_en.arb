@@ -99,6 +99,7 @@
   "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.",
   "deleteAccountFailed": "Failed to delete account. You may need to sign in again.",
   "cancel": "Cancel",
+  "readAction": "Read",
   "more": "MORE",
   "navHome": "Home",
   "navHistory": "History",

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/router/routes.dart';
 
 import '../../../../core/constants/amal_fields.dart';
 import '../../../../core/theme/colors.dart';
@@ -133,26 +136,73 @@ Future<void> showHomeAmalDetailsDialog(
                 ],
               ),
               SizedBox(height: 14.h),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.gold,
-                    side: const BorderSide(color: AppColors.goldBorder),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.gold,
+                        side: const BorderSide(color: AppColors.goldBorder),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 11.h),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          l10n.cancel,
+                          style: AppTextStyles.button(context).copyWith(
+                            color: AppColors.gold,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
-                    padding: EdgeInsets.symmetric(vertical: 11.h),
                   ),
-                  child: Text(
-                    l10n.cancel,
-                    style: AppTextStyles.button(context).copyWith(
-                      color: AppColors.gold,
-                      fontWeight: FontWeight.w600,
+                  if (field.id == 'morning_azkar' ||
+                      field.id == 'evening_azkar' ||
+                      field.id == 'quran' ||
+                      field.id == 'mulk') ...[
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                          if (field.id == 'morning_azkar' || field.id == 'evening_azkar') {
+                            context.push(
+                              AppRoutes.dua,
+                              extra: 'morning-and-evening',
+                            );
+                          } else if (field.id == 'quran') {
+                            context.push(AppRoutes.quran);
+                          } else if (field.id == 'mulk') {
+                            context.push(AppRoutes.quranSurahScrollPath(67));
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          foregroundColor: AppColors.emeraldDeep,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 11.h),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            l10n.readAction,
+                            style: AppTextStyles.button(context).copyWith(
+                              color: AppColors.emeraldDeep,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  ],
+                ],
               ),
             ],
           ),

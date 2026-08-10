@@ -296,6 +296,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get cancel => 'ক্যানসেল';
 
   @override
+  String get readAction => 'পড়ুন';
+
+  @override
   String get more => 'আরও';
 
   @override

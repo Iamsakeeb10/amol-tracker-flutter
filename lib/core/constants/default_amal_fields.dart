@@ -54,9 +54,9 @@ const List<AmalField> kDefaultAmalFields = [
     id: 'takbir',
     label: {'en': 'Takbir-e-Ula', 'bn': 'তাকবীরে উলা'},
     sublabel: {
-      'en': 'Fard with takbir-e-ula in congregation',
-      'bn': 'তাকবীরে উলার সাথে জামাতে মোট ফরয নামাজ',
-    },
+  'en': 'Joining the congregation with the imam\'s first takbir, or when he says "Allahu Akbar".',
+  'bn': 'ইমামের প্রথম তাকবীর বা “আল্লাহু আকবার” বলার সাথে জামাতে যোগ দেওয়া',
+},
     points: 10,
     maxValue: 5,
     type: AmalType.numeric,

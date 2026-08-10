@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/amal_entry_policy.dart';
@@ -72,6 +73,8 @@ class HomeSpecialTimeToggle extends ConsumerWidget {
   Future<void> _setSpecialTimeActive(WidgetRef ref, bool value) async {
     final uid = ref.read(authStateProvider).asData?.value?.uid;
     if (uid == null) return;
+    AnalyticsService.instance.logSpecialTimeToggled(enabled: value);
+    AnalyticsService.instance.logMessage('Special time toggled from home progress bar: $value');
     await ref
         .read(firestoreServiceProvider)
         .updateUserGenderPreferences(uid, specialTimeActive: value);

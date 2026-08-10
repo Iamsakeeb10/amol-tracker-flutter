@@ -612,6 +612,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ? (me!.gender == 'male' ? l10n.genderMale : l10n.genderFemale)
                       : null,
                   onTap: () {
+                    AnalyticsService.instance.logGenderSettingsOpened();
+                    AnalyticsService.instance.logMessage('Gender settings opened');
                     showDialog<void>(
                       context: context,
                       barrierDismissible: true,

@@ -67,8 +67,13 @@ class AnalyticsService {
   }
 
   // ---------------------------------------------------------------------------
-  // Non-fatal error recording
+  // Non-fatal error recording & custom logs
   // ---------------------------------------------------------------------------
+
+  void logMessage(String message) {
+    if (!_enabled) return;
+    unawaited(_crashlytics.log(message));
+  }
 
   Future<void> recordError(
     Object error,
@@ -283,6 +288,19 @@ class AnalyticsService {
       name: 'anonymous_mode_changed',
       parameters: {'enabled': enabled},
     );
+  }
+
+  Future<void> logSpecialTimeToggled({required bool enabled}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'special_time_toggled',
+      parameters: {'enabled': enabled},
+    );
+  }
+
+  Future<void> logGenderSettingsOpened() async {
+    if (!_enabled) return;
+    await _analytics.logEvent(name: 'gender_settings_opened');
   }
 
   // -- Search --

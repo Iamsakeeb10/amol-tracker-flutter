@@ -123,6 +123,7 @@ class _GenderSelectionModalState extends ConsumerState<GenderSelectionModal> {
                                 final navigator = Navigator.of(context);
                                 final isMale =
                                     _selected == UserAmalProfile.male;
+                                AnalyticsService.instance.logMessage('Gender selected: ${isMale ? 'male' : 'female'}');
                                 await ref
                                     .read(firestoreServiceProvider)
                                     .updateUserGenderPreferences(
@@ -153,6 +154,7 @@ class _GenderSelectionModalState extends ConsumerState<GenderSelectionModal> {
                       TextButton(
                         onPressed: () async {
                           AnalyticsService.instance.logGenderSkipped();
+                          AnalyticsService.instance.logMessage('Gender prompt skipped');
                           final uid = ref
                               .read(authStateProvider)
                               .asData

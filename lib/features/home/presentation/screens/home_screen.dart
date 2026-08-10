@@ -176,6 +176,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       if (latestUser.amalProfile != UserAmalProfile.unset) return;
 
       _isGenderDialogOpen = true;
+      AnalyticsService.instance.logMessage('Gender prompt automatically shown on home screen');
       showDialog<void>(
         context: context,
         barrierDismissible: false,

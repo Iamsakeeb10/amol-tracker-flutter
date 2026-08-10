@@ -10,9 +10,14 @@ import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 
 class GenderSelectionModal extends ConsumerStatefulWidget {
-  const GenderSelectionModal({super.key, this.isRequired = false});
+  const GenderSelectionModal({
+    super.key,
+    this.isRequired = false,
+    this.customSubtitle,
+  });
 
   final bool isRequired;
+  final String? customSubtitle;
 
   @override
   ConsumerState<GenderSelectionModal> createState() =>
@@ -59,16 +64,17 @@ class _GenderSelectionModalState extends ConsumerState<GenderSelectionModal> {
                   style: AppTextStyles.headlineMedium(context),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
-                child: Text(
-                  l10n.genderSelectionSubtitle,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyMedium(
-                    context,
-                  ).copyWith(color: AppColors.textSecondary),
+              if (widget.customSubtitle != '')
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+                  child: Text(
+                    widget.customSubtitle ?? l10n.genderSelectionSubtitle,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodyMedium(
+                      context,
+                    ).copyWith(color: AppColors.textSecondary),
+                  ),
                 ),
-              ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Row(

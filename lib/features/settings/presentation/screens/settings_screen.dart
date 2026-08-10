@@ -616,7 +616,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       context: context,
                       barrierDismissible: true,
                       barrierColor: Colors.black.withValues(alpha: 0.54),
-                      builder: (_) => const GenderSelectionModal(),
+                      builder: (_) => const GenderSelectionModal(
+                        customSubtitle: '',
+                      ),
                     );
                   },
                 ),

@@ -2925,13 +2925,13 @@ class AppLocalizationsBn extends AppLocalizations {
   String get genderConfirm => 'নিশ্চিত করুন';
 
   @override
-  String get genderSkip => 'এখনো এড়িয়ে যান';
+  String get genderSkip => 'এড়িয়ে যান';
 
   @override
   String get specialTimeToggleTitle => 'বিশেষ ওজরের সময়';
 
   @override
-  String get specialTimeToggleSubtitle => 'নির্দিষ্ট সময়ে প্রাধান্যামূলক আমল';
+  String get specialTimeToggleSubtitle => 'বিশেষ ওজরে কিছু আমল প্রযোজ্য নয়';
 
   @override
   String optionalAmalSection(int count) {

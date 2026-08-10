@@ -251,7 +251,6 @@ class AmalNotifier extends StateNotifier<AmalState> {
         if (!mounted) return;
         if (state.isSubmitted) return;
         final nextIds = next.activeFieldIds;
-        if (listEquals(state.activeFieldIds, nextIds)) return;
         final nextToggles = normalizeTogglesForFields(state.toggles, state.fields);
         state = state.copyWith(
           toggles: nextToggles,

@@ -1397,9 +1397,9 @@
   "genderMale": "পুরুষ",
   "genderFemale": "মহিলা",
   "genderConfirm": "নিশ্চিত করুন",
-  "genderSkip": "এখনো এড়িয়ে যান",
+  "genderSkip": "এড়িয়ে যান",
   "specialTimeToggleTitle": "বিশেষ ওজরের সময়",
-  "specialTimeToggleSubtitle": "নির্দিষ্ট সময়ে প্রাধান্যামূলক আমল",
+  "specialTimeToggleSubtitle": "বিশেষ ওজরে কিছু আমল প্রযোজ্য নয়",
   "optionalAmalSection": "{count} ঐচ্ছিক আমল",
   "@optionalAmalSection": {
     "placeholders": {

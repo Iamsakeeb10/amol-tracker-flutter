@@ -34,7 +34,9 @@ final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
 
   final today = IslamicDateService.getCurrentIslamicDateStringSafe();
   final fs = ref.read(firestoreServiceProvider);
+  print('🏆 [DailyLeaderboard] Current user gender: $currentUserGender');
   return fs.communityDayStream(today, genderFilter: currentUserGender).asyncMap((rows) async {
+    print('🏆 [DailyLeaderboard] Fetched ${rows.length} rows from server stream');
     final users = await fs.usersByIds(rows.map((r) => r.uid));
     final entries = <LeaderboardEntry>[];
     for (final row in rows) {
@@ -43,9 +45,17 @@ final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
       if (!showOnLeaderboard) continue;
       
       // Filter by gender locally as a fallback (though the server stream also filters)
-      if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
+      if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) {
+        print('🏆 [DailyLeaderboard] 🚫 Filtering out user ${user?.name} (${user?.uid}) because their gender is ${user?.gender}');
+        continue;
+      }
       // If user gender is completely unknown, we might still want to skip them if we strictly enforce it
-      if (currentUserGender != null && user?.gender == null) continue;
+      if (currentUserGender != null && user?.gender == null) {
+        print('🏆 [DailyLeaderboard] 🚫 Filtering out user ${user?.name} (${user?.uid}) because their gender is NULL');
+        continue;
+      }
+      
+      print('🏆 [DailyLeaderboard] ✅ Including user ${user?.name} (${user?.uid}) - gender: ${user?.gender}');
 
       entries.add(
         LeaderboardEntry(
@@ -74,6 +84,7 @@ final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   );
   final entries = <LeaderboardEntry>[];
   for (final row in rows) {
+    print('🌟 [WeeklyLeaderboard] Current user gender: $currentUserGender');
     final uid = (row['uid'] as String?) ?? '';
     if (uid.isEmpty) continue;
     final user = users[uid];
@@ -81,8 +92,15 @@ final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
     if (!showOnLeaderboard) continue;
 
     // Filter by gender
-    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
-    if (currentUserGender != null && user?.gender == null) continue;
+    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) {
+      print('🌟 [WeeklyLeaderboard] 🚫 Filtering out user ${user?.name} (${uid}) because their gender is ${user?.gender}');
+      continue;
+    }
+    if (currentUserGender != null && user?.gender == null) {
+      print('🌟 [WeeklyLeaderboard] 🚫 Filtering out user ${user?.name} (${uid}) because their gender is NULL');
+      continue;
+    }
+    print('🌟 [WeeklyLeaderboard] ✅ Including user ${user?.name} (${uid}) - gender: ${user?.gender}');
 
     entries.add(
       LeaderboardEntry(
@@ -119,9 +137,17 @@ final monthlyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
     final showOnLeaderboard = user?.showOnLeaderboard ?? true;
     if (!showOnLeaderboard) continue;
 
+    print('🌙 [MonthlyLeaderboard] Current user gender: $currentUserGender');
     // Filter by gender
-    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
-    if (currentUserGender != null && user?.gender == null) continue;
+    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) {
+      print('🌙 [MonthlyLeaderboard] 🚫 Filtering out user ${user?.name} (${uid}) because their gender is ${user?.gender}');
+      continue;
+    }
+    if (currentUserGender != null && user?.gender == null) {
+      print('🌙 [MonthlyLeaderboard] 🚫 Filtering out user ${user?.name} (${uid}) because their gender is NULL');
+      continue;
+    }
+    print('🌙 [MonthlyLeaderboard] ✅ Including user ${user?.name} (${uid}) - gender: ${user?.gender}');
 
     entries.add(
       LeaderboardEntry(
@@ -159,11 +185,21 @@ final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
     final uid = (row['uid'] as String?) ?? '';
     if (uid.isEmpty) continue;
     final user = users[uid];
+    
+    // Local fallback gender filter
+    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) {
+      continue;
+    }
+    if (currentUserGender != null && user?.gender == null) {
+      continue;
+    }
+    
     final showOnLeaderboard = user?.showOnLeaderboard ?? true;
     if (!showOnLeaderboard) continue;
+    
+    // We expect the server stream to filter correctly, but let's log the users it returns
+    print('🔥 [StreakLeaderboard] ✅ Server included user ${user?.name} (${uid}) - gender: ${user?.gender}');
 
-    // Filter by gender
-    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
     if (currentUserGender != null && user?.gender == null) continue;
 
     // Override the current user's score with the live streak value.
@@ -209,8 +245,12 @@ final quizLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
     if (!showOnLeaderboard) continue;
 
     // Filter by gender
-    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
-
+    if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) {
+      continue;
+    }
+    if (currentUserGender != null && user?.gender == null) {
+      continue;
+    }
     entries.add(
       LeaderboardEntry(
         uid: uid,

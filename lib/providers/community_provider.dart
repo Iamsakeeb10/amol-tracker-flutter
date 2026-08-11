@@ -115,17 +115,24 @@ final activityFeedProvider = StreamProvider.autoDispose<List<ActivityFeedItemMod
   // Fetch up to 100 items, then filter locally, taking up to 25.
   // This avoids empty lists if we can't do server-side filtering on actorGender.
   return fs.activityFeedStream(limit: 100).asyncMap((items) async {
+    print('📰 [ActivityFeed] Current user gender: $currentUserGender');
+    print('📰 [ActivityFeed] Fetched ${items.length} raw items from server');
     final users = await fs.usersByIds(items.map((item) => item.actorUid ?? ''));
     final filtered = <ActivityFeedItemModel>[];
     for (final item in items) {
       if (item.actorUid != null) {
         final actor = users[item.actorUid];
         if (currentUserGender != null && actor?.gender != null && actor?.gender != currentUserGender) {
+          print('📰 [ActivityFeed] 🚫 Filtering out activity from ${actor?.name} (${item.actorUid}) because their gender is ${actor?.gender}');
           continue;
         }
         if (currentUserGender != null && actor?.gender == null) {
+          print('📰 [ActivityFeed] 🚫 Filtering out activity from ${actor?.name} (${item.actorUid}) because their gender is NULL');
           continue;
         }
+        print('📰 [ActivityFeed] ✅ Including activity from ${actor?.name} (${item.actorUid}) - gender: ${actor?.gender}');
+      } else {
+        print('📰 [ActivityFeed] ✅ Including system activity (no actorUid)');
       }
       filtered.add(item);
       if (filtered.length >= 25) break;
@@ -298,8 +305,10 @@ class CommunitySheetNotifier extends StateNotifier<CommunitySheetState> {
     });
     
     final currentUserGender = _ref.read(currentUserProvider).asData?.value?.gender;
+    print('🌍 [CommunitySheet] Subscribing to today stream. Current user gender: $currentUserGender');
     _todaySub = fs.communityDayStream(today, genderFilter: currentUserGender).listen(
       (rows) {
+        print('🌍 [CommunitySheet] Received ${rows.length} rows from server stream (filtered by $currentUserGender)');
         _liveTopRows = rows;
         _rebuildFromLiveAndPaged();
         state = state.copyWith(selectedDate: today, isLoading: false, clearError: true);

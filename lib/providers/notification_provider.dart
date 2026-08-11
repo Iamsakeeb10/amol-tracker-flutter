@@ -19,14 +19,19 @@ final notificationsProvider = StreamProvider<List<NotificationModel>>((ref) {
   final fs = ref.read(firestoreServiceProvider);
   
   return fs.notificationStream(uid).map((items) {
+    print('🔔 [Notifications] Current user gender: $currentUserGender');
+    print('🔔 [Notifications] Fetched ${items.length} raw notifications from server');
     return items.where((item) {
       if (item.type == 'dua') {
         if (currentUserGender != null && item.senderGender != null && item.senderGender != currentUserGender) {
+          print('🔔 [Notifications] 🚫 Filtering out dua from sender (${item.senderGender}) because it does not match $currentUserGender');
           return false;
         }
         if (currentUserGender != null && item.senderGender == null) {
+          print('🔔 [Notifications] 🚫 Filtering out dua from sender because senderGender is NULL');
           return false;
         }
+        print('🔔 [Notifications] ✅ Including dua from sender (${item.senderGender})');
         return true; 
       }
       return true;

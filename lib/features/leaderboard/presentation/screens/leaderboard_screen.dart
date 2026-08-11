@@ -232,15 +232,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                       skipLoadingOnReload: false,
                       data: (entries) {
                         if (!_initialLoadComplete) {
-                          if (entries.isNotEmpty) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (mounted) {
-                                setState(() => _initialLoadComplete = true);
-                              }
-                            });
-                          } else {
-                            return [SliverToBoxAdapter(child: _buildLoading())];
-                          }
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              setState(() => _initialLoadComplete = true);
+                            }
+                          });
                         }
                         return _buildDataSlivers(
                           context,
@@ -323,12 +319,43 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     if (entries.isEmpty) {
       return [
         SliverToBoxAdapter(
-          child: CardContainer(
-            child: Text(
-              _isQuiz
-                  ? l10n.leaderboardQuizBeFirst
-                  : l10n.leaderboardBeFirstToday,
-              style: AppTextStyles.bodyLarge(context),
+          child: Padding(
+            padding: EdgeInsets.only(top: 60.h, bottom: 40.h, left: 24.w, right: 24.w),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 88.r,
+                  height: 88.r,
+                  decoration: BoxDecoration(
+                    color: AppColors.cardDark,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    _isQuiz ? Icons.quiz_outlined : Icons.emoji_events_outlined,
+                    color: AppColors.gold,
+                    size: 36.r,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  l10n.noOneYet,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.headlineMedium(context),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  _isQuiz
+                      ? l10n.leaderboardQuizBeFirst
+                      : l10n.leaderboardBeFirstToday,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium(context).copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

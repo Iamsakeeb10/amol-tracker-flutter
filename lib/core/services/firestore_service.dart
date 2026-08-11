@@ -540,9 +540,9 @@ class FirestoreService {
   /// Real-time stream of submitted logs for a Hijri day, sorted by score.
   Stream<List<AmalLogModel>> communityDayStream(String hijriDate, {String? genderFilter}) {
     var query = _amalLogs.where('hijriDate', isEqualTo: hijriDate);
-    // if (genderFilter != null) {
-    //   query = query.where('gender', isEqualTo: genderFilter);
-    // }
+    if (genderFilter != null) {
+      query = query.where('gender', isEqualTo: genderFilter);
+    }
     return query.snapshots().map((snap) {
       final rows = snap.docs.map(AmalLogModel.fromDoc).toList()
         ..sort((a, b) => b.score.compareTo(a.score));
@@ -564,9 +564,9 @@ class FirestoreService {
       var query = _amalLogs
           .where('hijriDate', isEqualTo: hijriDate);
           
-      // if (genderFilter != null) {
-      //   query = query.where('gender', isEqualTo: genderFilter);
-      // }
+      if (genderFilter != null) {
+        query = query.where('gender', isEqualTo: genderFilter);
+      }
       
       query = query.orderBy('score', descending: true)
           .limit(_communityPageSize);
@@ -581,9 +581,9 @@ class FirestoreService {
     } on FirebaseException {
       // Index fallback: query by date and gender, sort client-side, then paginate locally.
       var query = _amalLogs.where('hijriDate', isEqualTo: hijriDate);
-      // if (genderFilter != null) {
-      //   query = query.where('gender', isEqualTo: genderFilter);
-      // }
+      if (genderFilter != null) {
+        query = query.where('gender', isEqualTo: genderFilter);
+      }
       final snap = await query.get();
       final docs = snap.docs.toList()
         ..sort((a, b) {
@@ -609,12 +609,12 @@ class FirestoreService {
   Stream<List<ActivityFeedItemModel>> activityFeedStream({int limit = _activityFeedPageSize, String? genderFilter}) {
     var query = _activityFeed.orderBy('createdAt', descending: true);
     
-    // if (genderFilter != null) {
-    //   // Note: This requires a composite index on actorGender and createdAt.
-    //   query = _activityFeed
-    //       .where('actorGender', isEqualTo: genderFilter)
-    //       .orderBy('createdAt', descending: true);
-    // }
+    if (genderFilter != null) {
+      // Note: This requires a composite index on actorGender and createdAt.
+      query = _activityFeed
+          .where('actorGender', isEqualTo: genderFilter)
+          .orderBy('createdAt', descending: true);
+    }
     
     return query
         .limit(limit)
@@ -775,18 +775,26 @@ class FirestoreService {
     var query = _users
         .orderBy('currentStreak', descending: true);
         
-    // if (genderFilter != null) {
-    //    query = _users
-    //        .where('gender', isEqualTo: genderFilter)
-    //        .orderBy('currentStreak', descending: true);
-    // }
+    if (genderFilter != null) {
+       query = _users
+           .where('gender', isEqualTo: genderFilter)
+           .orderBy('currentStreak', descending: true);
+    }
     
     query = query.limit(_leaderboardPageSize);
 
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
     }
-    final snap = await query.get();
+    
+    QuerySnapshot<Map<String, dynamic>> snap;
+    try {
+      snap = await query.get();
+    } catch (e) {
+      print('🔥 [FirestoreService] streakLeaderboard failed (likely missing index). Returning empty list as fallback. Error: $e');
+      return (rows: <Map<String, dynamic>>[], lastDoc: null);
+    }
+    
     final rows = snap.docs.map((doc) {
       final data = doc.data();
       return <String, dynamic>{

@@ -162,6 +162,12 @@ class NotificationService {
     );
 
     await _syncFcmToken();
+    try {
+      await _messaging.subscribeToTopic('all_users');
+    } catch (_) {
+      // Ignore if topic subscription fails
+    }
+    
     _onTokenRefreshSub = _messaging.onTokenRefresh.listen(
       (_) => _syncFcmToken(),
     );

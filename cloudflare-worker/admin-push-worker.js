@@ -148,13 +148,9 @@ async function verifyFirebaseIdToken(idToken, env) {
   return { ok: true, uid: user.localId };
 }
 
-async function sendFcmV1(env, payload) {
+async function sendFcmV1(env, accessToken, payload) {
   if (!env.FIREBASE_PROJECT_ID) {
     return { ok: false, error: 'FIREBASE_PROJECT_ID is missing' };
-  }
-  const token = await getGoogleAccessTokenFromServiceAccount(env);
-  if (!token.ok) {
-    return { ok: false, error: token.error };
   }
 
   const fcmResp = await fetch(
@@ -163,7 +159,7 @@ async function sendFcmV1(env, payload) {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        authorization: `Bearer ${token.accessToken}`,
+        authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ message: payload }),
     },
@@ -187,10 +183,10 @@ async function sendFcmV1(env, payload) {
       status: fcmResp.status,
       fcmErrorCode,
       error: `FCM send failed: ${fcmResp.status} ${bodyText}`,
-      accessToken: token.accessToken,
+      accessToken,
     };
   }
-  return { ok: true, body: bodyText, accessToken: token.accessToken };
+  return { ok: true, body: bodyText, accessToken };
 }
 
 function readStringField(fields, key) {
@@ -268,7 +264,6 @@ async function fetchAdminsWithTokens(env, accessToken) {
     const uid = doc.name?.split('/').pop() || '';
     const fcmToken = readStringField(doc.fields, 'fcmToken').trim();
     if (uid) {
-      // Return user even if empty fcmToken so inbox gets written
       users.push({ uid, fcmToken });
     }
   }
@@ -290,38 +285,50 @@ async function fetchSingleUserWithToken(env, accessToken, uid) {
   const data = await resp.json();
   const fcmToken = readStringField(data.fields, 'fcmToken').trim();
   
-  // Always return the user so the inbox notification is written.
-  // FCM push is only attempted if a token exists.
   return { ok: true, users: [{ uid, fcmToken }] };
 }
 
-async function writeNotificationItem(env, accessToken, uid, type, message) {
+async function batchWriteNotifications(env, accessToken, uids, type, message) {
   const now = new Date().toISOString();
-  const url = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/notifications/${uid}/items`;
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      fields: {
-        type: { stringValue: type },
-        message: { stringValue: message },
-        isRead: { booleanValue: false },
-        createdAt: { timestampValue: now },
+  let successCount = 0;
+  
+  // Firestore commit API allows up to 500 writes per request
+  for (let i = 0; i < uids.length; i += 500) {
+    const chunk = uids.slice(i, i + 500);
+    const writes = chunk.map(uid => {
+      const docId = crypto.randomUUID().replace(/-/g, '');
+      return {
+        update: {
+          name: `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/notifications/${uid}/items/${docId}`,
+          fields: {
+            type: { stringValue: type },
+            message: { stringValue: message },
+            isRead: { booleanValue: false },
+            createdAt: { timestampValue: now },
+          },
+        },
+      };
+    });
+
+    const url = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents:commit`;
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${accessToken}`,
       },
-    }),
-  });
+      body: JSON.stringify({ writes }),
+    });
 
-  if (!resp.ok) {
-    const text = await resp.text();
-    return { ok: false, error: `notification write failed: ${resp.status} ${text}` };
+    if (resp.ok) {
+      successCount += chunk.length;
+    } else {
+      const text = await resp.text();
+      console.error(`batch commit failed: ${resp.status} ${text}`);
+    }
   }
-
-  const data = await resp.json();
-  const notificationId = data.name?.split('/').pop() || '';
-  return { ok: true, notificationId };
+  
+  return successCount;
 }
 
 function logAdminPush(step, detail) {
@@ -433,43 +440,23 @@ export default {
     let sent = 0;
     let failed = 0;
     let fcmSkippedDuplicates = 0;
-    const inboxWritten = [];
-    const seenTokens = new Set();
+    let inboxWrittenCount = 0;
 
-    for (const user of usersResult.users) {
-      const inbox = await writeNotificationItem(
-        env,
-        oauth.accessToken,
-        user.uid,
-        type,
-        resolvedBody,
-      );
-      if (!inbox.ok) {
-        failed += 1;
-        continue;
+    // Use broadcast topic if no specific target user, and it's not a feedback response to admins
+    if (!targetUid && type !== 'feedback_submitted') {
+      // 1. Batch write to Firestore for all users
+      const uids = usersResult.users.map(u => u.uid);
+      if (uids.length > 0) {
+        inboxWrittenCount = await batchWriteNotifications(env, oauth.accessToken, uids, type, resolvedBody);
       }
-      inboxWritten.push(user.uid);
-
-      // Skip FCM if no token stored for this user.
-      if (!user.fcmToken) {
-        continue;
-      }
-
-      if (seenTokens.has(user.fcmToken)) {
-        fcmSkippedDuplicates += 1;
-        continue;
-      }
-      seenTokens.add(user.fcmToken);
-
-      // Data-only FCM: app shows one local notification (avoids system+app duplicate).
+      
+      // 2. Send a single FCM push to the 'all_users' topic
       const fcmPayload = {
-        token: user.fcmToken,
+        topic: 'all_users',
         data: {
           type,
           notificationType: type,
           title,
-          recipientUid: user.uid,
-          notificationId: inbox.notificationId,
           message: resolvedBody,
           click_action: 'FLUTTER_NOTIFICATION_CLICK',
         },
@@ -492,16 +479,71 @@ export default {
           },
         },
       };
-
-      const push = await sendFcmV1(env, fcmPayload);
-      if (!push.ok) {
-        failed += 1;
-        if (push.fcmErrorCode === 'UNREGISTERED') {
-          await clearRecipientFcmToken(env, user.uid, push.accessToken);
-        }
-        continue;
+      
+      const push = await sendFcmV1(env, oauth.accessToken, fcmPayload);
+      if (push.ok) {
+        sent = usersResult.users.length;
+      } else {
+        failed = usersResult.users.length;
+        logAdminPush('broadcast_fcm_error', push.error);
       }
-      sent += 1;
+    } else {
+      // Individual sends (e.g. feedback_submitted or specific targetUid)
+      const uids = usersResult.users.map(u => u.uid);
+      if (uids.length > 0) {
+        inboxWrittenCount = await batchWriteNotifications(env, oauth.accessToken, uids, type, resolvedBody);
+      }
+      
+      const seenTokens = new Set();
+      for (const user of usersResult.users) {
+        if (!user.fcmToken) continue;
+        
+        if (seenTokens.has(user.fcmToken)) {
+          fcmSkippedDuplicates += 1;
+          continue;
+        }
+        seenTokens.add(user.fcmToken);
+
+        const fcmPayload = {
+          token: user.fcmToken,
+          data: {
+            type,
+            notificationType: type,
+            title,
+            recipientUid: user.uid,
+            message: resolvedBody,
+            click_action: 'FLUTTER_NOTIFICATION_CLICK',
+          },
+          android: {
+            priority: 'high',
+          },
+          apns: {
+            headers: {
+              'apns-priority': '10',
+            },
+            payload: {
+              aps: {
+                alert: {
+                  title,
+                  body: resolvedBody,
+                },
+                sound: 'default',
+                badge: 1,
+              },
+            },
+          },
+        };
+
+        const push = await sendFcmV1(env, oauth.accessToken, fcmPayload);
+        if (!push.ok) {
+          failed += 1;
+          if (push.fcmErrorCode === 'UNREGISTERED') {
+            await clearRecipientFcmToken(env, user.uid, oauth.accessToken);
+          }
+          continue;
+        }
+        sent += 1;
+      }
     }
 
     const summary = {
@@ -510,8 +552,7 @@ export default {
       failed,
       fcmSkippedDuplicates,
       totalTokens: usersResult.users.length,
-      uniqueTokens: seenTokens.size,
-      inboxWritten: inboxWritten.length,
+      inboxWritten: inboxWrittenCount,
     };
     logAdminPush('done', JSON.stringify(summary));
     return jsonResponse(summary);

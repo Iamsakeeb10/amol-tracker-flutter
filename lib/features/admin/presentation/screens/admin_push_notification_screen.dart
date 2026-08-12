@@ -117,6 +117,11 @@ class _AdminPushNotificationScreenState
     }
 
     setState(() => _isSending = true);
+    
+    if (!_isTargetingUser) {
+      debugPrint('🚀 [AdminPush] Initiating broadcast to all users! Title: "${_titleCtrl.text.trim()}", Type: $_type');
+    }
+
     final result = await gateway.sendAdminPush(
       adminUid: uid!,
       title: _titleCtrl.text.trim(),
@@ -124,6 +129,13 @@ class _AdminPushNotificationScreenState
       type: _type,
       targetUid: _isTargetingUser ? _selectedUser?.uid : null,
     );
+    
+    if (!_isTargetingUser) {
+      debugPrint('✅ [AdminPush] Broadcast result success: ${result.success}');
+      if (!result.success) {
+        debugPrint('❌ [AdminPush] Broadcast error: ${result.error}, body: ${result.body}');
+      }
+    }
 
     if (!mounted) return;
     setState(() => _isSending = false);

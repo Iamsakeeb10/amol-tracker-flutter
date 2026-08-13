@@ -72,9 +72,9 @@ class BattleHistoryScreen extends ConsumerWidget {
                         ),
                       ),
                       onPressed: () {
-                        context.push(AppRoutes.battleTopics);
+                        context.push(AppRoutes.battleHome);
                       },
-                      child: Text(isBn ? 'টপিক নির্বাচন করুন' : 'Select Topic'),
+                      child: Text(isBn ? 'নতুন ব্যাটেল' : 'New Battle'),
                     ),
                   ],
                 ),

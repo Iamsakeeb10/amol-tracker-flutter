@@ -14,6 +14,7 @@ class AppScaffold extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final bool safeAreaBottom;
   final bool handleExitBack;
+  final bool resizeToAvoidBottomInset;
 
   const AppScaffold({
     super.key,
@@ -26,12 +27,14 @@ class AppScaffold extends StatelessWidget {
     this.padding,
     this.safeAreaBottom = true,
     this.handleExitBack = true,
+    this.resizeToAvoidBottomInset = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final scaffold = Scaffold(
       extendBody: true,
+      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       backgroundColor: AppColors.emeraldDeep,
       appBar: appBar,
       bottomNavigationBar: bottomNavigationBar,

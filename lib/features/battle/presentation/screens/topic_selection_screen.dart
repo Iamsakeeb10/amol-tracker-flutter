@@ -28,18 +28,9 @@ class TopicSelectionScreen extends ConsumerWidget {
               context.canPop() ? context.pop() : context.go(AppRoutes.home),
         ),
         title: Text(
-          isBn ? 'নলেজ ব্যাটেল' : 'Knowledge Battle',
+          isBn ? 'টপিক নির্বাচন করুন' : 'Select a Topic',
           style: AppTextStyles.headlineMedium(context),
         ),
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 8.w),
-            child: _JoinCodeFab(
-              label: isBn ? 'কোড দিয়ে যোগ দিন' : 'Join with Code',
-              onTap: () => context.push(AppRoutes.battleJoin),
-            ),
-          ),
-        ],
       ),
       body: Stack(
         clipBehavior: Clip.none,
@@ -59,7 +50,7 @@ class TopicSelectionScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+                padding: EdgeInsets.fromLTRB(6.w, 12.h, 6.w, 8.h),
                 child: Row(
                   children: [
                     Container(
@@ -91,7 +82,7 @@ class TopicSelectionScreen extends ConsumerWidget {
                     }
 
                     return GridView.builder(
-                      padding: EdgeInsets.fromLTRB(12.w, 4.h, 20.w, 100.h),
+                      padding: EdgeInsets.fromLTRB(6.w, 4.h, 6.w, 100.h),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         crossAxisSpacing: 16.w,
@@ -266,55 +257,6 @@ class _TopicCard extends StatelessWidget {
 }
 
 
-
-class _JoinCodeFab extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _JoinCodeFab({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppRadius.xl.r),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.xl.r),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.goldLight, AppColors.gold],
-            ),
-            borderRadius: BorderRadius.circular(AppRadius.xl.r),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.gold.withValues(alpha: 0.4),
-                blurRadius: 16.r,
-                offset: Offset(0, 6.h),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.login_rounded, color: AppColors.emeraldDeep, size: 20.r),
-              SizedBox(width: 8.w),
-              Text(
-                label,
-                style: AppTextStyles.labelLarge(context).copyWith(
-                  color: AppColors.emeraldDeep,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _AmbientGlow extends StatelessWidget {
   final Color color;

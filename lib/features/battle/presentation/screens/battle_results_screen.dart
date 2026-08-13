@@ -33,7 +33,7 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
   }
 
   void _goToHome() {
-    if (mounted) context.go(AppRoutes.battleTopics);
+    if (mounted) context.go(AppRoutes.battleHome);
   }
 
   @override

@@ -64,7 +64,7 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
           // Handle battle lifecycle state routing here
           if (battle.status == 'cancelled' || battle.status == 'expired') {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) context.go(AppRoutes.battleTopics);
+              if (mounted) context.go(AppRoutes.battleHome);
             });
             return const SizedBox.shrink();
           }

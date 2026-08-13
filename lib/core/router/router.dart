@@ -22,6 +22,7 @@ import '../../features/admin/presentation/screens/admin_app_config_screen.dart';
 import '../../features/admin/presentation/screens/admin_knowledge_battle_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/battle/presentation/screens/battle_config_screen.dart';
+import '../../features/battle/presentation/screens/battle_home_screen.dart';
 import '../../features/battle/presentation/screens/battle_quiz_screen.dart';
 import '../../features/battle/presentation/screens/battle_results_screen.dart';
 import '../../features/battle/presentation/screens/battle_history_screen.dart';
@@ -121,6 +122,11 @@ GoRouter buildAppRouter() {
           final initialCode = state.uri.queryParameters['code'];
           return JoinBattleScreen(initialCode: initialCode);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.battleHome,
+        name: 'battleHome',
+        builder: (_, _) => const BattleHomeScreen(),
       ),
       GoRoute(
         path: AppRoutes.battleTopics,

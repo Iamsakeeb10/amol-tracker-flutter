@@ -21,6 +21,13 @@ import '../../features/admin/presentation/screens/admin_app_config_list_screen.d
 import '../../features/admin/presentation/screens/admin_app_config_screen.dart';
 import '../../features/admin/presentation/screens/admin_knowledge_battle_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
+import '../../features/battle/presentation/screens/battle_config_screen.dart';
+import '../../features/battle/presentation/screens/battle_quiz_screen.dart';
+import '../../features/battle/presentation/screens/battle_results_screen.dart';
+import '../../features/battle/presentation/screens/battle_history_screen.dart';
+import '../../features/battle/presentation/screens/join_battle_screen.dart';
+import '../../features/battle/presentation/screens/topic_selection_screen.dart';
+import '../../features/battle/presentation/screens/waiting_room_screen.dart';
 import '../../features/community/presentation/screens/community_screen.dart';
 import '../../features/community/presentation/screens/user_profile_screen.dart';
 import '../../features/history/presentation/widgets/edit_amal_route_guard.dart';
@@ -71,6 +78,10 @@ import '../theme/colors.dart';
 import 'app_redirect.dart';
 import 'routes.dart';
 import '../../models/feedback_model.dart';
+import '../../features/admin/presentation/screens/admin_battle_topics_screen.dart';
+import '../../features/admin/presentation/screens/admin_battle_questions_screen.dart';
+import '../../features/admin/presentation/screens/admin_battle_question_form_screen.dart';
+import '../../features/battle/models/question_model.dart';
 
 GoRouter buildAppRouter() {
   final firestoreService = FirestoreService();
@@ -102,6 +113,52 @@ GoRouter buildAppRouter() {
         path: AppRoutes.onboarding,
         name: 'onboarding',
         builder: (_, _) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.battleJoin,
+        name: 'battleJoin',
+        builder: (_, state) {
+          final initialCode = state.uri.queryParameters['code'];
+          return JoinBattleScreen(initialCode: initialCode);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.battleTopics,
+        name: 'battleTopics',
+        builder: (_, _) => const TopicSelectionScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.battleQuiz}/:code',
+        builder: (context, state) {
+          final code = state.pathParameters['code']!;
+          return BattleQuizScreen(battleCode: code);
+        },
+      ),
+      GoRoute(
+        path: '${AppRoutes.battleResults}/:code',
+        builder: (context, state) {
+          final code = state.pathParameters['code']!;
+          return BattleResultsScreen(battleCode: code);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.battleConfigPattern,
+        name: 'battleConfig',
+        builder: (_, state) => BattleConfigScreen(
+          topicId: state.pathParameters['topicId']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.battleWaitingRoomPattern,
+        name: 'battleWaitingRoom',
+        builder: (_, state) => WaitingRoomScreen(
+          battleCode: state.pathParameters['code']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.battleHistory,
+        name: 'battleHistory',
+        builder: (_, __) => const BattleHistoryScreen(),
       ),
       GoRoute(
         path: AppRoutes.dev,
@@ -343,6 +400,43 @@ GoRouter buildAppRouter() {
         path: AppRoutes.adminKnowledgeBattle,
         name: 'adminKnowledgeBattle',
         builder: (_, _) => const AdminKnowledgeBattleScreen(),
+      ),
+      GoRoute(
+        path: '/admin/battle-topics',
+        name: 'adminBattleTopics',
+        builder: (context, state) => const AdminBattleTopicsScreen(),
+        routes: [
+          GoRoute(
+            path: ':topicId/questions',
+            name: 'adminBattleQuestions',
+            builder: (context, state) {
+              final topicId = state.pathParameters['topicId']!;
+              return AdminBattleQuestionsScreen(topicId: topicId);
+            },
+            routes: [
+              GoRoute(
+                path: 'new',
+                name: 'adminBattleQuestionNew',
+                builder: (context, state) {
+                  final topicId = state.pathParameters['topicId']!;
+                  return AdminBattleQuestionFormScreen(topicId: topicId);
+                },
+              ),
+              GoRoute(
+                path: ':questionId',
+                name: 'adminBattleQuestionEdit',
+                builder: (context, state) {
+                  final topicId = state.pathParameters['topicId']!;
+                  final question = state.extra as QuestionModel?;
+                  return AdminBattleQuestionFormScreen(
+                    topicId: topicId,
+                    existingQuestion: question,
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.adminAppConfigForm,

@@ -76,6 +76,11 @@ class HomeQuickNavSection extends StatelessWidget {
         label: l10n.prayerAdhanScreenTitle,
         onTap: () => context.push(AppRoutes.prayerAdhan),
       ),
+      _QuickNavItem(
+        icon: Icons.sports_esports_outlined,
+        label: Localizations.localeOf(context).languageCode == 'bn' ? 'নলেজ ব্যাটেল' : 'Knowledge Battle',
+        onTap: () => context.push(AppRoutes.battleTopics),
+      ),
     ];
 
     return SliverToBoxAdapter(

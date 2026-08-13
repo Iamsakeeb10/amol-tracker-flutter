@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/amal_fields.dart';
+import '../../../../core/router/routes.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -184,6 +186,52 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                                         ),
                                       ),
                                     ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (LocalStorageService.getActiveBattleCode() != null)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.only(bottom: 10.h),
+                                child: Material(
+                                  color: AppColors.gold,
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: InkWell(
+                                    onTap: () {
+                                      final code = LocalStorageService.getActiveBattleCode();
+                                      if (code != null) {
+                                        context.push(AppRoutes.battleWaitingRoomPath(code));
+                                      }
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.all(16.r),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.gamepad, color: AppColors.emeraldDeep, size: 24.r),
+                                          SizedBox(width: 12.w),
+                                          Expanded(
+                                            child: Text(
+                                              widget.locale == 'bn' ? 'আপনার একটি নলেজ ব্যাটেল চলছে!' : 'You have an active Knowledge Battle!',
+                                              style: AppTextStyles.titleSmall(context).copyWith(
+                                                color: AppColors.emeraldDeep,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          Text(
+                                            widget.locale == 'bn' ? 'যোগ দিন' : 'Rejoin',
+                                            style: AppTextStyles.labelLarge(context).copyWith(
+                                              color: AppColors.emeraldDeep,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(width: 4.w),
+                                          Icon(Icons.arrow_forward_ios, color: AppColors.emeraldDeep, size: 14.r),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),

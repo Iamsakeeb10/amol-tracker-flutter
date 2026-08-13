@@ -57,6 +57,34 @@ class AdminKnowledgeBattleScreen extends ConsumerWidget {
                     ),
                     SizedBox(height: 24.h),
                     
+                    // Manage Content Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => context.push('/admin/battle-topics'),
+                        icon: Icon(Icons.edit_document, size: 20.sp, color: AppColors.emeraldDeep),
+                        label: Text(
+                          'Manage Topics & Questions',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.emeraldDeep,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    SizedBox(height: 24.h),
+                    Divider(color: AppColors.cardBorder),
+                    SizedBox(height: 24.h),
+
                     _StatRow(
                       icon: Icons.visibility_rounded,
                       iconColor: AppColors.textMuted,

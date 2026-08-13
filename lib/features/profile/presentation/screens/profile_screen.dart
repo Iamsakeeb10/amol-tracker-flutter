@@ -255,6 +255,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
           ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 18.h),
+            sliver: SliverToBoxAdapter(
+              child: CardContainer(
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.history, color: AppColors.gold, size: 24.r),
+                  title: Text(
+                    l10n.localeName == 'bn' ? 'ব্যাটেল হিস্ট্রি' : 'Battle History',
+                    style: AppTextStyles.bodyLarge(context).copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  trailing: Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20.r),
+                  onTap: () {
+                    // Requires go_router import
+                    context.push(AppRoutes.battleHistory);
+                  },
+                ),
+              ),
+            ),
+          ),
           ProfileBadgesSection(
             unlockedBadgeIds: user.badges,
             currentStreak: liveStreak,

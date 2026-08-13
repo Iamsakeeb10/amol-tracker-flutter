@@ -146,4 +146,13 @@ class AppTextStyles {
       letterSpacing: 0.4,
     );
   }
+
+  // Aliases for Material 3 naming
+  static TextStyle titleLarge(BuildContext context, {Locale? locale}) => headlineMedium(context, locale: locale);
+  static TextStyle titleMedium(BuildContext context, {Locale? locale}) => bodyLarge(context, locale: locale);
+  static TextStyle titleSmall(BuildContext context, {Locale? locale}) => bodyMedium(context, locale: locale).copyWith(fontWeight: FontWeight.bold);
+  
+  static TextStyle labelLarge(BuildContext context, {Locale? locale}) => label(context, locale: locale);
+  static TextStyle labelMedium(BuildContext context, {Locale? locale}) => label(context, locale: locale).copyWith(fontSize: 12);
+  static TextStyle labelSmall(BuildContext context, {Locale? locale}) => bodySmall(context, locale: locale);
 }

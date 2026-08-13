@@ -192,4 +192,19 @@ class LocalStorageService {
     final value = _prefs.get(_hasSeenBattleTeaserKey);
     return value is bool ? value : false;
   }
+
+  static const String _activeBattleCodeKey = 'active_battle_code';
+
+  static Future<void> saveActiveBattleCode(String code) async {
+    await _prefs.put(_activeBattleCodeKey, code);
+  }
+
+  static String? getActiveBattleCode() {
+    final value = _prefs.get(_activeBattleCodeKey);
+    return value is String ? value : null;
+  }
+
+  static Future<void> clearActiveBattleCode() async {
+    await _prefs.delete(_activeBattleCodeKey);
+  }
 }

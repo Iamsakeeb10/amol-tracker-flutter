@@ -104,6 +104,24 @@ class AppRoutes {
   static const adminAppConfigForm = '/admin/app-config-form';
   static const adminKnowledgeBattle = '/admin/knowledge-battle';
 
+  static const String battleConfig = '/battle/config';
+  static const String battleWaiting = '/battle/waiting';
+  static const String battleJoin = '/battle/join';
+  static const String battleQuiz = '/battle/quiz';
+  static const String battleResults = '/battle/results';
+  static const String battleHistory = '/battle/history';
+
+  static const battleTopics = '/battle/topics';
+  static const battleConfigPattern = '/battle/config/:topicId';
+  static String battleConfigPath(String topicId) => '/battle/config/$topicId';
+
+  static const battleWaitingRoomPattern = '/battle/waiting-room/:code';
+  static String battleWaitingRoomPath(String code) => '/battle/waiting-room/$code';
+
+  static String battleWaitingPath(String code) => '$battleWaiting/$code';
+  static String battleQuizPath(String code) => '$battleQuiz/$code';
+  static String battleResultsPath(String code) => '$battleResults/$code';
+
   static String adminLessonsPath(String courseId) =>
       '/admin/courses/$courseId/lessons';
 }

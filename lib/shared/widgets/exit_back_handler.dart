@@ -39,6 +39,12 @@ class ExitBackHandler extends StatelessWidget {
         
         if (!context.mounted) return;
 
+        final currentRouteName = ModalRoute.of(context)?.settings.name;
+        if (currentRouteName != 'home') {
+          context.go('/home');
+          return;
+        }
+
         exitAppDebug('back — show exit dialog');
         final shouldExit = await showExitAppDialog(context);
         exitAppDebug('back — dialog result=$shouldExit');

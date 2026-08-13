@@ -8,7 +8,6 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
-import '../../../../shared/widgets/card_container.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../providers/battle_providers.dart';
@@ -58,7 +57,7 @@ class _JoinBattleScreenState extends ConsumerState<JoinBattleScreen> {
     try {
       final repo = ref.read(battleRepositoryProvider);
       await repo.joinBattle(code: code);
-      
+
       if (mounted) {
         LocalStorageService.saveActiveBattleCode(code);
         context.pushReplacement(AppRoutes.battleWaitingRoomPath(code));
@@ -78,7 +77,7 @@ class _JoinBattleScreenState extends ConsumerState<JoinBattleScreen> {
   Widget build(BuildContext context) {
     final locale = ref.watch(localeProvider).languageCode;
     final isBn = locale == 'bn';
-    
+
     final isValid = _codeController.text.trim().length == 6;
 
     return AppScaffold(
@@ -88,82 +87,202 @@ class _JoinBattleScreenState extends ConsumerState<JoinBattleScreen> {
         centerTitle: true,
         title: Text(
           isBn ? 'ব্যাটেল যোগ দিন' : 'Join Battle',
-          style: AppTextStyles.headlineMedium(context),
+          style: AppTextStyles.headlineMedium(context).copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 24.r),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(AppRoutes.home);
+            }
+          },
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: 24.h),
-          Text(
-            isBn ? '৬ অক্ষরের কোড প্রবেশ করান' : 'Enter 6-character code',
-            style: AppTextStyles.titleMedium(context),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 24.h),
-          CardContainer(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            child: TextField(
-              controller: _codeController,
-              onChanged: _onCodeChanged,
-              maxLength: 6,
-              textCapitalization: TextCapitalization.characters,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
-              ],
+      body: Padding(
+        padding: EdgeInsets.fromLTRB(0.w, 8.h, 0.w, 20.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(height: 20.h),
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.all(14.r),
+              decoration: BoxDecoration(
+                color: AppColors.goldCard,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.goldBorder),
+              ),
+              child: Icon(Icons.group_add_rounded, color: AppColors.gold, size: 26.r),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              isBn ? 'আপনি আমন্ত্রিত!' : 'You\'ve been invited!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 32.sp,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 8.w,
                 color: AppColors.textPrimary,
               ),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                counterText: '',
-                hintText: 'ABCDEF',
-                hintStyle: TextStyle(
-                  color: AppColors.textHint,
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              isBn
+                  ? 'নিচের কোডটি ব্যবহার করে ব্যাটেলে যোগ দিন'
+                  : 'Join the battle using the invite code below',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12.5.sp, color: AppColors.textSecondary),
+            ),
+            SizedBox(height: 28.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: AppColors.cardDark,
+                borderRadius: BorderRadius.circular(AppRadius.lg.r),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              child: TextField(
+                controller: _codeController,
+                onChanged: _onCodeChanged,
+                maxLength: 6,
+                textCapitalization: TextCapitalization.characters,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                ],
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 32.sp,
+                  fontWeight: FontWeight.bold,
                   letterSpacing: 8.w,
+                  color: AppColors.textPrimary,
+                ),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  counterText: '',
+                  hintText: 'ABCDEF',
+                  hintStyle: TextStyle(
+                    color: AppColors.textHint,
+                    letterSpacing: 8.w,
+                  ),
                 ),
               ),
             ),
-          ),
-          if (_error != null) ...[
-            SizedBox(height: 16.h),
-            Text(
-              _error!,
-              style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.danger),
-              textAlign: TextAlign.center,
+            if (_error != null) ...[
+              SizedBox(height: 16.h),
+              _ErrorBanner(message: _error!),
+            ],
+            const Spacer(),
+            _JoinButton(
+              label: isBn ? 'যোগ দিন' : 'Join',
+              isLoading: _isJoining,
+              enabled: isValid,
+              onTap: _handleJoin,
             ),
           ],
-          const Spacer(),
-          ElevatedButton(
-            onPressed: (_isJoining || !isValid) ? null : _handleJoin,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.gold,
-              disabledBackgroundColor: AppColors.gold.withValues(alpha: 0.3),
-              foregroundColor: AppColors.emeraldDeep,
-              disabledForegroundColor: AppColors.emeraldDeep.withValues(alpha: 0.5),
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        ),
+      ),
+    );
+  }
+}
+
+/// Inline error banner, styled with the danger palette instead of a plain
+/// colored Text — matches the other battle screens.
+class _ErrorBanner extends StatelessWidget {
+  final String message;
+
+  const _ErrorBanner({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: AppColors.dangerLight,
+        borderRadius: BorderRadius.circular(AppRadius.md.r),
+        border: Border.all(color: AppColors.danger.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 18.r),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(fontSize: 13.sp, color: AppColors.danger),
             ),
-            child: _isJoining
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Gold gradient CTA — matches Create Battle / Start Battle buttons used
+/// elsewhere in the battle flow.
+class _JoinButton extends StatelessWidget {
+  final String label;
+  final bool isLoading;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _JoinButton({
+    required this.label,
+    required this.isLoading,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDisabled = isLoading || !enabled;
+
+    return GestureDetector(
+      onTap: isDisabled ? null : onTap,
+      child: Opacity(
+        opacity: isDisabled && !isLoading ? 0.5 : 1,
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.gold, AppColors.goldLight],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(AppRadius.md.r),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.gold.withValues(alpha: 0.35),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Center(
+            child: isLoading
                 ? SizedBox(
                     height: 20.r,
                     width: 20.r,
-                    child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.emeraldDeep),
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      color: AppColors.emeraldDeep,
+                    ),
                   )
                 : Text(
-                    isBn ? 'যোগ দিন' : 'Join',
-                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                    label,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.emeraldDeep,
+                    ),
                   ),
           ),
-        ],
+        ),
       ),
     );
   }

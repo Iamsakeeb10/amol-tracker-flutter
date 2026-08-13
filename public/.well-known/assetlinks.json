@@ -1,0 +1,12 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.shakib.amol.amol_tracker_app",
+    "sha256_cert_fingerprints": [
+      "A9:22:F2:22:E9:67:4F:E5:33:16:46:D0:2D:89:7D:F7:E7:65:6B:1C:38:A6:E3:4D:7A:F6:68:4D:7C:F2:C4:B2",
+      "0E:7A:51:7F:29:2F:C2:80:31:5C:90:C5:51:BF:E5:EA:68:7B:A9:4A:BF:83:6B:3A:3D:7F:35:98:B2:6C:5A:27",
+      "4E:29:8E:78:09:02:F1:16:C6:F4:15:95:1E:DB:4F:C1:33:97:BF:C1:F1:94:6C:25:2F:6E:5B:23:5E:2F:CA:63"
+    ]
+  }
+}]

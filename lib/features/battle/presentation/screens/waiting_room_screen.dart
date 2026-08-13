@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +25,7 @@ class WaitingRoomScreen extends ConsumerStatefulWidget {
 
 class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
   bool _isStarting = false;
+  bool _isLeaving = false;
   String? _error;
 
   @override
@@ -33,10 +35,16 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
     final battleAsync = ref.watch(battleStreamProvider(widget.battleCode));
     final currentUser = ref.watch(currentUserProvider).asData?.value;
 
-    return AppScaffold(
-      // Override back button to handle leaveBattle
-      handleExitBack: false,
-      appBar: AppBar(
+    return PopScope(
+      canPop: _isLeaving,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _handleLeave(context);
+      },
+      child: AppScaffold(
+        // We handle back via PopScope above
+        handleExitBack: false,
+        appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -107,7 +115,7 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                   isBn: isBn,
                   onTap: () {
                     final code = battle.id.toUpperCase();
-                    final link = 'https://amoltracker.app/battle/join?code=$code';
+                    final link = 'https://amol-tracker.web.app/battle/join?code=$code';
                     final text = isBn
                         ? 'আমার সাথে নলেজ ব্যাটেল খেলুন! জয়েন কোড: $code\nলিংক: $link'
                         : 'Join my Knowledge Battle! Code: $code\nLink: $link';
@@ -186,17 +194,29 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Future<void> _handleLeave(BuildContext context) async {
+    if (_isLeaving) return;
+    setState(() => _isLeaving = true);
+
     try {
       final repo = ref.read(battleRepositoryProvider);
       await repo.leaveBattle(code: widget.battleCode);
     } catch (e) {
       debugPrint('Failed to leave battle: $e');
     }
-    if (mounted) context.pop();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go(AppRoutes.home);
+        }
+      }
+    });
   }
 
   Future<void> _startBattle() async {
@@ -230,38 +250,62 @@ class _BattleCodeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: AppSpacing.lg.r),
       decoration: BoxDecoration(
         color: AppColors.goldCard,
         borderRadius: BorderRadius.circular(AppRadius.lg.r),
         border: Border.all(color: AppColors.goldBorder, width: 1.4),
       ),
-      child: Column(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Text(
-            isBn ? 'আপনার ব্যাটেল কোড' : 'YOUR BATTLE CODE',
-            style: TextStyle(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-              color: AppColors.gold,
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: AppSpacing.lg.r),
+            child: Column(
+              children: [
+                Text(
+                  isBn ? 'আপনার ব্যাটেল কোড' : 'YOUR BATTLE CODE',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                    color: AppColors.gold,
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                Text(
+                  code,
+                  style: TextStyle(
+                    fontSize: 42.sp,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 8.w,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  isBn ? 'অন্যদের সাথে এই কোডটি শেয়ার করুন' : 'Share this code with others to join',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 10.h),
-          Text(
-            code,
-            style: TextStyle(
-              fontSize: 42.sp,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 8.w,
-              color: AppColors.textPrimary,
+          Positioned(
+            top: 4.h,
+            right: 4.w,
+            child: IconButton(
+              icon: Icon(Icons.copy_rounded, color: AppColors.gold, size: 20.r),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: code));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(isBn ? 'কোড কপি করা হয়েছে!' : 'Code copied to clipboard!'),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: AppColors.emeraldDeep,
+                  ),
+                );
+              },
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            isBn ? 'অন্যদের সাথে এই কোডটি শেয়ার করুন' : 'Share this code with others to join',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12.sp, color: AppColors.textSecondary),
           ),
         ],
       ),

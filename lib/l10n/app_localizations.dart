@@ -1421,7 +1421,7 @@ abstract class AppLocalizations {
   /// No description provided for @leaderboardQuizTab.
   ///
   /// In en, this message translates to:
-  /// **'Quiz'**
+  /// **'Battle'**
   String get leaderboardQuizTab;
 
   /// No description provided for @leaderboardQuizBeFirst.
@@ -1465,6 +1465,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Equal points? Fewer total attempts rank higher.'**
   String get leaderboardQuizTiebreakerHint;
+
+  /// No description provided for @battleXp.
+  ///
+  /// In en, this message translates to:
+  /// **'pts'**
+  String get battleXp;
+
+  /// No description provided for @battleWinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'W'**
+  String get battleWinLabel;
+
+  /// No description provided for @battleLossLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'L'**
+  String get battleLossLabel;
+
+  /// No description provided for @battleXpEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'+{score} pts'**
+  String battleXpEarned(int score);
 
   /// No description provided for @history.
   ///

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
 
@@ -302,4 +303,47 @@ final quizLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
     );
   }
   return entries;
+});
+
+// ---------------------------------------------------------------------------
+// Battle leaderboard — real-time StreamProvider ranked by battleScore
+// ---------------------------------------------------------------------------
+final battleLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
+  final authState = ref.watch(currentUserProvider).asData?.value;
+  final currentUserGender = authState?.gender;
+
+  return FirebaseFirestore.instance
+      .collection('users')
+      .where('gender', isEqualTo: currentUserGender)
+      .orderBy('battleScore', descending: true)
+      .limit(50)
+      .snapshots()
+      .asyncMap((snapshot) async {
+    final fs = ref.read(firestoreServiceProvider);
+    final uids = snapshot.docs.map((d) => d.id);
+    final users = await fs.usersByIds(uids);
+
+    final entries = <LeaderboardEntry>[];
+    for (final doc in snapshot.docs) {
+      final uid = doc.id;
+      final data = doc.data();
+      final battleScore = (data['battleScore'] as num?)?.toInt() ?? 0;
+      if (battleScore == 0) continue;
+
+      final user = users[uid];
+      final showOnLeaderboard = user?.showOnLeaderboard ?? true;
+      if (!showOnLeaderboard) continue;
+      if (currentUserGender != null && user?.gender != null && user?.gender != currentUserGender) continue;
+      if (currentUserGender != null && user?.gender == null) continue;
+
+      entries.add(LeaderboardEntry(
+        uid: uid,
+        displayName: _safeName(user?.name ?? (data['displayName'] as String? ?? '')),
+        isAnonymousDisplay: user?.isAnonymousDisplay ?? false,
+        score: battleScore,
+        attemptCount: (data['battlePlays'] as num?)?.toInt() ?? 0,
+      ));
+    }
+    return entries;
+  });
 });

@@ -333,7 +333,7 @@
       "behind": {}
     }
   },
-  "leaderboardQuizTab": "কুইজ",
+  "leaderboardQuizTab": "ব্যাটেল",
   "leaderboardQuizBeFirst": "কুইজ পাস করার জন্য প্রথম হন!",
   "leaderboardNudgeBehindQuizPoints": "২য় স্থানের থেকে {behind} পয়েন্ট পিছিয়ে - আরও কুইজ পাস করে এগিয়ে যান।",
   "@leaderboardNudgeBehindQuizPoints": {
@@ -371,6 +371,17 @@
     }
   },
   "leaderboardQuizTiebreakerHint": "সমান পয়েন্টে কম চেষ্টায় এগিয়ে থাকবেন।",
+  "battleXp": "পয়েন্ট",
+  "battleWinLabel": "জয়",
+  "battleLossLabel": "হার",
+  "battleXpEarned": "+{score} পয়েন্ট",
+  "@battleXpEarned": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
   "history": "হিস্টোরি",
   "historyLoadFailed": "হিস্টোরি লোড করা যায়নি।",
   "historyConsistency": "{value}% কনসিস্টেন্সি",

@@ -8,6 +8,7 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../providers/locale_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../providers/battle_providers.dart';
 import '../../providers/topic_providers.dart';
 import 'package:intl/intl.dart';
@@ -219,7 +220,7 @@ class BattleHistoryScreen extends ConsumerWidget {
                           ),
                           SizedBox(height: 6.h),
                           Text(
-                            '+${item.score} XP',
+                            AppLocalizations.of(context)!.battleXpEarned(item.score),
                             style: AppTextStyles.bodySmall(context).copyWith(
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,

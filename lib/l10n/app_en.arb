@@ -333,7 +333,7 @@
       "behind": {}
     }
   },
-  "leaderboardQuizTab": "Quiz",
+  "leaderboardQuizTab": "Battle",
   "leaderboardQuizBeFirst": "Be the first to pass a quiz!",
   "leaderboardNudgeBehindQuizPoints": "{behind} pts behind 2nd place - pass more quizzes to climb.",
   "@leaderboardNudgeBehindQuizPoints": {
@@ -371,6 +371,15 @@
     }
   },
   "leaderboardQuizTiebreakerHint": "Equal points? Fewer total attempts rank higher.",
+  "battleXp": "pts",
+  "battleWinLabel": "W",
+  "battleLossLabel": "L",
+  "battleXpEarned": "+{score} pts",
+  "@battleXpEarned": {
+    "placeholders": {
+      "score": { "type": "int" }
+    }
+  },
   "history": "HISTORY",
   "historyLoadFailed": "Could not load history.",
   "historyConsistency": "{value}% consistency",

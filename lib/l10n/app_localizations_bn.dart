@@ -735,7 +735,7 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get leaderboardQuizTab => 'কুইজ';
+  String get leaderboardQuizTab => 'ব্যাটেল';
 
   @override
   String get leaderboardQuizBeFirst => 'কুইজ পাস করার জন্য প্রথম হন!';
@@ -766,6 +766,20 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get leaderboardQuizTiebreakerHint =>
       'সমান পয়েন্টে কম চেষ্টায় এগিয়ে থাকবেন।';
+
+  @override
+  String get battleXp => 'পয়েন্ট';
+
+  @override
+  String get battleWinLabel => 'জয়';
+
+  @override
+  String get battleLossLabel => 'হার';
+
+  @override
+  String battleXpEarned(int score) {
+    return '+$score পয়েন্ট';
+  }
 
   @override
   String get history => 'হিস্টোরি';

@@ -732,7 +732,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get leaderboardQuizTab => 'Quiz';
+  String get leaderboardQuizTab => 'Battle';
 
   @override
   String get leaderboardQuizBeFirst => 'Be the first to pass a quiz!';
@@ -763,6 +763,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get leaderboardQuizTiebreakerHint =>
       'Equal points? Fewer total attempts rank higher.';
+
+  @override
+  String get battleXp => 'pts';
+
+  @override
+  String get battleWinLabel => 'W';
+
+  @override
+  String get battleLossLabel => 'L';
+
+  @override
+  String battleXpEarned(int score) {
+    return '+$score pts';
+  }
 
   @override
   String get history => 'HISTORY';

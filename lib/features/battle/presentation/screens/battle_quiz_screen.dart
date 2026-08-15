@@ -14,6 +14,7 @@ import '../../../syllabus/presentation/widgets/quiz_option_tile.dart';
 import '../../../syllabus/presentation/widgets/quiz_helpers.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/locale_provider.dart';
+import '../../../../providers/leaderboard_provider.dart';
 import '../../providers/battle_providers.dart';
 import '../../models/battle_model.dart';
 
@@ -254,6 +255,8 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
           if (battle.status == 'finished') {
             if (!_isNavigatingToResults) {
               _isNavigatingToResults = true;
+              // Invalidate battle leaderboard so it refreshes with latest scores
+              ref.invalidate(battleLeaderboardProvider);
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) {
                   context.pushReplacement(AppRoutes.battleResultsPath(widget.battleCode));

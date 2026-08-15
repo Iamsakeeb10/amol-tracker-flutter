@@ -11,6 +11,7 @@ import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/locale_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../providers/battle_providers.dart';
 
 class BattleResultsScreen extends ConsumerStatefulWidget {
@@ -356,7 +357,7 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
               Icon(Icons.bolt_rounded, color: AppColors.gold, size: 16.r),
               SizedBox(width: AppSpacing.xs.w),
               Text(
-                '+$score XP',
+                AppLocalizations.of(context)!.battleXpEarned(score),
                 style: AppTextStyles.titleMedium(context).copyWith(
                   color: AppColors.gold,
                   fontWeight: FontWeight.bold,

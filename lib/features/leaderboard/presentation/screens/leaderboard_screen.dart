@@ -34,7 +34,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
   bool _initialLoadComplete = false;
   Timer? _loadTimeout;
   bool get _isStreak => _periodIndex == 3;
-  bool get _isQuiz => _periodIndex == 4;
+  bool get _isQuiz => false; // Quiz tab removed
+  bool get _isBattle => _periodIndex == 4;
 
   // Pagination state
   static const int _pageSize = 20;
@@ -56,7 +57,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       ref.invalidate(monthlyLeaderboardProvider);
       ref.invalidate(dailyLeaderboardProvider);
       ref.invalidate(streakLeaderboardProvider);
-      ref.invalidate(quizLeaderboardProvider);
+      ref.invalidate(battleLeaderboardProvider);
     });
   }
 
@@ -138,7 +139,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       1 => ref.watch(monthlyLeaderboardProvider),
       2 => ref.watch(dailyLeaderboardProvider),
       3 => ref.watch(streakLeaderboardProvider),
-      _ => ref.watch(quizLeaderboardProvider),
+      _ => ref.watch(battleLeaderboardProvider),
     };
 
     // Determine pinned user for the fixed bottom card.
@@ -177,7 +178,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               ref.invalidate(monthlyLeaderboardProvider);
               ref.invalidate(dailyLeaderboardProvider);
               ref.invalidate(streakLeaderboardProvider);
-              ref.invalidate(quizLeaderboardProvider);
+              ref.invalidate(battleLeaderboardProvider);
               setState(() {
                 _initialLoadComplete = false;
                 _displayedCount = _pageSize;
@@ -215,7 +216,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 ref.invalidate(monthlyLeaderboardProvider);
                 ref.invalidate(dailyLeaderboardProvider);
                 ref.invalidate(streakLeaderboardProvider);
-                ref.invalidate(quizLeaderboardProvider);
+                ref.invalidate(battleLeaderboardProvider);
                 setState(() {
                   _initialLoadComplete = false;
                   _displayedCount = _pageSize;
@@ -301,7 +302,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             _PinnedBottomCard(
               entry: pinnedEntry!,
               rank: pinnedRank,
-              isQuiz: _isQuiz,
+              isQuiz: false,
+              isBattle: _isBattle,
               statLabel: _statLabel(),
               displayName: _displayName(pinnedEntry!),
             ),
@@ -334,7 +336,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                   ),
                   alignment: Alignment.center,
                   child: Icon(
-                    _isQuiz ? Icons.quiz_outlined : Icons.emoji_events_outlined,
+                    _isBattle ? Icons.emoji_events_rounded : Icons.emoji_events_outlined,
                     color: AppColors.gold,
                     size: 36.r,
                   ),
@@ -347,8 +349,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  _isQuiz
-                      ? l10n.leaderboardQuizBeFirst
+                  _isBattle
+                      ? (AppLocalizations.of(context)!.localeName == 'bn'
+                          ? 'ব্যাটেল খেলুন এবং লিডারবোর্ডে জায়গা নিন!'
+                          : 'Play a battle to appear on the leaderboard!')
                       : l10n.leaderboardBeFirstToday,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium(context).copyWith(
@@ -406,7 +410,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
               child: _Podium(
                 top3: top3,
                 displayName: _displayName,
-                isQuiz: _isQuiz,
+                isQuiz: false,
               ),
             ),
           ),
@@ -431,7 +435,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
                 displayName: _displayName(user),
                 isYou: user.uid == authUid,
                 maxScore: maxScore,
-                isQuiz: _isQuiz,
+                isQuiz: false,
+                isBattle: _isBattle,
                 onTap: () =>
                     context.push('${AppRoutes.userProfile}/${user.uid}'),
               ),
@@ -576,6 +581,7 @@ class _PinnedBottomCard extends StatelessWidget {
   final LeaderboardEntry entry;
   final int rank;
   final bool isQuiz;
+  final bool isBattle;
   final String statLabel;
   final String displayName;
 
@@ -583,6 +589,7 @@ class _PinnedBottomCard extends StatelessWidget {
     required this.entry,
     required this.rank,
     required this.isQuiz,
+    this.isBattle = false,
     required this.statLabel,
     required this.displayName,
   });
@@ -638,20 +645,15 @@ class _PinnedBottomCard extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 2.h),
-                    if (isQuiz)
-                      QuizLeaderboardStat(
-                        points: entry.score,
-                        attempts: entry.attemptCount ?? 0,
-                        compact: true,
-                      )
-                    else
-                      Text(
-                        '${entry.score} $statLabel',
-                        style: AppTextStyles.bodyMedium(context).copyWith(
-                          color: Colors.white,
-                          fontSize: 14.sp,
-                        ),
+                    Text(
+                      isBattle
+                          ? '${AppLocalizations.of(context)!.battleXpEarned(entry.score)} · ${entry.attemptCount ?? 0} ${AppLocalizations.of(context)!.localeName == 'bn' ? 'খেলা' : 'plays'}'
+                          : '${entry.score} $statLabel',
+                      style: AppTextStyles.bodyMedium(context).copyWith(
+                        color: Colors.white,
+                        fontSize: 14.sp,
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -852,6 +854,7 @@ class _RankRow extends StatelessWidget {
   final bool isYou;
   final int maxScore;
   final bool isQuiz;
+  final bool isBattle;
   final VoidCallback onTap;
 
   const _RankRow({
@@ -862,11 +865,16 @@ class _RankRow extends StatelessWidget {
     required this.isYou,
     required this.maxScore,
     this.isQuiz = false,
+    this.isBattle = false,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final wins = isBattle ? (user.score > 0 ? (user.score ~/ 10) : 0) : 0;
+    final plays = isBattle ? (user.attemptCount ?? 0) : 0;
+    final losses = (plays - wins).clamp(0, plays);
+
     return GestureDetector(
       onTap: onTap,
       child: CardContainer(
@@ -921,22 +929,26 @@ class _RankRow extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 4.h),
-                  ScoreBar(
-                    value: maxScore == 0
-                        ? 0
-                        : (user.score / maxScore).clamp(0.0, 1.0),
-                    height: 4,
-                  ),
+                  if (isBattle)
+                    Text(
+                      '${plays} ${AppLocalizations.of(context)!.battleWinLabel} · ${losses} ${AppLocalizations.of(context)!.battleLossLabel}',
+                      style: AppTextStyles.bodySmall(context).copyWith(
+                        fontSize: 11.sp,
+                        color: AppColors.textSecondary,
+                      ),
+                    )
+                  else
+                    ScoreBar(
+                      value: maxScore == 0
+                          ? 0
+                          : (user.score / maxScore).clamp(0.0, 1.0),
+                      height: 4,
+                    ),
                 ],
               ),
             ),
             SizedBox(width: 8.w),
-            if (isQuiz)
-              QuizLeaderboardStat(
-                points: user.score,
-                attempts: user.attemptCount ?? 0,
-              )
-            else ...[
+            ...[
               Text(
                 '${user.score}',
                 style: AppTextStyles.goldNumeric(
@@ -945,10 +957,10 @@ class _RankRow extends StatelessWidget {
               ),
               SizedBox(width: 2.w),
               Text(
-                statLabel,
+                isBattle ? AppLocalizations.of(context)!.battleXp : statLabel,
                 style: AppTextStyles.bodySmall(
                   context,
-                ).copyWith(fontSize: 10.sp),
+                ).copyWith(fontSize: 11.sp),
               ),
             ],
           ],

@@ -19,6 +19,7 @@ export async function finalizeBattle(
     uid: pUid,
     score: scoreboard[pUid]?.score ?? 0,
     totalTimeMs: scoreboard[pUid]?.totalTimeMs ?? 0,
+    answers: scoreboard[pUid]?.answers ?? [],
   }));
 
   // Sort by score DESC, then time ASC

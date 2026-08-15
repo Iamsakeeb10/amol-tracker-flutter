@@ -390,6 +390,7 @@ export async function submitAllAnswers(request: Request, env: Env): Promise<Resp
     let totalScore = 0;
     let totalResponseTimeMs = 0;
     let totalCorrect = 0;
+    const evaluatedAnswers: any[] = [];
 
     // Process each answer
     for (const ans of answers) {
@@ -412,6 +413,14 @@ export async function submitAllAnswers(request: Request, env: Env): Promise<Resp
       totalResponseTimeMs += responseTimeMs;
       if (isCorrect) totalCorrect += 1;
 
+      evaluatedAnswers.push({
+        questionId: qId,
+        selectedIndex,
+        responseTimeMs,
+        isCorrect,
+        pointsAwarded,
+      });
+
       // Write answer (optional, for history)
       tx.set(`battles/${code}/answers/${uid}_${qId}`, {
         uid,
@@ -429,6 +438,7 @@ export async function submitAllAnswers(request: Request, env: Env): Promise<Resp
     playerStats.totalTimeMs = totalResponseTimeMs;
     playerStats.correctCount = totalCorrect;
     playerStats.hasFinished = true;
+    playerStats.answers = evaluatedAnswers;
 
     scoreboard[uid] = playerStats;
     tx.set(`battles/${code}/scoreboard/live`, scoreboard);

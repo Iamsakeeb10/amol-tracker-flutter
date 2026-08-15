@@ -27,17 +27,20 @@ class BattleQuizScreen extends ConsumerStatefulWidget {
 }
 
 class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
+  Timer? _timer;
+  int _timeLeftMs = 0;
+  
+  bool _isNavigatingToResults = false;
+
   int _uiQuestionIndex = 0;
   
   // Local state for the current question
   int? _selectedIndex;
   bool _isTransitioning = false;
   
-  // Time and submission state
-  Timer? _timer;
+  // Overall state for finishing
   Stopwatch? _globalStopwatch;
   Stopwatch? _questionStopwatch;
-  int _timeLeftMs = 0;
   
   bool _hasFinishedLocal = false;
   bool _isSubmittingAll = false;
@@ -234,11 +237,14 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
           }
 
           if (battle.status == 'finished') {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                context.pushReplacement(AppRoutes.battleResultsPath(widget.battleCode));
-              }
-            });
+            if (!_isNavigatingToResults) {
+              _isNavigatingToResults = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  context.pushReplacement(AppRoutes.battleResultsPath(widget.battleCode));
+                }
+              });
+            }
             return const SizedBox.shrink();
           }
 

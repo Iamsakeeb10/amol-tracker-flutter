@@ -139,38 +139,67 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
             return Column(
               children: [
                 Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.symmetric(horizontal: 0, vertical: AppSpacing.lg.h),
-                    children: [
-                      _buildResultHeader(
-                        context: context,
-                        headerText: headerText,
-                        subText: subText,
-                        headerColor: headerColor,
-                        headerIcon: headerIcon,
-                        score: myResult.score,
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: EdgeInsets.fromLTRB(0, AppSpacing.lg.h, 0, AppSpacing.xxl.h),
+                        sliver: SliverToBoxAdapter(
+                          child: _buildResultHeader(
+                            context: context,
+                            headerText: headerText,
+                            subText: subText,
+                            headerColor: headerColor,
+                            headerIcon: headerIcon,
+                            score: myResult.score,
+                          ),
+                        ),
                       ),
-                      SizedBox(height: AppSpacing.xxl.h),
-
-                      _sectionTitle(context, isBn ? 'লিডারবোর্ড' : 'Leaderboard', Icons.leaderboard_rounded),
-                      SizedBox(height: AppSpacing.md.h),
-                      _buildLeaderboard(context, result.players, currentUid, isBn),
-
+                      SliverToBoxAdapter(
+                        child: Column(
+                          children: [
+                            _sectionTitle(context, isBn ? 'লিডারবোর্ড' : 'Leaderboard', Icons.leaderboard_rounded),
+                            SizedBox(height: AppSpacing.md.h),
+                            _buildLeaderboard(context, result.players, currentUid, isBn),
+                          ],
+                        ),
+                      ),
                       if (questions.isNotEmpty) ...[
-                        SizedBox(height: AppSpacing.xxl.h),
-                        _sectionTitle(context, isBn ? 'প্রশ্ন ও উত্তর' : 'Questions & Answers', Icons.fact_check_rounded),
-                        SizedBox(height: AppSpacing.md.h),
-                        ...questions.asMap().entries.map((entry) {
-                          return Padding(
-                            padding: EdgeInsets.only(bottom: AppSpacing.md.h),
-                            child: _buildQuestionCard(context, entry.key, entry.value, isBn),
-                          );
-                        }),
+                        SliverToBoxAdapter(
+                          child: Column(
+                            children: [
+                              SizedBox(height: AppSpacing.xxl.h),
+                              _sectionTitle(context, isBn ? 'প্রশ্ন ও উত্তর' : 'Questions & Answers', Icons.fact_check_rounded),
+                              SizedBox(height: AppSpacing.md.h),
+                            ],
+                          ),
+                        ),
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final entry = questions[index];
+                              final qId = entry['id'];
+                              final userAnswer = myResult.answers.firstWhere(
+                                (a) => a['questionId'] == qId,
+                                orElse: () => <String, dynamic>{},
+                              );
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: AppSpacing.md.h),
+                                child: _buildQuestionCard(
+                                  context, 
+                                  index, 
+                                  entry, 
+                                  isBn, 
+                                  userAnswer.isEmpty ? null : userAnswer,
+                                ),
+                              );
+                            },
+                            childCount: questions.length,
+                          ),
+                        ),
                       ],
-
-                      // Small bottom spacer so last card doesn't sit flush
-                      // against the fixed button area.
-                      SizedBox(height: AppSpacing.md.h),
+                      SliverToBoxAdapter(
+                        child: SizedBox(height: AppSpacing.lg.h), // Bottom spacer
+                      ),
                     ],
                   ),
                 ),
@@ -369,11 +398,12 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
 
   // ---------- Question review ----------
 
-  Widget _buildQuestionCard(BuildContext context, int i, dynamic q, bool isBn) {
+  Widget _buildQuestionCard(BuildContext context, int i, dynamic q, bool isBn, Map<String, dynamic>? userAnswer) {
     final text = q['text'];
     final explanation = q['explanation'];
     final correctIndex = q['correctIndex'] as int?;
     final options = List<String>.from(q['options']);
+    final userSelectedIndex = userAnswer?['selectedIndex'] as int?;
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg.r),
@@ -416,31 +446,67 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
             ],
           ),
           SizedBox(height: AppSpacing.md.h),
-          if (correctIndex != null && correctIndex < options.length)
-            Container(
+          ...options.asMap().entries.map((optionEntry) {
+            final optionIndex = optionEntry.key;
+            final optionText = optionEntry.value;
+
+            final isCorrect = optionIndex == correctIndex;
+            final isSelected = optionIndex == userSelectedIndex;
+
+            Color bgColor = Colors.transparent;
+            Color borderColor = AppColors.cardBorder;
+            Color textColor = AppColors.textPrimary;
+            IconData? icon;
+            Color? iconColor;
+
+            if (isCorrect) {
+              bgColor = AppColors.successLight;
+              borderColor = AppColors.success.withOpacity(0.35);
+              textColor = AppColors.success;
+              icon = Icons.check_circle_rounded;
+              iconColor = AppColors.success;
+            } else if (isSelected) {
+              bgColor = AppColors.dangerLight;
+              borderColor = AppColors.danger.withOpacity(0.35);
+              textColor = AppColors.danger;
+              icon = Icons.cancel_rounded;
+              iconColor = AppColors.danger;
+            } else {
+              // Add a subtle border/bg for unselected options
+              bgColor = Colors.transparent;
+              borderColor = AppColors.cardBorder.withOpacity(0.5);
+              textColor = AppColors.textPrimary;
+            }
+
+            return Container(
+              margin: EdgeInsets.only(bottom: AppSpacing.sm.h),
               padding: EdgeInsets.symmetric(horizontal: AppSpacing.md.w, vertical: AppSpacing.sm.h),
               decoration: BoxDecoration(
-                color: AppColors.successLight,
+                color: bgColor,
                 borderRadius: BorderRadius.circular(AppRadius.md.r),
-                border: Border.all(color: AppColors.success.withOpacity(0.35)),
+                border: Border.all(color: borderColor),
               ),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.check_circle_rounded, color: AppColors.success, size: 18.r),
-                  SizedBox(width: AppSpacing.sm.w),
+                  if (icon != null) ...[
+                    Icon(icon, color: iconColor, size: 18.r),
+                    SizedBox(width: AppSpacing.sm.w),
+                  ] else ...[
+                    SizedBox(width: 22.w), // alignment placeholder
+                  ],
                   Expanded(
                     child: Text(
-                      options[correctIndex],
+                      optionText,
                       style: AppTextStyles.bodyMedium(context).copyWith(
-                        color: AppColors.success,
-                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                        fontWeight: (isCorrect || isSelected) ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
+            );
+          }),
           if (explanation != null && explanation.toString().isNotEmpty) ...[
             SizedBox(height: AppSpacing.md.h),
             Row(

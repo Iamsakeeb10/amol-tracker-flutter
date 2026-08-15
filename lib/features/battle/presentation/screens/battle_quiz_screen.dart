@@ -112,8 +112,8 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
       'responseTimeMs': responseTimeMs,
     });
 
-    // Wait 1.5 seconds so user can see right/wrong feedback
-    await Future.delayed(const Duration(milliseconds: 1500));
+    // Wait 600ms so user can see right/wrong feedback quickly
+    await Future.delayed(const Duration(milliseconds: 600));
     
     if (!mounted) return;
 

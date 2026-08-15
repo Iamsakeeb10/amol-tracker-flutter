@@ -23,6 +23,8 @@ class BattleResultsScreen extends ConsumerStatefulWidget {
 }
 
 class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
+  bool _isQuestionsExpanded = false;
+
   @override
   void initState() {
     super.initState();
@@ -163,39 +165,90 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
                           ],
                         ),
                       ),
+
+                      
                       if (questions.isNotEmpty) ...[
-                        SliverToBoxAdapter(
-                          child: Column(
-                            children: [
-                              SizedBox(height: AppSpacing.xxl.h),
-                              _sectionTitle(context, isBn ? 'প্রশ্ন ও উত্তর' : 'Questions & Answers', Icons.fact_check_rounded),
-                              SizedBox(height: AppSpacing.md.h),
-                            ],
+                        SliverPadding(
+                          padding: EdgeInsets.symmetric(horizontal: 0),
+                          sliver: SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 16, bottom: AppSpacing.md.h),
+                              child: _sectionTitle(
+                                context,
+                                isBn ? 'প্রশ্ন ও উত্তর' : 'Questions & Answers',
+                                Icons.question_answer_rounded,
+                              ),
+                            ),
                           ),
                         ),
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final entry = questions[index];
-                              final qId = entry['id'];
-                              final userAnswer = myResult.answers.firstWhere(
-                                (a) => a['questionId'] == qId,
-                                orElse: () => <String, dynamic>{},
-                              );
-                              return Padding(
-                                padding: EdgeInsets.only(bottom: AppSpacing.md.h),
-                                child: _buildQuestionCard(
-                                  context, 
-                                  index, 
-                                  entry, 
-                                  isBn, 
-                                  userAnswer.isEmpty ? null : userAnswer,
+                        SliverPadding(
+                          padding: EdgeInsets.symmetric(horizontal: 0),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final entry = questions[index];
+                                final qId = entry['id'];
+                                final userAnswer = myResult.answers.firstWhere(
+                                  (a) => a['questionId'] == qId,
+                                  orElse: () => <String, dynamic>{},
+                                );
+                                return Padding(
+                                  padding: EdgeInsets.only(bottom: AppSpacing.md.h),
+                                  child: _buildQuestionCard(
+                                    context, 
+                                    index, 
+                                    entry, 
+                                    isBn, 
+                                    userAnswer.isEmpty ? null : userAnswer,
+                                  ),
+                                );
+                              },
+                              childCount: (questions.length > 2 && !_isQuestionsExpanded) ? 2 : questions.length,
+                            ),
+                          ),
+                        ),
+                        if (questions.length > 2 && !_isQuestionsExpanded)
+                          SliverPadding(
+                            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg.w),
+                            sliver: SliverToBoxAdapter(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isQuestionsExpanded = true;
+                                  });
+                                },
+                                child: Container(
+                                  margin: EdgeInsets.only(bottom: AppSpacing.md.h),
+                                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.cardDark,
+                                    borderRadius: BorderRadius.circular(AppRadius.lg.r),
+                                    border: Border.all(color: AppColors.cardBorder),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        isBn ? 'আরো দেখুন' : 'See More',
+                                        style: TextStyle(
+                                          fontSize: 13.sp,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      SizedBox(width: 8.w),
+                                      Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: AppColors.textPrimary,
+                                        size: 18.r,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              );
-                            },
-                            childCount: questions.length,
+                              ),
+                            ),
                           ),
-                        ),
                       ],
                       SliverToBoxAdapter(
                         child: SizedBox(height: AppSpacing.lg.h), // Bottom spacer
@@ -357,21 +410,21 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
                   ),
                   SizedBox(width: AppSpacing.md.w),
                   AvatarChip(
-                    initial: isMe ? 'You' : 'P${index + 1}',
+                    initial: p.name.isNotEmpty ? p.name[0].toUpperCase() : '?',
                     color: isMe ? AppColors.gold : AppColors.ice,
                   ),
                   SizedBox(width: AppSpacing.md.w),
                   Expanded(
                     child: Text(
-                      isMe ? (isBn ? 'আপনি' : 'You') : 'Player ${index + 1}',
+                      isMe ? (isBn ? '${p.name} (আপনি)' : '${p.name} (You)') : p.name,
                       style: AppTextStyles.titleMedium(context).copyWith(
                         fontWeight: isMe ? FontWeight.bold : FontWeight.normal,
                         color: isMe ? AppColors.gold : AppColors.textPrimary,
                       ),
                     ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  SizedBox(width: AppSpacing.md.w),
+                  Column(  crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
                         '${p.score} pts',

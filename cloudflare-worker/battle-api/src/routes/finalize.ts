@@ -17,6 +17,7 @@ export async function finalizeBattle(
   // Create player array from scoreboard
   const players = playerUids.map((pUid) => ({
     uid: pUid,
+    name: battle.playerNames?.[pUid] ?? 'Unknown Player',
     score: scoreboard[pUid]?.score ?? 0,
     totalTimeMs: scoreboard[pUid]?.totalTimeMs ?? 0,
     answers: scoreboard[pUid]?.answers ?? [],

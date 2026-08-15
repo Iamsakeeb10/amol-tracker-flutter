@@ -89,7 +89,11 @@ export async function createBattle(request: Request, env: Env): Promise<Response
     throw internalError('Failed to generate a unique battle code');
   }
 
-  // 3. Create the battle in Firestore
+  // 3. Get user name
+  const userDoc = await getDoc(env, `users/${uid}`);
+  const userName = userDoc?.name || 'Unknown Player';
+
+  // 4. Create the battle in Firestore
   const battleData = {
     hostUid: uid,
     topicId,
@@ -98,6 +102,9 @@ export async function createBattle(request: Request, env: Env): Promise<Response
     maxPlayers,
     status: 'waiting',
     playerUids: [uid],
+    playerNames: {
+      [uid]: userName,
+    },
     readyUids: [],
     createdAt: serverTimestamp(),
   };
@@ -151,9 +158,16 @@ export async function joinBattle(request: Request, env: Env): Promise<Response> 
       throw fullError('Battle is full');
     }
 
+    // Fetch user name
+    const userDoc = await tx.get(`users/${uid}`);
+    const userName = userDoc?.name || 'Unknown Player';
+
     // Add player and update
     playerUids.push(uid);
-    tx.update(`battles/${code}`, { playerUids });
+    const playerNames = battle.playerNames || {};
+    playerNames[uid] = userName;
+    
+    tx.update(`battles/${code}`, { playerUids, playerNames });
   });
 
   // 4. Stub FCM notification

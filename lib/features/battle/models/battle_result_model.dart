@@ -9,12 +9,14 @@ DateTime? _parseDateTime(dynamic value) {
 
 class BattleResultPlayer {
   final String uid;
+  final String name;
   final int score;
   final int totalTimeMs;
   final List<Map<String, dynamic>> answers;
 
   BattleResultPlayer({
     required this.uid,
+    required this.name,
     required this.score,
     required this.totalTimeMs,
     this.answers = const [],
@@ -24,6 +26,7 @@ class BattleResultPlayer {
     final answersList = json['answers'] as List<dynamic>? ?? [];
     return BattleResultPlayer(
       uid: json['uid'] as String? ?? '',
+      name: json['name'] as String? ?? 'Unknown Player',
       score: json['score'] as int? ?? 0,
       totalTimeMs: json['totalTimeMs'] as int? ?? 0,
       answers: answersList.map((e) => e as Map<String, dynamic>).toList(),
@@ -33,6 +36,7 @@ class BattleResultPlayer {
   Map<String, dynamic> toJson() {
     return {
       'uid': uid,
+      'name': name,
       'score': score,
       'totalTimeMs': totalTimeMs,
       'answers': answers,

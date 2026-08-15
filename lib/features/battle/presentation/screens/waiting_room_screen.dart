@@ -183,8 +183,10 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                     separatorBuilder: (_, __) => SizedBox(height: 10.h),
                     itemBuilder: (context, index) {
                       final uid = battle.playerUids[index];
+                      final name = battle.playerNames?[uid] ?? 'Player ${index + 1}';
                       return _PlayerTile(
                         uid: uid,
+                        name: name,
                         isHost: uid == battle.hostUid,
                         isMe: uid == currentUser?.uid,
                         locale: locale,
@@ -545,6 +547,7 @@ class _SectionHeader extends StatelessWidget {
 /// CardContainer.
 class _PlayerTile extends ConsumerWidget {
   final String uid;
+  final String name;
   final bool isHost;
   final bool isMe;
   final String locale;
@@ -554,6 +557,7 @@ class _PlayerTile extends ConsumerWidget {
 
   const _PlayerTile({
     required this.uid,
+    required this.name,
     required this.isHost,
     required this.isMe,
     required this.locale,
@@ -564,8 +568,8 @@ class _PlayerTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playerAsync = ref.watch(battlePlayerProvider(uid));
     final isBn = locale == 'bn';
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
@@ -579,44 +583,22 @@ class _PlayerTile extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          playerAsync.when(
-            data: (user) {
-              final name = user?.name ?? 'Player';
-              final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
-              return AvatarChip(
-                initial: initial,
-                color: AppColors.ice,
-                size: 40.r,
-              );
-            },
-            loading: () => SizedBox(
-              width: 40.r,
-              height: 40.r,
-              child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold),
-            ),
-            error: (_, __) => AvatarChip(initial: '?', color: AppColors.textMuted, size: 40.r),
+          AvatarChip(
+            initial: initial,
+            color: AppColors.ice,
+            size: 40.r,
           ),
           SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                playerAsync.when(
-                  data: (user) => Text(
-                    (user?.name ?? 'Player') + (isMe ? (isBn ? ' (আপনি)' : ' (You)') : ''),
-                    style: TextStyle(
-                      fontSize: 14.5.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  loading: () => Text(
-                    isBn ? 'লোড হচ্ছে...' : 'Loading...',
-                    style: TextStyle(fontSize: 14.5.sp, color: AppColors.textSecondary),
-                  ),
-                  error: (_, __) => Text(
-                    'Unknown Player',
-                    style: TextStyle(fontSize: 14.5.sp, color: AppColors.textSecondary),
+                Text(
+                  name + (isMe ? (isBn ? ' (আপনি)' : ' (You)') : ''),
+                  style: TextStyle(
+                    fontSize: 14.5.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 SizedBox(height: 4.h),

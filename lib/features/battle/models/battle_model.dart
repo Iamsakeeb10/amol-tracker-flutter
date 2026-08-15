@@ -14,6 +14,7 @@ class BattleModel {
   final String status; // 'waiting', 'active', 'finished', 'cancelled', 'expired'
   final String hostUid;
   final List<String> playerUids;
+  final Map<String, String>? playerNames;
   final List<String>? readyUids;
   final List<String>? forfeitedUids;
   final int questionCount;
@@ -30,6 +31,7 @@ class BattleModel {
     required this.status,
     required this.hostUid,
     required this.playerUids,
+    this.playerNames,
     this.readyUids,
     this.forfeitedUids,
     required this.questionCount,
@@ -42,12 +44,16 @@ class BattleModel {
   });
 
   factory BattleModel.fromJson(Map<String, dynamic> json) {
+    final playerNamesRaw = json['playerNames'] as Map<String, dynamic>? ?? {};
+    final playerNames = playerNamesRaw.map((key, value) => MapEntry(key, value.toString()));
+
     return BattleModel(
       id: json['id'] as String? ?? '',
       topicId: json['topicId'] as String? ?? '',
       status: json['status'] as String? ?? 'waiting',
       hostUid: json['hostUid'] as String? ?? '',
       playerUids: List<String>.from(json['playerUids'] ?? []),
+      playerNames: playerNames,
       readyUids: json['readyUids'] != null ? List<String>.from(json['readyUids']) : null,
       forfeitedUids: json['forfeitedUids'] != null ? List<String>.from(json['forfeitedUids']) : null,
       questionCount: json['questionCount'] as int? ?? 0,

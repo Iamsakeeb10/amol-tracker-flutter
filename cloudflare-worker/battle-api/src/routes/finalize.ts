@@ -74,11 +74,24 @@ export async function finalizeBattle(
     const userDoc = await tx.get(`users/${p.uid}`);
     if (userDoc) {
       const newXp = (userDoc.lmsXp ?? 0) + p.score;
-      tx.update(`users/${p.uid}`, { lmsXp: newXp });
+      const currentBattlePlays = userDoc.battlePlays ?? 0;
+      const currentBattleWins = userDoc.battleWins ?? 0;
+      const currentBattleScore = userDoc.battleScore ?? 0;
+      
+      const isWin = winnerUid === p.uid;
+      tx.update(`users/${p.uid}`, { 
+        lmsXp: newXp,
+        battlePlays: currentBattlePlays + 1,
+        battleWins: currentBattleWins + (isWin ? 1 : 0),
+        battleScore: currentBattleScore + p.score,
+      });
     }
 
     // Write battle history
-    const opponentUids = players.map(x => x.uid).filter(id => id !== p.uid);
+    const opponents = players
+      .filter(x => x.uid !== p.uid)
+      .map(x => ({ uid: x.uid, name: x.name }));
+      
     let result = 'loss';
     if (winnerUid === null) {
       result = 'draw';
@@ -88,7 +101,7 @@ export async function finalizeBattle(
 
     tx.set(`users/${p.uid}/battleHistory/${code}`, {
       battleId: code,
-      opponentUids,
+      opponents,
       topicId: battle.topicId,
       result,
       score: p.score,

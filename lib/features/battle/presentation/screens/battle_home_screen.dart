@@ -60,6 +60,15 @@ class BattleHomeScreen extends ConsumerWidget {
             }
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.history_rounded, color: AppColors.textPrimary, size: 24.r),
+            onPressed: () {
+              context.push(AppRoutes.battleHistory);
+            },
+          ),
+          SizedBox(width: 8.w),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.fromLTRB(0.w, 8.h, 0.w, 24.h),

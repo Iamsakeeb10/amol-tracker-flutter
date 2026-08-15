@@ -7,7 +7,6 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
-import '../../../../shared/widgets/card_container.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../providers/battle_providers.dart';
 import '../../providers/topic_providers.dart';
@@ -37,12 +36,20 @@ class BattleHistoryScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.history_toggle_off,
-                      size: 64.r,
-                      color: AppColors.textSecondary.withOpacity(0.5),
+                    Container(
+                      width: 88.r,
+                      height: 88.r,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.gold.withOpacity(0.1),
+                      ),
+                      child: Icon(
+                        Icons.history_toggle_off,
+                        size: 40.r,
+                        color: AppColors.gold,
+                      ),
                     ),
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 20.h),
                     Text(
                       isBn ? 'কোনো হিস্ট্রি নেই' : 'No history yet',
                       style: AppTextStyles.titleMedium(context).copyWith(
@@ -67,6 +74,10 @@ class BattleHistoryScreen extends ConsumerWidget {
                         foregroundColor: AppColors.emeraldDeep,
                         padding: EdgeInsets.symmetric(
                             horizontal: 24.w, vertical: 12.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        elevation: 0,
                         textStyle: AppTextStyles.labelLarge(context).copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -83,73 +94,141 @@ class BattleHistoryScreen extends ConsumerWidget {
           }
 
           return ListView.separated(
-            padding: EdgeInsets.all(20.w),
+            padding: EdgeInsets.fromLTRB(0.w, 16.h, 0.w, 24.h),
             itemCount: historyList.length,
-            separatorBuilder: (context, index) => SizedBox(height: 12.h),
+            separatorBuilder: (context, index) => SizedBox(height: 10.h),
             itemBuilder: (context, index) {
               final item = historyList[index];
-              final topic = activeTopics.firstWhere(
-                (t) => t.id == item.topicId,
-                orElse: () => activeTopics.first, // fallback if not found
-              );
-              
-              String resultText = '';
-              Color resultColor = AppColors.textSecondary;
+              final topic = activeTopics.where((t) => t.id == item.topicId).firstOrNull;
+
+              late final IconData resultIcon;
+              late final Color resultColor;
+              late final String resultText;
               if (item.result == 'win') {
-                resultText = isBn ? 'বিজয়ী' : 'Victory';
+                resultIcon = Icons.emoji_events_rounded;
                 resultColor = AppColors.gold;
+                resultText = isBn ? 'বিজয়ী' : 'Victory';
               } else if (item.result == 'loss') {
-                resultText = isBn ? 'পরাজিত' : 'Defeat';
+                resultIcon = Icons.close_rounded;
                 resultColor = AppColors.danger;
+                resultText = isBn ? 'পরাজিত' : 'Defeat';
               } else {
+                resultIcon = Icons.horizontal_rule_rounded;
+                resultColor = AppColors.textSecondary;
                 resultText = isBn ? 'ড্র' : 'Draw';
-                resultColor = AppColors.textPrimary;
               }
 
-              return CardContainer(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            topic.displayName(locale),
-                            style: AppTextStyles.titleSmall(context).copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4.h),
-                          if (item.date != null)
+              return GestureDetector(
+                onTap: () {
+                  context.push(AppRoutes.battleResultsPath(item.battleId), extra: {'fromHistory': true});
+                },
+                child: Container(
+                  padding: EdgeInsets.all(14.w),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardDark,
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: AppColors.cardBorder,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 44.r,
+                        height: 44.r,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: resultColor.withOpacity(0.12),
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(resultIcon, size: 22.r, color: resultColor),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
-                              DateFormat.yMMMd().format(item.date!),
-                              style: AppTextStyles.bodySmall(context).copyWith(
-                                color: AppColors.textSecondary,
+                              topic?.displayName(locale) ?? (isBn ? 'অজানা টপিক' : 'Unknown Topic'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.titleSmall(context).copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
+                            if (item.opponents.isNotEmpty) ...[
+                              SizedBox(height: 4.h),
+                              Row(
+                                children: [
+                                  Icon(Icons.people_alt_outlined,
+                                      size: 13.r, color: AppColors.textSecondary),
+                                  SizedBox(width: 4.w),
+                                  Expanded(
+                                    child: Text(
+                                      isBn
+                                          ? item.opponents.map((e) => e.name).join(', ')
+                                          : item.opponents.map((e) => e.name).join(', '),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTextStyles.bodySmall(context).copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (item.date != null) ...[
+                              SizedBox(height: 4.h),
+                              Row(
+                                children: [
+                                  Icon(Icons.calendar_today_outlined,
+                                      size: 12.r, color: AppColors.textSecondary),
+                                  SizedBox(width: 4.w),
+                                  Text(
+                                    DateFormat.yMMMd().format(item.date!),
+                                    style: AppTextStyles.bodySmall(context).copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                            decoration: BoxDecoration(
+                              color: resultColor.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Text(
+                              resultText,
+                              style: AppTextStyles.bodySmall(context).copyWith(
+                                color: resultColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 6.h),
+                          Text(
+                            '+${item.score} XP',
+                            style: AppTextStyles.bodySmall(context).copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          resultText,
-                          style: AppTextStyles.titleSmall(context).copyWith(
-                            color: resultColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          '+${item.score} XP',
-                          style: AppTextStyles.bodySmall(context).copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },
@@ -158,7 +237,7 @@ class BattleHistoryScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
           child: Text(
-            isBn ? 'কিছু ভুল হয়েছে' : 'Something went wrong',
+            isBn ? 'কিছু ভুল হয়েছে' : 'Something went wrong',
             style: AppTextStyles.bodyMedium(context),
           ),
         ),

@@ -145,7 +145,9 @@ GoRouter buildAppRouter() {
         path: '${AppRoutes.battleResults}/:code',
         builder: (context, state) {
           final code = state.pathParameters['code']!;
-          return BattleResultsScreen(battleCode: code);
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final fromHistory = extra['fromHistory'] as bool? ?? false;
+          return BattleResultsScreen(battleCode: code, fromHistory: fromHistory);
         },
       ),
       GoRoute(

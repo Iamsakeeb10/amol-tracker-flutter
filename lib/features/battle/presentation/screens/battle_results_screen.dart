@@ -15,8 +15,9 @@ import '../../providers/battle_providers.dart';
 
 class BattleResultsScreen extends ConsumerStatefulWidget {
   final String battleCode;
+  final bool fromHistory;
 
-  const BattleResultsScreen({super.key, required this.battleCode});
+  const BattleResultsScreen({super.key, required this.battleCode, this.fromHistory = false});
 
   @override
   ConsumerState<BattleResultsScreen> createState() => _BattleResultsScreenState();
@@ -62,10 +63,12 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
     final currentUid = currentUser?.uid;
 
     return PopScope(
-      canPop: false,
+      canPop: widget.fromHistory,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        _goToHome();
+        if (!widget.fromHistory) {
+          _goToHome();
+        }
       },
       child: AppScaffold(
         handleExitBack: true,
@@ -79,7 +82,7 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
           ),
           leading: IconButton(
             icon: const Icon(Icons.close, color: AppColors.textPrimary),
-            onPressed: _goToHome,
+            onPressed: widget.fromHistory ? () => context.pop() : _goToHome,
           ),
         ),
         body: resultAsync.when(

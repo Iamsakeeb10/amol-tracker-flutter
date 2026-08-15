@@ -135,7 +135,6 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
       _hasFinishedLocal = true;
       _isSubmittingAll = true;
     });
-    _timer?.cancel();
 
     try {
       final repo = ref.read(battleRepositoryProvider);
@@ -336,7 +335,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
                           Text(
                             timeIsUp 
                                 ? (isBn ? 'সময় শেষ!' : 'Time is up!')
-                                : (isBn ? 'দুর্দান্ত! আপনি সবগুলো প্রশ্নের উত্তর দিয়েছেন।' : 'Great job! You finished all questions.'),
+                                : (isBn ? 'সবগুলো প্রশ্নের উত্তর দেওয়া হয়েছে!' : 'All questions answered!'),
                             style: AppTextStyles.titleMedium(context).copyWith(fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
@@ -352,7 +351,9 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
                             const CircularProgressIndicator(color: AppColors.ice),
                             SizedBox(height: 16.h),
                             Text(
-                              isBn ? 'অন্যান্য প্রতিযোগীদের জন্য অপেক্ষা করা হচ্ছে...' : 'Waiting for opponents to finish...',
+                              timeIsUp 
+                                  ? (isBn ? 'অন্যান্য প্রতিযোগীদের জন্য অপেক্ষা করা হচ্ছে...' : 'Waiting for opponents to finish...')
+                                  : (isBn ? 'অনুগ্রহ করে বাকিদের শেষ হওয়া পর্যন্ত অপেক্ষা করুন...' : 'Please wait while your opponents finish...'),
                               style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary),
                               textAlign: TextAlign.center,
                             ),

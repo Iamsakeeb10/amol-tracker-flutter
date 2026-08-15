@@ -25,11 +25,11 @@ class QuestionModel {
     return QuestionModel(
       id: json['id'] as String? ?? '',
       topicId: json['topicId'] as String? ?? '',
-      text: json['text'] as String? ?? '',
-      options: List<String>.from(json['options'] ?? []),
+      text: (json['text'] ?? json['textBn'] ?? json['textEn'] ?? '') as String,
+      options: List<String>.from(json['options'] ?? json['optionsBn'] ?? json['optionsEn'] ?? []),
       correctIndex: json['correctIndex'] as int? ?? 0,
-      explanation: json['explanation'] as String?,
-      reference: json['reference'] as String?,
+      explanation: (json['explanation'] ?? json['explanationBn'] ?? json['explanationEn']) as String?,
+      reference: (json['reference'] ?? json['referenceBn'] ?? json['referenceEn']) as String?,
       difficulty: json['difficulty'] as String? ?? 'easy',
       isActive: json['isActive'] as bool? ?? false,
     );

@@ -308,8 +308,8 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
     if (firstQuestion) {
       currentQuestionData = {
         id: selectedQuestionIds[0],
-        text: firstQuestion.text,
-        options: firstQuestion.options,
+        text: firstQuestion.text || firstQuestion.textBn || firstQuestion.textEn,
+        options: firstQuestion.options || firstQuestion.optionsBn || firstQuestion.optionsEn,
         difficulty: firstQuestion.difficulty,
       };
     }
@@ -499,8 +499,8 @@ export async function nextQuestion(request: Request, env: Env): Promise<Response
       if (nextQ) {
         currentQuestionData = {
           id: questionIds[nextIndex],
-          text: nextQ.text,
-          options: nextQ.options,
+          text: nextQ.text || nextQ.textBn || nextQ.textEn,
+          options: nextQ.options || nextQ.optionsBn || nextQ.optionsEn,
           difficulty: nextQ.difficulty,
         };
         responsePayload.nextQuestion = currentQuestionData;

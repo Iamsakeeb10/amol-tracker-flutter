@@ -17,10 +17,8 @@ class AdminBattleRepository {
     final docRef = _firestore.collection('topics').doc();
     final newTopic = TopicModel(
       id: docRef.id,
-      nameEn: topic.nameEn,
-      nameBn: topic.nameBn,
-      descriptionEn: topic.descriptionEn,
-      descriptionBn: topic.descriptionBn,
+      name: topic.name,
+      description: topic.description,
       iconName: topic.iconName,
       isActive: topic.isActive,
       questionCount: topic.questionCount,

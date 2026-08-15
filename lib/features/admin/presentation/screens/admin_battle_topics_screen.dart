@@ -104,7 +104,7 @@ class _AdminTopicCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    topic.nameEn,
+                    topic.name,
                     style: AppTextStyles.titleMedium(context).copyWith(
                       color: topic.isActive ? AppColors.textPrimary : AppColors.textMuted,
                       decoration: topic.isActive ? null : TextDecoration.lineThrough,

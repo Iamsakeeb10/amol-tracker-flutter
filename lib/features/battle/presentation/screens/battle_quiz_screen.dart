@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -38,23 +39,29 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   
   Timer? _timer;
   int _timeLeftMs = 0;
+  
+  bool _isAutoAdvancing = false;
+  Timer? _autoAdvanceTimer;
 
   @override
   void dispose() {
     _timer?.cancel();
+    _autoAdvanceTimer?.cancel();
     super.dispose();
   }
 
   Stopwatch? _stopwatch;
 
-  void _startTimer(DateTime revealedAt, int secondsPerQuestion) {
+  void _startTimer(DateTime revealedAt, int secondsPerQuestion, bool isHost) {
     _timer?.cancel();
+    _autoAdvanceTimer?.cancel();
     _stopwatch = Stopwatch()..start();
     
     final totalMs = secondsPerQuestion * 1000;
     
     setState(() {
       _timeLeftMs = totalMs;
+      _isAutoAdvancing = false;
     });
 
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
@@ -72,6 +79,17 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
       
       if (remaining <= 0) {
         timer.cancel();
+        
+        if (isHost && mounted && !_isAutoAdvancing) {
+          setState(() {
+            _isAutoAdvancing = true;
+          });
+          _autoAdvanceTimer = Timer(const Duration(seconds: 2), () {
+            if (mounted) {
+              _nextQuestion();
+            }
+          });
+        }
       }
     });
   }
@@ -121,12 +139,22 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   }
 
   Future<void> _nextQuestion() async {
+    _autoAdvanceTimer?.cancel();
+    if (mounted && !_isAutoAdvancing) {
+      setState(() {
+        _isAutoAdvancing = true;
+      });
+    }
+
     try {
       final repo = ref.read(battleRepositoryProvider);
       await repo.nextQuestion(code: widget.battleCode);
     } catch (e) {
       debugPrint('Next question failed: $e');
       if (mounted) {
+        setState(() {
+          _isAutoAdvancing = false;
+        });
         final locale = ref.read(localeProvider).languageCode;
         final isBn = locale == 'bn';
         ScaffoldMessenger.of(context).showSnackBar(
@@ -184,26 +212,55 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
           ),
           automaticallyImplyLeading: false,
           actions: [
-            IconButton(
-              icon: Icon(Icons.exit_to_app_rounded, color: AppColors.dangerLight, size: 24.r),
-              onPressed: () async {
-                final shouldExit = await showDialog<bool>(
-                  context: context,
-                  builder: (_) => _BattleExitDialog(isBn: isBn),
-                );
-                if (shouldExit == true && context.mounted) {
-                  _handleExit(context);
-                }
-              },
+            Padding(
+              padding: EdgeInsets.only(right: 8.w),
+              child: IconButton(
+                icon: Icon(
+                  Icons.exit_to_app_rounded,
+                  color: const Color(0xFFFF5252), // Explicit red color (Colors.redAccent)
+                  size: 26.r,
+                ),
+                onPressed: () async {
+                  final shouldExit = await showDialog<bool>(
+                    context: context,
+                    builder: (_) => _BattleExitDialog(isBn: isBn),
+                  );
+                  if (shouldExit == true && context.mounted) {
+                    _handleExit(context);
+                  }
+                },
+              ),
             ),
-            SizedBox(width: 8.w),
           ],
         ),
       body: battleAsync.when(
         data: (battle) {
-          if (battle == null) return const Center(child: Text('Battle not found'));
+          debugPrint('=== QUIZ SCREEN RENDER ===');
+          if (battle == null) {
+            debugPrint('Battle is null!');
+            return const Center(child: Text('Battle not found'));
+          }
+
+          debugPrint('Battle Status: ${battle.status}');
+          debugPrint('Question Count: ${battle.questionCount}');
+          debugPrint('Current Question Index (Server): ${battle.currentQuestionIndex}');
+          debugPrint('Current Question Data: ${battle.currentQuestion}');
+          
+          if (battle.currentQuestion != null && battle.currentQuestion!['id'] != null) {
+            FirebaseFirestore.instance
+                .collection('topics')
+                .doc(battle.topicId)
+                .collection('questions')
+                .doc(battle.currentQuestion!['id'])
+                .get()
+                .then((doc) {
+                  debugPrint('DIRECT FETCH from topics/${battle.topicId}/questions/${battle.currentQuestion!['id']}:');
+                  debugPrint('${doc.data()}');
+                }).catchError((e) => debugPrint('Error fetching doc: $e'));
+          }
 
           if (battle.status == 'finished') {
+            debugPrint('Battle finished, navigating to results...');
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 context.pushReplacement(AppRoutes.battleResultsPath(widget.battleCode));
@@ -213,6 +270,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
           }
 
           final serverIndex = battle.currentQuestionIndex;
+          final isHost = currentUser?.uid == battle.hostUid;
           
           // Detect advancement and trigger 3-second delay
           if (serverIndex > _uiQuestionIndex && !_isTransitioning) {
@@ -227,7 +285,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
                   
                   // Restart timer for the new question
                   if (battle.questionRevealedAt != null) {
-                    _startTimer(battle.questionRevealedAt!, battle.secondsPerQuestion);
+                    _startTimer(battle.questionRevealedAt!, battle.secondsPerQuestion, isHost);
                   }
                 });
               }
@@ -236,10 +294,8 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
 
           // Initial timer start
           if (_timer == null && battle.questionRevealedAt != null && !_isTransitioning) {
-            _startTimer(battle.questionRevealedAt!, battle.secondsPerQuestion);
+            _startTimer(battle.questionRevealedAt!, battle.secondsPerQuestion, isHost);
           }
-
-          final isHost = currentUser?.uid == battle.hostUid;
           
           // Determine which question to show based on _uiQuestionIndex
           // If we are transitioning, we show the OLD question (which we don't have perfectly 
@@ -259,6 +315,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
             selectedIndex: _selectedIndex,
             isCorrect: _isCorrect,
             isSubmitting: _isSubmitting,
+            isAutoAdvancing: _isAutoAdvancing,
             onSubmit: _submitAnswer,
             onNext: _nextQuestion,
           );
@@ -390,6 +447,7 @@ class _QuizContent extends StatefulWidget {
   final int? selectedIndex;
   final bool? isCorrect;
   final bool isSubmitting;
+  final bool isAutoAdvancing;
   final ValueChanged<int> onSubmit;
   final VoidCallback onNext;
 
@@ -405,6 +463,7 @@ class _QuizContent extends StatefulWidget {
     required this.selectedIndex,
     required this.isCorrect,
     required this.isSubmitting,
+    required this.isAutoAdvancing,
     required this.onSubmit,
     required this.onNext,
   });
@@ -433,6 +492,11 @@ class _QuizContentState extends State<_QuizContent> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('=== _QuizContent RENDER ===');
+    debugPrint('widget.uiIndex: ${widget.uiIndex}');
+    debugPrint('widget.isTransitioning: ${widget.isTransitioning}');
+    debugPrint('widget.timeLeftMs: ${widget.timeLeftMs}');
+    
     // Initial cache populate
     if (_cachedQuestion == null && widget.battle.currentQuestion != null) {
       _cachedQuestion = widget.battle.currentQuestion;
@@ -440,7 +504,10 @@ class _QuizContentState extends State<_QuizContent> {
     }
 
     final question = _cachedQuestion;
+    debugPrint('_cachedQuestion: $question');
+    
     if (question == null) {
+      debugPrint('Returning "Get ready..." screen');
       return Center(
         child: Text(
           widget.isBn ? 'রেডি হোন...' : 'Get ready...',
@@ -624,21 +691,27 @@ class _QuizContentState extends State<_QuizContent> {
               children: [
                 const Spacer(),
                 FilledButton(
-                  onPressed: (!isRevealed || widget.isTransitioning) ? null : widget.onNext,
+                  onPressed: (!isRevealed || widget.isTransitioning || widget.isAutoAdvancing) ? null : widget.onNext,
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.gold,
                     foregroundColor: AppColors.emeraldDeep,
                     padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   ),
-                  child: Text(
-                    widget.uiIndex >= widget.battle.questionCount - 1
-                        ? (widget.isBn ? 'ব্যাটেল শেষ করুন' : 'Finish Battle')
-                        : (widget.isBn ? 'পরবর্তী প্রশ্ন' : 'Next Question'),
-                    style: AppTextStyles.bodyMedium(context).copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.emeraldDeep,
-                    ),
-                  ),
+                  child: widget.isAutoAdvancing
+                      ? SizedBox(
+                          width: 20.r,
+                          height: 20.r,
+                          child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.emeraldDeep),
+                        )
+                      : Text(
+                          widget.uiIndex >= widget.battle.questionCount - 1
+                              ? (widget.isBn ? 'ব্যাটেল শেষ করুন' : 'Finish Battle')
+                              : (widget.isBn ? 'পরবর্তী প্রশ্ন' : 'Next Question'),
+                          style: AppTextStyles.bodyMedium(context).copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.emeraldDeep,
+                          ),
+                        ),
                 ),
               ],
             ),

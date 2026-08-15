@@ -298,7 +298,12 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
       final repo = ref.read(battleRepositoryProvider);
       await repo.toggleReady(code: widget.battleCode, isReady: !currentlyReady);
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('409') || errorStr.contains('already started') || errorStr.contains('aborted')) {
+        debugPrint('toggleReady 409/Aborted caught and suppressed: $e');
+      } else {
+        if (mounted) setState(() => _error = e.toString());
+      }
     } finally {
       if (mounted) setState(() => _isTogglingReady = false);
     }
@@ -349,7 +354,13 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
       // We don't navigate immediately here; we let the stream listener handle it
       // when it sees status == 'active'.
     } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('409') || errorStr.contains('already started') || errorStr.contains('aborted')) {
+        debugPrint('startBattle 409/Aborted caught and suppressed: $e');
+        // Battle likely already started by another request or transaction abort but will recover via stream
+      } else {
+        if (mounted) setState(() => _error = e.toString());
+      }
     } finally {
       if (mounted) setState(() => _isStarting = false);
     }

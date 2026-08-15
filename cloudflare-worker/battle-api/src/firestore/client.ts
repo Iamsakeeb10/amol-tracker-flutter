@@ -174,95 +174,115 @@ export async function runTransaction(
   callback: (tx: Transaction) => Promise<void>
 ): Promise<void> {
   const baseUrl = getBaseUrl(env.FIREBASE_PROJECT_ID);
-  
-  // 1. Begin transaction
-  const beginRes = await firestoreFetch(env, `${baseUrl}:beginTransaction`, {
-    method: 'POST',
-    body: JSON.stringify({ options: { readWrite: {} } }),
-  });
-  const transactionId = beginRes.transaction;
+  const maxAttempts = 5;
 
-  const queuedWrites: any[] = [];
-
-  // 2. Create the tx wrapper
-  const tx: Transaction = {
-    async get(path: string) {
-      const fullPath = `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/${path}`;
-      // batchGet must be used because normal GET doesn't support transactionId parameter
-      const res = await firestoreFetch(env, `${baseUrl}:batchGet`, {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      // 1. Begin transaction
+      const beginRes = await firestoreFetch(env, `${baseUrl}:beginTransaction`, {
         method: 'POST',
-        body: JSON.stringify({
-          documents: [fullPath],
-          transaction: transactionId,
-        }),
+        body: JSON.stringify({ options: { readWrite: {} } }),
       });
-      
-      // batchGet returns an array of results, either { found: Document } or { missing: string }
-      if (Array.isArray(res) && res.length > 0 && res[0].found) {
-        return decodeDocument(res[0].found.fields);
-      }
-      return null;
-    },
-    
-    set(path: string, data: Record<string, any>) {
-      const { fields, transforms } = encodeDocument(data);
-      const fullPath = `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/${path}`;
-      
-      queuedWrites.push({
-        update: { name: fullPath, fields }
-      });
-      
-      if (transforms.length > 0) {
-        queuedWrites.push({
-          transform: { document: fullPath, fieldTransforms: transforms }
-        });
-      }
-    },
-    
-    update(path: string, data: Record<string, any>) {
-      const { fields, transforms } = encodeDocument(data);
-      const fullPath = `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/${path}`;
-      
-      const updateWrite: any = {
-        update: { name: fullPath, fields },
-        currentDocument: { exists: true },
+      const transactionId = beginRes.transaction;
+
+      const queuedWrites: any[] = [];
+
+      // 2. Create the tx wrapper
+      const tx: Transaction = {
+        async get(path: string) {
+          const fullPath = `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/${path}`;
+          const res = await firestoreFetch(env, `${baseUrl}:batchGet`, {
+            method: 'POST',
+            body: JSON.stringify({
+              documents: [fullPath],
+              transaction: transactionId,
+            }),
+          });
+          
+          if (Array.isArray(res) && res.length > 0 && res[0].found) {
+            return decodeDocument(res[0].found.fields);
+          }
+          return null;
+        },
+        
+        set(path: string, data: Record<string, any>) {
+          const { fields, transforms } = encodeDocument(data);
+          const fullPath = `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/${path}`;
+          
+          queuedWrites.push({
+            update: { name: fullPath, fields }
+          });
+          
+          if (transforms.length > 0) {
+            queuedWrites.push({
+              transform: { document: fullPath, fieldTransforms: transforms }
+            });
+          }
+        },
+        
+        update(path: string, data: Record<string, any>) {
+          const { fields, transforms } = encodeDocument(data);
+          const fullPath = `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/${path}`;
+          
+          const updateWrite: any = {
+            update: { name: fullPath, fields },
+            currentDocument: { exists: true },
+          };
+          const fieldPaths = Object.keys(fields);
+          if (fieldPaths.length > 0) {
+            updateWrite.updateMask = { fieldPaths };
+          }
+          queuedWrites.push(updateWrite);
+          
+          if (transforms.length > 0) {
+            queuedWrites.push({
+              transform: { document: fullPath, fieldTransforms: transforms }
+            });
+          }
+        },
+        
+        delete(path: string) {
+          const fullPath = `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/${path}`;
+          queuedWrites.push({ delete: fullPath });
+        }
       };
-      const fieldPaths = Object.keys(fields);
-      if (fieldPaths.length > 0) {
-        updateWrite.updateMask = { fieldPaths };
-      }
-      queuedWrites.push(updateWrite);
-      
-      if (transforms.length > 0) {
-        queuedWrites.push({
-          transform: { document: fullPath, fieldTransforms: transforms }
+
+      // 3. Execute the user callback
+      await callback(tx);
+
+      // 4. Commit the transaction
+      if (queuedWrites.length > 0) {
+        await firestoreFetch(env, `${baseUrl}:commit`, {
+          method: 'POST',
+          body: JSON.stringify({
+            writes: queuedWrites,
+            transaction: transactionId,
+          }),
         });
+      } else {
+        await firestoreFetch(env, `${baseUrl}:rollback`, {
+          method: 'POST',
+          body: JSON.stringify({ transaction: transactionId }),
+        }).catch(() => {});
       }
-    },
-    
-    delete(path: string) {
-      const fullPath = `projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/${path}`;
-      queuedWrites.push({ delete: fullPath });
+      
+      // If we reach here, success! Break out of the retry loop.
+      return;
+
+    } catch (error: any) {
+      // If we've exhausted all attempts, or if it's not a retryable error, throw it.
+      // 409 Aborted is typical for transaction contention. 
+      // 400 Bad Request sometimes happens in Firestore REST if the transaction expired or was aborted internally before commit.
+      const isRetryable = error?.status === 409 || error?.status === 400 || error?.message?.includes('ABORTED');
+      
+      if (attempt === maxAttempts || !isRetryable) {
+        throw error;
+      }
+      
+      // Wait before retrying (exponential backoff with jitter)
+      const baseDelayMs = 100 * Math.pow(2, attempt - 1); // 100, 200, 400, 800
+      const jitterMs = Math.random() * 50;
+      await new Promise(res => setTimeout(res, baseDelayMs + jitterMs));
     }
-  };
-
-  // 3. Execute the user callback
-  await callback(tx);
-
-  // 4. Commit the transaction
-  if (queuedWrites.length > 0) {
-    await firestoreFetch(env, `${baseUrl}:commit`, {
-      method: 'POST',
-      body: JSON.stringify({
-        writes: queuedWrites,
-        transaction: transactionId,
-      }),
-    });
-  } else {
-    // Optionally rollback if no writes? REST API transactions expire or auto-rollback.
-    await firestoreFetch(env, `${baseUrl}:rollback`, {
-      method: 'POST',
-      body: JSON.stringify({ transaction: transactionId }),
-    }).catch(() => {}); // Ignore errors on rollback
   }
 }

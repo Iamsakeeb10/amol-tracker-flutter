@@ -391,6 +391,10 @@ class _JoinBattleSheetState extends ConsumerState<_JoinBattleSheet> {
   }
 
   Future<void> _joinBattle({required bool isBn, required String emptyError}) async {
+
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    
     final code = _codeController.text.trim().toUpperCase();
 
     if (code.isEmpty) {

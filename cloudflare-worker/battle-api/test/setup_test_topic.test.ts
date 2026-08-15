@@ -27,9 +27,10 @@ describe('Setup Test Topic (Run Manually)', () => {
     // 2. Create 5 Questions
     for (let i = 1; i <= 5; i++) {
       await setDoc(testEnv, `topics/${topicId}/questions/q${i}`, {
-        textEn: `Test Question ${i}`,
-        optionsEn: ['A', 'B', 'C', 'D'],
+        text: `Test Question ${i}`,
+        options: ['A', 'B', 'C', 'D'],
         correctIndex: 0,
+        difficulty: 'easy',
         isActive: true,
         createdAt: serverTimestamp(),
       });

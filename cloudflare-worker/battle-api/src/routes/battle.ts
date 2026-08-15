@@ -98,6 +98,7 @@ export async function createBattle(request: Request, env: Env): Promise<Response
     maxPlayers,
     status: 'waiting',
     playerUids: [uid],
+    readyUids: [],
     createdAt: serverTimestamp(),
   };
 
@@ -165,6 +166,52 @@ export async function joinBattle(request: Request, env: Env): Promise<Response> 
 }
 
 // ---------------------------------------------------------------------------
+// Chunk A3.5 — battle/toggle-ready
+// ---------------------------------------------------------------------------
+
+export async function toggleReady(request: Request, env: Env): Promise<Response> {
+  const { uid } = await verifyAuth(request, env);
+
+  let body: any;
+  try {
+    body = await request.json();
+  } catch {
+    throw invalidConfigError('Invalid JSON body');
+  }
+
+  const { code, isReady } = body;
+  if (!code || typeof code !== 'string') {
+    throw invalidConfigError('Missing or invalid battle code');
+  }
+  if (typeof isReady !== 'boolean') {
+    throw invalidConfigError('isReady must be a boolean');
+  }
+
+  await runTransaction(env, async (tx) => {
+    const battle = await tx.get(`battles/${code}`);
+    if (!battle) throw notFoundError('Battle not found');
+    if (battle.status !== 'waiting') throw alreadyStartedError('Battle has already started or finished');
+    
+    const playerUids: string[] = battle.playerUids || [];
+    if (!playerUids.includes(uid)) throw invalidConfigError('You are not in this battle');
+
+    let readyUids: string[] = battle.readyUids || [];
+    if (isReady && !readyUids.includes(uid)) {
+      readyUids.push(uid);
+    } else if (!isReady && readyUids.includes(uid)) {
+      readyUids = readyUids.filter(id => id !== uid);
+    }
+
+    tx.update(`battles/${code}`, { readyUids });
+  });
+
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Chunk A4 — battle/start
 // ---------------------------------------------------------------------------
 
@@ -194,6 +241,18 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
   if (battle.status !== 'waiting') {
     throw alreadyStartedError('Battle has already started or finished');
   }
+  
+  const playerUids: string[] = battle.playerUids || [];
+  const readyUids: string[] = battle.readyUids || [];
+  if (playerUids.length < 2) {
+    throw notEnoughPlayersError('At least 2 players are required to start the battle');
+  }
+  
+  // Verify everyone is ready
+  if (readyUids.length !== playerUids.length) {
+    throw invalidConfigError('Not all players are ready');
+  }
+
 
   // 2. Fetch active question IDs from topic
   const structuredQuery = {
@@ -236,8 +295,12 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
     }
     
     const playerUids: string[] = latestBattle.playerUids || [];
+    const readyUids: string[] = latestBattle.readyUids || [];
     if (playerUids.length < 2) {
       throw notEnoughPlayersError('At least 2 players are required to start the battle');
+    }
+    if (readyUids.length !== playerUids.length) {
+      throw invalidConfigError('Not all players are ready');
     }
 
     const firstQuestion = await tx.get(`topics/${latestBattle.topicId}/questions/${selectedQuestionIds[0]}`);
@@ -245,10 +308,8 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
     if (firstQuestion) {
       currentQuestionData = {
         id: selectedQuestionIds[0],
-        textEn: firstQuestion.textEn,
-        textBn: firstQuestion.textBn,
-        optionsEn: firstQuestion.optionsEn,
-        optionsBn: firstQuestion.optionsBn,
+        text: firstQuestion.text,
+        options: firstQuestion.options,
         difficulty: firstQuestion.difficulty,
       };
     }
@@ -398,7 +459,7 @@ export async function nextQuestion(request: Request, env: Env): Promise<Response
     const revealedAt = battle.questionRevealedAt ? new Date(battle.questionRevealedAt).getTime() : 0;
     
     // Plausibility check
-    if (Date.now() - revealedAt < maxTimeMs - 1500) {
+    if (Date.now() - revealedAt < maxTimeMs - 5000) {
       throw invalidConfigError('Cannot advance question yet');
     }
 
@@ -415,7 +476,7 @@ export async function nextQuestion(request: Request, env: Env): Promise<Response
         explanationBn: prevQ.explanationBn,
       };
       responsePayload.previousQuestion = prevAnswerData;
-      newRevealedAnswers[questionIds[currentIndex]] = prevAnswerData;
+      newRevealedAnswers[questionIds[currentIndex]!] = prevAnswerData;
     }
 
     if (currentIndex >= questionIds.length - 1) {
@@ -438,10 +499,8 @@ export async function nextQuestion(request: Request, env: Env): Promise<Response
       if (nextQ) {
         currentQuestionData = {
           id: questionIds[nextIndex],
-          textEn: nextQ.textEn,
-          textBn: nextQ.textBn,
-          optionsEn: nextQ.optionsEn,
-          optionsBn: nextQ.optionsBn,
+          text: nextQ.text,
+          options: nextQ.options,
           difficulty: nextQ.difficulty,
         };
         responsePayload.nextQuestion = currentQuestionData;
@@ -500,15 +559,21 @@ export async function leaveBattle(request: Request, env: Env): Promise<Response>
         tx.update(`battles/${code}`, {
           status: 'cancelled',
           playerUids: [],
+          readyUids: [],
         });
         // Release code from KV
         await env.BATTLE_CODES.delete(code);
       } else {
         // Promote next joiner if host left
         const newHost = battle.hostUid === uid ? newUids[0] : battle.hostUid;
+        
+        // Remove from ready list if they were ready
+        const newReadyUids = (battle.readyUids || []).filter((p: string) => p !== uid);
+        
         tx.update(`battles/${code}`, {
           playerUids: newUids,
           hostUid: newHost,
+          readyUids: newReadyUids,
         });
       }
     } else if (battle.status === 'active') {

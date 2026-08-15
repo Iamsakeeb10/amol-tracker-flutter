@@ -19,6 +19,7 @@ import '../../features/admin/presentation/screens/admin_quiz_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_push_notification_screen.dart';
 import '../../features/admin/presentation/screens/admin_app_config_list_screen.dart';
 import '../../features/admin/presentation/screens/admin_app_config_screen.dart';
+import '../../features/admin/presentation/screens/admin_users_screen.dart';
 import '../../features/admin/presentation/screens/admin_knowledge_battle_screen.dart';
 import '../../features/auth/presentation/screens/sign_in_screen.dart';
 import '../../features/battle/presentation/screens/battle_config_screen.dart';
@@ -406,6 +407,11 @@ GoRouter buildAppRouter() {
         path: AppRoutes.adminKnowledgeBattle,
         name: 'adminKnowledgeBattle',
         builder: (_, _) => const AdminKnowledgeBattleScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminUsers,
+        name: 'adminUsers',
+        builder: (_, _) => const AdminUsersScreen(),
       ),
       GoRoute(
         path: '/admin/battle-topics',

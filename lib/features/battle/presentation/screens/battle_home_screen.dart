@@ -407,13 +407,12 @@ class _JoinBattleSheetState extends ConsumerState<_JoinBattleSheet> {
       // TODO: replace with your actual join-by-code repository method,
       // e.g. `repo.joinBattle(code: code)`.
       final repo = ref.read(battleRepositoryProvider);
-      final res = await repo.joinBattle(code: code);
+      await repo.joinBattle(code: code);
 
-      final joinedCode = res.code;
-      if (mounted && joinedCode != null) {
-        LocalStorageService.saveActiveBattleCode(joinedCode);
+      if (mounted) {
+        LocalStorageService.saveActiveBattleCode(code);
         Navigator.of(context).pop();
-        context.pushReplacement(AppRoutes.battleWaitingRoomPath(joinedCode));
+        context.pushReplacement(AppRoutes.battleWaitingRoomPath(code));
       }
     } catch (e) {
       if (!mounted) return;

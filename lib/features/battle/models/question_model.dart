@@ -1,30 +1,22 @@
 class QuestionModel {
   final String id;
   final String topicId;
-  final String textEn;
-  final String textBn;
-  final List<String> optionsEn;
-  final List<String> optionsBn;
+  final String text;
+  final List<String> options;
   final int correctIndex;
-  final String? explanationEn;
-  final String? explanationBn;
-  final String? referenceEn;
-  final String? referenceBn;
+  final String? explanation;
+  final String? reference;
   final String difficulty;
   final bool isActive;
 
   QuestionModel({
     required this.id,
     required this.topicId,
-    required this.textEn,
-    required this.textBn,
-    required this.optionsEn,
-    required this.optionsBn,
+    required this.text,
+    required this.options,
     required this.correctIndex,
-    this.explanationEn,
-    this.explanationBn,
-    this.referenceEn,
-    this.referenceBn,
+    this.explanation,
+    this.reference,
     required this.difficulty,
     required this.isActive,
   });
@@ -33,15 +25,11 @@ class QuestionModel {
     return QuestionModel(
       id: json['id'] as String? ?? '',
       topicId: json['topicId'] as String? ?? '',
-      textEn: json['textEn'] as String? ?? '',
-      textBn: json['textBn'] as String? ?? '',
-      optionsEn: List<String>.from(json['optionsEn'] ?? []),
-      optionsBn: List<String>.from(json['optionsBn'] ?? []),
+      text: json['text'] as String? ?? '',
+      options: List<String>.from(json['options'] ?? []),
       correctIndex: json['correctIndex'] as int? ?? 0,
-      explanationEn: json['explanationEn'] as String?,
-      explanationBn: json['explanationBn'] as String?,
-      referenceEn: json['referenceEn'] as String?,
-      referenceBn: json['referenceBn'] as String?,
+      explanation: json['explanation'] as String?,
+      reference: json['reference'] as String?,
       difficulty: json['difficulty'] as String? ?? 'easy',
       isActive: json['isActive'] as bool? ?? false,
     );
@@ -51,15 +39,11 @@ class QuestionModel {
     return {
       'id': id,
       'topicId': topicId,
-      'textEn': textEn,
-      'textBn': textBn,
-      'optionsEn': optionsEn,
-      'optionsBn': optionsBn,
+      'text': text,
+      'options': options,
       'correctIndex': correctIndex,
-      'explanationEn': explanationEn,
-      'explanationBn': explanationBn,
-      'referenceEn': referenceEn,
-      'referenceBn': referenceBn,
+      'explanation': explanation,
+      'reference': reference,
       'difficulty': difficulty,
       'isActive': isActive,
     };

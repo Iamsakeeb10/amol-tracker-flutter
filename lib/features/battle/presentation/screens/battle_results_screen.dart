@@ -179,10 +179,10 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
                   ...questions.asMap().entries.map((entry) {
                     final i = entry.key;
                     final q = entry.value;
-                    final text = isBn ? q['textBn'] : q['textEn'];
-                    final explanation = isBn ? q['explanationBn'] : q['explanationEn'];
+                    final text = q['text'];
+                    final explanation = q['explanation'];
                     final correctIndex = q['correctIndex'] as int?;
-                    final options = List<String>.from(isBn ? q['optionsBn'] : q['optionsEn']);
+                    final options = List<String>.from(q['options']);
 
                     return Padding(
                       padding: EdgeInsets.only(bottom: 16.h),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/local_storage_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -26,7 +28,18 @@ class WaitingRoomScreen extends ConsumerStatefulWidget {
 class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
   bool _isStarting = false;
   bool _isLeaving = false;
+  bool _isTogglingReady = false;
   String? _error;
+  
+  Timer? _countdownTimer;
+  int _countdown = 10;
+  bool _timerActive = false;
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +48,28 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
     final battleAsync = ref.watch(battleStreamProvider(widget.battleCode));
     final currentUser = ref.watch(currentUserProvider).asData?.value;
 
+    ref.listen(battleStreamProvider(widget.battleCode), (previous, next) {
+      final battle = next.asData?.value;
+      if (battle == null || battle.status != 'waiting') {
+        _cancelTimer();
+        return;
+      }
+
+      final pCount = battle.playerUids.length;
+      final readyCount = battle.readyUids?.length ?? 0;
+      final isAllReady = pCount >= 2 && readyCount == pCount;
+
+      if (isAllReady && !_timerActive && _countdown > 0) {
+        _startTimer(battle.hostUid == currentUser?.uid);
+      } else if (!isAllReady && (_timerActive || _countdown == 0)) {
+        _cancelTimer();
+      }
+    });
+
     return PopScope(
-      canPop: _isLeaving,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        await _handleLeave(context);
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _minimize();
       },
       child: AppScaffold(
         // We handle back via PopScope above
@@ -57,23 +87,38 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 24.r),
-          onPressed: () => _handleLeave(context),
+          onPressed: _minimize,
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.exit_to_app_rounded, color: AppColors.dangerLight, size: 24.r),
+            onPressed: () async {
+              final shouldExit = await showDialog<bool>(
+                context: context,
+                builder: (_) => _WaitingRoomExitDialog(isBn: isBn),
+              );
+              if (shouldExit == true && context.mounted) {
+                _leaveBattle(context);
+              }
+            },
+          ),
+          SizedBox(width: 8.w),
+        ],
       ),
       body: battleAsync.when(
         data: (battle) {
           if (battle == null) {
-            return Center(
-              child: Text(
-                isBn ? 'ব্যাটেল খুঁজে পাওয়া যায়নি' : 'Battle not found',
-                style: TextStyle(fontSize: 14.sp, color: AppColors.textSecondary),
-              ),
-            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              LocalStorageService.clearActiveBattleCode();
+              if (mounted) context.go(AppRoutes.home);
+            });
+            return const Center(child: CircularProgressIndicator(color: AppColors.gold));
           }
 
           // Handle battle lifecycle state routing here
           if (battle.status == 'cancelled' || battle.status == 'expired') {
             WidgetsBinding.instance.addPostFrameCallback((_) {
+              LocalStorageService.clearActiveBattleCode();
               if (mounted) context.go(AppRoutes.battleHome);
             });
             return const SizedBox.shrink();
@@ -91,7 +136,8 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
 
           final isHost = currentUser?.uid == battle.hostUid;
           final playerCount = battle.playerUids.length;
-          final canStart = isHost && playerCount >= 2;
+          final readyCount = battle.readyUids?.length ?? 0;
+          final isAllReady = playerCount >= 2 && readyCount == playerCount;
 
           return Padding(
             padding: EdgeInsets.fromLTRB(0.w, 8.h, 0.w, 20.h),
@@ -142,6 +188,11 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                         isHost: uid == battle.hostUid,
                         isMe: uid == currentUser?.uid,
                         locale: locale,
+                        isReady: battle.readyUids?.contains(uid) ?? false,
+                        isLoadingReady: _isTogglingReady,
+                        onToggleReady: uid == currentUser?.uid 
+                            ? () => _toggleReady(battle.readyUids?.contains(uid) ?? false)
+                            : null,
                       );
                     },
                   ),
@@ -160,22 +211,31 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                       ),
                     ),
                   )
-                else if (isHost)
-                  _StartBattleButton(
-                    label: isBn ? 'ব্যাটেল শুরু করুন' : 'Start Battle',
-                    isLoading: _isStarting,
-                    enabled: canStart,
-                    onTap: _startBattle,
-                  )
-                else
+                else if (_timerActive)
+                  _CountdownDisplay(countdown: _countdown, isBn: isBn)
+                else if (isAllReady && _countdown == 0)
                   Center(
-                    child: Text(
-                      isBn ? 'হোস্টের শুরুর অপেক্ষায়...' : 'Waiting for host to start...',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: AppColors.textSecondary,
-                        fontStyle: FontStyle.italic,
-                      ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: 28.r,
+                          height: 28.r,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: AppColors.gold,
+                          ),
+                        ),
+                        SizedBox(height: 12.h),
+                        Text(
+                          isBn ? 'ব্যাটেল প্রস্তুত করা হচ্ছে...' : 'Preparing battle...',
+                          style: TextStyle(
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.gold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
               ],
@@ -183,27 +243,85 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.gold)),
-        error: (e, st) => Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Text(
-              'Error: $e',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14.sp, color: AppColors.danger),
-            ),
-          ),
-        ),
+        error: (e, st) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            LocalStorageService.clearActiveBattleCode();
+            if (mounted) context.go(AppRoutes.home);
+          });
+          return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+        },
       ),
     ));
   }
 
-  Future<void> _handleLeave(BuildContext context) async {
+  void _cancelTimer() {
+    _countdownTimer?.cancel();
+    if (mounted && (_timerActive || _countdown == 0)) {
+      setState(() {
+        _timerActive = false;
+        _countdown = 10;
+      });
+    }
+  }
+
+  void _startTimer(bool isHost) {
+    setState(() {
+      _countdown = 10;
+      _timerActive = true;
+    });
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        if (_countdown > 1) {
+          _countdown--;
+        } else {
+          _countdown = 0;
+          timer.cancel();
+          _timerActive = false;
+          if (isHost && mounted) {
+            _startBattle();
+          }
+        }
+      });
+    });
+  }
+
+  Future<void> _toggleReady(bool currentlyReady) async {
+    setState(() {
+      _isTogglingReady = true;
+      _error = null;
+    });
+    try {
+      final repo = ref.read(battleRepositoryProvider);
+      await repo.toggleReady(code: widget.battleCode, isReady: !currentlyReady);
+    } catch (e) {
+      if (mounted) setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _isTogglingReady = false);
+    }
+  }
+
+  void _minimize() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.home);
+    }
+  }
+
+  void _leaveBattle(BuildContext context) {
     if (_isLeaving) return;
     setState(() => _isLeaving = true);
 
     try {
       final repo = ref.read(battleRepositoryProvider);
-      await repo.leaveBattle(code: widget.battleCode);
+      repo.leaveBattle(code: widget.battleCode).catchError((e) {
+        debugPrint('Failed to leave battle (background): $e');
+      });
+      LocalStorageService.clearActiveBattleCode();
     } catch (e) {
       debugPrint('Failed to leave battle: $e');
     }
@@ -419,12 +537,18 @@ class _PlayerTile extends ConsumerWidget {
   final bool isHost;
   final bool isMe;
   final String locale;
+  final bool isReady;
+  final bool isLoadingReady;
+  final VoidCallback? onToggleReady;
 
   const _PlayerTile({
     required this.uid,
     required this.isHost,
     required this.isMe,
     required this.locale,
+    required this.isReady,
+    this.isLoadingReady = false,
+    this.onToggleReady,
   });
 
   @override
@@ -484,20 +608,70 @@ class _PlayerTile extends ConsumerWidget {
                     style: TextStyle(fontSize: 14.5.sp, color: AppColors.textSecondary),
                   ),
                 ),
-                if (isHost) ...[
-                  SizedBox(height: 4.h),
-                  Text(
-                    isBn ? 'হোস্ট' : 'Host',
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.gold,
+                SizedBox(height: 4.h),
+                Row(
+                  children: [
+                    if (isHost) ...[
+                      Text(
+                        isBn ? 'হোস্ট' : 'Host',
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.gold,
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                    ],
+                    Icon(
+                      isReady ? Icons.check_circle_rounded : Icons.pending_rounded,
+                      color: isReady ? AppColors.success : AppColors.textMuted,
+                      size: 14.r,
                     ),
-                  ),
-                ],
+                    SizedBox(width: 4.w),
+                    Text(
+                      isReady ? (isBn ? 'রেডি' : 'Ready') : (isBn ? 'অপেক্ষমাণ...' : 'Not Ready'),
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: isReady ? AppColors.success : AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
+          if (isMe && onToggleReady != null)
+            GestureDetector(
+              onTap: isLoadingReady ? null : onToggleReady,
+              child: Opacity(
+                opacity: isLoadingReady ? 0.5 : 1,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: isReady ? AppColors.cardBorder : AppColors.gold,
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: isReady ? Border.all(color: AppColors.danger.withValues(alpha: 0.3)) : null,
+                  ),
+                  child: isLoadingReady
+                      ? SizedBox(
+                          width: 14.r,
+                          height: 14.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: isReady ? AppColors.danger : AppColors.emeraldDeep,
+                          ),
+                        )
+                      : Text(
+                          isReady ? (isBn ? 'রেডি নই' : 'Unready') : (isBn ? 'রেডি' : 'Ready'),
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.bold,
+                            color: isReady ? AppColors.danger : AppColors.emeraldDeep,
+                          ),
+                        ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -537,66 +711,148 @@ class _ErrorBanner extends StatelessWidget {
   }
 }
 
-/// Gold gradient CTA — matches the Create Battle / Join Battle buttons used
-/// elsewhere in the battle flow.
-class _StartBattleButton extends StatelessWidget {
-  final String label;
-  final bool isLoading;
-  final bool enabled;
-  final VoidCallback onTap;
+class _CountdownDisplay extends StatelessWidget {
+  final int countdown;
+  final bool isBn;
 
-  const _StartBattleButton({
-    required this.label,
-    required this.isLoading,
-    required this.enabled,
-    required this.onTap,
-  });
+  const _CountdownDisplay({required this.countdown, required this.isBn});
 
   @override
   Widget build(BuildContext context) {
-    final isDisabled = isLoading || !enabled;
-
-    return GestureDetector(
-      onTap: isDisabled ? null : onTap,
-      child: Opacity(
-        opacity: isDisabled && !isLoading ? 0.5 : 1,
-        child: Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(vertical: 16.h),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.gold, AppColors.goldLight],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 16.h),
+      decoration: BoxDecoration(
+        color: AppColors.emeraldMid.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(AppRadius.md.r),
+        border: Border.all(color: AppColors.goldBorder),
+      ),
+      child: Column(
+        children: [
+          Text(
+            isBn ? 'ব্যাটেল শুরু হবে...' : 'Battle starts in...',
+            style: TextStyle(
+              fontSize: 13.sp,
+              color: AppColors.textSecondary,
             ),
-            borderRadius: BorderRadius.circular(AppRadius.md.r),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.gold.withValues(alpha: 0.35),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-              ),
-            ],
           ),
-          child: Center(
-            child: isLoading
-                ? SizedBox(
-                    height: 20.r,
-                    width: 20.r,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2.2,
-                      color: AppColors.emeraldDeep,
+          SizedBox(height: 4.h),
+          Text(
+            '$countdown',
+            style: TextStyle(
+              fontSize: 32.sp,
+              fontWeight: FontWeight.bold,
+              color: AppColors.gold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WaitingRoomExitDialog extends StatelessWidget {
+  final bool isBn;
+  const _WaitingRoomExitDialog({required this.isBn});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: AppColors.emeraldDeep,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.r),
+        side: BorderSide(color: AppColors.goldBorder, width: 1.r),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.dangerLight.withOpacity(0.1),
+                border: Border.all(color: AppColors.danger, width: 1.r),
+              ),
+              child: Icon(
+                Icons.exit_to_app_rounded,
+                color: AppColors.dangerLight,
+                size: 26.r,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              isBn ? 'রুম থেকে বের হতে চান?' : 'Leave Waiting Room?',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.headlineMedium(context).copyWith(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              isBn
+                  ? 'বের হয়ে গেলে আপনি এই ব্যাটেলে আর অংশ নিতে পারবেন না।'
+                  : 'If you leave, you will forfeit your spot in this battle.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium(context).copyWith(
+                fontSize: 13.sp,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 13.h),
+                      side: BorderSide(color: AppColors.goldBorder),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
                     ),
-                  )
-                : Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.emeraldDeep,
+                    child: Text(
+                      isBn ? 'থাকুন' : 'Stay',
+                      style: AppTextStyles.button(context).copyWith(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.goldLight,
+                      ),
                     ),
                   ),
-          ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.danger,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 13.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      isBn ? 'বের হোন' : 'Leave',
+                      style: AppTextStyles.button(context).copyWith(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

@@ -50,15 +50,11 @@ export async function finalizeBattle(
       if (qDoc) {
         playedQuestions.push({
           id: qId,
-          textEn: qDoc.textEn,
-          textBn: qDoc.textBn,
-          optionsEn: qDoc.optionsEn,
-          optionsBn: qDoc.optionsBn,
+          text: qDoc.text,
+          options: qDoc.options,
           correctIndex: qDoc.correctIndex,
-          explanationEn: qDoc.explanationEn,
-          explanationBn: qDoc.explanationBn,
-          referenceEn: qDoc.referenceEn,
-          referenceBn: qDoc.referenceBn,
+          explanation: qDoc.explanation,
+          reference: qDoc.reference,
           difficulty: qDoc.difficulty,
         });
       }

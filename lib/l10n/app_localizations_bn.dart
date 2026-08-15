@@ -1480,6 +1480,15 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminSectionTitle => 'অ্যাডমিন';
 
   @override
+  String get adminUsersTitle => 'অ্যাডমিন পরিচালনা';
+
+  @override
+  String get searchUserEmail => 'ইমেইল দিয়ে ইউজার খুঁজুন...';
+
+  @override
+  String get userRoleUpdated => 'ইউজার রোল সফলভাবে আপডেট করা হয়েছে';
+
+  @override
   String get adminAnnouncementsTitle => 'ঘোষণা';
 
   @override

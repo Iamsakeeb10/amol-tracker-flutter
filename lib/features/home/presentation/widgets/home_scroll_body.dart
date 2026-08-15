@@ -16,6 +16,7 @@ import '../../../../providers/amal_provider.dart';
 import '../../../../providers/battle_teaser_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../battle/providers/battle_providers.dart';
 import 'home_editing_amal_sliver.dart';
 import 'home_header.dart';
 import 'home_reminder_card.dart';
@@ -190,52 +191,75 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                                 ),
                               ),
                             ),
-                          if (LocalStorageService.getActiveBattleCode() != null)
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: EdgeInsets.only(bottom: 10.h),
-                                child: Material(
-                                  color: AppColors.gold,
-                                  borderRadius: BorderRadius.circular(12.r),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: InkWell(
-                                    onTap: () {
-                                      final code = LocalStorageService.getActiveBattleCode();
-                                      if (code != null) {
-                                        context.push(AppRoutes.battleWaitingRoomPath(code));
-                                      }
-                                    },
-                                    child: Padding(
-                                      padding: EdgeInsets.all(16.r),
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.gamepad, color: AppColors.emeraldDeep, size: 24.r),
-                                          SizedBox(width: 12.w),
-                                          Expanded(
-                                            child: Text(
-                                              widget.locale == 'bn' ? 'আপনার একটি নলেজ ব্যাটেল চলছে!' : 'You have an active Knowledge Battle!',
-                                              style: AppTextStyles.titleSmall(context).copyWith(
-                                                color: AppColors.emeraldDeep,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                          SliverToBoxAdapter(
+                            child: ValueListenableBuilder(
+                              valueListenable: LocalStorageService.activeBattleCodeListenable,
+                              builder: (context, box, child) {
+                                final activeBattleCode = LocalStorageService.getActiveBattleCode();
+                                if (activeBattleCode == null) return const SizedBox.shrink();
+                                return Padding(
+                                  padding: EdgeInsets.only(bottom: 10.h),
+                                  child: Material(
+                                    color: AppColors.gold,
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Stack(
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            context.push(AppRoutes.battleWaitingRoomPath(activeBattleCode));
+                                          },
+                                          child: Padding(
+                                            padding: EdgeInsets.fromLTRB(16.r, 20.r, 36.r, 20.r),
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.gamepad, color: AppColors.emeraldDeep, size: 24.r),
+                                                SizedBox(width: 12.w),
+                                                Expanded(
+                                                  child: Text(
+                                                    widget.locale == 'bn' ? 'আপনার একটি নলেজ ব্যাটেল চলছে!' : 'You have an active Knowledge Battle!',
+                                                    style: AppTextStyles.titleSmall(context).copyWith(
+                                                      color: AppColors.emeraldDeep,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  widget.locale == 'bn' ? 'যোগ দিন' : 'Rejoin',
+                                                  style: AppTextStyles.labelLarge(context).copyWith(
+                                                    color: AppColors.emeraldDeep,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 4.w),
+                                                Icon(Icons.arrow_forward_ios, color: AppColors.emeraldDeep, size: 14.r),
+                                              ],
                                             ),
                                           ),
-                                          Text(
-                                            widget.locale == 'bn' ? 'যোগ দিন' : 'Rejoin',
-                                            style: AppTextStyles.labelLarge(context).copyWith(
-                                              color: AppColors.emeraldDeep,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                        ),
+                                        Positioned(
+                                          top: -12.h,
+                                          right: -8.w,
+                                          child: IconButton(
+                                            padding: EdgeInsets.all(8.r),
+                                            constraints: const BoxConstraints(),
+                                            icon: Icon(Icons.close, color: AppColors.emeraldDeep.withValues(alpha: 0.6), size: 16.r),
+                                            onPressed: () {
+                                              try {
+                                                final repo = ref.read(battleRepositoryProvider);
+                                                repo.leaveBattle(code: activeBattleCode).catchError((_) {});
+                                              } catch (_) {}
+                                              LocalStorageService.clearActiveBattleCode();
+                                            },
                                           ),
-                                          SizedBox(width: 4.w),
-                                          Icon(Icons.arrow_forward_ios, color: AppColors.emeraldDeep, size: 14.r),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                              ),
+                                );
+                              },
                             ),
+                          ),
                           if (widget.amalError != null) ...[
                             SliverToBoxAdapter(
                               child: Text(

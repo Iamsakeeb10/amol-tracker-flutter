@@ -15,6 +15,7 @@ class QuizOptionTile extends StatelessWidget {
     required this.state,
     required this.enabled,
     required this.onTap,
+    this.trailing,
   });
 
   final int index;
@@ -22,6 +23,7 @@ class QuizOptionTile extends StatelessWidget {
   final QuizOptionTileState state;
   final bool enabled;
   final VoidCallback onTap;
+  final Widget? trailing;
 
   Color _backgroundColor() {
     switch (state) {
@@ -106,9 +108,10 @@ class QuizOptionTile extends StatelessWidget {
                   ),
                 ),
               ),
-              if (state == QuizOptionTileState.correct)
+              ?trailing,
+              if (trailing == null && state == QuizOptionTileState.correct)
                 Icon(Icons.check_circle, color: AppColors.success, size: 20.r),
-              if (state == QuizOptionTileState.wrong)
+              if (trailing == null && state == QuizOptionTileState.wrong)
                 Icon(Icons.cancel, color: AppColors.danger, size: 20.r),
             ],
           ),

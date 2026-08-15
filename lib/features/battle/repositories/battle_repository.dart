@@ -68,6 +68,10 @@ class BattleRepository {
     return JoinBattleResponse.fromJson(data);
   }
 
+  Future<void> toggleReady({required String code, required bool isReady}) async {
+    await _post('/battle/toggle-ready', {'code': code, 'isReady': isReady});
+  }
+
   Future<void> startBattle({required String code}) async {
     await _post('/battle/start', {'code': code});
   }

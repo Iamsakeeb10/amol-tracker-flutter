@@ -22,14 +22,10 @@ class AdminBattleQuestionFormScreen extends ConsumerStatefulWidget {
 class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuestionFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  late TextEditingController _textEnCtrl;
-  late TextEditingController _textBnCtrl;
-  late List<TextEditingController> _optionsEnCtrls;
-  late List<TextEditingController> _optionsBnCtrls;
-  late TextEditingController _expEnCtrl;
-  late TextEditingController _expBnCtrl;
-  late TextEditingController _refEnCtrl;
-  late TextEditingController _refBnCtrl;
+  late TextEditingController _textCtrl;
+  late List<TextEditingController> _optionsCtrls;
+  late TextEditingController _expCtrl;
+  late TextEditingController _refCtrl;
   
   late int _correctIndex;
   late String _difficulty;
@@ -41,16 +37,12 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
   void initState() {
     super.initState();
     final q = widget.existingQuestion;
-    _textEnCtrl = TextEditingController(text: q?.textEn ?? '');
-    _textBnCtrl = TextEditingController(text: q?.textBn ?? '');
+    _textCtrl = TextEditingController(text: q?.text ?? '');
     
-    _optionsEnCtrls = List.generate(4, (i) => TextEditingController(text: q?.optionsEn.elementAtOrNull(i) ?? ''));
-    _optionsBnCtrls = List.generate(4, (i) => TextEditingController(text: q?.optionsBn.elementAtOrNull(i) ?? ''));
+    _optionsCtrls = List.generate(4, (i) => TextEditingController(text: q?.options.elementAtOrNull(i) ?? ''));
     
-    _expEnCtrl = TextEditingController(text: q?.explanationEn ?? '');
-    _expBnCtrl = TextEditingController(text: q?.explanationBn ?? '');
-    _refEnCtrl = TextEditingController(text: q?.referenceEn ?? '');
-    _refBnCtrl = TextEditingController(text: q?.referenceBn ?? '');
+    _expCtrl = TextEditingController(text: q?.explanation ?? '');
+    _refCtrl = TextEditingController(text: q?.reference ?? '');
     
     _correctIndex = q?.correctIndex ?? 0;
     _difficulty = q?.difficulty ?? 'easy';
@@ -59,14 +51,10 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
 
   @override
   void dispose() {
-    _textEnCtrl.dispose();
-    _textBnCtrl.dispose();
-    for (var c in _optionsEnCtrls) { c.dispose(); }
-    for (var c in _optionsBnCtrls) { c.dispose(); }
-    _expEnCtrl.dispose();
-    _expBnCtrl.dispose();
-    _refEnCtrl.dispose();
-    _refBnCtrl.dispose();
+    _textCtrl.dispose();
+    for (var c in _optionsCtrls) { c.dispose(); }
+    _expCtrl.dispose();
+    _refCtrl.dispose();
     super.dispose();
   }
 
@@ -78,21 +66,16 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
     try {
       final repo = ref.read(adminBattleRepositoryProvider);
       
-      final optionsEn = _optionsEnCtrls.map((c) => c.text.trim()).toList();
-      final optionsBn = _optionsBnCtrls.map((c) => c.text.trim()).toList();
+      final options = _optionsCtrls.map((c) => c.text.trim()).toList();
       
       final newQuestion = QuestionModel(
         id: widget.existingQuestion?.id ?? '',
         topicId: widget.topicId,
-        textEn: _textEnCtrl.text.trim(),
-        textBn: _textBnCtrl.text.trim(),
-        optionsEn: optionsEn,
-        optionsBn: optionsBn,
+        text: _textCtrl.text.trim(),
+        options: options,
         correctIndex: _correctIndex,
-        explanationEn: _expEnCtrl.text.trim(),
-        explanationBn: _expBnCtrl.text.trim(),
-        referenceEn: _refEnCtrl.text.trim(),
-        referenceBn: _refBnCtrl.text.trim(),
+        explanation: _expCtrl.text.trim(),
+        reference: _refCtrl.text.trim(),
         difficulty: _difficulty,
         isActive: _isActive,
       );
@@ -166,21 +149,12 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                 children: [
                   _buildSectionHeader('Question Text'),
-                  _buildTextField(_textEnCtrl, 'English Question', required: true),
-                  SizedBox(height: 12.h),
-                  _buildTextField(_textBnCtrl, 'Bangla Question', required: true),
+                  _buildTextField(_textCtrl, 'Question', required: true),
                   
                   SizedBox(height: 24.h),
-                  _buildSectionHeader('Options (English)'),
+                  _buildSectionHeader('Options'),
                   for (int i = 0; i < 4; i++) ...[
-                    _buildOptionField(_optionsEnCtrls[i], i, 'EN'),
-                    SizedBox(height: 8.h),
-                  ],
-                  
-                  SizedBox(height: 16.h),
-                  _buildSectionHeader('Options (Bangla)'),
-                  for (int i = 0; i < 4; i++) ...[
-                    _buildOptionField(_optionsBnCtrls[i], i, 'BN'),
+                    _buildOptionField(_optionsCtrls[i], i),
                     SizedBox(height: 8.h),
                   ],
                   
@@ -195,13 +169,9 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
                   
                   SizedBox(height: 24.h),
                   _buildSectionHeader('Explanation & Reference'),
-                  _buildTextField(_expEnCtrl, 'Explanation (English)'),
+                  _buildTextField(_expCtrl, 'Explanation'),
                   SizedBox(height: 12.h),
-                  _buildTextField(_expBnCtrl, 'Explanation (Bangla)'),
-                  SizedBox(height: 12.h),
-                  _buildTextField(_refEnCtrl, 'Reference (English)'),
-                  SizedBox(height: 12.h),
-                  _buildTextField(_refBnCtrl, 'Reference (Bangla)'),
+                  _buildTextField(_refCtrl, 'Reference'),
                   
                   SizedBox(height: 24.h),
                   _buildSectionHeader('Settings'),
@@ -219,7 +189,7 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
                   SwitchListTile(
                     title: const Text('Is Active'),
                     value: _isActive,
-                    activeColor: AppColors.gold,
+                    activeTrackColor: AppColors.gold,
                     onChanged: (val) => setState(() => _isActive = val),
                   ),
                   
@@ -255,11 +225,11 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
     );
   }
 
-  Widget _buildOptionField(TextEditingController controller, int index, String lang) {
+  Widget _buildOptionField(TextEditingController controller, int index) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
-        labelText: 'Option ${index + 1} ($lang)',
+        labelText: 'Option ${index + 1}',
         border: const OutlineInputBorder(),
         prefixIcon: Icon(
           _correctIndex == index ? Icons.check_circle : Icons.radio_button_unchecked,
@@ -270,3 +240,4 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
     );
   }
 }
+

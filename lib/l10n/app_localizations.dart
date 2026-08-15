@@ -2792,6 +2792,24 @@ abstract class AppLocalizations {
   /// **'Admin'**
   String get adminSectionTitle;
 
+  /// No description provided for @adminUsersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Admins'**
+  String get adminUsersTitle;
+
+  /// No description provided for @searchUserEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Search user by exact email...'**
+  String get searchUserEmail;
+
+  /// No description provided for @userRoleUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'User role updated successfully'**
+  String get userRoleUpdated;
+
   /// No description provided for @adminAnnouncementsTitle.
   ///
   /// In en, this message translates to:

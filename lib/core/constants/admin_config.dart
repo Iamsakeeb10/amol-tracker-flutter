@@ -41,6 +41,7 @@ class AdminConfig {
         location == '/admin/amal-fields' ||
         location == '/admin/amal-field-form' ||
         location == '/admin/app-configs' ||
+        location == '/admin/users' ||
         location == '/admin/app-config-form';
   }
 

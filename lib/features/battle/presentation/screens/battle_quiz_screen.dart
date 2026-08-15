@@ -10,6 +10,9 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
+import '../../../../shared/widgets/score_bar.dart';
+import '../../../syllabus/presentation/widgets/quiz_option_tile.dart';
+import '../../../syllabus/presentation/widgets/quiz_helpers.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../providers/battle_providers.dart';
@@ -42,15 +45,31 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
     super.dispose();
   }
 
+  Stopwatch? _stopwatch;
+
   void _startTimer(DateTime revealedAt, int secondsPerQuestion) {
     _timer?.cancel();
+    _stopwatch = Stopwatch()..start();
+    
+    final totalMs = secondsPerQuestion * 1000;
+    
+    setState(() {
+      _timeLeftMs = totalMs;
+    });
+
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (!mounted) return;
-      final elapsedMs = DateTime.now().difference(revealedAt).inMilliseconds;
-      final remaining = (secondsPerQuestion * 1000) - elapsedMs;
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      
+      final elapsedMs = _stopwatch?.elapsedMilliseconds ?? 0;
+      final remaining = totalMs - elapsedMs;
+      
       setState(() {
         _timeLeftMs = remaining > 0 ? remaining : 0;
       });
+      
       if (remaining <= 0) {
         timer.cancel();
       }
@@ -71,8 +90,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
         code: widget.battleCode,
         selectedIndex: index,
         // Calculate response time based on local elapsed time since reveal
-        // The backend calculates its own and uses it, but we send it anyway
-        responseTimeMs: 0, 
+        responseTimeMs: _stopwatch?.elapsedMilliseconds ?? 0, 
       );
       
       if (mounted) {
@@ -123,6 +141,18 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
     }
   }
 
+  void _handleExit(BuildContext context) {
+    try {
+      final repo = ref.read(battleRepositoryProvider);
+      repo.leaveBattle(code: widget.battleCode).catchError((e) {
+        debugPrint('Failed to leave battle (background): $e');
+      });
+    } catch (e) {
+      debugPrint('Failed to leave battle: $e');
+    }
+    context.go(AppRoutes.home);
+  }
+
   @override
   Widget build(BuildContext context) {
     final locale = ref.watch(localeProvider).languageCode;
@@ -130,18 +160,45 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
     final battleAsync = ref.watch(battleStreamProvider(widget.battleCode));
     final currentUser = ref.watch(currentUserProvider).asData?.value;
 
-    return AppScaffold(
-      handleExitBack: true, // Allow exiting, but maybe warn in real app
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          isBn ? 'নলেজ ব্যাটেল' : 'Knowledge Battle',
-          style: AppTextStyles.headlineMedium(context),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldExit = await showDialog<bool>(
+          context: context,
+          builder: (_) => _BattleExitDialog(isBn: isBn),
+        );
+        if (shouldExit == true && context.mounted) {
+          _handleExit(context);
+        }
+      },
+      child: AppScaffold(
+        handleExitBack: false, // Handled by PopScope above
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+          title: Text(
+            isBn ? 'নলেজ ব্যাটেল' : 'Knowledge Battle',
+            style: AppTextStyles.headlineMedium(context),
+          ),
+          automaticallyImplyLeading: false,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.exit_to_app_rounded, color: AppColors.dangerLight, size: 24.r),
+              onPressed: () async {
+                final shouldExit = await showDialog<bool>(
+                  context: context,
+                  builder: (_) => _BattleExitDialog(isBn: isBn),
+                );
+                if (shouldExit == true && context.mounted) {
+                  _handleExit(context);
+                }
+              },
+            ),
+            SizedBox(width: 8.w),
+          ],
         ),
-        automaticallyImplyLeading: false, // Hide back button during quiz
-      ),
       body: battleAsync.when(
         data: (battle) {
           if (battle == null) return const Center(child: Text('Battle not found'));
@@ -208,6 +265,114 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
         },
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.gold)),
         error: (e, st) => Center(child: Text('Error: $e')),
+      ),
+    ));
+  }
+}
+
+class _BattleExitDialog extends StatelessWidget {
+  final bool isBn;
+  const _BattleExitDialog({required this.isBn});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: AppColors.emeraldDeep,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.r),
+        side: BorderSide(color: AppColors.goldBorder, width: 1.r),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.dangerLight.withOpacity(0.1),
+                border: Border.all(color: AppColors.danger, width: 1.r),
+              ),
+              child: Icon(
+                Icons.exit_to_app_rounded,
+                color: AppColors.dangerLight,
+                size: 26.r,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              isBn ? 'ব্যাটেল থেকে বের হতে চান?' : 'Exit Battle?',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.headlineMedium(context).copyWith(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              isBn
+                  ? 'বের হয়ে গেলে আপনি এই ব্যাটেলে হেরে যাবেন (ফরফিট)।'
+                  : 'If you leave, you will forfeit this battle.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium(context).copyWith(
+                fontSize: 13.sp,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 13.h),
+                      side: BorderSide(color: AppColors.goldBorder),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text(
+                      isBn ? 'থাকুন' : 'Stay',
+                      style: AppTextStyles.button(context).copyWith(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.goldLight,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.danger,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 13.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      isBn ? 'বের হোন' : 'Leave',
+                      style: AppTextStyles.button(context).copyWith(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -278,17 +443,16 @@ class _QuizContentState extends State<_QuizContent> {
     if (question == null) {
       return Center(
         child: Text(
-          widget.isBn ? 'প্রস্তুত হোন...' : 'Get ready...',
+          widget.isBn ? 'রেডি হোন...' : 'Get ready...',
           style: AppTextStyles.titleMedium(context),
         ),
       );
     }
 
     final qId = question['id'] as String;
-    // Safely fallback to English if Bengali is missing (common for test data)
-    final text = (widget.isBn ? question['textBn'] : question['textEn']) ?? question['textEn'] ?? '';
+    final text = question['text'] ?? '';
     
-    final rawOptions = (widget.isBn ? question['optionsBn'] : question['optionsEn']) ?? question['optionsEn'] ?? [];
+    final rawOptions = question['options'] ?? [];
     final options = List<String>.from(rawOptions);
     
     // Determine if we are in "revealed" state (either transitioning or time is up)
@@ -302,66 +466,87 @@ class _QuizContentState extends State<_QuizContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Top Bar: Question X of Y
+        // Timer Area matching QuizTimerBar style
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              widget.isBn 
-                  ? 'প্রশ্ন ${widget.uiIndex + 1} / ${widget.battle.questionCount}'
-                  : 'Question ${widget.uiIndex + 1} / ${widget.battle.questionCount}',
-              style: AppTextStyles.labelMedium(context).copyWith(color: AppColors.gold),
+            Icon(
+              Icons.timer_outlined,
+              size: 16.r,
+              color: timeIsUp ? AppColors.danger : AppColors.goldLight,
             ),
-            // Timer
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: AppColors.emeraldLight.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: timeIsUp ? AppColors.danger : AppColors.gold),
+            SizedBox(width: 6.w),
+            Text(
+              widget.isBn ? 'সময় বাকি' : 'Time Remaining',
+              style: AppTextStyles.bodySmall(context).copyWith(
+                color: AppColors.textMuted,
               ),
-              child: Text(
-                '${(widget.timeLeftMs / 1000).ceil()}s',
-                style: AppTextStyles.titleSmall(context).copyWith(
-                  color: timeIsUp ? AppColors.danger : AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+            ),
+            const Spacer(),
+            Text(
+              formatQuizDuration((widget.timeLeftMs / 1000).ceil()),
+              style: AppTextStyles.bodyMedium(context).copyWith(
+                color: timeIsUp ? AppColors.danger : AppColors.gold,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
         ),
-        
-        // Progress Bar
-        SizedBox(height: 12.h),
-        LinearProgressIndicator(
+        SizedBox(height: 8.h),
+        ScoreBar(
           value: widget.timeLeftMs / (widget.battle.secondsPerQuestion * 1000),
-          backgroundColor: AppColors.emeraldLight,
-          color: AppColors.gold,
-          minHeight: 6.h,
-          borderRadius: BorderRadius.circular(3.r),
+          height: 6,
+          color: timeIsUp ? AppColors.danger : AppColors.gold,
         ),
-
-        SizedBox(height: 32.h),
+        SizedBox(height: 16.h),
+        
+        // Progress Area matching QuizQuestionScreen style
+        Text(
+          widget.isBn 
+              ? 'প্রশ্ন ${widget.uiIndex + 1} / ${widget.battle.questionCount}'
+              : 'Question ${widget.uiIndex + 1} of ${widget.battle.questionCount}',
+          style: AppTextStyles.bodySmall(context).copyWith(
+            color: AppColors.textMuted,
+          ),
+        ),
+        SizedBox(height: 6.h),
+        ScoreBar(
+          value: quizProgressValue(
+            widget.uiIndex,
+            widget.battle.questionCount,
+          ),
+          height: 6,
+        ),
+        SizedBox(height: 16.h),
 
         // Question Text
         CardContainer(
-          padding: EdgeInsets.all(20.r),
-          color: AppColors.emeraldMid,
-          borderColor: AppColors.gold.withValues(alpha: 0.5),
-          child: Text(
-            text,
-            style: AppTextStyles.titleLarge(context).copyWith(height: 1.4),
-            textAlign: TextAlign.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.isBn ? 'প্রশ্ন' : 'Question',
+                style: AppTextStyles.bodySmall(context).copyWith(
+                  color: AppColors.textMuted,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                text,
+                style: AppTextStyles.bodyLarge(context).copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
         ),
 
-        SizedBox(height: 32.h),
+        SizedBox(height: 16.h),
 
         // Options
         Expanded(
-          child: ListView.separated(
+          child: ListView.builder(
             itemCount: options.length,
-            separatorBuilder: (_, __) => SizedBox(height: 12.h),
+            padding: EdgeInsets.zero,
             itemBuilder: (context, index) {
               return Consumer(
                 builder: (context, ref, child) {
@@ -370,75 +555,59 @@ class _QuizContentState extends State<_QuizContent> {
                   final allAnswers = answersAsync.value ?? [];
                   final playersWhoPickedThis = allAnswers.where((a) => a.selectedIndex == index).toList();
 
-                  // Determine colors
                   final isSelectedByMe = widget.selectedIndex == index;
                   
-                  Color bgColor = AppColors.emeraldLight.withValues(alpha: 0.3);
-                  Color borderColor = AppColors.emeraldLight;
-                  Color textColor = AppColors.textPrimary;
-
+                  // Determine state
+                  QuizOptionTileState tileState = QuizOptionTileState.idle;
+                  
                   if (isRevealed && globalCorrectIndex != null) {
                     if (index == globalCorrectIndex) {
-                      bgColor = AppColors.success.withValues(alpha: 0.2);
-                      borderColor = AppColors.success;
-                      textColor = AppColors.success;
+                      tileState = QuizOptionTileState.correct;
                     } else if (isSelectedByMe) {
-                      bgColor = AppColors.danger.withValues(alpha: 0.2);
-                      borderColor = AppColors.danger;
-                      textColor = AppColors.danger;
-                    } else {
-                      textColor = AppColors.textMuted;
+                      tileState = QuizOptionTileState.wrong;
                     }
                   } else if (isSelectedByMe) {
                     if (widget.isCorrect == true) {
-                      bgColor = AppColors.success.withValues(alpha: 0.2);
-                      borderColor = AppColors.success;
+                      tileState = QuizOptionTileState.correct;
                     } else if (widget.isCorrect == false) {
-                      bgColor = AppColors.danger.withValues(alpha: 0.2);
-                      borderColor = AppColors.danger;
+                      tileState = QuizOptionTileState.wrong;
                     } else {
-                      bgColor = AppColors.gold.withValues(alpha: 0.2);
-                      borderColor = AppColors.gold;
+                      tileState = QuizOptionTileState.selected;
                     }
                   }
 
-                  return InkWell(
-                    onTap: () => widget.onSubmit(index),
-                    borderRadius: BorderRadius.circular(12.r),
-                    child: CardContainer(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                      color: bgColor,
-                      borderColor: borderColor,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              options[index],
-                              style: AppTextStyles.bodyLarge(context).copyWith(color: textColor),
-                            ),
+                  Widget? trailingWidget;
+                  if (isSelectedByMe && widget.isSubmitting) {
+                    trailingWidget = SizedBox(
+                      width: 20.r,
+                      height: 20.r,
+                      child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold),
+                    );
+                  } else if (isRevealed && playersWhoPickedThis.isNotEmpty) {
+                    trailingWidget = Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: playersWhoPickedThis.map((a) {
+                        return Padding(
+                          padding: EdgeInsets.only(left: 4.w),
+                          child: AvatarChip(
+                            initial: 'P',
+                            color: AppColors.ice,
+                            size: 24.r,
                           ),
-                          if (isSelectedByMe && widget.isSubmitting)
-                            SizedBox(
-                              width: 20.r,
-                              height: 20.r,
-                              child: const CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold),
-                            ),
-                          if (isRevealed && playersWhoPickedThis.isNotEmpty)
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: playersWhoPickedThis.map((a) {
-                                return Padding(
-                                  padding: EdgeInsets.only(left: 4.w),
-                                  child: AvatarChip(
-                                    initial: 'P', // Would be real initial if we joined user data
-                                    color: AppColors.ice,
-                                    size: 24.r,
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                        ],
-                      ),
+                        );
+                      }).toList(),
+                    );
+                  }
+
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 10.h),
+                    child: QuizOptionTile(
+                      index: index,
+                      label: options[index],
+                      state: tileState,
+                      enabled: !isRevealed && !widget.isSubmitting,
+                      onTap: () => widget.onSubmit(index),
+                      trailing: trailingWidget,
                     ),
                   );
                 }
@@ -450,22 +619,28 @@ class _QuizContentState extends State<_QuizContent> {
         // Host Actions
         if (widget.isHost)
           Padding(
-            padding: EdgeInsets.only(top: 16.h),
-            child: ElevatedButton(
-              onPressed: (!isRevealed || widget.isTransitioning) ? null : widget.onNext,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.gold,
-                disabledBackgroundColor: AppColors.gold.withValues(alpha: 0.3),
-                foregroundColor: AppColors.emeraldDeep,
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-              ),
-              child: Text(
-                widget.uiIndex >= widget.battle.questionCount - 1
-                    ? (widget.isBn ? 'ব্যাটেল শেষ করুন' : 'Finish Battle')
-                    : (widget.isBn ? 'পরবর্তী প্রশ্ন' : 'Next Question'),
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-              ),
+            padding: EdgeInsets.only(top: 8.h),
+            child: Row(
+              children: [
+                const Spacer(),
+                FilledButton(
+                  onPressed: (!isRevealed || widget.isTransitioning) ? null : widget.onNext,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: AppColors.emeraldDeep,
+                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  ),
+                  child: Text(
+                    widget.uiIndex >= widget.battle.questionCount - 1
+                        ? (widget.isBn ? 'ব্যাটেল শেষ করুন' : 'Finish Battle')
+                        : (widget.isBn ? 'পরবর্তী প্রশ্ন' : 'Next Question'),
+                    style: AppTextStyles.bodyMedium(context).copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.emeraldDeep,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
       ],

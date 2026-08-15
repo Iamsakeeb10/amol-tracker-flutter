@@ -14,6 +14,7 @@ class BattleModel {
   final String status; // 'waiting', 'active', 'finished', 'cancelled', 'expired'
   final String hostUid;
   final List<String> playerUids;
+  final List<String>? readyUids;
   final List<String>? forfeitedUids;
   final int questionCount;
   final int secondsPerQuestion;
@@ -31,6 +32,7 @@ class BattleModel {
     required this.status,
     required this.hostUid,
     required this.playerUids,
+    this.readyUids,
     this.forfeitedUids,
     required this.questionCount,
     required this.secondsPerQuestion,
@@ -50,6 +52,7 @@ class BattleModel {
       status: json['status'] as String? ?? 'waiting',
       hostUid: json['hostUid'] as String? ?? '',
       playerUids: List<String>.from(json['playerUids'] ?? []),
+      readyUids: json['readyUids'] != null ? List<String>.from(json['readyUids']) : null,
       forfeitedUids: json['forfeitedUids'] != null ? List<String>.from(json['forfeitedUids']) : null,
       questionCount: json['questionCount'] as int? ?? 0,
       secondsPerQuestion: json['secondsPerQuestion'] as int? ?? 15,
@@ -70,6 +73,7 @@ class BattleModel {
       'status': status,
       'hostUid': hostUid,
       'playerUids': playerUids,
+      'readyUids': readyUids,
       'forfeitedUids': forfeitedUids,
       'questionCount': questionCount,
       'secondsPerQuestion': secondsPerQuestion,

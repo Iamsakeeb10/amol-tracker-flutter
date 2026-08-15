@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class LocalStorageService {
@@ -195,13 +196,17 @@ class LocalStorageService {
 
   static const String _activeBattleCodeKey = 'active_battle_code';
 
+  static ValueListenable<Box<dynamic>> get activeBattleCodeListenable =>
+      _prefs.listenable(keys: [_activeBattleCodeKey]);
+
   static Future<void> saveActiveBattleCode(String code) async {
     await _prefs.put(_activeBattleCodeKey, code);
   }
 
   static String? getActiveBattleCode() {
     final value = _prefs.get(_activeBattleCodeKey);
-    return value is String ? value : null;
+    if (value is String && value.isNotEmpty) return value;
+    return null;
   }
 
   static Future<void> clearActiveBattleCode() async {

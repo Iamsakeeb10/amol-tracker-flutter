@@ -1477,6 +1477,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminSectionTitle => 'Admin';
 
   @override
+  String get adminUsersTitle => 'Manage Admins';
+
+  @override
+  String get searchUserEmail => 'Search user by exact email...';
+
+  @override
+  String get userRoleUpdated => 'User role updated successfully';
+
+  @override
   String get adminAnnouncementsTitle => 'Announcements';
 
   @override

@@ -114,7 +114,7 @@ class _AdminQuestionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    question.textEn.isNotEmpty ? question.textEn : question.textBn,
+                    question.text.isNotEmpty ? question.text : 'No Text',
                     style: AppTextStyles.bodyMedium(context).copyWith(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.bold,

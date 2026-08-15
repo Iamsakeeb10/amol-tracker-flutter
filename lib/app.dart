@@ -9,6 +9,7 @@ import 'dart:io' show Platform;
 import 'core/router/router.dart';
 import 'core/services/analytics_service.dart';
 import 'core/services/background_cleanup_service.dart';
+import 'core/services/islamic_date_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/theme/theme.dart';
 import 'features/badges/presentation/widgets/badge_celebration_overlay.dart';
@@ -32,6 +33,7 @@ class AmolTrackerApp extends ConsumerStatefulWidget {
 class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     with WidgetsBindingObserver {
   late final GoRouter _router;
+  Timer? _maghribRolloverTimer;
 
   @override
   void initState() {
@@ -44,6 +46,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
       if (!mounted) return;
       unawaited(ref.read(appBootstrapProvider.future));
       _scheduleSmartReminders();
+      _scheduleMaghribRollover();
     });
   }
 
@@ -82,10 +85,50 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     }
     await NotificationService.instance.rescheduleAll();
     _scheduleSmartReminders();
+    _scheduleMaghribRollover();
     if (!mounted) return;
     ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
     ref.read(amalFieldsProvider.notifier).refreshIfStale();
     unawaited(BackgroundCleanupService.runIfDue());
+  }
+
+  void _scheduleMaghribRollover() {
+    _maghribRolloverTimer?.cancel();
+
+    try {
+      final now = IslamicDateService.nowInBD();
+      DateTime maghrib = IslamicDateService.getMaghribTimeSafe();
+      Duration delay = maghrib.add(const Duration(minutes: 2)).difference(now);
+
+      if (delay.isNegative) {
+        final tomorrow = DateTime(
+          now.year, now.month, now.day,
+        ).add(const Duration(days: 1));
+        maghrib = IslamicDateService.getMaghribTimeForDate(tomorrow);
+        delay = maghrib.add(const Duration(minutes: 2)).difference(now);
+      }
+
+      if (delay.isNegative || delay.inHours > 26) return;
+
+      _maghribRolloverTimer = Timer(delay, _onMaghribRollover);
+    } catch (_) {}
+  }
+
+  Future<void> _onMaghribRollover() async {
+    if (!mounted) return;
+    final previousDate = ref.read(currentHijriDateProvider);
+    ref.invalidate(currentHijriDateProvider);
+    final nextDate = ref.read(currentHijriDateProvider);
+    if (previousDate != nextDate) {
+      final uid = ref.read(currentUserProvider).asData?.value?.uid;
+      if (uid != null) {
+        unawaited(ref.read(amalProvider(uid).notifier).reloadForNewDay());
+      }
+    }
+    if (!mounted) return;
+    ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
+    unawaited(BackgroundCleanupService.runIfDue());
+    _scheduleMaghribRollover();
   }
 
   void _scheduleSmartReminders() {
@@ -117,6 +160,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
 
   @override
   void dispose() {
+    _maghribRolloverTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     NotificationService.instance.dispose();
     _router.dispose();

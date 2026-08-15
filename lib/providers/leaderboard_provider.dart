@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod/legacy.dart';
 
 import '../core/services/islamic_date_service.dart';
 import '../core/services/quiz_leaderboard_service.dart';
@@ -28,6 +29,25 @@ class LeaderboardEntry {
 String _safeName(String value) =>
     value.trim().isEmpty ? 'Anonymous' : value.trim();
 
+// ---------------------------------------------------------------------------
+// Refresh signal — bump this to force all FutureProvider leaderboards to
+// re-execute while the watching widget is on screen, so the shimmer shows.
+// ---------------------------------------------------------------------------
+class LeaderboardRefreshNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
+final leaderboardRefreshProvider =
+    NotifierProvider<LeaderboardRefreshNotifier, int>(
+  LeaderboardRefreshNotifier.new,
+);
+
+// ---------------------------------------------------------------------------
+// Daily leaderboard — uses a real-time Firestore stream so it always live.
+// ---------------------------------------------------------------------------
 final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
   final authState = ref.watch(currentUserProvider).asData?.value;
   final currentUserGender = authState?.gender;
@@ -71,9 +91,14 @@ final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
   });
 });
 
-final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
-  ref,
-) async {
+// ---------------------------------------------------------------------------
+// Weekly leaderboard
+// ---------------------------------------------------------------------------
+final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
+  (ref) async {
+  // Re-execute whenever leaderboardRefreshProvider is bumped.
+  ref.watch(leaderboardRefreshProvider);
+
   final authState = ref.watch(currentUserProvider).asData?.value;
   final currentUserGender = authState?.gender;
 
@@ -118,9 +143,14 @@ final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   return entries;
 });
 
-final monthlyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
-  ref,
-) async {
+// ---------------------------------------------------------------------------
+// Monthly leaderboard
+// ---------------------------------------------------------------------------
+final monthlyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
+  (ref) async {
+  // Re-execute whenever leaderboardRefreshProvider is bumped.
+  ref.watch(leaderboardRefreshProvider);
+
   final authState = ref.watch(currentUserProvider).asData?.value;
   final currentUserGender = authState?.gender;
 
@@ -165,9 +195,14 @@ final monthlyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   return entries;
 });
 
-final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
-  ref,
-) async {
+// ---------------------------------------------------------------------------
+// Streak leaderboard
+// ---------------------------------------------------------------------------
+final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
+  (ref) async {
+  // Re-execute whenever leaderboardRefreshProvider is bumped.
+  ref.watch(leaderboardRefreshProvider);
+
   final authState = ref.watch(currentUserProvider).asData?.value;
   final currentUserGender = authState?.gender;
 
@@ -224,9 +259,14 @@ final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
   return entries;
 });
 
-final quizLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>((
-  ref,
-) async {
+// ---------------------------------------------------------------------------
+// Quiz leaderboard
+// ---------------------------------------------------------------------------
+final quizLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
+  (ref) async {
+  // Re-execute whenever leaderboardRefreshProvider is bumped.
+  ref.watch(leaderboardRefreshProvider);
+
   final authState = ref.watch(currentUserProvider).asData?.value;
   final currentUserGender = authState?.gender;
 

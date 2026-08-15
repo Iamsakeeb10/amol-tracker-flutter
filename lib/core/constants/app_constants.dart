@@ -8,5 +8,5 @@ class AppConstants {
 
   // Global Hijri day correction used app-wide.
   // -1 means show one Hijri day earlier than raw package conversion.
-  static const int hijriDayAdjustment = -1;
+  static const int hijriDayAdjustment = 0;
 }

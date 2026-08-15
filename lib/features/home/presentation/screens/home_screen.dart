@@ -196,6 +196,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Future<void> _refreshAll(String uid) async {
+    ref.invalidate(currentHijriDateProvider);
     ref.invalidate(currentUserProvider);
     ref.invalidate(amalFieldsProvider);
     ref.invalidate(amalProvider(uid));

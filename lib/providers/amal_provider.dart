@@ -24,6 +24,7 @@ import 'amal_fields_provider.dart';
 import 'auth_provider.dart';
 import 'date_provider.dart';
 import 'history_provider.dart';
+import 'leaderboard_provider.dart';
 import 'locale_provider.dart';
 
 /// Network status for offline banner (Phase 3).
@@ -839,6 +840,9 @@ class AmalNotifier extends StateNotifier<AmalState> {
     }
     _ref.invalidate(historyMonthProvider);
     _ref.read(amalLogRefreshProvider.notifier).bump();
+    // Bump the leaderboard refresh signal so all leaderboard FutureProviders
+    // re-execute while the home widget is watching them → shimmer shows.
+    _ref.read(leaderboardRefreshProvider.notifier).bump();
     Future<void>.microtask(() => _trySyncSubmittedLog(log));
 
     // Cancel smart reminders since user just logged

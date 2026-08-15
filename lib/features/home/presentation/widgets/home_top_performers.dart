@@ -95,6 +95,7 @@ class _PerformerCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(icon, color: AppColors.gold, size: 14.r),
                     SizedBox(width: 6.w),
@@ -107,19 +108,37 @@ class _PerformerCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
-                  decoration: BoxDecoration(
-                    color: AppColors.gold.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Text(
-                    badgeLabel,
-                    style: AppTextStyles.bodySmall(context).copyWith(
-                      color: AppColors.gold,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 10.sp,
+                SizedBox(width: 4.w),
+                Flexible(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 2.h),
+                    decoration: BoxDecoration(
+                      color: AppColors.gold.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
+                    child: asyncData.isLoading
+                        ? Shimmer.fromColors(
+                            baseColor: AppColors.gold.withValues(alpha: 0.15),
+                            highlightColor: AppColors.gold.withValues(alpha: 0.35),
+                            child: Container(
+                              height: 12.h,
+                              width: 52.w,
+                              decoration: BoxDecoration(
+                                color: AppColors.gold.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                            ),
+                          )
+                        : Text(
+                            badgeLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.bodySmall(context).copyWith(
+                              color: AppColors.gold,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 10.sp,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -214,15 +233,47 @@ class _PerformerCard extends StatelessWidget {
                 );
               },
               loading: () => Shimmer.fromColors(
-                baseColor: AppColors.cardDark,
-                highlightColor: AppColors.cardBorder,
-                child: Container(
-                  height: 30.h,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.cardDark,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
+                baseColor: AppColors.cardBorder.withValues(alpha: 0.4),
+                highlightColor: AppColors.cardBorder.withValues(alpha: 0.9),
+                child: Row(
+                  children: [
+                    // Avatar placeholder
+                    Container(
+                      width: 30.r,
+                      height: 30.r,
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBorder,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Name placeholder
+                          Container(
+                            height: 11.h,
+                            width: 80.w,
+                            decoration: BoxDecoration(
+                              color: AppColors.cardBorder,
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                          ),
+                          SizedBox(height: 5.h),
+                          // Score placeholder
+                          Container(
+                            height: 9.h,
+                            width: 44.w,
+                            decoration: BoxDecoration(
+                              color: AppColors.cardBorder,
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               error: (_, __) => SizedBox(

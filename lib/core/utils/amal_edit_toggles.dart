@@ -128,10 +128,13 @@ void invalidateAfterAmalEdit(WidgetRef ref, String uid, String hijriDate) {
   ref.invalidate(editableDayProvider(hijriDate));
 
   ref.read(amalLogRefreshProvider.notifier).bump();
-  ref.invalidate(weeklyLeaderboardProvider);
+
+  // Bump the leaderboard refresh signal so all leaderboard FutureProviders
+  // re-execute while the home widget is watching them → shimmer shows.
+  ref.read(leaderboardRefreshProvider.notifier).bump();
+
   final today = IslamicDateService.getCurrentIslamicDateStringSafe();
   if (hijriDate == today) {
-    ref.invalidate(dailyLeaderboardProvider);
     ref.invalidate(amalProvider(uid));
   }
 

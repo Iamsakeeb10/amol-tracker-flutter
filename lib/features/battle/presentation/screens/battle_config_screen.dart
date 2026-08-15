@@ -40,6 +40,7 @@ class _BattleConfigScreenState extends ConsumerState<BattleConfigScreen> {
     final playersText = isBn ? 'সর্বোচ্চ খেলোয়াড়' : 'Max Players';
     final createBtnText = isBn ? 'ব্যাটেল তৈরি করুন' : 'Create Battle';
     final loadingText = isBn ? 'লোড হচ্ছে...' : 'Loading...';
+    final customText = isBn ? 'কাস্টম' : 'Custom';
 
     return AppScaffold(
       appBar: AppBar(
@@ -70,6 +71,27 @@ class _BattleConfigScreenState extends ConsumerState<BattleConfigScreen> {
           if (_questionCount > maxQ) _questionCount = maxQ;
           if (_questionCount < 1 && maxQ > 0) _questionCount = 1;
 
+          // Generate dynamic options for question count
+          List<int> questionOptions = [];
+          if (maxQ > 0) {
+            final Set<int> opts = {};
+            // Add standard presets that fit within maxQ
+            for (int p in [5, 10, 15, 20]) {
+              if (p <= maxQ) opts.add(p);
+            }
+            // Always include maxQ
+            opts.add(maxQ);
+            
+            // If we have too few options (e.g., maxQ is 5 gives only [5]), add smaller ones
+            if (opts.length < 3) {
+              if (maxQ >= 3) opts.add(3);
+              if (maxQ >= 2) opts.add(2);
+              if (maxQ == 5) opts.add(4); // For maxQ=5, show [2, 3, 4, 5]
+            }
+            
+            questionOptions = opts.toList()..sort();
+          }
+
           return Padding(
             padding: EdgeInsets.fromLTRB(0.w, 8.h, 0.w, 20.h),
             child: Column(
@@ -89,9 +111,11 @@ class _BattleConfigScreenState extends ConsumerState<BattleConfigScreen> {
                           title: qCountText,
                           valueLabel: '$_questionCount',
                           child: _ChoiceRow(
-                            options: [5, 10, 15, 20].where((q) => q <= maxQ).toList(),
+                            options: questionOptions,
                             selectedValue: _questionCount,
                             onSelected: (val) => setState(() => _questionCount = val),
+                            customLabel: customText,
+                            onCustomTap: () => _showCustomCountSheet(maxQ, qCountText, customText),
                           ),
                         ),
                         SizedBox(height: 16.h),
@@ -156,6 +180,175 @@ class _BattleConfigScreenState extends ConsumerState<BattleConfigScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _showCustomCountSheet(int maxQ, String title, String confirmStr) async {
+    final controller = TextEditingController(text: _questionCount.toString());
+    String? errorMessage;
+    final isBn = ref.read(localeProvider).languageCode == 'bn';
+    final subtitleStr = isBn ? '১ থেকে $maxQ এর মধ্যে একটি সংখ্যা দিন' : 'Enter a number between 1 and $maxQ';
+    
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
+                decoration: BoxDecoration(
+                  color: AppColors.emeraldDeep,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl.r)),
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.textMuted,
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8.r),
+                          decoration: BoxDecoration(
+                            color: AppColors.goldCard,
+                            borderRadius: BorderRadius.circular(AppRadius.sm.r),
+                            border: Border.all(color: AppColors.goldBorder),
+                          ),
+                          child: Icon(Icons.quiz_rounded, color: AppColors.gold, size: 18.r),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      subtitleStr,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    TextField(
+                      controller: controller,
+                      keyboardType: TextInputType.number,
+                      autofocus: true,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                        color: AppColors.textPrimary,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '1 - $maxQ',
+                        hintStyle: TextStyle(
+                          color: AppColors.textHint,
+                          letterSpacing: 2,
+                          fontWeight: FontWeight.normal,
+                        ),
+                        filled: true,
+                        fillColor: AppColors.cardDark,
+                        contentPadding: EdgeInsets.symmetric(vertical: 16.h),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: BorderSide(color: AppColors.cardBorder),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: const BorderSide(color: AppColors.gold, width: 1.4),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: BorderSide(color: AppColors.danger),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: const BorderSide(color: AppColors.danger, width: 1.4),
+                        ),
+                      ),
+                      onChanged: (v) {
+                         if (errorMessage != null) setModalState(() => errorMessage = null);
+                      },
+                    ),
+                    if (errorMessage != null) ...[
+                      SizedBox(height: 10.h),
+                      Row(
+                        children: [
+                          Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 16.r),
+                          SizedBox(width: 6.w),
+                          Expanded(
+                            child: Text(
+                              errorMessage!,
+                              style: TextStyle(fontSize: 12.5.sp, color: AppColors.danger),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    SizedBox(height: 24.h),
+                    GestureDetector(
+                      onTap: () {
+                        final val = int.tryParse(controller.text);
+                        if (val == null || val < 1 || val > maxQ) {
+                          setModalState(() {
+                             errorMessage = subtitleStr; // Reuse subtitle text as error
+                          });
+                        } else {
+                          setState(() => _questionCount = val);
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        decoration: BoxDecoration(
+                          color: AppColors.gold,
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          confirmStr, 
+                          style: TextStyle(
+                            color: AppColors.emeraldDeep, 
+                            fontWeight: FontWeight.bold, 
+                            fontSize: 15.sp,
+                          )
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        );
+      },
     );
   }
 
@@ -275,45 +468,78 @@ class _ChoiceRow extends StatelessWidget {
   final int selectedValue;
   final ValueChanged<int> onSelected;
   final String labelSuffix;
+  final String? customLabel;
+  final VoidCallback? onCustomTap;
 
   const _ChoiceRow({
+    super.key,
     required this.options,
     required this.selectedValue,
     required this.onSelected,
     this.labelSuffix = '',
+    this.customLabel,
+    this.onCustomTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasCustomValue = customLabel != null && !options.contains(selectedValue);
+    
     return Wrap(
       spacing: 10.w,
       runSpacing: 10.h,
-      children: options.map((opt) {
-        final isSelected = selectedValue == opt;
-        return GestureDetector(
-          onTap: () => onSelected(opt),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.gold : AppColors.cardDark,
-              borderRadius: BorderRadius.circular(AppRadius.md.r),
-              border: Border.all(
-                color: isSelected ? AppColors.gold : AppColors.cardBorder,
-                width: isSelected ? 1.4 : 1,
+      children: [
+        ...options.map((opt) {
+          final isSelected = selectedValue == opt;
+          return GestureDetector(
+            onTap: () => onSelected(opt),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.gold : AppColors.cardDark,
+                borderRadius: BorderRadius.circular(AppRadius.md.r),
+                border: Border.all(
+                  color: isSelected ? AppColors.gold : AppColors.cardBorder,
+                  width: isSelected ? 1.4 : 1,
+                ),
+              ),
+              child: Text(
+                '$opt$labelSuffix',
+                style: TextStyle(
+                  fontSize: 13.5.sp,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? AppColors.emeraldDeep : AppColors.textSecondary,
+                ),
               ),
             ),
-            child: Text(
-              '$opt$labelSuffix',
-              style: TextStyle(
-                fontSize: 13.5.sp,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? AppColors.emeraldDeep : AppColors.textSecondary,
+          );
+        }),
+        if (customLabel != null && onCustomTap != null)
+          GestureDetector(
+            onTap: onCustomTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                color: hasCustomValue ? AppColors.gold : AppColors.cardDark,
+                borderRadius: BorderRadius.circular(AppRadius.md.r),
+                border: Border.all(
+                  color: hasCustomValue ? AppColors.gold : AppColors.cardBorder,
+                  width: hasCustomValue ? 1.4 : 1,
+                ),
+              ),
+              child: Text(
+                hasCustomValue ? '$selectedValue$labelSuffix' : customLabel!,
+                style: TextStyle(
+                  fontSize: 13.5.sp,
+                  fontWeight: hasCustomValue ? FontWeight.bold : FontWeight.normal,
+                  color: hasCustomValue ? AppColors.emeraldDeep : AppColors.textSecondary,
+                ),
               ),
             ),
           ),
-        );
-      }).toList(),
+      ],
     );
   }
 }

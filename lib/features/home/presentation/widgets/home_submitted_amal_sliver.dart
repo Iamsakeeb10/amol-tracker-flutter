@@ -11,6 +11,8 @@ import '../../../../shared/widgets/card_container.dart';
 import 'home_amal_details_dialog.dart';
 import 'home_amal_fields_sliver.dart';
 import 'home_widgets.dart';
+import '../../../../core/utils/amal_entry_policy.dart';
+import '../../../../models/user_model.dart';
 
 List<Widget> buildHomeSubmittedAmalSlivers({
   required BuildContext context,
@@ -19,9 +21,37 @@ List<Widget> buildHomeSubmittedAmalSlivers({
   required String locale,
   required AppLocalizations l10n,
   required AmalLogModel? submittedLog,
+  required UserAmalProfile userProfile,
   required Future<void> Function() onRetryFields,
   required Future<void> Function(AmalLogModel log) onEditTodayAmal,
 }) {
+  final fields = fieldsAsync.asData?.value;
+  List<AmalField>? mainFields;
+  List<AmalField>? optionalFields;
+  List<AmalField>? inactiveFields;
+
+  if (fields != null && submittedLog != null) {
+    final activeIds = submittedLog.activeFieldIds.toSet();
+    if (activeIds.isNotEmpty) {
+      final activeFields = fields.where((f) => activeIds.contains(f.id)).toList();
+      final policy = AmalEntryPolicy.from(
+        userProfile, 
+        activeFields, 
+        specialTimeActive: submittedLog.specialTimeApplied,
+      );
+      mainFields = policy.mainFields;
+      optionalFields = policy.optionalFields;
+      
+      if (submittedLog.specialTimeApplied) {
+        inactiveFields = fields
+            .where((f) => f.isActive && f.id.isNotEmpty && !activeIds.contains(f.id))
+            .toList();
+      } else {
+        inactiveFields = const [];
+      }
+    }
+  }
+
   return [
     SliverToBoxAdapter(
       child: CardContainer.gold(
@@ -77,35 +107,9 @@ List<Widget> buildHomeSubmittedAmalSlivers({
       readOnly: true,
       onRetry: onRetryFields,
       onTapDetails: (f) => showHomeAmalDetailsDialog(context, f, locale),
-      mainFields: _mainFieldsForSubmitted(fieldsAsync, submittedLog),
-      inactiveSpecialTimeFields:
-          _inactiveFieldsForSubmitted(fieldsAsync, submittedLog),
+      mainFields: mainFields,
+      optionalFields: optionalFields,
+      inactiveSpecialTimeFields: inactiveFields,
     ),
   ];
-}
-
-List<AmalField>? _mainFieldsForSubmitted(
-  AsyncValue<List<AmalField>> fieldsAsync,
-  AmalLogModel? submittedLog,
-) {
-  final fields = fieldsAsync.asData?.value;
-  if (fields == null || submittedLog == null) return null;
-  final activeIds = submittedLog.activeFieldIds.toSet();
-  if (activeIds.isEmpty) return null;
-  return fields.where((f) => activeIds.contains(f.id)).toList();
-}
-
-List<AmalField>? _inactiveFieldsForSubmitted(
-  AsyncValue<List<AmalField>> fieldsAsync,
-  AmalLogModel? submittedLog,
-) {
-  final fields = fieldsAsync.asData?.value;
-  if (fields == null || submittedLog == null) return null;
-  final activeIds = submittedLog.activeFieldIds.toSet();
-  if (activeIds.isEmpty) return null;
-  // Only show inactive section when special-time was applied at submit.
-  if (!submittedLog.specialTimeApplied) return const [];
-  return fields
-      .where((f) => f.isActive && f.id.isNotEmpty && !activeIds.contains(f.id))
-      .toList();
 }

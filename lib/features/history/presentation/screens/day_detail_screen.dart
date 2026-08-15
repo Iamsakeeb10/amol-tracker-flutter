@@ -12,9 +12,12 @@ import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/amal_edit_debug.dart';
+import '../../../../core/utils/amal_entry_policy.dart';
+import '../../../../core/utils/bengali_numeral_helper.dart';
 import '../../../../core/utils/score_calculator.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
+import '../../../../models/user_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
@@ -67,12 +70,24 @@ class DayDetailScreen extends ConsumerWidget {
             (log?.maxScore ?? computedMax).clamp(1, kDefaultMaxDailyScore);
         final score = log?.score ?? 0;
         final activeIds = log?.activeFieldIds.toSet() ?? const <String>{};
-        final mainFields = activeIds.isEmpty
+        final activeFields = activeIds.isEmpty
             ? fields
             : fields.where((f) => activeIds.contains(f.id)).toList();
-        final inactiveFields = (log != null &&
-                log.specialTimeApplied &&
-                activeIds.isNotEmpty)
+            
+        final isSpecialTimeActive = log?.specialTimeApplied ?? false;
+        final user = ref.watch(currentUserProvider).asData?.value;
+        final userProfile = user?.amalProfile ?? UserAmalProfile.unset;
+        
+        final displayPolicy = AmalEntryPolicy.from(
+          userProfile, 
+          activeFields, 
+          specialTimeActive: isSpecialTimeActive,
+        );
+        
+        final mainFields = displayPolicy.mainFields;
+        final optionalFields = displayPolicy.optionalFields;
+        
+        final inactiveFields = isSpecialTimeActive
             ? fields
                 .where(
                   (f) =>
@@ -235,6 +250,14 @@ class DayDetailScreen extends ConsumerWidget {
                   );
                 },
               ),
+              if (optionalFields.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: _DayDetailOptionalFieldsSection(
+                    fields: optionalFields,
+                    locale: locale,
+                    log: log,
+                  ),
+                ),
               if (inactiveFields.isNotEmpty) ...[
                 SliverToBoxAdapter(child: SizedBox(height: 8.h)),
                 SliverToBoxAdapter(
@@ -477,6 +500,129 @@ class _DayDetailLoadingShimmer extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DayDetailOptionalFieldsSection extends StatefulWidget {
+  const _DayDetailOptionalFieldsSection({
+    required this.fields,
+    required this.locale,
+    required this.log,
+  });
+
+  final List<amal_const.AmalField> fields;
+  final String locale;
+  final AmalLogModel? log;
+
+  @override
+  State<_DayDetailOptionalFieldsSection> createState() =>
+      _DayDetailOptionalFieldsSectionState();
+}
+
+class _DayDetailOptionalFieldsSectionState
+    extends State<_DayDetailOptionalFieldsSection> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final radius = 14.r;
+
+    return Column(
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(radius),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.goldCard,
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(color: AppColors.goldBorder, width: 1),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              child: Row(
+                children: [
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 20.r,
+                      color: AppColors.gold,
+                    ),
+                  ),
+                  SizedBox(width: 6.w),
+                  Flexible(
+                    flex: 5,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            l10n.optionalAmalSectionTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.bodyLarge(context).copyWith(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.goldLight,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Container(
+                          constraints: BoxConstraints(minWidth: 20.r),
+                          height: 20.r,
+                          padding: EdgeInsets.symmetric(horizontal: 6.w),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.22),
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Text(
+                            widget.locale == 'bn'
+                                ? toBengaliNumeral(widget.fields.length)
+                                : '${widget.fields.length}',
+                            style: AppTextStyles.pill(context).copyWith(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.goldPale,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: _expanded
+              ? Padding(
+                  padding: EdgeInsets.only(top: 10.h),
+                  child: Column(
+                    children: [
+                      for (final field in widget.fields)
+                        _DayDetailAmalRow(
+                          field: field,
+                          locale: widget.locale,
+                          log: widget.log,
+                        ),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 }

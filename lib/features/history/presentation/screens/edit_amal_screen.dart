@@ -12,9 +12,11 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/amal_edit_debug.dart';
 import '../../../../core/utils/amal_edit_toggles.dart';
 import '../../../../core/utils/amal_entry_policy.dart';
+import '../../../../core/utils/bengali_numeral_helper.dart';
 import '../../../../core/utils/score_calculator.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
+import '../../../../models/user_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
@@ -338,9 +340,19 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
       final existingActiveIds = existing.activeFieldIds.toSet();
       activeFields =
           fields.where((f) => existingActiveIds.contains(f.id)).toList();
-      mainFields = activeFields;
-      optionalFields = const [];
       isSpecialTimeActive = existing.specialTimeApplied;
+      
+      final user = ref.watch(currentUserProvider).asData?.value;
+      final userProfile = user?.amalProfile ?? UserAmalProfile.unset;
+      final editingPolicy = AmalEntryPolicy.from(
+        userProfile, 
+        activeFields, 
+        specialTimeActive: isSpecialTimeActive,
+      );
+      
+      mainFields = editingPolicy.mainFields;
+      optionalFields = editingPolicy.optionalFields;
+      
       inactiveFields = isSpecialTimeActive
           ? fields
               .where(
@@ -666,39 +678,78 @@ class _EditOptionalFieldsSectionState extends State<_EditOptionalFieldsSection> 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).languageCode;
+    final radius = 14.r;
+
     return Column(
       children: [
-        InkWell(
-          onTap: () => setState(() => _expanded = !_expanded),
-          borderRadius: BorderRadius.circular(12.r),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.arrow_right_rounded,
-                  size: 20.r,
-                  color: AppColors.textMuted,
-                ),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: Text(
-                    l10n.optionalAmalSection(widget.fields.length),
-                    style: AppTextStyles.bodySmall(context).copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(radius),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.goldCard,
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(color: AppColors.goldBorder, width: 1),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              child: Row(
+                children: [
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 20.r,
+                      color: AppColors.gold,
                     ),
                   ),
-                ),
-                Icon(
-                  _expanded
-                      ? Icons.expand_less_rounded
-                      : Icons.expand_more_rounded,
-                  size: 20.r,
-                  color: AppColors.textMuted,
-                ),
-              ],
+                  SizedBox(width: 6.w),
+                  Flexible(
+                    flex: 5,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            l10n.optionalAmalSectionTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.bodyLarge(context).copyWith(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.goldLight,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Container(
+                          constraints: BoxConstraints(minWidth: 20.r),
+                          height: 20.r,
+                          padding: EdgeInsets.symmetric(horizontal: 6.w),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.22),
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Text(
+                            locale == 'bn' ? toBengaliNumeral(widget.fields.length) : '${widget.fields.length}',
+                            style: AppTextStyles.pill(context).copyWith(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.goldPale,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -706,10 +757,13 @@ class _EditOptionalFieldsSectionState extends State<_EditOptionalFieldsSection> 
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
           child: _expanded
-              ? Column(
-                  children: [
-                    for (final field in widget.fields) widget.buildRow(field),
-                  ],
+              ? Padding(
+                  padding: EdgeInsets.only(top: 10.h),
+                  child: Column(
+                    children: [
+                      for (final field in widget.fields) widget.buildRow(field),
+                    ],
+                  ),
                 )
               : const SizedBox.shrink(),
         ),

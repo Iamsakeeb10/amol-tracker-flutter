@@ -336,6 +336,7 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                               locale: widget.locale,
                               l10n: l10n,
                               submittedLog: widget.submittedLog,
+                              userProfile: user?.amalProfile ?? UserAmalProfile.unset,
                               onRetryFields: widget.onRetryFields,
                               onEditTodayAmal: widget.onEditTodayAmal,
                             )

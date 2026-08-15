@@ -172,7 +172,7 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
                           padding: EdgeInsets.symmetric(horizontal: 0),
                           sliver: SliverToBoxAdapter(
                             child: Padding(
-                              padding: EdgeInsets.only(top: 16, bottom: AppSpacing.md.h),
+                              padding: EdgeInsets.only(top: AppSpacing.md.h, bottom: AppSpacing.md.h),
                               child: _sectionTitle(
                                 context,
                                 isBn ? 'প্রশ্ন ও উত্তর' : 'Questions & Answers',

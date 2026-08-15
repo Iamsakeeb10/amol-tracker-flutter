@@ -28,6 +28,7 @@ class BattleQuizScreen extends ConsumerStatefulWidget {
 
 class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   Timer? _timer;
+  Timer? _fallbackTimer;
   int _timeLeftMs = 0;
   
   bool _isNavigatingToResults = false;
@@ -51,6 +52,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _fallbackTimer?.cancel();
     super.dispose();
   }
 
@@ -91,6 +93,19 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
       if (remaining <= 0) {
         timer.cancel();
         _triggerFinish();
+        
+        // Start fallback timer
+        _fallbackTimer = Timer(const Duration(seconds: 15), () {
+          if (mounted && _hasFinishedLocal) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to finalize battle. Server took too long.'),
+                backgroundColor: AppColors.danger,
+              ),
+            );
+            _handleExit(context);
+          }
+        });
       }
     });
   }
@@ -275,6 +290,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              SizedBox(height: 12.h),
               // Timer Area
               Row(
                 children: [

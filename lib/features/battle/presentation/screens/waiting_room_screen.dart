@@ -50,7 +50,27 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
 
     ref.listen(battleStreamProvider(widget.battleCode), (previous, next) {
       final battle = next.asData?.value;
-      if (battle == null || battle.status != 'waiting') {
+      if (battle == null) {
+        _cancelTimer();
+        return;
+      }
+      
+      if (battle.status == 'cancelled') {
+        _cancelTimer();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(isBn ? 'ব্যাটেলটি হোস্ট বাতিল করেছেন!' : 'Battle was cancelled by the host!'),
+              backgroundColor: AppColors.danger,
+            ),
+          );
+          LocalStorageService.clearActiveBattleCode();
+          context.go(AppRoutes.home);
+        }
+        return;
+      }
+
+      if (battle.status != 'waiting') {
         _cancelTimer();
         return;
       }
@@ -66,45 +86,39 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
       }
     });
 
+    final isHost = battleAsync.asData?.value?.hostUid == currentUser?.uid;
+
     return PopScope(
-      canPop: true,
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) _minimize();
+        if (!didPop) _showExitDialog(isHost, isBn);
       },
       child: AppScaffold(
         // We handle back via PopScope above
         handleExitBack: false,
         appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          isBn ? 'অপেক্ষমাণ কক্ষ' : 'Waiting Room',
-          style: AppTextStyles.headlineMedium(context).copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+          title: Text(
+            isBn ? 'অপেক্ষমাণ কক্ষ' : 'Waiting Room',
+            style: AppTextStyles.headlineMedium(context).copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 24.r),
-          onPressed: _minimize,
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.exit_to_app_rounded, color: AppColors.dangerLight, size: 24.r),
-            onPressed: () async {
-              final shouldExit = await showDialog<bool>(
-                context: context,
-                builder: (_) => _WaitingRoomExitDialog(isBn: isBn),
-              );
-              if (shouldExit == true && context.mounted) {
-                _leaveBattle(context);
-              }
-            },
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary, size: 24.r),
+            onPressed: () => _showExitDialog(isHost, isBn),
           ),
-          SizedBox(width: 8.w),
-        ],
-      ),
+          actions: [
+            IconButton(
+              onPressed: () => _showExitDialog(isHost, isBn),
+              icon: Icon(isHost ? Icons.cancel_rounded : Icons.exit_to_app_rounded, color: AppColors.danger, size: 24.r),
+            ),
+            SizedBox(width: AppSpacing.sm.w),
+          ],
+        ),
       body: battleAsync.when(
         data: (battle) {
           if (battle == null) {
@@ -311,12 +325,41 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
     }
   }
 
-  void _minimize() {
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      context.go(AppRoutes.home);
-    }
+  void _showExitDialog(bool isHost, bool isBn) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.emeraldDeep,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xl.r),
+          side: const BorderSide(color: AppColors.cardBorder),
+        ),
+        title: Text(
+          isBn ? (isHost ? 'ব্যাটেল বাতিল করবেন?' : 'ব্যাটেল ত্যাগ করবেন?') : (isHost ? 'Cancel Battle?' : 'Leave Battle?'),
+          style: AppTextStyles.titleLarge(context),
+        ),
+        content: Text(
+          isBn 
+              ? (isHost ? 'আপনি বের হয়ে গেলে ব্যাটেলটি বাতিল হয়ে যাবে।' : 'আপনি কি নিশ্চিত যে আপনি ব্যাটেলটি ত্যাগ করতে চান?') 
+              : (isHost ? 'If you leave, the battle will be cancelled for everyone.' : 'Are you sure you want to leave this battle?'),
+          style: AppTextStyles.bodyMedium(context),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(isBn ? 'না' : 'No', style: TextStyle(color: AppColors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _leaveBattle(context);
+            },
+            child: Text(isBn ? 'হ্যাঁ' : 'Yes', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _leaveBattle(BuildContext context) {

@@ -284,8 +284,14 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
   const questionDocs = await runQuery(env, `topics/${battle.topicId}`, structuredQuery);
   const activeIds = questionDocs.map((doc: any) => doc.name.split('/').pop() as string);
 
-  if (activeIds.length < battle.questionCount) {
-    throw invalidConfigError(`Not enough active questions. Requested ${battle.questionCount}, but only ${activeIds.length} available.`);
+  if (activeIds.length === 0) {
+    throw invalidConfigError(`No active questions available for this topic.`);
+  }
+
+  // Automatically reduce question count if not enough
+  let finalQuestionCount = battle.questionCount;
+  if (activeIds.length < finalQuestionCount) {
+    finalQuestionCount = activeIds.length;
   }
 
   // 3. Shuffle and pick random questions
@@ -296,7 +302,7 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
     activeIds[i] = activeIds[j]!;
     activeIds[j] = temp;
   }
-  const selectedQuestionIds = activeIds.slice(0, battle.questionCount);
+  const selectedQuestionIds = activeIds.slice(0, finalQuestionCount);
 
   // 4. Start the battle via transaction
   await runTransaction(env, async (tx) => {
@@ -337,6 +343,7 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
 
     tx.update(`battles/${code}`, {
       status: 'active',
+      questionCount: finalQuestionCount,
       questionIds: selectedQuestionIds,
       questionsData,
       startedAt: serverTimestamp(),
@@ -502,8 +509,8 @@ export async function leaveBattle(request: Request, env: Env): Promise<Response>
 
     if (battle.status === 'waiting') {
       const newUids = playerUids.filter((p) => p !== uid);
-      if (newUids.length === 0) {
-        // Cancel battle
+      if (newUids.length === 0 || uid === battle.hostUid) {
+        // Cancel battle if empty OR if the host left
         tx.update(`battles/${code}`, {
           status: 'cancelled',
           playerUids: [],
@@ -512,15 +519,11 @@ export async function leaveBattle(request: Request, env: Env): Promise<Response>
         // Release code from KV
         await env.BATTLE_CODES.delete(code);
       } else {
-        // Promote next joiner if host left
-        const newHost = battle.hostUid === uid ? newUids[0] : battle.hostUid;
-        
-        // Remove from ready list if they were ready
+        // Just remove the player from ready list and player list
         const newReadyUids = (battle.readyUids || []).filter((p: string) => p !== uid);
         
         tx.update(`battles/${code}`, {
           playerUids: newUids,
-          hostUid: newHost,
           readyUids: newReadyUids,
         });
       }

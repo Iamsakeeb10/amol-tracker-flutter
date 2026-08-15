@@ -49,6 +49,8 @@ class _JoinBattleScreenState extends ConsumerState<JoinBattleScreen> {
     final code = _codeController.text.trim().toUpperCase();
     if (code.length != 6) return;
 
+    final isBn = ref.read(localeProvider).languageCode == 'bn';
+
     setState(() {
       _isJoining = true;
       _error = null;
@@ -64,10 +66,30 @@ class _JoinBattleScreenState extends ConsumerState<JoinBattleScreen> {
       }
     } on BattleApiException catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.message);
+      final msg = e.message.toLowerCase();
+      String localMsg = isBn ? 'একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।' : 'An error occurred. Please try again.';
+      
+      if (msg.contains('not found')) {
+        localMsg = isBn ? 'ব্যাটেল খুঁজে পাওয়া যায়নি। কোডটি আবার চেক করুন।' : 'Battle not found. Check the code and try again.';
+      } else if (msg.contains('full')) {
+        localMsg = isBn ? 'এই ব্যাটেলটি ইতিমধ্যে পূর্ণ হয়ে গেছে।' : 'This battle is already full.';
+      } else if (msg.contains('already started') || msg.contains('finished')) {
+        localMsg = isBn ? 'এই ব্যাটেলটি ইতিমধ্যে শুরু বা শেষ হয়ে গেছে।' : 'This battle has already started or finished.';
+      } else {
+        localMsg = e.message;
+      }
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(localMsg), backgroundColor: AppColors.danger),
+      );
+      setState(() => _error = localMsg);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = 'An unexpected error occurred. Please try again.');
+      final errorMsg = isBn ? 'একটি অপ্রত্যাশিত সমস্যা হয়েছে। আবার চেষ্টা করুন।' : 'An unexpected error occurred. Please try again.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMsg), backgroundColor: AppColors.danger),
+      );
+      setState(() => _error = errorMsg);
     } finally {
       if (mounted) setState(() => _isJoining = false);
     }

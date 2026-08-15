@@ -23,7 +23,7 @@ class BattleConfigScreen extends ConsumerStatefulWidget {
 
 class _BattleConfigScreenState extends ConsumerState<BattleConfigScreen> {
   int _questionCount = 10;
-  int _secondsPerQuestion = 15;
+  int _timeLimitSeconds = 300; // default 5 mins
   int _maxPlayers = 2;
   bool _isCreating = false;
   String? _error;
@@ -121,13 +121,15 @@ class _BattleConfigScreenState extends ConsumerState<BattleConfigScreen> {
                         SizedBox(height: 16.h),
                         _ConfigSection(
                           icon: Icons.timer_rounded,
-                          title: timeText,
-                          valueLabel: '${_secondsPerQuestion}s',
+                          title: isBn ? 'সর্বমোট সময়' : 'Total Time Limit',
+                          valueLabel: '${_timeLimitSeconds ~/ 60}${isBn ? " মি" : "m"}',
                           child: _ChoiceRow(
-                            options: const [10, 15, 20, 30],
-                            selectedValue: _secondsPerQuestion,
-                            onSelected: (val) => setState(() => _secondsPerQuestion = val),
-                            labelSuffix: 's',
+                            options: const [60, 180, 300, 600],
+                            selectedValue: _timeLimitSeconds,
+                            onSelected: (val) => setState(() => _timeLimitSeconds = val),
+                            labelBuilder: (val) => '${val ~/ 60}${isBn ? " মি" : "m"}',
+                            customLabel: customText,
+                            onCustomTap: () => _showCustomTimeSheet(isBn ? 'সর্বমোট সময় (মিনিট)' : 'Total Time Limit (Minutes)', customText),
                           ),
                         ),
                         SizedBox(height: 16.h),
@@ -352,7 +354,142 @@ class _BattleConfigScreenState extends ConsumerState<BattleConfigScreen> {
     );
   }
 
-  Future<void> _createBattle() async {
+  Future<void> _showCustomTimeSheet(String title, String confirmStr) async {
+    final controller = TextEditingController(text: (_timeLimitSeconds ~/ 60).toString());
+    String? errorMessage;
+    final isBn = ref.read(localeProvider).languageCode == 'bn';
+    final subtitleStr = isBn ? '১ থেকে ৬০ মিনিটের মধ্যে একটি সংখ্যা দিন' : 'Enter a number between 1 and 60 minutes';
+    
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
+                decoration: BoxDecoration(
+                  color: AppColors.emeraldDeep,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl.r)),
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.textMuted,
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8.r),
+                          decoration: BoxDecoration(
+                            color: AppColors.goldCard,
+                            borderRadius: BorderRadius.circular(AppRadius.sm.r),
+                            border: Border.all(color: AppColors.goldBorder),
+                          ),
+                          child: Icon(Icons.timer_rounded, color: AppColors.gold, size: 18.r),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16.h),
+                    Text(
+                      subtitleStr,
+                      style: TextStyle(fontSize: 13.sp, color: AppColors.textSecondary),
+                    ),
+                    SizedBox(height: 16.h),
+                    TextField(
+                      controller: controller,
+                      keyboardType: TextInputType.number,
+                      autofocus: true,
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 16.sp),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.cardDark,
+                        hintText: isBn ? 'যেমন: 15' : 'e.g. 15',
+                        hintStyle: TextStyle(color: AppColors.textMuted),
+                        errorText: errorMessage,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: BorderSide(color: AppColors.cardBorder),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: BorderSide(color: AppColors.cardBorder),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: BorderSide(color: AppColors.gold),
+                        ),
+                      ),
+                      onChanged: (val) {
+                        if (errorMessage != null) {
+                          setModalState(() => errorMessage = null);
+                        }
+                      },
+                    ),
+                    SizedBox(height: 24.h),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.gold,
+                        foregroundColor: AppColors.emeraldDeep,
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                        ),
+                      ),
+                      onPressed: () {
+                        final val = int.tryParse(controller.text.trim());
+                        if (val == null || val < 1 || val > 60) {
+                          setModalState(() {
+                            errorMessage = isBn ? 'সঠিক সময় দিন (১-৬০ মিনিট)' : 'Invalid time (1-60)';
+                          });
+                          return;
+                        }
+                        setState(() => _timeLimitSeconds = val * 60);
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        confirmStr,
+                        style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _createBattle() async {
     setState(() {
       _isCreating = true;
       _error = null;
@@ -363,7 +500,7 @@ class _BattleConfigScreenState extends ConsumerState<BattleConfigScreen> {
       final res = await repo.createBattle(
         topicId: widget.topicId,
         questionCount: _questionCount,
-        secondsPerQuestion: _secondsPerQuestion,
+        timeLimitSeconds: _timeLimitSeconds,
         maxPlayers: _maxPlayers,
       );
 
@@ -468,6 +605,7 @@ class _ChoiceRow extends StatelessWidget {
   final int selectedValue;
   final ValueChanged<int> onSelected;
   final String labelSuffix;
+  final String Function(int)? labelBuilder;
   final String? customLabel;
   final VoidCallback? onCustomTap;
 
@@ -477,6 +615,7 @@ class _ChoiceRow extends StatelessWidget {
     required this.selectedValue,
     required this.onSelected,
     this.labelSuffix = '',
+    this.labelBuilder,
     this.customLabel,
     this.onCustomTap,
   });
@@ -505,7 +644,7 @@ class _ChoiceRow extends StatelessWidget {
                 ),
               ),
               child: Text(
-                '$opt$labelSuffix',
+                labelBuilder != null ? labelBuilder!(opt) : '$opt$labelSuffix',
                 style: TextStyle(
                   fontSize: 13.5.sp,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -530,7 +669,7 @@ class _ChoiceRow extends StatelessWidget {
                 ),
               ),
               child: Text(
-                hasCustomValue ? '$selectedValue$labelSuffix' : customLabel!,
+                hasCustomValue ? (labelBuilder != null ? labelBuilder!(selectedValue) : '$selectedValue$labelSuffix') : customLabel!,
                 style: TextStyle(
                   fontSize: 13.5.sp,
                   fontWeight: hasCustomValue ? FontWeight.bold : FontWeight.normal,

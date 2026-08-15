@@ -61,19 +61,19 @@ export async function runCronSweep(env: Env): Promise<void> {
   for (const doc of activeDocs) {
     const battle = doc.fields;
     const code = doc.name.split('/').pop() as string;
-    const revealedAtStr = battle.questionRevealedAt;
-    if (!revealedAtStr) continue;
+    const startedAtStr = battle.startedAt;
+    if (!startedAtStr) continue;
 
-    const revealedAt = new Date(revealedAtStr).getTime();
-    const maxTimeMs = (battle.secondsPerQuestion ?? 15) * 1000;
+    const startedAt = new Date(startedAtStr).getTime();
+    const maxTimeMs = (battle.timeLimitSeconds ?? 300) * 1000;
     
-    // secondsPerQuestion + 30s grace period
-    if (now - revealedAt > maxTimeMs + 30000) {
+    // timeLimitSeconds + 60s grace period for network latency and submission
+    if (now - startedAt > maxTimeMs + 60000) {
       console.log(`[Cron] Force-finalizing active battle ${code}`);
       await runTransaction(env, async (tx) => {
         const latest = await tx.get(`battles/${code}`);
         if (latest && latest.status === 'active') {
-          // If it hasn't advanced, force finalize it
+          // Force finalize it with whatever they submitted
           const scoreboard = await tx.get(`battles/${code}/scoreboard/live`) || {};
           await finalizeBattle(tx, code, latest, scoreboard);
         }

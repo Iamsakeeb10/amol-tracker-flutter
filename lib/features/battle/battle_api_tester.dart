@@ -19,7 +19,7 @@ Future<void> runBattleApiTest(WidgetRef ref) async {
     final createRes = await repo.createBattle(
       topicId: 'test_topic', 
       questionCount: 3, 
-      secondsPerQuestion: 15, 
+      timeLimitSeconds: 300, 
       maxPlayers: 2
     );
     final code = createRes.code;
@@ -32,12 +32,13 @@ Future<void> runBattleApiTest(WidgetRef ref) async {
     
     // 3. Submit an answer (assuming a hardcoded selectedIndex for test)
     debugPrint('3. Submitting answer...');
-    final answerRes = await repo.submitAnswer(
+    await repo.submitAllAnswers(
       code: code, 
-      selectedIndex: 1, 
-      responseTimeMs: 2000
+      answers: [
+        {'questionId': '123', 'selectedIndex': 1, 'responseTimeMs': 2000}
+      ]
     );
-    debugPrint('Answer submitted. Score: ${answerRes.score}, Correct: ${answerRes.isCorrect}');
+    debugPrint('Answers submitted.');
     
     debugPrint('--- Battle API Test Complete ---');
   } catch (e, st) {

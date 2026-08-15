@@ -8,7 +8,7 @@
 
 import type { Env } from './types.js';
 import { verifyAuth } from './auth.js';
-import { createBattle, joinBattle, startBattle, submitAnswer, nextQuestion, leaveBattle, toggleReady } from './routes/battle.js';
+import { createBattle, joinBattle, startBattle, submitAllAnswers, leaveBattle, toggleReady } from './routes/battle.js';
 import { ApiError, jsonResponse, notFoundError } from './errors.js';
 
 export default {
@@ -63,11 +63,8 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (request.method === 'POST' && pathname === '/battle/start') {
     return withCors(await startBattle(request, env));
   }
-  if (request.method === 'POST' && pathname === '/battle/answer') {
-    return withCors(await submitAnswer(request, env));
-  }
-  if (request.method === 'POST' && pathname === '/battle/next-question') {
-    return withCors(await nextQuestion(request, env));
+  if (request.method === 'POST' && pathname === '/battle/submit-all') {
+    return withCors(await submitAllAnswers(request, env));
   }
   if (request.method === 'POST' && pathname === '/battle/leave') {
     return withCors(await leaveBattle(request, env));

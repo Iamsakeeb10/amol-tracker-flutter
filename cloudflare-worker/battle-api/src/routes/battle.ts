@@ -38,7 +38,7 @@ export async function createBattle(request: Request, env: Env): Promise<Response
     throw invalidConfigError('Invalid JSON body');
   }
 
-  const { topicId, questionCount, secondsPerQuestion, maxPlayers = 2 } = body;
+  const { topicId, questionCount, timeLimitSeconds, maxPlayers = 2 } = body;
 
   if (!topicId || typeof topicId !== 'string') {
     throw invalidConfigError('Missing or invalid topicId');
@@ -46,8 +46,8 @@ export async function createBattle(request: Request, env: Env): Promise<Response
   if (typeof questionCount !== 'number' || questionCount <= 0) {
     throw invalidConfigError('Invalid questionCount');
   }
-  if (typeof secondsPerQuestion !== 'number' || secondsPerQuestion < 5 || secondsPerQuestion > 60) {
-    throw invalidConfigError('secondsPerQuestion must be between 5 and 60');
+  if (typeof timeLimitSeconds !== 'number' || timeLimitSeconds < 30 || timeLimitSeconds > 900) {
+    throw invalidConfigError('timeLimitSeconds must be between 30 and 900');
   }
   if (typeof maxPlayers !== 'number' || maxPlayers < 2) {
     throw invalidConfigError('maxPlayers must be at least 2');
@@ -94,7 +94,7 @@ export async function createBattle(request: Request, env: Env): Promise<Response
     hostUid: uid,
     topicId,
     questionCount,
-    secondsPerQuestion,
+    timeLimitSeconds,
     maxPlayers,
     status: 'waiting',
     playerUids: [uid],
@@ -303,24 +303,29 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
       throw invalidConfigError('Not all players are ready');
     }
 
-    const firstQuestion = await tx.get(`topics/${latestBattle.topicId}/questions/${selectedQuestionIds[0]}`);
-    let currentQuestionData = null;
-    if (firstQuestion) {
-      currentQuestionData = {
-        id: selectedQuestionIds[0],
-        text: firstQuestion.text || firstQuestion.textBn || firstQuestion.textEn,
-        options: firstQuestion.options || firstQuestion.optionsBn || firstQuestion.optionsEn,
-        difficulty: firstQuestion.difficulty,
-      };
+    // Fetch full data for all selected questions
+    const questionsData = [];
+    for (const qId of selectedQuestionIds) {
+      const qDoc = await tx.get(`topics/${latestBattle.topicId}/questions/${qId}`);
+      if (qDoc) {
+        questionsData.push({
+          id: qId,
+          text: qDoc.text || qDoc.textBn || qDoc.textEn,
+          options: qDoc.options || qDoc.optionsBn || qDoc.optionsEn,
+          difficulty: qDoc.difficulty,
+          correctIndex: qDoc.correctIndex, // Included for instant local feedback
+          points: qDoc.points || 10,
+          explanation: qDoc.explanation,
+          reference: qDoc.reference,
+        });
+      }
     }
 
     tx.update(`battles/${code}`, {
       status: 'active',
       questionIds: selectedQuestionIds,
-      currentQuestionIndex: 0,
-      questionRevealedAt: serverTimestamp(),
-      currentQuestion: currentQuestionData,
-      revealedAnswers: {},
+      questionsData,
+      startedAt: serverTimestamp(),
     });
   });
 
@@ -337,7 +342,7 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
 // Chunk A5 — battle/answer & battle/next-question
 // ---------------------------------------------------------------------------
 
-export async function submitAnswer(request: Request, env: Env): Promise<Response> {
+export async function submitAllAnswers(request: Request, env: Env): Promise<Response> {
   const { uid } = await verifyAuth(request, env);
 
   let body: any;
@@ -347,19 +352,13 @@ export async function submitAnswer(request: Request, env: Env): Promise<Response
     throw invalidConfigError('Invalid JSON body');
   }
 
-  const { code, selectedIndex, responseTimeMs } = body;
+  const { code, answers } = body;
   if (!code || typeof code !== 'string') {
     throw invalidConfigError('Missing battle code');
   }
-  if (typeof selectedIndex !== 'number' && selectedIndex !== null) {
-    throw invalidConfigError('Invalid selectedIndex');
+  if (!Array.isArray(answers)) {
+    throw invalidConfigError('answers must be an array');
   }
-  if (typeof responseTimeMs !== 'number' || responseTimeMs < 0) {
-    throw invalidConfigError('Invalid responseTimeMs');
-  }
-
-  let isCorrect = false;
-  let pointsAwarded = 0;
 
   await runTransaction(env, async (tx) => {
     const battle = await tx.get(`battles/${code}`);
@@ -369,155 +368,80 @@ export async function submitAnswer(request: Request, env: Env): Promise<Response
     const playerUids: string[] = battle.playerUids || [];
     if (!playerUids.includes(uid)) throw invalidConfigError('You are not in this battle');
 
-    const currentIndex = battle.currentQuestionIndex ?? 0;
-    const questionIds: string[] = battle.questionIds || [];
-    const questionId = questionIds[currentIndex];
+    // Make sure user hasn't already submitted
+    const scoreboard = await tx.get(`battles/${code}/scoreboard/live`) || {};
+    const playerStats = scoreboard[uid] || { score: 0, totalTimeMs: 0, correctCount: 0, hasFinished: false };
     
-    if (!questionId) throw internalError('No current question found');
-
-    const revealedAt = battle.questionRevealedAt ? new Date(battle.questionRevealedAt).getTime() : Date.now();
-    const maxTimeMs = (battle.secondsPerQuestion ?? 15) * 1000;
-    
-    // Check grace period
-    if (Date.now() - revealedAt > maxTimeMs + 2000) {
-      throw invalidConfigError('Time expired for this question');
+    if (playerStats.hasFinished) {
+      throw alreadyAnsweredError('You have already submitted your final answers');
     }
 
-    // Check if already answered
-    const answerDoc = await tx.get(`battles/${code}/answers/${uid}_${questionId}`);
-    if (answerDoc) {
-      throw alreadyAnsweredError();
+    const startedAt = battle.startedAt ? new Date(battle.startedAt).getTime() : Date.now();
+    const maxTimeSeconds = battle.timeLimitSeconds ?? 300;
+    const timeLimitMs = maxTimeSeconds * 1000;
+    
+    // Validate if the battle time limit expired massively (allow 10 seconds grace period for network)
+    const timeSinceStartMs = Date.now() - startedAt;
+    if (timeSinceStartMs > timeLimitMs + 10000) {
+      console.log(`User ${uid} submitted late, but we will accept whatever answers they made in time.`);
     }
 
-    // Fetch the question to check correct index and base points
-    const question = await tx.get(`topics/${battle.topicId}/questions/${questionId}`);
-    if (!question) throw internalError('Question not found');
+    const questionsData = battle.questionsData || [];
+    let totalScore = 0;
+    let totalResponseTimeMs = 0;
+    let totalCorrect = 0;
 
-    const correctIndex = question.correctIndex ?? 0;
-    const basePoints = question.points ?? 10;
+    // Process each answer
+    for (const ans of answers) {
+      const qId = ans.questionId;
+      const selectedIndex = ans.selectedIndex;
+      const responseTimeMs = ans.responseTimeMs || 0;
 
-    const computed = computeScore(selectedIndex === correctIndex, basePoints, responseTimeMs, maxTimeMs);
-    isCorrect = computed.isCorrect;
-    pointsAwarded = computed.pointsAwarded;
-
-    // Write answer
-    tx.set(`battles/${code}/answers/${uid}_${questionId}`, {
-      uid,
-      questionId,
-      selectedIndex,
-      responseTimeMs,
-      isCorrect,
-      pointsAwarded,
-      createdAt: serverTimestamp(),
-    });
-
-    // Update live scoreboard
-    const scoreboard = await tx.get(`battles/${code}/scoreboard/live`);
-    const playerStats = scoreboard?.[uid] || { score: 0, totalTimeMs: 0, correctCount: 0 };
-    
-    playerStats.score += pointsAwarded;
-    playerStats.totalTimeMs += responseTimeMs;
-    if (isCorrect) playerStats.correctCount += 1;
-
-    // Set scoreboard with the updated user entry
-    tx.set(`battles/${code}/scoreboard/live`, {
-      ...scoreboard,
-      [uid]: playerStats,
-    });
-  });
-
-  return new Response(JSON.stringify({ ok: true, isCorrect, pointsAwarded }), {
-    status: 200,
-    headers: { 'content-type': 'application/json' },
-  });
-}
-
-export async function nextQuestion(request: Request, env: Env): Promise<Response> {
-  const { uid } = await verifyAuth(request, env);
-
-  let body: any;
-  try {
-    body = await request.json();
-  } catch {
-    throw invalidConfigError('Invalid JSON body');
-  }
-
-  const { code } = body;
-  if (!code || typeof code !== 'string') {
-    throw invalidConfigError('Missing battle code');
-  }
-
-  let responsePayload: any = { ok: true };
-
-  await runTransaction(env, async (tx) => {
-    const battle = await tx.get(`battles/${code}`);
-    if (!battle) throw notFoundError('Battle not found');
-    if (battle.hostUid !== uid) throw notHostError('Only the host can advance the battle');
-    if (battle.status !== 'active') throw invalidConfigError('Battle is not active');
-
-    const maxTimeMs = (battle.secondsPerQuestion ?? 15) * 1000;
-    const revealedAt = battle.questionRevealedAt ? new Date(battle.questionRevealedAt).getTime() : 0;
-    
-    // Plausibility check
-    if (Date.now() - revealedAt < maxTimeMs - 5000) {
-      throw invalidConfigError('Cannot advance question yet');
-    }
-
-    const currentIndex = battle.currentQuestionIndex ?? 0;
-    const questionIds: string[] = battle.questionIds || [];
-    
-    // Fetch previous question to return answer
-    const prevQ = await tx.get(`topics/${battle.topicId}/questions/${questionIds[currentIndex]}`);
-    const newRevealedAnswers = battle.revealedAnswers || {};
-    if (prevQ) {
-      const prevAnswerData = {
-        correctIndex: prevQ.correctIndex,
-        explanationEn: prevQ.explanationEn,
-        explanationBn: prevQ.explanationBn,
-      };
-      responsePayload.previousQuestion = prevAnswerData;
-      newRevealedAnswers[questionIds[currentIndex]!] = prevAnswerData;
-    }
-
-    if (currentIndex >= questionIds.length - 1) {
-      // LAST QUESTION: Finalize battle
-      const scoreboard = await tx.get(`battles/${code}/scoreboard/live`) || {};
+      const qData = questionsData.find((q: any) => q.id === qId);
+      if (!qData) continue; // Skip invalid question ids
       
-      // We still update the battle to reveal the last answer
-      tx.update(`battles/${code}`, {
-        revealedAnswers: newRevealedAnswers,
-      });
+      const correctIndex = qData.correctIndex ?? 0;
+      const basePoints = qData.points ?? 10;
+      
+      const computed = computeScore(selectedIndex === correctIndex, basePoints, responseTimeMs, 15000); // base scoring on 15s per question
+      
+      const isCorrect = computed.isCorrect;
+      const pointsAwarded = computed.pointsAwarded;
 
+      totalScore += pointsAwarded;
+      totalResponseTimeMs += responseTimeMs;
+      if (isCorrect) totalCorrect += 1;
+
+      // Write answer (optional, for history)
+      tx.set(`battles/${code}/answers/${uid}_${qId}`, {
+        uid,
+        questionId: qId,
+        selectedIndex,
+        responseTimeMs,
+        isCorrect,
+        pointsAwarded,
+        createdAt: serverTimestamp(),
+      });
+    }
+
+    // Update scoreboard
+    playerStats.score = totalScore;
+    playerStats.totalTimeMs = totalResponseTimeMs;
+    playerStats.correctCount = totalCorrect;
+    playerStats.hasFinished = true;
+
+    scoreboard[uid] = playerStats;
+    tx.set(`battles/${code}/scoreboard/live`, scoreboard);
+
+    // Check if ALL players have finished
+    const allFinished = playerUids.every(pId => scoreboard[pId]?.hasFinished === true);
+
+    if (allFinished) {
       await finalizeBattle(tx, code, battle, scoreboard);
-      responsePayload.isFinished = true;
-    } else {
-      // NEXT QUESTION
-      const nextIndex = currentIndex + 1;
-
-      const nextQ = await tx.get(`topics/${battle.topicId}/questions/${questionIds[nextIndex]}`);
-      let currentQuestionData = null;
-      if (nextQ) {
-        currentQuestionData = {
-          id: questionIds[nextIndex],
-          text: nextQ.text || nextQ.textBn || nextQ.textEn,
-          options: nextQ.options || nextQ.optionsBn || nextQ.optionsEn,
-          difficulty: nextQ.difficulty,
-        };
-        responsePayload.nextQuestion = currentQuestionData;
-      }
-
-      tx.update(`battles/${code}`, {
-        currentQuestionIndex: nextIndex,
-        questionRevealedAt: serverTimestamp(),
-        currentQuestion: currentQuestionData,
-        revealedAnswers: newRevealedAnswers,
-      });
-
-      responsePayload.isFinished = false;
     }
   });
 
-  return new Response(JSON.stringify(responsePayload), {
+  return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { 'content-type': 'application/json' },
   });

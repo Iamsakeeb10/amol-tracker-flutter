@@ -51,13 +51,13 @@ class BattleRepository {
   Future<CreateBattleResponse> createBattle({
     required String topicId,
     required int questionCount,
-    required int secondsPerQuestion,
+    required int timeLimitSeconds,
     required int maxPlayers,
   }) async {
     final data = await _post('/battle/create', {
       'topicId': topicId,
       'questionCount': questionCount,
-      'secondsPerQuestion': secondsPerQuestion,
+      'timeLimitSeconds': timeLimitSeconds,
       'maxPlayers': maxPlayers,
     });
     return CreateBattleResponse.fromJson(data);
@@ -76,22 +76,14 @@ class BattleRepository {
     await _post('/battle/start', {'code': code});
   }
 
-  Future<SubmitAnswerResponse> submitAnswer({
+  Future<void> submitAllAnswers({
     required String code,
-    required int selectedIndex,
-    required int responseTimeMs,
+    required List<Map<String, dynamic>> answers,
   }) async {
-    final data = await _post('/battle/answer', {
+    await _post('/battle/submit-all', {
       'code': code,
-      'selectedIndex': selectedIndex,
-      'responseTimeMs': responseTimeMs,
+      'answers': answers,
     });
-    return SubmitAnswerResponse.fromJson(data);
-  }
-
-  Future<NextQuestionResponse> nextQuestion({required String code}) async {
-    final data = await _post('/battle/next-question', {'code': code});
-    return NextQuestionResponse.fromJson(data);
   }
 
   Future<void> leaveBattle({required String code}) async {

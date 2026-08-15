@@ -40,26 +40,16 @@ export async function finalizeBattle(
     }
   }
 
-  // Fetch all played questions
-  const questionIds: string[] = battle.questionIds || [];
-  const playedQuestions = [];
-  for (let i = 0; i <= (battle.currentQuestionIndex ?? 0); i++) {
-    if (i < questionIds.length) {
-      const qId = questionIds[i]!;
-      const qDoc = await tx.get(`topics/${battle.topicId}/questions/${qId}`);
-      if (qDoc) {
-        playedQuestions.push({
-          id: qId,
-          text: qDoc.text,
-          options: qDoc.options,
-          correctIndex: qDoc.correctIndex,
-          explanation: qDoc.explanation,
-          reference: qDoc.reference,
-          difficulty: qDoc.difficulty,
-        });
-      }
-    }
-  }
+  // Fetch all played questions directly from the battle document
+  const playedQuestions = (battle.questionsData || []).map((qData: any) => ({
+    id: qData.id,
+    text: qData.text,
+    options: qData.options,
+    correctIndex: qData.correctIndex,
+    explanation: qData.explanation,
+    reference: qData.reference,
+    difficulty: qData.difficulty,
+  }));
 
   // Update battle document
   tx.update(`battles/${code}`, {

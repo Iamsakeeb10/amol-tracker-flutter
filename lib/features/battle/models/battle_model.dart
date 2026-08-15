@@ -17,14 +17,12 @@ class BattleModel {
   final List<String>? readyUids;
   final List<String>? forfeitedUids;
   final int questionCount;
-  final int secondsPerQuestion;
+  final int timeLimitSeconds;
   final DateTime? createdAt;
-  final DateTime? questionRevealedAt;
-  final int currentQuestionIndex;
+  final DateTime? startedAt;
   final List<String>? questionIds;
   final String? winnerUid;
-  final Map<String, dynamic>? currentQuestion;
-  final Map<String, dynamic>? revealedAnswers;
+  final List<Map<String, dynamic>>? questionsData;
 
   BattleModel({
     required this.id,
@@ -35,14 +33,12 @@ class BattleModel {
     this.readyUids,
     this.forfeitedUids,
     required this.questionCount,
-    required this.secondsPerQuestion,
+    required this.timeLimitSeconds,
     this.createdAt,
-    this.questionRevealedAt,
-    required this.currentQuestionIndex,
+    this.startedAt,
     this.questionIds,
     this.winnerUid,
-    this.currentQuestion,
-    this.revealedAnswers,
+    this.questionsData,
   });
 
   factory BattleModel.fromJson(Map<String, dynamic> json) {
@@ -55,14 +51,12 @@ class BattleModel {
       readyUids: json['readyUids'] != null ? List<String>.from(json['readyUids']) : null,
       forfeitedUids: json['forfeitedUids'] != null ? List<String>.from(json['forfeitedUids']) : null,
       questionCount: json['questionCount'] as int? ?? 0,
-      secondsPerQuestion: json['secondsPerQuestion'] as int? ?? 15,
+      timeLimitSeconds: json['timeLimitSeconds'] as int? ?? 300,
       createdAt: _parseDateTime(json['createdAt']),
-      questionRevealedAt: _parseDateTime(json['questionRevealedAt']),
-      currentQuestionIndex: json['currentQuestionIndex'] as int? ?? 0,
+      startedAt: _parseDateTime(json['startedAt']),
       questionIds: json['questionIds'] != null ? List<String>.from(json['questionIds']) : null,
       winnerUid: json['winnerUid'] as String?,
-      currentQuestion: json['currentQuestion'] as Map<String, dynamic>?,
-      revealedAnswers: json['revealedAnswers'] as Map<String, dynamic>?,
+      questionsData: json['questionsData'] != null ? List<Map<String, dynamic>>.from(json['questionsData']) : null,
     );
   }
 
@@ -76,14 +70,12 @@ class BattleModel {
       'readyUids': readyUids,
       'forfeitedUids': forfeitedUids,
       'questionCount': questionCount,
-      'secondsPerQuestion': secondsPerQuestion,
+      'timeLimitSeconds': timeLimitSeconds,
       'createdAt': createdAt?.toIso8601String(),
-      'questionRevealedAt': questionRevealedAt?.toIso8601String(),
-      'currentQuestionIndex': currentQuestionIndex,
+      'startedAt': startedAt?.toIso8601String(),
       'questionIds': questionIds,
       'winnerUid': winnerUid,
-      'currentQuestion': currentQuestion,
-      'revealedAnswers': revealedAnswers,
+      'questionsData': questionsData,
     };
   }
 }

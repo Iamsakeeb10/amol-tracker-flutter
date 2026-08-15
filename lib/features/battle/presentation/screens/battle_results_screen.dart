@@ -33,7 +33,23 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
   }
 
   void _goToHome() {
-    if (mounted) context.go(AppRoutes.battleHome);
+    if (!mounted) return;
+    
+    // Try to pop until battleHome. If battleHome is not in stack, this might pop to first route.
+    bool foundBattleHome = false;
+    Navigator.of(context).popUntil((route) {
+      if (route.settings.name == 'battleHome') {
+        foundBattleHome = true;
+        return true;
+      }
+      if (route.isFirst) return true;
+      return false;
+    });
+
+    // If we reached the first route and it wasn't battleHome, push battleHome
+    if (!foundBattleHome && mounted) {
+      context.pushReplacement(AppRoutes.battleHome);
+    }
   }
 
   @override

@@ -42,6 +42,7 @@ class UserModel {
   final String? gender;
   final bool specialTimeActive;
   final bool genderPromptDismissed;
+  final int lastReviewPromptMilestone;
 
   const UserModel({
     required this.uid,
@@ -66,6 +67,7 @@ class UserModel {
     this.gender,
     this.specialTimeActive = false,
     this.genderPromptDismissed = false,
+    this.lastReviewPromptMilestone = 0,
   });
 
   UserAmalProfile get amalProfile => UserAmalProfile.fromString(gender);
@@ -103,6 +105,7 @@ class UserModel {
       gender: map['gender'] as String?,
       specialTimeActive: (map['specialTimeActive'] as bool?) ?? false,
       genderPromptDismissed: (map['genderPromptDismissed'] as bool?) ?? false,
+      lastReviewPromptMilestone: (map['lastReviewPromptMilestone'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -133,6 +136,7 @@ class UserModel {
       if (gender != null) 'gender': gender,
       if (specialTimeActive) 'specialTimeActive': true,
       if (genderPromptDismissed) 'genderPromptDismissed': true,
+      if (lastReviewPromptMilestone > 0) 'lastReviewPromptMilestone': lastReviewPromptMilestone,
     };
   }
 }

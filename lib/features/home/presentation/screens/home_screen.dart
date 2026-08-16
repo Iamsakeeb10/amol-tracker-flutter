@@ -10,6 +10,7 @@ import '../../../../core/constants/default_amal_fields.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/jummah_modal_service.dart';
+import '../../../../core/services/review_prompt_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -55,6 +56,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   // required dialog underneath, which looks exactly like "hardware back
   // stopped working" even though it's technically working per-dialog.
   bool _isGenderDialogOpen = false;
+  bool _isReviewPromptPending = false;
+  bool _isReviewPromptDialogOpen = false;
 
   void _resetAnnouncementSessionForUser(String? uid) {
     _sessionDismissedAnnouncementIds.clear();
@@ -64,6 +67,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _didInitialAnnouncementCheck = false;
     _didJummahCheck = false;
     _isGenderPromptPending = false;
+    _isReviewPromptPending = false;
+    _isReviewPromptDialogOpen = false;
     // Deliberately not resetting _isGenderDialogOpen here. If a dialog is
     // genuinely still visible when the tracked user changes, we want to
     // keep treating it as open rather than silently "forgetting" it while
@@ -189,6 +194,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     });
   }
 
+  void _scheduleReviewPrompt() {
+    if (_isReviewPromptDialogOpen || _isReviewPromptPending) return;
+
+    final user = ref.read(currentUserProvider).asData?.value;
+    if (user == null) return;
+
+    _isReviewPromptPending = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _isReviewPromptPending = false;
+      if (!mounted || _isReviewPromptDialogOpen) return;
+
+      final latestUser = ref.read(currentUserProvider).asData?.value;
+      if (latestUser == null) return;
+
+      _isReviewPromptDialogOpen = true;
+      
+      // The ReviewPromptService will check milestones internally and show dialog if needed
+      await ReviewPromptService.checkAndShowReviewPrompt(context, ref, latestUser);
+
+      if (mounted) {
+        _isReviewPromptDialogOpen = false;
+      }
+    });
+  }
+
   Future<void> _retryAmalFields(String uid) async {
     await ref.read(amalFieldsProvider.notifier).forceRefresh();
     if (!mounted) return;
@@ -226,6 +256,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (state == AppLifecycleState.resumed) {
       _checkForUpdate();
       _scheduleGenderPrompt();
+      _scheduleReviewPrompt();
     }
   }
 
@@ -274,6 +305,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           _scheduleAnnouncementShow();
           _scheduleJummahModalShow();
           _scheduleGenderPrompt();
+          _scheduleReviewPrompt();
         }
       },
     );
@@ -286,6 +318,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       _scheduleAnnouncementShow();
       _scheduleJummahModalShow();
       _scheduleGenderPrompt();
+      _scheduleReviewPrompt();
 
       // Push widget update immediately with the live streak.
       final liveValue = ref.read(liveStreakProvider).value;
@@ -369,6 +402,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         _scheduleAnnouncementShow();
         _scheduleJummahModalShow();
         _scheduleGenderPrompt();
+        _scheduleReviewPrompt();
       });
     }
 

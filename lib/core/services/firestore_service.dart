@@ -64,6 +64,23 @@ class FirestoreService {
     await _users.doc(uid).delete();
   }
 
+  Future<int> getLifetimeAmolLogsCount(String uid) async {
+    if (uid.isEmpty) return 0;
+    try {
+      final aggregateQuery = await _amalLogs.where('uid', isEqualTo: uid).count().get();
+      return aggregateQuery.count ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  Future<void> updateUserReviewMilestone(String uid, int milestone) async {
+    if (uid.isEmpty) return;
+    await _users.doc(uid).update(<String, dynamic>{
+      'lastReviewPromptMilestone': milestone,
+    });
+  }
+
   Future<void> markBadgeCelebrationsSeen(
     String uid,
     List<String> badgeIds,

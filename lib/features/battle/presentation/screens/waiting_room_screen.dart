@@ -197,7 +197,8 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                     separatorBuilder: (_, __) => SizedBox(height: 10.h),
                     itemBuilder: (context, index) {
                       final uid = battle.playerUids[index];
-                      final name = battle.playerNames?[uid] ?? 'Player ${index + 1}';
+                      final playerObj = battle.players?[uid];
+                      final name = (playerObj is Map ? playerObj['name'] as String? : null) ?? 'Player ${index + 1}';
                       return _PlayerTile(
                         uid: uid,
                         name: name,
@@ -628,7 +629,7 @@ class _PlayerTile extends ConsumerWidget {
         children: [
           AvatarChip(
             initial: initial,
-            color: AppColors.ice,
+            color: isHost ? AppColors.emeraldMid : AppColors.ice,
             size: 40.r,
           ),
           SizedBox(width: 14.w),
@@ -684,7 +685,7 @@ class _PlayerTile extends ConsumerWidget {
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: isReady ? AppColors.cardBorder : AppColors.gold,
+                    color: isReady ? AppColors.danger : AppColors.gold,
                     borderRadius: BorderRadius.circular(20.r),
                     border: isReady ? Border.all(color: AppColors.danger.withValues(alpha: 0.3)) : null,
                   ),
@@ -694,7 +695,7 @@ class _PlayerTile extends ConsumerWidget {
                           height: 14.r,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: isReady ? AppColors.danger : AppColors.emeraldDeep,
+                            color: isReady ? AppColors.textPrimary : AppColors.emeraldDeep,
                           ),
                         )
                       : Text(
@@ -702,7 +703,7 @@ class _PlayerTile extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 11.sp,
                             fontWeight: FontWeight.bold,
-                            color: isReady ? AppColors.danger : AppColors.emeraldDeep,
+                            color: isReady ? AppColors.textPrimary : AppColors.emeraldDeep,
                           ),
                         ),
                 ),

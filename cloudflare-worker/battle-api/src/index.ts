@@ -8,7 +8,7 @@
 
 import type { Env } from './types.js';
 import { verifyAuth } from './auth.js';
-import { createBattle, joinBattle, startBattle, submitAllAnswers, leaveBattle, toggleReady } from './routes/battle.js';
+import { createBattle, joinBattle, startBattle, submitAllAnswers, leaveBattle, toggleReady, getBattleQuestions } from './routes/battle.js';
 import { ApiError, jsonResponse, notFoundError } from './errors.js';
 
 export default {
@@ -71,6 +71,9 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
   }
   if (request.method === 'POST' && pathname === '/battle/toggle-ready') {
     return withCors(await toggleReady(request, env));
+  }
+  if (request.method === 'GET' && pathname.startsWith('/battle/') && pathname.endsWith('/questions')) {
+    return withCors(await getBattleQuestions(request, env));
   }
 
   // --- Health check (no auth required) ---

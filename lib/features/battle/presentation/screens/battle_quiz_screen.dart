@@ -377,6 +377,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
     final locale = ref.watch(localeProvider).languageCode;
     final isBn = locale == 'bn';
     final battleAsync = ref.watch(battleStreamProvider(widget.battleCode));
+    final questionsAsync = ref.watch(battleQuestionsProvider(widget.battleCode));
 
     return PopScope(
       canPop: false,
@@ -443,10 +444,18 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
             return const SizedBox.shrink();
           }
 
-          final questions = battle.questionsData ?? [];
+          final questions = questionsAsync.value ?? [];
           
           if (questions.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+            if (questionsAsync.isLoading) {
+              return const Center(child: CircularProgressIndicator(color: AppColors.gold));
+            }
+            return Center(
+              child: Text(
+                isBn ? 'প্রশ্ন লোড করতে ব্যর্থ হয়েছে।' : 'Failed to load questions.',
+                style: const TextStyle(color: AppColors.textMuted),
+              ),
+            );
           }
 
           if (battle.startedAt != null) {
@@ -694,7 +703,7 @@ class _BattleExitDialog extends StatelessWidget {
               ),
               child: Icon(
                 Icons.exit_to_app_rounded,
-                color: AppColors.dangerLight,
+                color: AppColors.danger,
                 size: 26.r,
               ),
             ),

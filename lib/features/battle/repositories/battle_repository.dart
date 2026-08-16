@@ -48,6 +48,31 @@ class BattleRepository {
     return responseData;
   }
 
+  Future<dynamic> _get(String endpoint) async {
+    final token = await _getToken();
+    final uri = Uri.parse('$baseUrl$endpoint');
+    
+    final response = await http.get(
+      uri,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode >= 400) {
+      if (responseData is Map<String, dynamic>) {
+        throw BattleApiException.fromJson(responseData);
+      } else {
+        throw Exception('Failed to fetch: ${response.statusCode}');
+      }
+    }
+
+    return responseData;
+  }
+
   Future<CreateBattleResponse> createBattle({
     required String topicId,
     required int questionCount,
@@ -88,5 +113,13 @@ class BattleRepository {
 
   Future<void> leaveBattle({required String code}) async {
     await _post('/battle/leave', {'code': code});
+  }
+
+  Future<List<Map<String, dynamic>>> getBattleQuestions({required String code}) async {
+    final data = await _get('/battle/$code/questions');
+    if (data is List) {
+      return List<Map<String, dynamic>>.from(data);
+    }
+    return [];
   }
 }

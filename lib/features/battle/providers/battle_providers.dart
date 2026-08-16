@@ -45,34 +45,9 @@ final battleStreamProvider = StreamProvider.family.autoDispose<BattleModel?, Str
   });
 });
 
-final battlePlayerProvider = StreamProvider.family.autoDispose<UserModel?, String>((ref, uid) {
-  final firestoreService = FirestoreService();
-  return firestoreService.userStream(uid);
-});
-
-final battleAnswersProvider = StreamProvider.family.autoDispose<List<PlayerAnswerModel>, ({String code, String questionId})>((ref, arg) {
-  return FirebaseFirestore.instance
-      .collection('battles')
-      .doc(arg.code)
-      .collection('answers')
-      .where('questionId', isEqualTo: arg.questionId)
-      .snapshots()
-      .map((snapshot) {
-    return snapshot.docs.map((doc) => PlayerAnswerModel.fromJson(doc.data())).toList();
-  });
-});
-
-final liveScoreboardProvider = StreamProvider.family.autoDispose<Map<String, dynamic>, String>((ref, code) {
-  return FirebaseFirestore.instance
-      .collection('battles')
-      .doc(code)
-      .collection('scoreboard')
-      .doc('live')
-      .snapshots()
-      .map((snapshot) {
-    if (!snapshot.exists) return {};
-    return snapshot.data() ?? {};
-  });
+final battleQuestionsProvider = FutureProvider.family.autoDispose<List<Map<String, dynamic>>, String>((ref, code) async {
+  final repo = ref.watch(battleRepositoryProvider);
+  return repo.getBattleQuestions(code: code);
 });
 
 final battleResultProvider = StreamProvider.family.autoDispose<BattleResultModel?, String>((ref, code) {

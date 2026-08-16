@@ -14,7 +14,7 @@ class BattleModel {
   final String status; // 'waiting', 'active', 'finished', 'cancelled', 'expired'
   final String hostUid;
   final List<String> playerUids;
-  final Map<String, String>? playerNames;
+  final Map<String, dynamic>? players;
   final List<String>? readyUids;
   final List<String>? forfeitedUids;
   final int questionCount;
@@ -23,7 +23,6 @@ class BattleModel {
   final DateTime? startedAt;
   final List<String>? questionIds;
   final String? winnerUid;
-  final List<Map<String, dynamic>>? questionsData;
 
   BattleModel({
     required this.id,
@@ -31,7 +30,7 @@ class BattleModel {
     required this.status,
     required this.hostUid,
     required this.playerUids,
-    this.playerNames,
+    this.players,
     this.readyUids,
     this.forfeitedUids,
     required this.questionCount,
@@ -40,12 +39,10 @@ class BattleModel {
     this.startedAt,
     this.questionIds,
     this.winnerUid,
-    this.questionsData,
   });
 
   factory BattleModel.fromJson(Map<String, dynamic> json) {
-    final playerNamesRaw = json['playerNames'] as Map<String, dynamic>? ?? {};
-    final playerNames = playerNamesRaw.map((key, value) => MapEntry(key, value.toString()));
+    final players = json['players'] as Map<String, dynamic>? ?? {};
 
     return BattleModel(
       id: json['id'] as String? ?? '',
@@ -53,7 +50,7 @@ class BattleModel {
       status: json['status'] as String? ?? 'waiting',
       hostUid: json['hostUid'] as String? ?? '',
       playerUids: List<String>.from(json['playerUids'] ?? []),
-      playerNames: playerNames,
+      players: players,
       readyUids: json['readyUids'] != null ? List<String>.from(json['readyUids']) : null,
       forfeitedUids: json['forfeitedUids'] != null ? List<String>.from(json['forfeitedUids']) : null,
       questionCount: json['questionCount'] as int? ?? 0,
@@ -62,7 +59,6 @@ class BattleModel {
       startedAt: _parseDateTime(json['startedAt']),
       questionIds: json['questionIds'] != null ? List<String>.from(json['questionIds']) : null,
       winnerUid: json['winnerUid'] as String?,
-      questionsData: json['questionsData'] != null ? List<Map<String, dynamic>>.from(json['questionsData']) : null,
     );
   }
 
@@ -81,7 +77,6 @@ class BattleModel {
       'startedAt': startedAt?.toIso8601String(),
       'questionIds': questionIds,
       'winnerUid': winnerUid,
-      'questionsData': questionsData,
     };
   }
 }

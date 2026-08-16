@@ -89,9 +89,10 @@ export async function createBattle(request: Request, env: Env): Promise<Response
     throw internalError('Failed to generate a unique battle code');
   }
 
-  // 3. Get user name
+  // 3. Get user name and photo
   const userDoc = await getDoc(env, `users/${uid}`);
   const userName = userDoc?.name || 'Unknown Player';
+  const userPhoto = userDoc?.photoUrl || '';
 
   // 4. Create the battle in Firestore
   const battleData = {
@@ -102,8 +103,8 @@ export async function createBattle(request: Request, env: Env): Promise<Response
     maxPlayers,
     status: 'waiting',
     playerUids: [uid],
-    playerNames: {
-      [uid]: userName,
+    players: {
+      [uid]: { name: userName, photoUrl: userPhoto },
     },
     readyUids: [],
     createdAt: serverTimestamp(),
@@ -158,16 +159,17 @@ export async function joinBattle(request: Request, env: Env): Promise<Response> 
       throw fullError('Battle is full');
     }
 
-    // Fetch user name
+    // Fetch user name and photo
     const userDoc = await tx.get(`users/${uid}`);
     const userName = userDoc?.name || 'Unknown Player';
+    const userPhoto = userDoc?.photoUrl || '';
 
     // Add player and update
     playerUids.push(uid);
-    const playerNames = battle.playerNames || {};
-    playerNames[uid] = userName;
+    const players = battle.players || {};
+    players[uid] = { name: userName, photoUrl: userPhoto };
     
-    tx.update(`battles/${code}`, { playerUids, playerNames });
+    tx.update(`battles/${code}`, { playerUids, players });
   });
 
   // 4. Stub FCM notification
@@ -305,6 +307,7 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
   const selectedQuestionIds = activeIds.slice(0, finalQuestionCount);
 
   // 4. Start the battle via transaction
+  let finalQuestionsData: any[] = [];
   await runTransaction(env, async (tx) => {
     const latestBattle = await tx.get(`battles/${code}`);
     if (!latestBattle) {
@@ -346,10 +349,14 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
       status: 'active',
       questionCount: finalQuestionCount,
       questionIds: selectedQuestionIds,
-      questionsData,
       startedAt: serverTimestamp(),
     });
+    
+    finalQuestionsData = questionsData;
   });
+
+  // Save to KV with 2 hour expiration (7200 seconds)
+  await env.BATTLE_CODES.put(`questions_${code}`, JSON.stringify(finalQuestionsData), { expirationTtl: 7200 });
 
   // 5. FCM Notification stub
   console.log(`[FCM Stub]: Notifying lobby that battle ${code} is starting!`);
@@ -553,6 +560,32 @@ export async function leaveBattle(request: Request, env: Env): Promise<Response>
   });
 
   return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Chunk A7 — getBattleQuestions
+// ---------------------------------------------------------------------------
+export async function getBattleQuestions(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const parts = url.pathname.split('/');
+  const code = parts.length >= 3 ? parts[parts.length - 2] : null;
+  
+  if (!code) {
+    throw invalidConfigError('Missing battle code');
+  }
+
+  // The client must be authenticated to fetch questions
+  await verifyAuth(request, env);
+
+  const questionsJson = await env.BATTLE_CODES.get(`questions_${code}`);
+  if (!questionsJson) {
+    throw notFoundError('Questions not found or expired');
+  }
+
+  return new Response(questionsJson, {
     status: 200,
     headers: { 'content-type': 'application/json' },
   });

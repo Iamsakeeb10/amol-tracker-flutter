@@ -28,6 +28,17 @@ class HomeQuickNavSection extends StatelessWidget {
         label: l10n.navDua,
         onTap: () => context.push(AppRoutes.dua),
       ),
+       _QuickNavItem(
+        icon: Icons.sports_esports_outlined,
+        label: Localizations.localeOf(context).languageCode == 'bn' ? 'নলেজ ব্যাটেল' : 'Knowledge Battle',
+        onTap: () => context.push(AppRoutes.battleHome),
+      ),
+      
+      _QuickNavItem(
+        icon: Icons.leaderboard_outlined,
+        label: l10n.leaderboard,
+        onTap: () => context.push(AppRoutes.leaderboard),
+      ),
       _QuickNavItem(
         icon: Icons.wb_sunny_outlined,
         label: l10n.morningEveningDua,
@@ -35,11 +46,6 @@ class HomeQuickNavSection extends StatelessWidget {
           AppRoutes.dua,
           extra: _morningEveningCategoryUrl,
         ),
-      ),
-      _QuickNavItem(
-        icon: Icons.leaderboard_outlined,
-        label: l10n.leaderboard,
-        onTap: () => context.push(AppRoutes.leaderboard),
       ),
       _QuickNavItem(
         icon: Icons.assessment_outlined,
@@ -76,11 +82,7 @@ class HomeQuickNavSection extends StatelessWidget {
         label: l10n.prayerAdhanScreenTitle,
         onTap: () => context.push(AppRoutes.prayerAdhan),
       ),
-      _QuickNavItem(
-        icon: Icons.sports_esports_outlined,
-        label: Localizations.localeOf(context).languageCode == 'bn' ? 'নলেজ ব্যাটেল' : 'Knowledge Battle',
-        onTap: () => context.push(AppRoutes.battleHome),
-      ),
+     
     ];
 
     return SliverToBoxAdapter(

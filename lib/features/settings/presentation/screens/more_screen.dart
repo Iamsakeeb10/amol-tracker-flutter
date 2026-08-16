@@ -343,6 +343,15 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
                         context.push(AppRoutes.adminKnowledgeBattle);
                       },
                     ),
+                    const Divider(),
+                    NavRow(
+                      icon: Icons.report_problem_outlined,
+                      title: l10n.adminQuestionReportsTitle,
+                      onTap: () {
+                        AnalyticsService.instance.logFeatureTapped('admin_question_reports', screen: 'more');
+                        context.push(AppRoutes.adminQuestionReports);
+                      },
+                    ),
                   ],
                 ],
               ),

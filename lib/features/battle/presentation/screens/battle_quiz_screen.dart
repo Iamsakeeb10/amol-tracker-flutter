@@ -15,8 +15,11 @@ import '../../../syllabus/presentation/widgets/quiz_helpers.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../../../providers/leaderboard_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../providers/battle_providers.dart';
 import '../../models/battle_model.dart';
+import '../../models/question_report_model.dart';
+import '../../repositories/question_report_repository.dart';
 
 class BattleQuizScreen extends ConsumerStatefulWidget {
   final String battleCode;
@@ -195,6 +198,180 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
     context.go(AppRoutes.home);
   }
 
+  void _showReportBottomSheet(Map<String, dynamic> qData, AppLocalizations l10n) {
+    final reasons = ['Wrong Answer', 'Typo/Grammar', 'Inappropriate', 'Other'];
+    String selectedReason = reasons.first;
+    final detailsController = TextEditingController();
+    bool isSubmitting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateSheet) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 28.h),
+                decoration: BoxDecoration(
+                  color: AppColors.emeraldDeep,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: AppColors.textMuted,
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8.r),
+                          decoration: BoxDecoration(
+                            color: AppColors.dangerLight.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8.r),
+                            border: Border.all(color: AppColors.danger),
+                          ),
+                          child: Icon(Icons.flag_rounded, color: AppColors.danger, size: 18.r),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Text(
+                            l10n.reportQuestion,
+                            style: TextStyle(
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      l10n.selectReason,
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  SizedBox(height: 8.h),
+                  DropdownButtonFormField<String>(
+                    value: selectedReason,
+                    dropdownColor: AppColors.cardDark,
+                    items: reasons.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+                    onChanged: (val) {
+                      if (val != null) setStateSheet(() => selectedReason = val);
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: AppColors.cardDark,
+                      contentPadding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: AppColors.cardBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: AppColors.gold, width: 1.4),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: AppColors.cardBorder),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  TextField(
+                    controller: detailsController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: l10n.reportDetails,
+                      filled: true,
+                      fillColor: AppColors.cardDark,
+                      contentPadding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: AppColors.cardBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: AppColors.gold, width: 1.4),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: AppColors.cardBorder),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  ElevatedButton(
+                    onPressed: isSubmitting
+                        ? null
+                        : () async {
+                            setStateSheet(() => isSubmitting = true);
+                            try {
+                              final user = ref.read(currentUserProvider).value;
+                              final report = QuestionReportModel(
+                                id: '',
+                                questionId: qData['id'] as String? ?? '',
+                                questionText: qData['text'] as String? ?? '',
+                                reportedByUserId: user?.uid ?? '',
+                                reportedByUserName: user?.name ?? 'Unknown',
+                                reason: selectedReason,
+                                details: detailsController.text,
+                                createdAt: DateTime.now(),
+                              );
+                              await ref.read(questionReportRepositoryProvider).submitReport(report);
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Report submitted successfully!'),
+                                    backgroundColor: AppColors.success,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              setStateSheet(() => isSubmitting = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed to submit report')),
+                              );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.danger,
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                    ),
+                    child: isSubmitting
+                        ? SizedBox(height: 20.r, width: 20.r, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : Text(l10n.submitReport, style: AppTextStyles.button(context).copyWith(color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final locale = ref.watch(localeProvider).languageCode;
@@ -277,11 +454,15 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
           }
 
           final currentQ = questions[_uiQuestionIndex];
+          debugPrint('CURRENT Q DATA: $currentQ');
           final text = currentQ['text'] ?? '';
           final rawOptions = currentQ['options'] ?? [];
           final options = List<String>.from(rawOptions);
           final correctIndex = currentQ['correctIndex'] as int? ?? 0;
           
+          final sourceRef = currentQ['sourceReference'];
+          final hasSource = sourceRef != null && sourceRef.toString().isNotEmpty;
+
           final timeIsUp = _timeLeftMs <= 0;
           
           // If finished local, the progress bar should show fully complete if they answered all,
@@ -394,11 +575,20 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        isBn ? 'প্রশ্ন' : 'Question',
-                        style: AppTextStyles.bodySmall(context).copyWith(
-                          color: AppColors.textMuted,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            isBn ? 'প্রশ্ন' : 'Question',
+                            style: AppTextStyles.bodySmall(context).copyWith(
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () => _showReportBottomSheet(currentQ, AppLocalizations.of(context)!),
+                            child: Icon(Icons.flag_outlined, size: 20.r, color: AppColors.textMuted),
+                          )
+                        ],
                       ),
                       SizedBox(height: 8.h),
                       Text(
@@ -407,6 +597,29 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
+                      if (hasSource) ...[
+                        SizedBox(height: 12.h),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.menu_book_rounded, size: 14.r, color: AppColors.goldLight),
+                            SizedBox(width: 6.w),
+                            Expanded(
+  child: Transform.translate(
+    offset: const Offset(0, -1),
+    child: Text(
+      '${AppLocalizations.of(context)!.source}: $sourceRef',
+      style: AppTextStyles.bodySmall(context).copyWith(
+        color: AppColors.goldLight,
+        fontStyle: FontStyle.italic,
+        height: 0,
+      ),
+    ),
+  ),
+),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

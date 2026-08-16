@@ -3041,4 +3041,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminKnowledgeBattleInterestRate => 'Interest Rate';
+
+  @override
+  String get source => 'Source';
+
+  @override
+  String get reportQuestion => 'Report Question';
+
+  @override
+  String get selectReason => 'Select Reason';
+
+  @override
+  String get reportDetails => 'Additional details (optional)';
+
+  @override
+  String get submitReport => 'Submit Report';
+
+  @override
+  String get adminQuestionReportsTitle => 'Question Reports';
 }

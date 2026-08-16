@@ -3047,4 +3047,22 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get adminKnowledgeBattleInterestRate => 'আগ্রহের হার';
+
+  @override
+  String get source => 'সূত্র';
+
+  @override
+  String get reportQuestion => 'প্রশ্ন রিপোর্ট করুন';
+
+  @override
+  String get selectReason => 'কারণ নির্বাচন করুন';
+
+  @override
+  String get reportDetails => 'অতিরিক্ত তথ্য (ঐচ্ছিক)';
+
+  @override
+  String get submitReport => 'রিপোর্ট জমা দিন';
+
+  @override
+  String get adminQuestionReportsTitle => 'প্রশ্নের রিপোর্ট';
 }

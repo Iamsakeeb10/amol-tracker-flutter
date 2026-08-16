@@ -1509,5 +1509,11 @@
   "adminKnowledgeBattleInterested": "Interested",
   "adminKnowledgeBattleNotInterested": "Not Interested",
   "adminKnowledgeBattleDismissed": "Dismissed",
-  "adminKnowledgeBattleInterestRate": "Interest Rate"
+  "adminKnowledgeBattleInterestRate": "Interest Rate",
+  "source": "Source",
+  "reportQuestion": "Report Question",
+  "selectReason": "Select Reason",
+  "reportDetails": "Additional details (optional)",
+  "submitReport": "Submit Report",
+  "adminQuestionReportsTitle": "Question Reports"
 }

@@ -336,7 +336,8 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
           correctIndex: qDoc.correctIndex, // Included for instant local feedback
           points: qDoc.points || 10,
           explanation: qDoc.explanation,
-          reference: qDoc.reference,
+          sourceType: qDoc.sourceType,
+          sourceReference: qDoc.sourceReference,
         });
       }
     }

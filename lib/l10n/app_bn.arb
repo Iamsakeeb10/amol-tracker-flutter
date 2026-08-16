@@ -1455,5 +1455,11 @@
   "adminKnowledgeBattleInterested": "আগ্রহী",
   "adminKnowledgeBattleNotInterested": "আগ্রহী নয়",
   "adminKnowledgeBattleDismissed": "কেটে দিয়েছেন",
-  "adminKnowledgeBattleInterestRate": "আগ্রহের হার"
+  "adminKnowledgeBattleInterestRate": "আগ্রহের হার",
+  "source": "সূত্র",
+  "reportQuestion": "প্রশ্ন রিপোর্ট করুন",
+  "selectReason": "কারণ নির্বাচন করুন",
+  "reportDetails": "অতিরিক্ত তথ্য (ঐচ্ছিক)",
+  "submitReport": "রিপোর্ট জমা দিন",
+  "adminQuestionReportsTitle": "প্রশ্নের রিপোর্ট"
 }

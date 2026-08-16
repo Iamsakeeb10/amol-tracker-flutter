@@ -5,7 +5,8 @@ class QuestionModel {
   final List<String> options;
   final int correctIndex;
   final String? explanation;
-  final String? reference;
+  final String? sourceType;
+  final String? sourceReference;
   final String difficulty;
   final bool isActive;
 
@@ -16,7 +17,8 @@ class QuestionModel {
     required this.options,
     required this.correctIndex,
     this.explanation,
-    this.reference,
+    this.sourceType,
+    this.sourceReference,
     required this.difficulty,
     required this.isActive,
   });
@@ -29,7 +31,8 @@ class QuestionModel {
       options: List<String>.from(json['options'] ?? json['optionsBn'] ?? json['optionsEn'] ?? []),
       correctIndex: json['correctIndex'] as int? ?? 0,
       explanation: (json['explanation'] ?? json['explanationBn'] ?? json['explanationEn']) as String?,
-      reference: (json['reference'] ?? json['referenceBn'] ?? json['referenceEn']) as String?,
+      sourceType: json['sourceType'] as String?,
+      sourceReference: json['sourceReference'] as String?,
       difficulty: json['difficulty'] as String? ?? 'easy',
       isActive: json['isActive'] as bool? ?? false,
     );
@@ -43,7 +46,8 @@ class QuestionModel {
       'options': options,
       'correctIndex': correctIndex,
       'explanation': explanation,
-      'reference': reference,
+      'sourceType': sourceType,
+      'sourceReference': sourceReference,
       'difficulty': difficulty,
       'isActive': isActive,
     };

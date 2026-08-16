@@ -41,7 +41,8 @@ class AdminBattleRepository {
       options: question.options,
       correctIndex: question.correctIndex,
       explanation: question.explanation,
-      reference: question.reference,
+      sourceType: question.sourceType,
+      sourceReference: question.sourceReference,
       difficulty: question.difficulty,
       isActive: question.isActive,
     );

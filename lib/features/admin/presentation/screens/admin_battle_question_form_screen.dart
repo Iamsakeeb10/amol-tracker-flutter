@@ -25,7 +25,8 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
   late TextEditingController _textCtrl;
   late List<TextEditingController> _optionsCtrls;
   late TextEditingController _expCtrl;
-  late TextEditingController _refCtrl;
+  String? _sourceType;
+  late TextEditingController _sourceRefCtrl;
   
   late int _correctIndex;
   late String _difficulty;
@@ -42,7 +43,8 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
     _optionsCtrls = List.generate(4, (i) => TextEditingController(text: q?.options.elementAtOrNull(i) ?? ''));
     
     _expCtrl = TextEditingController(text: q?.explanation ?? '');
-    _refCtrl = TextEditingController(text: q?.reference ?? '');
+    _sourceType = q?.sourceType;
+    _sourceRefCtrl = TextEditingController(text: q?.sourceReference ?? '');
     
     _correctIndex = q?.correctIndex ?? 0;
     _difficulty = q?.difficulty ?? 'easy';
@@ -54,7 +56,7 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
     _textCtrl.dispose();
     for (var c in _optionsCtrls) { c.dispose(); }
     _expCtrl.dispose();
-    _refCtrl.dispose();
+    _sourceRefCtrl.dispose();
     super.dispose();
   }
 
@@ -75,7 +77,8 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
         options: options,
         correctIndex: _correctIndex,
         explanation: _expCtrl.text.trim(),
-        reference: _refCtrl.text.trim(),
+        sourceType: _sourceType,
+        sourceReference: _sourceRefCtrl.text.trim(),
         difficulty: _difficulty,
         isActive: _isActive,
       );
@@ -168,10 +171,22 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
                   ),
                   
                   SizedBox(height: 24.h),
-                  _buildSectionHeader('Explanation & Reference'),
+                  _buildSectionHeader('Explanation & Source'),
                   _buildTextField(_expCtrl, 'Explanation'),
                   SizedBox(height: 12.h),
-                  _buildTextField(_refCtrl, 'Reference'),
+                  DropdownButtonFormField<String>(
+                    value: _sourceType,
+                    items: const [
+                      DropdownMenuItem(value: 'quran', child: Text('Quran')),
+                      DropdownMenuItem(value: 'hadith', child: Text('Hadith')),
+                      DropdownMenuItem(value: 'book', child: Text('Book')),
+                      DropdownMenuItem(value: 'other', child: Text('Other')),
+                    ],
+                    onChanged: (val) => setState(() => _sourceType = val),
+                    decoration: const InputDecoration(labelText: 'Source Type', border: OutlineInputBorder()),
+                  ),
+                  SizedBox(height: 12.h),
+                  _buildTextField(_sourceRefCtrl, 'Source Reference (e.g. হাদিস ১)'),
                   
                   SizedBox(height: 24.h),
                   _buildSectionHeader('Settings'),

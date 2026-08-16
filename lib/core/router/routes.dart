@@ -103,6 +103,7 @@ class AppRoutes {
   static const adminAppConfigList = '/admin/app-configs';
   static const adminAppConfigForm = '/admin/app-config-form';
   static const adminKnowledgeBattle = '/admin/knowledge-battle';
+  static const adminQuestionReports = '/admin/question-reports';
   static const adminUsers = '/admin/users';
 
   static const String battleHome = '/battle/home';

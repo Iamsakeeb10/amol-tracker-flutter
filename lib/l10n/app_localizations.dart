@@ -5664,6 +5664,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Interest Rate'**
   String get adminKnowledgeBattleInterestRate;
+
+  /// No description provided for @source.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get source;
+
+  /// No description provided for @reportQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Question'**
+  String get reportQuestion;
+
+  /// No description provided for @selectReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Reason'**
+  String get selectReason;
+
+  /// No description provided for @reportDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional details (optional)'**
+  String get reportDetails;
+
+  /// No description provided for @submitReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Report'**
+  String get submitReport;
+
+  /// No description provided for @adminQuestionReportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Question Reports'**
+  String get adminQuestionReportsTitle;
 }
 
 class _AppLocalizationsDelegate

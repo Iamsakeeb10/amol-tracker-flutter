@@ -3043,6 +3043,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminKnowledgeBattleInterestRate => 'Interest Rate';
 
   @override
+  String get adminKnowledgeBattleDailyPlayers => 'Unique Players Today';
+
+  @override
+  String get adminKnowledgeBattleTotalToday => 'Total Battles Today';
+
+  @override
   String get source => 'Source';
 
   @override

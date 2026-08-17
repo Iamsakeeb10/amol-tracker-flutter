@@ -212,4 +212,15 @@ class LocalStorageService {
   static Future<void> clearActiveBattleCode() async {
     await _prefs.delete(_activeBattleCodeKey);
   }
+
+  static const String _lastRecordedBattleDateKey = 'last_recorded_battle_date';
+
+  static Future<void> saveLastRecordedBattleDate(String dateString) async {
+    await _prefs.put(_lastRecordedBattleDateKey, dateString);
+  }
+
+  static String? getLastRecordedBattleDate() {
+    final value = _prefs.get(_lastRecordedBattleDateKey);
+    return value is String && value.isNotEmpty ? value : null;
+  }
 }

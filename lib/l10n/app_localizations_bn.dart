@@ -3049,6 +3049,12 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminKnowledgeBattleInterestRate => 'আগ্রহের হার';
 
   @override
+  String get adminKnowledgeBattleDailyPlayers => 'আজকের ইউনিক খেলোয়াড়';
+
+  @override
+  String get adminKnowledgeBattleTotalToday => 'আজকের মোট ব্যাটেল';
+
+  @override
   String get source => 'সূত্র';
 
   @override

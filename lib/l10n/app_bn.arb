@@ -1456,6 +1456,8 @@
   "adminKnowledgeBattleNotInterested": "আগ্রহী নয়",
   "adminKnowledgeBattleDismissed": "কেটে দিয়েছেন",
   "adminKnowledgeBattleInterestRate": "আগ্রহের হার",
+  "adminKnowledgeBattleDailyPlayers": "আজকের ইউনিক খেলোয়াড়",
+  "adminKnowledgeBattleTotalToday": "আজকের মোট ব্যাটেল",
   "source": "সূত্র",
   "reportQuestion": "প্রশ্ন রিপোর্ট করুন",
   "selectReason": "কারণ নির্বাচন করুন",

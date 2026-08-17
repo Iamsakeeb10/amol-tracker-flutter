@@ -37,6 +37,34 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
   bool _timerActive = false;
 
   @override
+  void initState() {
+    super.initState();
+    _recordDailyBattlePlayed();
+  }
+
+  Future<void> _recordDailyBattlePlayed() async {
+    final now = DateTime.now();
+    final todayString = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final lastRecorded = LocalStorageService.getLastRecordedBattleDate();
+    
+    if (lastRecorded != todayString) {
+      // Use microtask or delay to avoid ref access during initState build cycle if needed,
+      // but reading future providers is usually safe if not watching.
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final user = ref.read(currentUserProvider).asData?.value;
+        if (user != null) {
+          try {
+            await ref.read(firestoreServiceProvider).updateUserLastBattleDate(user.uid, todayString);
+            await LocalStorageService.saveLastRecordedBattleDate(todayString);
+          } catch (_) {
+            // Silently fail if unable to update
+          }
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _countdownTimer?.cancel();
     super.dispose();

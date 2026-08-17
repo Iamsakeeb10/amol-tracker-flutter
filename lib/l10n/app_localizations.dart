@@ -5665,6 +5665,18 @@ abstract class AppLocalizations {
   /// **'Interest Rate'**
   String get adminKnowledgeBattleInterestRate;
 
+  /// No description provided for @adminKnowledgeBattleDailyPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Unique Players Today'**
+  String get adminKnowledgeBattleDailyPlayers;
+
+  /// No description provided for @adminKnowledgeBattleTotalToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Battles Today'**
+  String get adminKnowledgeBattleTotalToday;
+
   /// No description provided for @source.
   ///
   /// In en, this message translates to:

@@ -16,6 +16,8 @@ class AdminKnowledgeBattleScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final metricsAsync = ref.watch(battleInterestMetricsProvider);
+    final dailyPlayersAsync = ref.watch(dailyBattleUsersProvider);
+    final dailyTotalBattlesAsync = ref.watch(dailyTotalBattlesProvider);
     final l10n = AppLocalizations.of(context)!;
 
     return AppScaffold(
@@ -122,6 +124,62 @@ class AdminKnowledgeBattleScreen extends ConsumerWidget {
                     SizedBox(height: 24.h),
                     
                     Divider(color: AppColors.cardBorder),
+                    SizedBox(height: 16.h),
+                    
+                    dailyTotalBattlesAsync.when(
+                      data: (totalBattles) => _StatRow(
+                        icon: Icons.sports_kabaddi_rounded,
+                        iconColor: AppColors.gold,
+                        label: l10n.adminKnowledgeBattleTotalToday,
+                        value: '$totalBattles',
+                        isProminent: true,
+                      ),
+                      loading: () => SizedBox(
+                        height: 24.h,
+                        child: const Center(
+                          child: SizedBox(
+                            width: 16, 
+                            height: 16, 
+                            child: CircularProgressIndicator(strokeWidth: 2)
+                          )
+                        ),
+                      ),
+                      error: (err, _) => _StatRow(
+                        icon: Icons.error_rounded,
+                        iconColor: AppColors.danger,
+                        label: l10n.adminKnowledgeBattleTotalToday,
+                        value: 'Err',
+                        isProminent: false,
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    
+                    dailyPlayersAsync.when(
+                      data: (dailyPlayers) => _StatRow(
+                        icon: Icons.groups_rounded,
+                        iconColor: AppColors.gold,
+                        label: l10n.adminKnowledgeBattleDailyPlayers,
+                        value: '$dailyPlayers',
+                        isProminent: true,
+                      ),
+                      loading: () => SizedBox(
+                        height: 24.h,
+                        child: const Center(
+                          child: SizedBox(
+                            width: 16, 
+                            height: 16, 
+                            child: CircularProgressIndicator(strokeWidth: 2)
+                          )
+                        ),
+                      ),
+                      error: (err, _) => _StatRow(
+                        icon: Icons.error_rounded,
+                        iconColor: AppColors.danger,
+                        label: l10n.adminKnowledgeBattleDailyPlayers,
+                        value: 'Err',
+                        isProminent: false,
+                      ),
+                    ),
                     SizedBox(height: 16.h),
                     
                     _StatRow(

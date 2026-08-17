@@ -1510,6 +1510,8 @@
   "adminKnowledgeBattleNotInterested": "Not Interested",
   "adminKnowledgeBattleDismissed": "Dismissed",
   "adminKnowledgeBattleInterestRate": "Interest Rate",
+  "adminKnowledgeBattleDailyPlayers": "Unique Players Today",
+  "adminKnowledgeBattleTotalToday": "Total Battles Today",
   "source": "Source",
   "reportQuestion": "Report Question",
   "selectReason": "Select Reason",

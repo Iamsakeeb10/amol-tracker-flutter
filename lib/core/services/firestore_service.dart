@@ -393,6 +393,13 @@ class FirestoreService {
     }
   }
 
+  Future<void> updateUserLastBattleDate(String uid, String dateString) async {
+    if (uid.isEmpty) return;
+    await _users.doc(uid).update(<String, dynamic>{
+      'lastBattleDate': dateString,
+    });
+  }
+
   Stream<UserModel?> userStream(String uid) {
     return _users.doc(uid).snapshots().map((doc) {
       if (!doc.exists) return null;

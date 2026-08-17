@@ -5,11 +5,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
+import '../../../../core/services/local_storage_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../providers/locale_provider.dart';
-import '../../../../core/services/local_storage_service.dart';
 import '../../providers/battle_providers.dart';
 import '../../exceptions/battle_api_exception.dart';
 
@@ -61,10 +62,12 @@ class _JoinBattleScreenState extends ConsumerState<JoinBattleScreen> {
       await repo.joinBattle(code: code);
 
       if (mounted) {
+        AnalyticsService.instance.logBattleJoined(battleCode: code);
         LocalStorageService.saveActiveBattleCode(code);
         context.pushReplacement(AppRoutes.battleWaitingRoomPath(code));
       }
-    } on BattleApiException catch (e) {
+    } on BattleApiException catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'Battle API exception when joining');
       if (!mounted) return;
       final msg = e.message.toLowerCase();
       String localMsg = isBn ? 'একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।' : 'An error occurred. Please try again.';
@@ -83,7 +86,8 @@ class _JoinBattleScreenState extends ConsumerState<JoinBattleScreen> {
         SnackBar(content: Text(localMsg), backgroundColor: AppColors.danger),
       );
       setState(() => _error = localMsg);
-    } catch (e) {
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'Failed to join battle');
       if (!mounted) return;
       final errorMsg = isBn ? 'একটি অপ্রত্যাশিত সমস্যা হয়েছে। আবার চেষ্টা করুন।' : 'An unexpected error occurred. Please try again.';
       ScaffoldMessenger.of(context).showSnackBar(

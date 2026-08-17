@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
@@ -182,6 +183,7 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                         ? 'আমার সাথে নলেজ ব্যাটেল খেলুন! জয়েন কোড: $code\nলিংক: $link'
                         : 'Join my Knowledge Battle! Code: $code\nLink: $link';
                     Share.share(text);
+                    AnalyticsService.instance.logBattleInviteShared(battleCode: code);
                   },
                 ),
 
@@ -399,6 +401,13 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
     try {
       final repo = ref.read(battleRepositoryProvider);
       await repo.startBattle(code: widget.battleCode);
+      
+      final currentBattle = ref.read(battleStreamProvider(widget.battleCode)).value;
+      AnalyticsService.instance.logBattleStarted(
+        battleCode: widget.battleCode,
+        playerCount: currentBattle?.playerUids.length ?? 0,
+      );
+
       // We don't navigate immediately here; we let the stream listener handle it
       // when it sees status == 'active'.
     } catch (e) {

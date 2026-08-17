@@ -12,6 +12,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../providers/battle_providers.dart';
@@ -44,6 +45,7 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> with 
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      AnalyticsService.instance.logBattleResultsViewed(battleCode: widget.battleCode);
       LocalStorageService.clearActiveBattleCode();
     });
   }

@@ -7,6 +7,7 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../providers/topic_providers.dart';
@@ -506,10 +507,15 @@ class _BattleConfigScreenState extends ConsumerState<BattleConfigScreen> {
 
       final code = res.code;
       if (mounted && code != null) {
+        AnalyticsService.instance.logBattleCreated(
+          topicId: widget.topicId,
+          maxPlayers: _maxPlayers,
+        );
         LocalStorageService.saveActiveBattleCode(code);
         context.pushReplacement(AppRoutes.battleWaitingRoomPath(code));
       }
-    } catch (e) {
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'Failed to create battle');
       if (!mounted) return;
       setState(() => _error = e.toString());
     } finally {

@@ -8,6 +8,7 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../providers/battle_providers.dart';
@@ -15,11 +16,22 @@ import '../../providers/battle_providers.dart';
 /// Entry point for the Battle feature.
 /// Lets the user either create a new battle (goes to topic selection)
 /// or join an existing battle using a room code.
-class BattleHomeScreen extends ConsumerWidget {
+class BattleHomeScreen extends ConsumerStatefulWidget {
   const BattleHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BattleHomeScreen> createState() => _BattleHomeScreenState();
+}
+
+class _BattleHomeScreenState extends ConsumerState<BattleHomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.instance.logBattleHomeOpened();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final locale = ref.watch(localeProvider).languageCode;
     final isBn = locale == 'bn';
 

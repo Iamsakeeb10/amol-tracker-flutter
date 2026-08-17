@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/providers/user_provider.dart';
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -165,11 +167,21 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
         answers: _myAnswers,
       );
       if (mounted) {
+        int totalScore = 0;
+        for (final a in _myAnswers) {
+          totalScore += (a['points'] as int?) ?? 0;
+        }
+        AnalyticsService.instance.logBattleQuizCompleted(
+          battleCode: widget.battleCode,
+          score: totalScore,
+        );
+
         setState(() {
           _isSubmittingAll = false;
         });
       }
-    } catch (e) {
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'Failed to submit battle answers');
       debugPrint('Failed to submit all answers: $e');
       if (mounted) {
         setState(() {
@@ -192,7 +204,9 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
       repo.leaveBattle(code: widget.battleCode).catchError((e) {
         debugPrint('Failed to leave battle: $e');
       });
-    } catch (e) {
+      AnalyticsService.instance.logBattleForfeited(battleCode: widget.battleCode);
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'Failed to forfeit battle');
       debugPrint('Failed to leave battle: $e');
     }
     context.go(AppRoutes.home);
@@ -346,7 +360,8 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
                                   ),
                                 );
                               }
-                            } catch (e) {
+                            } catch (e, st) {
+                              AnalyticsService.instance.recordError(e, st, reason: 'Failed to submit question report in battle');
                               setStateSheet(() => isSubmitting = false);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Failed to submit report')),

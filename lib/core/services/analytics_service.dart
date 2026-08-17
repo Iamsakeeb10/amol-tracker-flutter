@@ -593,6 +593,68 @@ class AnalyticsService {
     );
   }
 
+  // -- Knowledge Battle --
+  Future<void> logBattleHomeOpened() async {
+    if (!_enabled) return;
+    await _analytics.logEvent(name: 'battle_home_opened');
+  }
+
+  Future<void> logBattleCreated({required String topicId, required int maxPlayers}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'battle_created',
+      parameters: {'topic_id': topicId, 'max_players': maxPlayers},
+    );
+  }
+
+  Future<void> logBattleJoined({required String battleCode}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'battle_joined',
+      parameters: {'battle_code': battleCode},
+    );
+  }
+
+  Future<void> logBattleInviteShared({required String battleCode}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'battle_invite_shared',
+      parameters: {'battle_code': battleCode},
+    );
+  }
+
+  Future<void> logBattleStarted({required String battleCode, required int playerCount}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'battle_started',
+      parameters: {'battle_code': battleCode, 'player_count': playerCount},
+    );
+  }
+
+  Future<void> logBattleQuizCompleted({required String battleCode, required int score}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'battle_quiz_completed',
+      parameters: {'battle_code': battleCode, 'score': score},
+    );
+  }
+
+  Future<void> logBattleForfeited({required String battleCode}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'battle_forfeited',
+      parameters: {'battle_code': battleCode},
+    );
+  }
+
+  Future<void> logBattleResultsViewed({required String battleCode}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'battle_results_viewed',
+      parameters: {'battle_code': battleCode},
+    );
+  }
+
   // -- User properties --
   Future<void> updateUserProperties({
     required int currentStreak,

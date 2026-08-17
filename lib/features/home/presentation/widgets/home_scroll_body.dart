@@ -300,6 +300,7 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                             ),
                           ],
                           SliverToBoxAdapter(child: SizedBox(height: 14.h)),
+                          /*
                           Consumer(
                             builder: (context, ref, _) {
                               final showTeaserAsync = ref.watch(showBattleTeaserProvider(widget.uid));
@@ -350,6 +351,7 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                               );
                             },
                           ),
+                          */
                           const HomeQuickNavSection(),
                           SliverToBoxAdapter(child: SizedBox(height: 14.h)),
                           if (widget.isSubmitted)

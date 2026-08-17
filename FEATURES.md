@@ -265,3 +265,14 @@
 | **EN Subtitle** | Automatically schedule lesson reviews using spaced repetition to reinforce what you've learned over time. |
 | **BN Title** | স্পেসড রিপিটিশন রিভিউ |
 | **BN Subtitle** | সময়ের সাথে যা শিখেছেন তা শক্তিশালী করতে স্পেসড রিপিটিশন ব্যবহার করে স্বয়ংক্রিয়ভাবে পাঠ রিভিউ শিডিউল করুন। |
+
+---
+
+## 25. Knowledge Battle
+
+| | |
+|---|---|
+| **EN Title** | Knowledge Battle |
+| **EN Subtitle** | Compete with friends in real-time Islamic quizzes. Host battles, share invite codes, and see who tops the leaderboard in subjects like Quran, Hadith, and Seerah. |
+| **BN Title** | নলেজ ব্যাটল |
+| **BN Subtitle** | রিয়েল-টাইমে বন্ধুদের সাথে ইসলামিক কুইজে প্রতিযোগিতা করুন। ব্যাটল হোস্ট করুন, ইনভাইট কোড শেয়ার করুন এবং কোরআন, হাদিস ও সীরাতের মতো বিষয়ে লিডারবোর্ডে কে শীর্ষে আছে তা দেখুন। |

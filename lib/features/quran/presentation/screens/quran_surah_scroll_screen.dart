@@ -45,10 +45,12 @@ class _QuranSurahScrollScreenState
   Timer? _scrollSaveTimer;
   int? _pendingAyahSave;
   DateTime? _entryTime;
+  late final QuranReadingPrefsNotifier _prefsNotifier;
 
   @override
   void initState() {
     super.initState();
+    _prefsNotifier = ref.read(quranReadingPrefsProvider.notifier);
     _entryTime = DateTime.now();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -112,9 +114,7 @@ class _QuranSurahScrollScreenState
     final ayah = _pendingAyahSave;
     if (ayah == null) return;
     unawaited(
-      ref
-          .read(quranReadingPrefsProvider.notifier)
-          .setLastReadAyah(widget.surahId, ayah),
+      _prefsNotifier.setLastReadAyah(widget.surahId, ayah),
     );
     _pendingAyahSave = null;
   }

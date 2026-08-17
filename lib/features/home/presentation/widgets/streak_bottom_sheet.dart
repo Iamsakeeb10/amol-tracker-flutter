@@ -105,9 +105,17 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
     setState(() => _isLoading = true);
     final dates = _visibleDates;
     final fs = ref.read(firestoreServiceProvider);
-    final results = await Future.wait(
-      dates.map((d) => fs.getLog(widget.uid, d)),
-    );
+
+    List<AmalLogModel?> results;
+    try {
+      results = await Future.wait(
+        dates.map((d) => fs.getLog(widget.uid, d)),
+      );
+    } catch (e) {
+      // Gracefully handle offline or unavailable Firestore service
+      results = List.filled(dates.length, null);
+    }
+
     if (!mounted) return;
     setState(() {
       _dayLogs = {

@@ -159,7 +159,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // because the navigator is already being disposed by the redirect.
     } catch (e) {
       // Only on failure: the navigator is still alive, safe to pop and show error.
-      navigator.pop(); // dismiss loading dialog
+      if (navigator.canPop()) {
+        navigator.pop(); // dismiss loading dialog
+      }
       messenger.showSnackBar(SnackBar(content: Text(failedMsg)));
     }
   }

@@ -91,12 +91,16 @@ class _DuaFloatingAudioButtonState extends State<DuaFloatingAudioButton> {
     }
 
     if (_player.playerState.playing) {
-      await _player.pause();
+      try {
+        await _player.pause();
+      } catch (_) {}
       return;
     }
 
     if (_player.processingState == ProcessingState.completed) {
-      await _player.seek(Duration.zero);
+      try {
+        await _player.seek(Duration.zero);
+      } catch (_) {}
     }
 
     try {

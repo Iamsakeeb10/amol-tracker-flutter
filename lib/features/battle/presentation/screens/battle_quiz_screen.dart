@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/providers/user_provider.dart';
 import '../../../../core/router/routes.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
@@ -480,8 +479,10 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
           final currentQ = questions[_uiQuestionIndex];
           debugPrint('CURRENT Q DATA: $currentQ');
           final text = currentQ['text'] ?? '';
-          final rawOptions = currentQ['options'] ?? [];
-          final options = List<String>.from(rawOptions);
+          final rawOptions = currentQ['options'];
+          final options = rawOptions is Iterable 
+              ? List<String>.from(rawOptions.map((e) => e?.toString() ?? ''))
+              : <String>[];
           final correctIndex = currentQ['correctIndex'] as int? ?? 0;
           
           final sourceRef = currentQ['sourceReference'];

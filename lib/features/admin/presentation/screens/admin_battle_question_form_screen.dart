@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
@@ -89,7 +90,13 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
         await repo.updateQuestion(widget.topicId, widget.existingQuestion!, newQuestion);
       }
 
-      if (mounted) context.pop();
+      if (mounted) {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go(AppRoutes.adminKnowledgeBattle);
+        }
+      }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
@@ -117,7 +124,13 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
     setState(() => _isLoading = true);
     try {
       await ref.read(adminBattleRepositoryProvider).deleteQuestion(widget.topicId, widget.existingQuestion!);
-      if (mounted) context.pop();
+      if (mounted) {
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go(AppRoutes.adminKnowledgeBattle);
+        }
+      }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       setState(() => _isLoading = false);
@@ -130,7 +143,13 @@ class _AdminBattleQuestionFormScreenState extends ConsumerState<AdminBattleQuest
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.close, size: 22.r),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(AppRoutes.adminKnowledgeBattle);
+            }
+          },
         ),
         title: Text(
           widget.existingQuestion == null ? 'New Question' : 'Edit Question',

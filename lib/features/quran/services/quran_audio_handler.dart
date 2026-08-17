@@ -153,9 +153,19 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
 
     onAyahChanged?.call(surahId, ayah, false);
 
-    await _player.setUrl(url);
-    if (_shouldPlay) {
-      await _player.play();
+    try {
+      await _player.setUrl(url);
+      if (_shouldPlay) {
+        await _player.play();
+      }
+    } catch (e) {
+      _shouldPlay = false;
+      // Network drop or connection abort. Gracefully stop.
+      onPlayerStateChanged?.call(
+        playing: false,
+        isBuffering: false,
+        isReady: false,
+      );
     }
   }
 
@@ -199,28 +209,38 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> play() async {
     await _ready;
     _shouldPlay = true;
-    await _player.play();
+    try {
+      await _player.play();
+    } catch (_) {
+      _shouldPlay = false;
+    }
   }
 
   @override
   Future<void> pause() async {
     await _ready;
     _shouldPlay = false;
-    await _player.pause();
+    try {
+      await _player.pause();
+    } catch (_) {}
   }
 
   @override
   Future<void> stop() async {
     await _ready;
     _shouldPlay = false;
-    await _player.stop();
+    try {
+      await _player.stop();
+    } catch (_) {}
     await super.stop();
   }
 
   @override
   Future<void> seek(Duration position) async {
     await _ready;
-    await _player.seek(position);
+    try {
+      await _player.seek(position);
+    } catch (_) {}
   }
 
   @override
@@ -240,7 +260,9 @@ class QuranAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> skipToPrevious() async {
     await _ready;
     if (_surahId <= 0 || _ayah <= 1) {
-      await _player.seek(Duration.zero);
+      try {
+        await _player.seek(Duration.zero);
+      } catch (_) {}
       return;
     }
     await playAyah(

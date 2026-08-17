@@ -336,6 +336,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                                       await fs.updateUser(user.uid, {
                                         'isAnonymousDisplay': value,
                                       });
+                                    } catch (_) {
                                     } finally {
                                       if (mounted) {
                                         setState(
@@ -360,6 +361,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                                         await fs.updateUser(user.uid, {
                                           'name': trimmed,
                                         });
+                                      } catch (_) {
                                       } finally {
                                         if (mounted) {
                                           setState(
@@ -426,7 +428,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             widget.selectedLogFallback!.hijriDate == effectiveDate)
         ? widget.selectedLogFallback
         : null;
-    final selectedLog = await fs.getLog(user.uid, effectiveDate);
+    AmalLogModel? selectedLog;
+    try {
+      selectedLog = await fs.getLog(user.uid, effectiveDate);
+    } catch (_) {
+      selectedLog = fallback;
+    }
     // Fetch 30 logs to compute an accurate streak (not just 7).
     List<AmalLogModel> allLogs = const <AmalLogModel>[];
     try {
@@ -546,6 +553,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.duaSent)));
       return true;
+    } catch (_) {
+      return false;
     } finally {
       if (mounted) setState(() => _sendingDua = false);
     }

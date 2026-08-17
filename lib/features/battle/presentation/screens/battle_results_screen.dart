@@ -507,7 +507,8 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> with 
     final text = q['text'];
     final explanation = q['explanation'];
     final correctIndex = q['correctIndex'] as int?;
-    final options = List<String>.from(q['options']);
+    final rawOptions = q['options'];
+    final options = rawOptions is Iterable ? List<String>.from(rawOptions) : <String>[];
     final userSelectedIndex = userAnswer?['selectedIndex'] as int?;
 
     return Container(

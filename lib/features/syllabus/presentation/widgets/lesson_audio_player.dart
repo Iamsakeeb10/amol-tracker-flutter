@@ -139,11 +139,15 @@ class _LessonAudioPlayerState extends State<LessonAudioPlayer> {
                         child: Slider(
                           value: value.clamp(0.0, 1.0),
                           onChanged: maxMs > 0
-                              ? (v) => _player.seek(
-                                    Duration(
-                                      milliseconds: (v * maxMs).round(),
-                                    ),
-                                  )
+                              ? (v) async {
+                                  try {
+                                    await _player.seek(
+                                      Duration(
+                                        milliseconds: (v * maxMs).round(),
+                                      ),
+                                    );
+                                  } catch (_) {}
+                                }
                               : null,
                         ),
                       ),
@@ -179,8 +183,15 @@ class _LessonAudioPlayerState extends State<LessonAudioPlayer> {
               builder: (context, snap) {
                 final playing = snap.data?.playing ?? false;
                 return IconButton.filled(
-                  onPressed: () =>
-                      playing ? _player.pause() : _player.play(),
+                  onPressed: () async {
+                    try {
+                      if (playing) {
+                        await _player.pause();
+                      } else {
+                        await _player.play();
+                      }
+                    } catch (_) {}
+                  },
                   icon: Icon(
                     playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
                     size: 28.r,

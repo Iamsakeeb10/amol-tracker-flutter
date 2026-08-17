@@ -26,6 +26,7 @@ class GenderSelectionModal extends ConsumerStatefulWidget {
 
 class _GenderSelectionModalState extends ConsumerState<GenderSelectionModal> {
   UserAmalProfile? _selected;
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -106,33 +107,42 @@ class _GenderSelectionModalState extends ConsumerState<GenderSelectionModal> {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: _selected == null
+                        onPressed: _selected == null || _isLoading
                             ? null
                             : () async {
-                                AnalyticsService.instance.logGenderSelected(
-                                  gender: _selected == UserAmalProfile.male
-                                      ? 'male'
-                                      : 'female',
-                                );
-                                final uid = ref
-                                    .read(authStateProvider)
-                                    .asData
-                                    ?.value
-                                    ?.uid;
-                                if (uid == null) return;
-                                final navigator = Navigator.of(context);
-                                final isMale =
-                                    _selected == UserAmalProfile.male;
-                                AnalyticsService.instance.logMessage('Gender selected: ${isMale ? 'male' : 'female'}');
-                                await ref
-                                    .read(firestoreServiceProvider)
-                                    .updateUserGenderPreferences(
-                                      uid,
-                                      gender: isMale ? 'male' : 'female',
-                                      specialTimeActive: isMale ? false : null,
-                                    );
-                                if (!mounted) return;
-                                navigator.pop();
+                                setState(() => _isLoading = true);
+                                try {
+                                  AnalyticsService.instance.logGenderSelected(
+                                    gender: _selected == UserAmalProfile.male
+                                        ? 'male'
+                                        : 'female',
+                                  );
+                                  final uid = ref
+                                      .read(authStateProvider)
+                                      .asData
+                                      ?.value
+                                      ?.uid;
+                                  if (uid == null) return;
+                                  final navigator = Navigator.of(context);
+                                  final isMale =
+                                      _selected == UserAmalProfile.male;
+                                  AnalyticsService.instance.logMessage('Gender selected: ${isMale ? 'male' : 'female'}');
+                                  await ref
+                                      .read(firestoreServiceProvider)
+                                      .updateUserGenderPreferences(
+                                        uid,
+                                        gender: isMale ? 'male' : 'female',
+                                        specialTimeActive: isMale ? false : null,
+                                      );
+                                  if (!mounted) return;
+                                  if (navigator.canPop()) {
+                                    navigator.pop();
+                                  }
+                                } finally {
+                                  if (mounted) {
+                                    setState(() => _isLoading = false);
+                                  }
+                                }
                               },
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.gold,
@@ -152,25 +162,36 @@ class _GenderSelectionModalState extends ConsumerState<GenderSelectionModal> {
                     if (!widget.isRequired) ...[
                       SizedBox(height: 10.h),
                       TextButton(
-                        onPressed: () async {
-                          AnalyticsService.instance.logGenderSkipped();
-                          AnalyticsService.instance.logMessage('Gender prompt skipped');
-                          final uid = ref
-                              .read(authStateProvider)
-                              .asData
-                              ?.value
-                              ?.uid;
-                          if (uid == null) return;
-                          final navigator = Navigator.of(context);
-                          await ref
-                              .read(firestoreServiceProvider)
-                              .updateUserGenderPreferences(
-                                uid,
-                                genderPromptDismissed: true,
-                              );
-                          if (!mounted) return;
-                          navigator.pop();
-                        },
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                setState(() => _isLoading = true);
+                                try {
+                                  AnalyticsService.instance.logGenderSkipped();
+                                  AnalyticsService.instance.logMessage('Gender prompt skipped');
+                                  final uid = ref
+                                      .read(authStateProvider)
+                                      .asData
+                                      ?.value
+                                      ?.uid;
+                                  if (uid == null) return;
+                                  final navigator = Navigator.of(context);
+                                  await ref
+                                      .read(firestoreServiceProvider)
+                                      .updateUserGenderPreferences(
+                                        uid,
+                                        genderPromptDismissed: true,
+                                      );
+                                  if (!mounted) return;
+                                  if (navigator.canPop()) {
+                                    navigator.pop();
+                                  }
+                                } finally {
+                                  if (mounted) {
+                                    setState(() => _isLoading = false);
+                                  }
+                                }
+                              },
                         child: Text(
                           l10n.genderSkip,
                           style: AppTextStyles.bodySmall(

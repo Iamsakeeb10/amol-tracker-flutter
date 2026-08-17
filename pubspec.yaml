@@ -73,6 +73,7 @@ dependencies:
   tutorial_coach_mark: ^1.3.3
   in_app_review: ^2.0.12
   http: ^1.6.0
+  lottie: ^3.3.3
 
 dev_dependencies:
   flutter_test:
@@ -105,6 +106,7 @@ flutter:
     - assets/hadiths/
     - assets/images/
     - assets/images/dua_categories/
+    - assets/lottie/
     - assets/categories.json
     - assets/sub_categories.json
     - assets/quran_complete.sqlite

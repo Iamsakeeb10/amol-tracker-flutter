@@ -23,6 +23,7 @@ class BattleModel {
   final DateTime? startedAt;
   final List<String>? questionIds;
   final String? winnerUid;
+  final int? maxPlayers;
 
   BattleModel({
     required this.id,
@@ -39,6 +40,7 @@ class BattleModel {
     this.startedAt,
     this.questionIds,
     this.winnerUid,
+    this.maxPlayers,
   });
 
   factory BattleModel.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,7 @@ class BattleModel {
       startedAt: _parseDateTime(json['startedAt']),
       questionIds: json['questionIds'] != null ? List<String>.from(json['questionIds']) : null,
       winnerUid: json['winnerUid'] as String?,
+      maxPlayers: json['maxPlayers'] as int?,
     );
   }
 
@@ -77,6 +80,7 @@ class BattleModel {
       'startedAt': startedAt?.toIso8601String(),
       'questionIds': questionIds,
       'winnerUid': winnerUid,
+      'maxPlayers': maxPlayers,
     };
   }
 }

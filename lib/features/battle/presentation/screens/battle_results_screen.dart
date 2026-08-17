@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../../core/router/routes.dart';
 import '../../../../core/theme/colors.dart';
@@ -24,15 +26,32 @@ class BattleResultsScreen extends ConsumerStatefulWidget {
   ConsumerState<BattleResultsScreen> createState() => _BattleResultsScreenState();
 }
 
-class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
+class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> with TickerProviderStateMixin {
   bool _isQuestionsExpanded = false;
+  late final AnimationController _trophyController;
 
   @override
   void initState() {
     super.initState();
+    _trophyController = AnimationController(vsync: this);
+    _trophyController.addStatusListener((status) async {
+      if (status == AnimationStatus.completed) {
+        await Future.delayed(const Duration(seconds: 5));
+        if (mounted) {
+          _trophyController.forward(from: 0);
+        }
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       LocalStorageService.clearActiveBattleCode();
     });
+  }
+
+  @override
+  void dispose() {
+    _trophyController.dispose();
+    super.dispose();
   }
 
   void _goToHome() {
@@ -157,6 +176,8 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
                             headerColor: headerColor,
                             headerIcon: headerIcon,
                             score: myResult.score,
+                            isWinner: result.winnerUid == currentUid,
+                            trophyController: _trophyController,
                           ),
                         ),
                       ),
@@ -315,22 +336,45 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
     required Color headerColor,
     required IconData headerIcon,
     required int score,
+    required bool isWinner,
+    required AnimationController trophyController,
   }) {
-    return Column(
+    return Stack(
+      alignment: Alignment.center,
       children: [
-        Container(
-          width: 96.r,
-          height: 96.r,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [headerColor.withOpacity(0.28), headerColor.withOpacity(0.05)],
+        if (isWinner)
+          Positioned.fill(
+            child: Lottie.asset(
+              'assets/lottie/success.json',
+              repeat: false,
+              fit: BoxFit.cover,
             ),
-            border: Border.all(color: headerColor.withOpacity(0.5), width: 1.5),
           ),
-          child: Icon(headerIcon, color: headerColor, size: 44.r),
-        ),
-        SizedBox(height: AppSpacing.lg.h),
+        Column(
+          children: [
+            Container(
+              width: 96.r,
+              height: 96.r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [headerColor.withOpacity(0.28), headerColor.withOpacity(0.05)],
+                ),
+                border: Border.all(color: headerColor.withOpacity(0.5), width: 1.5),
+              ),
+              child: isWinner
+                  ? Lottie.asset(
+                      'assets/lottie/trophy.json',
+                      controller: trophyController,
+                      onLoaded: (composition) {
+                        trophyController.duration = composition.duration;
+                        trophyController.forward();
+                      },
+                      fit: BoxFit.contain,
+                    )
+                  : Icon(headerIcon, color: headerColor, size: 44.r),
+            ),
+            SizedBox(height: AppSpacing.lg.h),
         Text(
           headerText,
           style: AppTextStyles.displayMedium(context).copyWith(
@@ -367,8 +411,10 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
           ),
         ),
       ],
-    );
-  }
+    ),
+  ],
+);
+}
 
   // ---------- Leaderboard ----------
 
@@ -598,10 +644,6 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> {
         AppSpacing.md.h,
         0,
         AppSpacing.md.h,
-      ),
-      decoration: const BoxDecoration(
-        color: AppColors.emeraldDeep,
-        border: Border(top: BorderSide(color: AppColors.cardBorder)),
       ),
       child: SafeArea(
         top: false,

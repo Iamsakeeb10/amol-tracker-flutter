@@ -138,7 +138,7 @@ class _BattleConfigScreenState extends ConsumerState<BattleConfigScreen> {
                           title: playersText,
                           valueLabel: '$_maxPlayers',
                           child: _ChoiceRow(
-                            options: const [2, 3, 4, 5],
+                            options: const [2], // TODO: Re-enable [2, 3, 4, 5] for multiplayer
                             selectedValue: _maxPlayers,
                             onSelected: (val) => setState(() => _maxPlayers = val),
                           ),

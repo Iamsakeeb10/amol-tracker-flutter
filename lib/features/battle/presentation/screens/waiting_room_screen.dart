@@ -190,7 +190,7 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                 _SectionHeader(
                   icon: Icons.groups_rounded,
                   title: isBn ? 'খেলোয়াড়' : 'Players',
-                  valueLabel: '$playerCount/2',
+                  valueLabel: '$playerCount/${battle.maxPlayers ?? 2}',
                 ),
                 SizedBox(height: 12.h),
                 Expanded(

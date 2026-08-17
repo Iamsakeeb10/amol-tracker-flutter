@@ -15,6 +15,7 @@ class KnowledgeBattleBanner extends StatefulWidget {
     required this.onYes,
     required this.onNo,
     required this.onDismiss,
+    this.customTitle,
   });
 
   final AppLocalizations l10n;
@@ -22,6 +23,7 @@ class KnowledgeBattleBanner extends StatefulWidget {
   final VoidCallback onYes;
   final VoidCallback onNo;
   final VoidCallback onDismiss;
+  final String? customTitle;
 
   @override
   State<KnowledgeBattleBanner> createState() => _KnowledgeBattleBannerState();
@@ -50,11 +52,13 @@ class _KnowledgeBattleBannerState extends State<KnowledgeBattleBanner> {
             children: [
               Expanded(
                 child: Text(
-                  widget.l10n.battleTeaserTitle,
+                  widget.customTitle ?? widget.l10n.battleTeaserTitle,
                   style: AppTextStyles.label(context).copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ),
               GestureDetector(

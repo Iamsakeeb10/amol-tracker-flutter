@@ -11,10 +11,14 @@ class HomeReminderCard extends StatefulWidget {
     super.key,
     required this.l10n,
     required this.onDismiss,
+    this.customTitle,
+    this.customBody,
   });
 
   final AppLocalizations l10n;
   final VoidCallback onDismiss;
+  final String? customTitle;
+  final String? customBody;
 
   @override
   State<HomeReminderCard> createState() => _HomeReminderCardState();
@@ -53,8 +57,9 @@ class _HomeReminderCardState extends State<HomeReminderCard> {
               ),
               SizedBox(width: 6.w),
               Text(
-                widget.l10n.homeReminderTitle,
+                widget.customTitle ?? widget.l10n.homeReminderTitle,
                 style: AppTextStyles.label(context).copyWith(color: AppColors.gold),
+                overflow: TextOverflow.ellipsis,
               ),
               const Spacer(),
               GestureDetector(
@@ -81,12 +86,12 @@ class _HomeReminderCardState extends State<HomeReminderCard> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               text: TextSpan(
-                children: _parseMarkdownBold(widget.l10n.homeReminderBody, context),
+                children: _parseMarkdownBold(widget.customBody ?? widget.l10n.homeReminderBody, context),
               ),
             ),
             secondChild: RichText(
               text: TextSpan(
-                children: _parseMarkdownBold(widget.l10n.homeReminderBody, context),
+                children: _parseMarkdownBold(widget.customBody ?? widget.l10n.homeReminderBody, context),
               ),
             ),
           ),

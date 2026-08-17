@@ -10,6 +10,7 @@ import '../../features/admin/presentation/screens/admin_announcements_screen.dar
 import '../../features/admin/presentation/screens/admin_feedbacks_screen.dart';
 import '../../features/admin/presentation/screens/admin_amal_field_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_amal_fields_screen.dart';
+import '../../features/admin/presentation/screens/admin_home_banners_screen.dart';
 import '../../features/admin/presentation/screens/admin_course_form_screen.dart';
 import '../../features/admin/presentation/screens/admin_course_list_screen.dart';
 import '../../features/admin/presentation/screens/admin_lesson_form_screen.dart';
@@ -472,6 +473,11 @@ GoRouter buildAppRouter() {
         path: AppRoutes.adminAmalFields,
         name: 'adminAmalFields',
         builder: (_, _) => const AdminAmalFieldsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminHomeBanners,
+        name: 'adminHomeBanners',
+        builder: (_, _) => const AdminHomeBannersScreen(),
       ),
       GoRoute(
         path: AppRoutes.adminAmalFieldForm,

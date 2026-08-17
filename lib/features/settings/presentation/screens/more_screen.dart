@@ -296,6 +296,15 @@ class _MoreScreenState extends ConsumerState<MoreScreen> {
                     ),
                     const Divider(),
                     NavRow(
+                      icon: Icons.view_carousel_outlined,
+                      title: l10n.adminHomeBannersTitle,
+                      onTap: () {
+                        AnalyticsService.instance.logFeatureTapped('admin_home_banners', screen: 'more');
+                        context.push(AppRoutes.adminHomeBanners);
+                      },
+                    ),
+                    const Divider(),
+                    NavRow(
                       icon: Icons.checklist_rtl_outlined,
                       title: l10n.adminAmalFieldsTitle,
                       onTap: () {

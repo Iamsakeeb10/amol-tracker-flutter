@@ -91,6 +91,7 @@ class AppRoutes {
   static const adminAnnouncementForm = '/admin/announcement-form';
   static const adminPushNotification = '/admin/push-notification';
   static const adminAmalFields = '/admin/amal-fields';
+  static const adminHomeBanners = '/admin/home-banners';
   static const adminAmalFieldForm = '/admin/amal-field-form';
 
   static const adminCourses = '/admin/courses';

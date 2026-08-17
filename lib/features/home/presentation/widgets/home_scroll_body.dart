@@ -14,6 +14,7 @@ import '../../../../providers/amal_expansion_provider.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/battle_teaser_provider.dart';
+import '../../../../providers/home_banners_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../battle/providers/battle_providers.dart';
@@ -109,7 +110,12 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider).asData?.value;
-    final showReminder = user != null && !user.hasDismissedLoggingReminder;
+    final bannersConfig = ref.watch(homeBannersConfigProvider).value;
+    
+    final showReminderCardConfig = bannersConfig?.showReminderCard ?? true;
+    final showBattleBannerConfig = bannersConfig?.showBattleBanner ?? false;
+
+    final showReminder = user != null && !user.hasDismissedLoggingReminder && showReminderCardConfig;
     final showSpecialTime = user?.amalProfile == UserAmalProfile.female;
 
     // Collapse any expanded amal tile if its field disappears from the list
@@ -293,6 +299,8 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                             SliverToBoxAdapter(
                               child: HomeReminderCard(
                                 l10n: l10n,
+                                customTitle: bannersConfig?.reminderTitle,
+                                customBody: bannersConfig?.reminderBody,
                                 onDismiss: () {
                                   ref.read(firestoreServiceProvider).dismissLoggingReminder(widget.uid);
                                 },
@@ -300,58 +308,58 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                             ),
                           ],
                           SliverToBoxAdapter(child: SizedBox(height: 14.h)),
-                          /*
-                          Consumer(
-                            builder: (context, ref, _) {
-                              final showTeaserAsync = ref.watch(showBattleTeaserProvider(widget.uid));
-                              return showTeaserAsync.when(
-                                data: (show) {
-                                  if (!show) return const SliverToBoxAdapter(child: SizedBox.shrink());
-                                  return SliverMainAxisGroup(
-                                    slivers: [
-                                      SliverToBoxAdapter(
-                                        child: KnowledgeBattleBanner(
-                                          l10n: l10n,
-                                          locale: widget.locale,
-                                          onYes: () async {
-                                            await LocalStorageService.saveHasSeenBattleTeaser(true);
-                                            await ref.read(firestoreServiceProvider).saveBattleInterest(
-                                              uid: widget.uid,
-                                              response: 'yes',
-                                              locale: widget.locale,
-                                            );
-                                            ref.invalidate(showBattleTeaserProvider(widget.uid));
-                                          },
-                                          onNo: () async {
-                                            await LocalStorageService.saveHasSeenBattleTeaser(true);
-                                            await ref.read(firestoreServiceProvider).saveBattleInterest(
-                                              uid: widget.uid,
-                                              response: 'no',
-                                              locale: widget.locale,
-                                            );
-                                            ref.invalidate(showBattleTeaserProvider(widget.uid));
-                                          },
-                                          onDismiss: () async {
-                                            await LocalStorageService.saveHasSeenBattleTeaser(true);
-                                            await ref.read(firestoreServiceProvider).saveBattleInterest(
-                                              uid: widget.uid,
-                                              response: 'dismissed',
-                                              locale: widget.locale,
-                                            );
-                                            ref.invalidate(showBattleTeaserProvider(widget.uid));
-                                          },
+                          if (showBattleBannerConfig)
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final showTeaserAsync = ref.watch(showBattleTeaserProvider(widget.uid));
+                                return showTeaserAsync.when(
+                                  data: (show) {
+                                    if (!show) return const SliverToBoxAdapter(child: SizedBox.shrink());
+                                    return SliverMainAxisGroup(
+                                      slivers: [
+                                        SliverToBoxAdapter(
+                                          child: KnowledgeBattleBanner(
+                                            l10n: l10n,
+                                            locale: widget.locale,
+                                            customTitle: bannersConfig?.battleBannerTitle,
+                                            onYes: () async {
+                                              await LocalStorageService.saveHasSeenBattleTeaser(true);
+                                              await ref.read(firestoreServiceProvider).saveBattleInterest(
+                                                uid: widget.uid,
+                                                response: 'yes',
+                                                locale: widget.locale,
+                                              );
+                                              ref.invalidate(showBattleTeaserProvider(widget.uid));
+                                            },
+                                            onNo: () async {
+                                              await LocalStorageService.saveHasSeenBattleTeaser(true);
+                                              await ref.read(firestoreServiceProvider).saveBattleInterest(
+                                                uid: widget.uid,
+                                                response: 'no',
+                                                locale: widget.locale,
+                                              );
+                                              ref.invalidate(showBattleTeaserProvider(widget.uid));
+                                            },
+                                            onDismiss: () async {
+                                              await LocalStorageService.saveHasSeenBattleTeaser(true);
+                                              await ref.read(firestoreServiceProvider).saveBattleInterest(
+                                                uid: widget.uid,
+                                                response: 'dismissed',
+                                                locale: widget.locale,
+                                              );
+                                              ref.invalidate(showBattleTeaserProvider(widget.uid));
+                                            },
+                                          ),
                                         ),
-                                      ),
-                                      SliverToBoxAdapter(child: SizedBox(height: 14.h)),
-                                    ],
-                                  );
-                                },
-                                loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-                                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-                              );
-                            },
-                          ),
-                          */
+                                        SliverToBoxAdapter(child: SizedBox(height: 14.h)),
+                                      ],
+                                    );
+                                  },
+                                  loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                                  error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                                );
+                              },
+                            ),
                           const HomeQuickNavSection(),
                           SliverToBoxAdapter(child: SizedBox(height: 14.h)),
                           if (widget.isSubmitted)

@@ -13,6 +13,7 @@ import '../../models/announcement_model.dart';
 import '../../models/notification_model.dart';
 import '../../models/user_model.dart';
 import '../../models/app_config_model.dart';
+import '../../models/home_banners_config_model.dart';
 
 class FirestoreService {
   FirestoreService({
@@ -1071,6 +1072,19 @@ class FirestoreService {
       'no': no,
       'dismissed': dismissed,
     };
+  }
+
+  // ── Home Banners Config ──────────────────────────────────────
+
+  DocumentReference<Map<String, dynamic>> get _homeBannersConfig =>
+      _firestore.collection('appSettings').doc('homeBanners');
+
+  Stream<HomeBannersConfigModel> homeBannersConfigStream() {
+    return _homeBannersConfig.snapshots().map(HomeBannersConfigModel.fromDoc);
+  }
+
+  Future<void> updateHomeBannersConfig(Map<String, dynamic> data) async {
+    await _homeBannersConfig.set(data, SetOptions(merge: true));
   }
 
   // ── App Config (version update) ──────────────────────────────────────

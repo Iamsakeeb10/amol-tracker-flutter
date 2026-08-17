@@ -408,7 +408,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
               child: IconButton(
                 icon: Icon(
                   Icons.exit_to_app_rounded,
-                  color: const Color(0xFFFF5252),
+                  color: AppColors.danger,
                   size: 26.r,
                 ),
                 onPressed: () async {

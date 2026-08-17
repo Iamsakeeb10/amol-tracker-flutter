@@ -112,11 +112,13 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
             onPressed: () => _showExitDialog(isHost, isBn),
           ),
           actions: [
-            IconButton(
-              onPressed: () => _showExitDialog(isHost, isBn),
-              icon: Icon(isHost ? Icons.cancel_rounded : Icons.exit_to_app_rounded, color: AppColors.danger, size: 24.r),
+            Padding(
+              padding: EdgeInsets.only(right: 8.w),
+              child: IconButton(
+                onPressed: () => _showExitDialog(isHost, isBn),
+                icon: Icon(Icons.exit_to_app_rounded, color: AppColors.danger, size: 26.r),
+              ),
             ),
-            SizedBox(width: AppSpacing.sm.w),
           ],
         ),
       body: battleAsync.when(

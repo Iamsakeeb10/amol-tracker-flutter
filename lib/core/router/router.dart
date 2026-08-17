@@ -99,7 +99,7 @@ GoRouter buildAppRouter() {
       FirebaseAuth.instance.authStateChanges(),
     ),
     redirect: (_, state) =>
-        redirectForLocation(firestoreService, state.matchedLocation),
+        redirectForLocation(firestoreService, state),
     routes: [
       GoRoute(
         path: AppRoutes.launch,
@@ -168,7 +168,7 @@ GoRouter buildAppRouter() {
       GoRoute(
         path: AppRoutes.battleHistory,
         name: 'battleHistory',
-        builder: (_, __) => const BattleHistoryScreen(),
+        builder: (context, state) => const BattleHistoryScreen(),
       ),
       GoRoute(
         path: AppRoutes.dev,

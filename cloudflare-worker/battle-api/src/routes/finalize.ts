@@ -10,6 +10,7 @@ export async function finalizeBattle(
   code: string,
   battle: any,
   scoreboard: Record<string, any>,
+  questionsData: any[],
   forcedWinnerUid?: string
 ): Promise<void> {
   const playerUids: string[] = battle.playerUids || [];
@@ -17,7 +18,7 @@ export async function finalizeBattle(
   // Create player array from scoreboard
   const players = playerUids.map((pUid) => ({
     uid: pUid,
-    name: battle.playerNames?.[pUid] ?? 'Unknown Player',
+    name: battle.players?.[pUid]?.name ?? 'Unknown Player',
     score: scoreboard[pUid]?.score ?? 0,
     totalTimeMs: scoreboard[pUid]?.totalTimeMs ?? 0,
     answers: scoreboard[pUid]?.answers ?? [],
@@ -42,8 +43,8 @@ export async function finalizeBattle(
     }
   }
 
-  // Fetch all played questions directly from the battle document
-  const playedQuestions = (battle.questionsData || []).map((qData: any) => ({
+  // Fetch all played questions from the provided array
+  const playedQuestions = (questionsData || []).map((qData: any) => ({
     id: qData.id,
     text: qData.text,
     options: qData.options,

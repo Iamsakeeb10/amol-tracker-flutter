@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'dart:io' show Platform;
 
 import 'core/router/router.dart';
@@ -44,6 +45,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     unawaited(_setupCustomAnalyticsKeys());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      FlutterNativeSplash.remove();
       unawaited(ref.read(appBootstrapProvider.future));
       _scheduleSmartReminders();
       _scheduleMaghribRollover();

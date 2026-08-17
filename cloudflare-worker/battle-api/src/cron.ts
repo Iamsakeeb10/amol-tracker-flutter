@@ -70,12 +70,21 @@ export async function runCronSweep(env: Env): Promise<void> {
     // timeLimitSeconds + 60s grace period for network latency and submission
     if (now - startedAt > maxTimeMs + 60000) {
       console.log(`[Cron] Force-finalizing active battle ${code}`);
+      
+      const questionsJson = await env.BATTLE_CODES.get(`questions_${code}`);
+      let questionsData: any[] = [];
+      if (questionsJson) {
+        try {
+          questionsData = JSON.parse(questionsJson);
+        } catch (e) {}
+      }
+
       await runTransaction(env, async (tx) => {
         const latest = await tx.get(`battles/${code}`);
         if (latest && latest.status === 'active') {
           // Force finalize it with whatever they submitted
           const scoreboard = await tx.get(`battles/${code}/scoreboard/live`) || {};
-          await finalizeBattle(tx, code, latest, scoreboard);
+          await finalizeBattle(tx, code, latest, scoreboard, questionsData);
         }
       });
     }

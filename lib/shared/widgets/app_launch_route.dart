@@ -29,9 +29,7 @@ class _AppLaunchRouteState extends State<AppLaunchRoute> {
 
   Future<void> _leaveLaunch() async {
     if (_navigated) return;
-    FlutterNativeSplash.remove();
-    await Future<void>.delayed(const Duration(milliseconds: 16));
-    if (!mounted || _navigated) return;
+    if (!mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_navigateToDestination());
     });

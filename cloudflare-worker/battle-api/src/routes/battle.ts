@@ -389,6 +389,17 @@ export async function submitAllAnswers(request: Request, env: Env): Promise<Resp
     throw invalidConfigError('answers must be an array');
   }
 
+  // Fetch questionsData from KV since it was moved out of Firestore
+  const questionsJson = await env.BATTLE_CODES.get(`questions_${code}`);
+  let questionsData: any[] = [];
+  if (questionsJson) {
+    try {
+      questionsData = JSON.parse(questionsJson);
+    } catch (e) {
+      console.error('Failed to parse questionsData from KV', e);
+    }
+  }
+
   await runTransaction(env, async (tx) => {
     const battle = await tx.get(`battles/${code}`);
     if (!battle) throw notFoundError('Battle not found');
@@ -415,7 +426,7 @@ export async function submitAllAnswers(request: Request, env: Env): Promise<Resp
       console.log(`User ${uid} submitted late, but we will accept whatever answers they made in time.`);
     }
 
-    const questionsData = battle.questionsData || [];
+    // questionsData is captured from the outer scope
     let totalScore = 0;
     let totalResponseTimeMs = 0;
     let totalCorrect = 0;
@@ -476,7 +487,7 @@ export async function submitAllAnswers(request: Request, env: Env): Promise<Resp
     const allFinished = playerUids.every(pId => scoreboard[pId]?.hasFinished === true);
 
     if (allFinished) {
-      await finalizeBattle(tx, code, battle, scoreboard);
+      await finalizeBattle(tx, code, battle, scoreboard, questionsData);
     }
   });
 
@@ -503,6 +514,17 @@ export async function leaveBattle(request: Request, env: Env): Promise<Response>
   const { code } = body;
   if (!code || typeof code !== 'string') {
     throw invalidConfigError('Missing battle code');
+  }
+
+  // Fetch questionsData from KV for finalizeBattle
+  const questionsJson = await env.BATTLE_CODES.get(`questions_${code}`);
+  let questionsData: any[] = [];
+  if (questionsJson) {
+    try {
+      questionsData = JSON.parse(questionsJson);
+    } catch (e) {
+      console.error('Failed to parse questionsData from KV', e);
+    }
   }
 
   await runTransaction(env, async (tx) => {
@@ -547,7 +569,7 @@ export async function leaveBattle(request: Request, env: Env): Promise<Response>
         // Only 1 player remains, finalize immediately
         const winnerUid = activePlayers.length === 1 ? activePlayers[0] : null;
         const scoreboard = await tx.get(`battles/${code}/scoreboard/live`) || {};
-        await finalizeBattle(tx, code, battle, scoreboard, winnerUid ?? undefined);
+        await finalizeBattle(tx, code, battle, scoreboard, questionsData, winnerUid ?? undefined);
       } else {
         // Just mark as forfeited
         tx.update(`battles/${code}`, {

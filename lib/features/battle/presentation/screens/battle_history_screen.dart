@@ -42,7 +42,7 @@ class BattleHistoryScreen extends ConsumerWidget {
                       height: 88.r,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.gold.withOpacity(0.1),
+                        color: AppColors.gold.withValues(alpha: 0.1),
                       ),
                       child: Icon(
                         Icons.history_toggle_off,
@@ -126,10 +126,10 @@ class BattleHistoryScreen extends ConsumerWidget {
                 child: Container(
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
-                    color: AppColors.cardDark,
+                    color: item.result == 'loss' ? AppColors.dangerLight : AppColors.cardDark,
                     borderRadius: BorderRadius.circular(16.r),
                     border: Border.all(
-                      color: AppColors.cardBorder,
+                      color: item.result == 'loss' ? AppColors.danger.withValues(alpha: 0.3) : AppColors.cardBorder,
                       width: 1,
                     ),
                   ),
@@ -141,7 +141,7 @@ class BattleHistoryScreen extends ConsumerWidget {
                         height: 44.r,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: resultColor.withOpacity(0.12),
+                          color: resultColor.withValues(alpha: 0.12),
                         ),
                         alignment: Alignment.center,
                         child: Icon(resultIcon, size: 22.r, color: resultColor),
@@ -207,7 +207,7 @@ class BattleHistoryScreen extends ConsumerWidget {
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                             decoration: BoxDecoration(
-                              color: resultColor.withOpacity(0.12),
+                              color: resultColor.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(20.r),
                             ),
                             child: Text(

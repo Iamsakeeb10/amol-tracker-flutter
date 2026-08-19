@@ -3077,4 +3077,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminQuestionReportsTitle => 'Question Reports';
+
+  @override
+  String get battleNext => 'Next';
+
+  @override
+  String get battlePrevious => 'Previous';
+
+  @override
+  String get battleFinish => 'Finish';
+
+  @override
+  String battleUnansweredWarning(int count) {
+    return 'You have $count unanswered questions. Are you sure you want to finish?';
+  }
+
+  @override
+  String get battleStay => 'Stay';
+
+  @override
+  String get battleSubmit => 'Submit';
 }

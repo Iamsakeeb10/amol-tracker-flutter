@@ -5736,6 +5736,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Question Reports'**
   String get adminQuestionReportsTitle;
+
+  /// No description provided for @battleNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get battleNext;
+
+  /// No description provided for @battlePrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get battlePrevious;
+
+  /// No description provided for @battleFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get battleFinish;
+
+  /// No description provided for @battleUnansweredWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} unanswered questions. Are you sure you want to finish?'**
+  String battleUnansweredWarning(int count);
+
+  /// No description provided for @battleStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get battleStay;
+
+  /// No description provided for @battleSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get battleSubmit;
 }
 
 class _AppLocalizationsDelegate

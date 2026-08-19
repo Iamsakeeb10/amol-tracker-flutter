@@ -1521,5 +1521,18 @@
   "selectReason": "Select Reason",
   "reportDetails": "Additional details (optional)",
   "submitReport": "Submit Report",
-  "adminQuestionReportsTitle": "Question Reports"
+  "adminQuestionReportsTitle": "Question Reports",
+  "battleNext": "Next",
+  "battlePrevious": "Previous",
+  "battleFinish": "Finish",
+  "battleUnansweredWarning": "You have {count} unanswered questions. Are you sure you want to finish?",
+  "@battleUnansweredWarning": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "battleStay": "Stay",
+  "battleSubmit": "Submit"
 }

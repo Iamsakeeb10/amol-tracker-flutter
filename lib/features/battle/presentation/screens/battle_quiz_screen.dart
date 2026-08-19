@@ -41,10 +41,6 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
 
   int _uiQuestionIndex = 0;
   
-  // Local state for the current question
-  int? _selectedIndex;
-  bool _isTransitioning = false;
-  
   // Overall state for finishing
   Stopwatch? _globalStopwatch;
   Stopwatch? _questionStopwatch;
@@ -53,8 +49,9 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   bool _isSubmittingAll = false;
   bool _isServerDelayed = false;
   
-  // Answers list to send to backend at the end
-  final List<Map<String, dynamic>> _myAnswers = [];
+  // State for all questions
+  final Map<String, int> _selectedAnswers = {};
+  final Map<String, int> _answerTimes = {};
 
   @override
   void dispose() {
@@ -114,39 +111,17 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   }
 
   void _handleOptionSelected(int index, Map<String, dynamic> qData, int totalQuestions) async {
-    if (_selectedIndex != null || _isTransitioning || _hasFinishedLocal) return;
+    if (_hasFinishedLocal) return;
 
     final qId = qData['id'] as String;
+    if (_selectedAnswers.containsKey(qId)) return;
+    
     final responseTimeMs = _questionStopwatch?.elapsedMilliseconds ?? 0;
     
     setState(() {
-      _selectedIndex = index;
-      _isTransitioning = true;
+      _selectedAnswers[qId] = index;
+      _answerTimes[qId] = responseTimeMs;
     });
-    
-    _myAnswers.add({
-      'questionId': qId,
-      'selectedIndex': index,
-      'responseTimeMs': responseTimeMs,
-    });
-
-    // Wait 600ms so user can see right/wrong feedback quickly
-    await Future.delayed(const Duration(milliseconds: 600));
-    
-    if (!mounted) return;
-
-    if (_uiQuestionIndex >= totalQuestions - 1) {
-      // Finished all questions
-      _triggerFinish();
-    } else {
-      // Next question
-      setState(() {
-        _uiQuestionIndex++;
-        _selectedIndex = null;
-        _isTransitioning = false;
-      });
-      _questionStopwatch = Stopwatch()..start();
-    }
   }
 
   Future<void> _triggerFinish() async {
@@ -157,15 +132,23 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
       _isSubmittingAll = true;
     });
 
+    final List<Map<String, dynamic>> finalAnswers = _selectedAnswers.entries.map((entry) {
+      return {
+        'questionId': entry.key,
+        'selectedIndex': entry.value,
+        'responseTimeMs': _answerTimes[entry.key] ?? 0,
+      };
+    }).toList();
+
     try {
       final repo = ref.read(battleRepositoryProvider);
       await repo.submitAllAnswers(
         code: widget.battleCode,
-        answers: _myAnswers,
+        answers: finalAnswers,
       );
       if (mounted) {
         int totalScore = 0;
-        for (final a in _myAnswers) {
+        for (final a in finalAnswers) {
           totalScore += (a['points'] as int?) ?? 0;
         }
         AnalyticsService.instance.logBattleQuizCompleted(
@@ -204,6 +187,43 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
         );
       }
     }
+  }
+
+  void _showUnansweredWarning(BuildContext context, int count) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return AlertDialog(
+          backgroundColor: AppColors.cardDark,
+          title: Text(
+            l10n.battleFinish,
+            style: AppTextStyles.titleMedium(context).copyWith(color: AppColors.textPrimary),
+          ),
+          content: Text(
+            l10n.battleUnansweredWarning(count),
+            style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.battleStay, style: const TextStyle(color: AppColors.goldLight)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _triggerFinish();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.gold,
+                foregroundColor: AppColors.emeraldDeep,
+              ),
+              child: Text(l10n.battleSubmit),
+            ),
+          ],
+        );
+      }
+    );
   }
 
   void _handleExit(BuildContext context) {
@@ -666,12 +686,12 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
                     itemCount: options.length,
                     padding: EdgeInsets.zero,
                     itemBuilder: (context, index) {
-                      final isSelectedByMe = _selectedIndex == index;
+                      final selectedIndex = _selectedAnswers[currentQ['id']];
+                      final isSelectedByMe = selectedIndex == index;
                       
                       QuizOptionTileState tileState = QuizOptionTileState.idle;
                       
-                      // Show correct/wrong instantly if selected
-                      if (_selectedIndex != null) {
+                      if (selectedIndex != null) {
                         if (index == correctIndex) {
                           tileState = QuizOptionTileState.correct;
                         } else if (isSelectedByMe) {
@@ -685,13 +705,83 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
                           index: index,
                           label: options[index],
                           state: tileState,
-                          enabled: _selectedIndex == null,
+                          enabled: selectedIndex == null,
                           onTap: () => _handleOptionSelected(index, currentQ, questions.length),
                         ),
                       );
                     },
                   ),
                 ),
+                SizedBox(height: 16.h),
+                // Navigation Buttons
+                Row(
+                  children: [
+                    if (_uiQuestionIndex > 0)
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              _uiQuestionIndex--;
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            side: BorderSide(color: AppColors.goldBorder),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppRadius.md.r),
+                            ),
+                          ),
+                          child: Text(
+                            AppLocalizations.of(context)!.battlePrevious,
+                            style: AppTextStyles.button(context).copyWith(
+                              color: AppColors.goldLight,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      const Spacer(),
+                    
+                    SizedBox(width: 16.w),
+                    
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_uiQuestionIndex < questions.length - 1) {
+                            setState(() {
+                              _uiQuestionIndex++;
+                            });
+                          } else {
+                            // Finish logic
+                            if (_selectedAnswers.length < questions.length) {
+                              _showUnansweredWarning(context, questions.length - _selectedAnswers.length);
+                            } else {
+                              _triggerFinish();
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.gold,
+                          foregroundColor: AppColors.emeraldDeep,
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          ),
+                        ),
+                        child: Text(
+                          _uiQuestionIndex < questions.length - 1 
+                              ? AppLocalizations.of(context)!.battleNext
+                              : AppLocalizations.of(context)!.battleFinish,
+                          style: AppTextStyles.button(context).copyWith(
+                            color: AppColors.emeraldDeep,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
               ],
             ],
           );

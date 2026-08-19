@@ -3083,4 +3083,24 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get adminQuestionReportsTitle => 'প্রশ্নের রিপোর্ট';
+
+  @override
+  String get battleNext => 'পরের প্রশ্ন';
+
+  @override
+  String get battlePrevious => 'আগের প্রশ্ন';
+
+  @override
+  String get battleFinish => 'শেষ করুন';
+
+  @override
+  String battleUnansweredWarning(int count) {
+    return 'আপনার $count টি প্রশ্নের উত্তর দেওয়া বাকি আছে। আপনি কি শেষ করতে চান?';
+  }
+
+  @override
+  String get battleStay => 'থাকুন';
+
+  @override
+  String get battleSubmit => 'সাবমিট করুন';
 }

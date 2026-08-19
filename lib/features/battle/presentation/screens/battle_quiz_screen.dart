@@ -33,7 +33,7 @@ class BattleQuizScreen extends ConsumerStatefulWidget {
 
 class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   Timer? _timer;
-  Timer? _fallbackTimer;
+  Timer? _serverDelayTimer;
   int _timeLeftMs = 0;
   
   bool _isNavigatingToResults = false;
@@ -50,6 +50,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   
   bool _hasFinishedLocal = false;
   bool _isSubmittingAll = false;
+  bool _isServerDelayed = false;
   
   // Answers list to send to backend at the end
   final List<Map<String, dynamic>> _myAnswers = [];
@@ -57,7 +58,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    _fallbackTimer?.cancel();
+    _serverDelayTimer?.cancel();
     super.dispose();
   }
 
@@ -99,16 +100,12 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
         timer.cancel();
         _triggerFinish();
         
-        // Start fallback timer
-        _fallbackTimer = Timer(const Duration(seconds: 15), () {
+        // Start delay timer instead of fallback/forfeit timer
+        _serverDelayTimer = Timer(const Duration(seconds: 15), () {
           if (mounted && _hasFinishedLocal) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Failed to finalize battle. Server took too long.'),
-                backgroundColor: AppColors.danger,
-              ),
-            );
-            _handleExit(context);
+            setState(() {
+              _isServerDelayed = true;
+            });
           }
         });
       }
@@ -583,7 +580,9 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
                             SizedBox(height: 16.h),
                             Text(
                               timeIsUp 
-                                  ? (isBn ? 'অন্যান্য প্রতিযোগীদের জন্য অপেক্ষা করা হচ্ছে...' : 'Waiting for opponents to finish...')
+                                  ? (_isServerDelayed 
+                                      ? (isBn ? 'সার্ভার থেকে উত্তরের জন্য অপেক্ষা করা হচ্ছে...' : 'Server is taking longer than expected...')
+                                      : (isBn ? 'অন্যান্য প্রতিযোগীদের জন্য অপেক্ষা করা হচ্ছে...' : 'Waiting for opponents to finish...'))
                                   : (isBn ? 'অনুগ্রহ করে বাকিদের শেষ হওয়া পর্যন্ত অপেক্ষা করুন...' : 'Please wait while your opponents finish...'),
                               style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textSecondary),
                               textAlign: TextAlign.center,

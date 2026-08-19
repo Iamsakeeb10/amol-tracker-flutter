@@ -12,6 +12,7 @@ import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../providers/battle_providers.dart';
+import '../../exceptions/battle_api_exception.dart';
 
 /// Entry point for the Battle feature.
 /// Lets the user either create a new battle (goes to topic selection)
@@ -422,10 +423,11 @@ class _JoinBattleSheetState extends ConsumerState<_JoinBattleSheet> {
     FocusManager.instance.primaryFocus?.unfocus();
 
     
-    final code = _codeController.text.trim().toUpperCase();
+    final rawCode = _codeController.text.trim();
+    final code = rawCode.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toUpperCase();
 
-    if (code.isEmpty) {
-      setState(() => _error = emptyError);
+    if (code.length != 6) {
+      setState(() => _error = isBn ? 'সঠিক ৬-অক্ষরের কোড দিন' : 'Please enter a valid 6-character code');
       return;
     }
 
@@ -445,10 +447,28 @@ class _JoinBattleSheetState extends ConsumerState<_JoinBattleSheet> {
         Navigator.of(context).pop();
         context.pushReplacement(AppRoutes.battleWaitingRoomPath(code));
       }
-    } catch (e) {
+    } on BattleApiException catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'Battle API exception when joining from home');
+      if (!mounted) return;
+      final msg = e.message.toLowerCase();
+      String localMsg = isBn ? 'একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।' : 'An error occurred. Please try again.';
+      
+      if (msg.contains('not found')) {
+        localMsg = isBn ? 'কোডটি সঠিক নয় অথবা মেয়াদ শেষ হয়ে গেছে' : 'Invalid or expired code';
+      } else if (msg.contains('full')) {
+        localMsg = isBn ? 'এই ব্যাটেলটি ইতিমধ্যে পূর্ণ হয়ে গেছে।' : 'This battle is already full.';
+      } else if (msg.contains('already started') || msg.contains('finished')) {
+        localMsg = isBn ? 'এই ব্যাটেলটি ইতিমধ্যে শুরু বা শেষ হয়ে গেছে।' : 'This battle has already started or finished.';
+      } else {
+        localMsg = e.message;
+      }
+      
+      setState(() => _error = localMsg);
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(e, st, reason: 'Failed to join battle from home');
       if (!mounted) return;
       setState(() {
-        _error = isBn ? 'কোডটি সঠিক নয় অথবা মেয়াদ শেষ হয়ে গেছে' : 'Invalid or expired code';
+        _error = isBn ? 'একটি অপ্রত্যাশিত সমস্যা হয়েছে। আবার চেষ্টা করুন।' : 'An unexpected error occurred. Please try again.';
       });
     } finally {
       if (mounted) setState(() => _isJoining = false);

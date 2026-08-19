@@ -149,27 +149,27 @@ export async function joinBattle(request: Request, env: Env, ctx: ExecutionConte
     }
 
     const playerUids: string[] = battle.playerUids || [];
-    
-    if (playerUids.includes(uid)) {
-      throw alreadyJoinedError('You have already joined this battle');
+    if (!playerUids.includes(uid)) {
+      const maxPlayers = battle.maxPlayers || 2;
+      if (playerUids.length >= maxPlayers) {
+        throw fullError('Battle is full');
+      }
+
+      playerUids.push(uid);
+
+      // Get user name and photo
+      const userDoc = await tx.get(`users/${uid}`);
+      const userName = userDoc?.name || 'Unknown Player';
+      const userPhoto = userDoc?.photoUrl || '';
+
+      const players = battle.players || {};
+      players[uid] = { name: userName, photoUrl: userPhoto };
+
+      tx.update(`battles/${code}`, {
+        playerUids,
+        players,
+      });
     }
-
-    const maxPlayers = battle.maxPlayers ?? 2;
-    if (playerUids.length >= maxPlayers) {
-      throw fullError('Battle is full');
-    }
-
-    // Fetch user name and photo
-    const userDoc = await tx.get(`users/${uid}`);
-    const userName = userDoc?.name || 'Unknown Player';
-    const userPhoto = userDoc?.photoUrl || '';
-
-    // Add player and update
-    playerUids.push(uid);
-    const players = battle.players || {};
-    players[uid] = { name: userName, photoUrl: userPhoto };
-    
-    tx.update(`battles/${code}`, { playerUids, players });
   });
 
   // 4. Stub FCM notification

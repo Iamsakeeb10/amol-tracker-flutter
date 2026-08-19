@@ -114,7 +114,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   }
 
   void _handleOptionSelected(int index, Map<String, dynamic> qData, int totalQuestions) async {
-    if (_selectedIndex != null || _isTransitioning || _hasFinishedLocal || _timeLeftMs <= 0) return;
+    if (_selectedIndex != null || _isTransitioning || _hasFinishedLocal) return;
 
     final qId = qData['id'] as String;
     final responseTimeMs = _questionStopwatch?.elapsedMilliseconds ?? 0;

@@ -110,7 +110,7 @@ export async function createBattle(request: Request, env: Env, ctx: ExecutionCon
     createdAt: serverTimestamp(),
   };
 
-  ctx.waitUntil(setDoc(env, `battles/${code}`, battleData));
+  await setDoc(env, `battles/${code}`, battleData);
 
   return new Response(JSON.stringify({ ok: true, code }), {
     status: 200,

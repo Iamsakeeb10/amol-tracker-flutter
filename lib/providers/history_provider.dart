@@ -134,6 +134,7 @@ class DayLogKey {
 /// Log for S-13 — Firestore first, then Hive submitted cache.
 final dayDetailLogProvider =
     FutureProvider.autoDispose.family<AmalLogModel?, DayLogKey>((ref, key) async {
+  ref.watch(amalLogRefreshProvider);
   final fs = ref.read(firestoreServiceProvider);
   try {
     final log = await fs.getLog(key.uid, key.hijriDate);

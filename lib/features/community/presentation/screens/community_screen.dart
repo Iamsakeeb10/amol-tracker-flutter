@@ -19,6 +19,7 @@ import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/amal_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/community_provider.dart';
+import '../../../../providers/history_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/bottom_tab_back_button.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -147,7 +148,20 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
         accountCreatedHijri != null &&
         state.selectedDate.compareTo(accountCreatedHijri) < 0;
 
-    final ownRow = state.ownRow(currentUser?.uid);
+    final ownLogAsync = currentUser != null
+        ? ref.watch(dayDetailLogProvider(DayLogKey(uid: currentUser.uid, hijriDate: state.selectedDate)))
+        : null;
+    final fetchedOwnRow = ownLogAsync?.value;
+    
+    var ownRow = state.ownRow(currentUser?.uid);
+    if (ownRow == null && fetchedOwnRow != null) {
+      ownRow = fetchedOwnRow;
+    } else if (ownRow != null && fetchedOwnRow != null) {
+      if (fetchedOwnRow.editCount > ownRow.editCount) {
+        ownRow = fetchedOwnRow;
+      }
+    }
+
     final otherRows = state.filteredRowsExcludingUid(currentUser?.uid);
     final ownPlaceholder = currentUser == null
         ? null
@@ -471,7 +485,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                                                   ? null
                                                   : () {
                                                       context.push(
-                                                        '${AppRoutes.userProfile}/${ownRow.uid}?date=${state.selectedDate}',
+                                                        '${AppRoutes.userProfile}/${ownRow!.uid}?date=${state.selectedDate}',
                                                         extra: ownRow,
                                                       );
                                                     },
@@ -797,7 +811,20 @@ class _CommunitySheetFullScreenState
         false;
     _maybeShowOfflineSnackBar(context, isOffline);
 
-    final ownRow = state.ownRow(currentUser?.uid);
+    final ownLogAsync = currentUser != null
+        ? ref.watch(dayDetailLogProvider(DayLogKey(uid: currentUser.uid, hijriDate: state.selectedDate)))
+        : null;
+    final fetchedOwnRow = ownLogAsync?.value;
+    
+    var ownRow = state.ownRow(currentUser?.uid);
+    if (ownRow == null && fetchedOwnRow != null) {
+      ownRow = fetchedOwnRow;
+    } else if (ownRow != null && fetchedOwnRow != null) {
+      if (fetchedOwnRow.editCount > ownRow.editCount) {
+        ownRow = fetchedOwnRow;
+      }
+    }
+
     final otherRows = state.filteredRowsExcludingUid(currentUser?.uid);
     final ownPlaceholder = currentUser == null
         ? null
@@ -1033,7 +1060,7 @@ class _CommunitySheetFullScreenState
                                           ? null
                                           : () {
                                               context.push(
-                                                '${AppRoutes.userProfile}/${ownRow.uid}?date=${state.selectedDate}',
+                                                '${AppRoutes.userProfile}/${ownRow!.uid}?date=${state.selectedDate}',
                                                 extra: ownRow,
                                               );
                                             },

@@ -14,7 +14,7 @@ import { ApiError, jsonResponse, notFoundError } from './errors.js';
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-      return await handleRequest(request, env);
+      return await handleRequest(request, env, ctx);
     } catch (err: unknown) {
       // All known errors are ApiError instances with the { error, code } shape
       if (err instanceof ApiError) {
@@ -35,7 +35,7 @@ export default {
   }
 };
 
-async function handleRequest(request: Request, env: Env): Promise<Response> {
+async function handleRequest(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
   const { pathname } = url;
 
@@ -55,25 +55,25 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 
   // --- Battle Endpoints (Chunk A3) ---
   if (request.method === 'POST' && pathname === '/battle/create') {
-    return withCors(await createBattle(request, env));
+    return withCors(await createBattle(request, env, ctx));
   }
   if (request.method === 'POST' && pathname === '/battle/join') {
-    return withCors(await joinBattle(request, env));
+    return withCors(await joinBattle(request, env, ctx));
   }
   if (request.method === 'POST' && pathname === '/battle/start') {
-    return withCors(await startBattle(request, env));
+    return withCors(await startBattle(request, env, ctx));
   }
   if (request.method === 'POST' && pathname === '/battle/submit-all') {
-    return withCors(await submitAllAnswers(request, env));
+    return withCors(await submitAllAnswers(request, env, ctx));
   }
   if (request.method === 'POST' && pathname === '/battle/leave') {
-    return withCors(await leaveBattle(request, env));
+    return withCors(await leaveBattle(request, env, ctx));
   }
   if (request.method === 'POST' && pathname === '/battle/toggle-ready') {
-    return withCors(await toggleReady(request, env));
+    return withCors(await toggleReady(request, env, ctx));
   }
   if (request.method === 'GET' && pathname.startsWith('/battle/') && pathname.endsWith('/questions')) {
-    return withCors(await getBattleQuestions(request, env));
+    return withCors(await getBattleQuestions(request, env, ctx));
   }
 
   // --- Health check (no auth required) ---

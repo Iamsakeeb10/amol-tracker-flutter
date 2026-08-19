@@ -21,6 +21,7 @@ import '../../providers/battle_providers.dart';
 import '../../models/battle_model.dart';
 import '../../models/question_report_model.dart';
 import '../../repositories/question_report_repository.dart';
+import '../../exceptions/battle_api_exception.dart';
 
 class BattleQuizScreen extends ConsumerStatefulWidget {
   final String battleCode;
@@ -183,10 +184,21 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
         setState(() {
           _isSubmittingAll = false;
         });
+        
+        String errorMessage = 'Failed to submit answers. Result might be lost.';
+        if (e is BattleApiException) {
+          errorMessage = e.message;
+        } else if (e is FormatException) {
+          // Ignored if it's just a parsing error that made it through
+          return;
+        } else {
+          errorMessage = e.toString();
+        }
+
         // We could show a retry button, but for now just show error
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to submit answers. Result might be lost.'),
+            content: Text(errorMessage),
             backgroundColor: AppColors.danger,
           ),
         );

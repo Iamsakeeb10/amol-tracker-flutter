@@ -39,7 +39,17 @@ class BattleRepository {
       body: jsonEncode(body),
     );
 
-    final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+    Map<String, dynamic> responseData = {};
+    if (response.body.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          responseData = decoded;
+        }
+      } catch (_) {
+        // Ignored if response is not valid JSON
+      }
+    }
 
     if (response.statusCode >= 400) {
       throw BattleApiException.fromJson(responseData);
@@ -105,10 +115,20 @@ class BattleRepository {
     required String code,
     required List<Map<String, dynamic>> answers,
   }) async {
-    await _post('/battle/submit-all', {
-      'code': code,
-      'answers': answers,
-    });
+    int retries = 3;
+    while (retries > 0) {
+      try {
+        await _post('/battle/submit-all', {
+          'code': code,
+          'answers': answers,
+        });
+        return; // Success
+      } catch (e) {
+        retries--;
+        if (retries == 0) rethrow; // Bubble up if out of retries
+        await Future.delayed(const Duration(seconds: 2)); // Wait before retrying
+      }
+    }
   }
 
   Future<void> leaveBattle({required String code}) async {

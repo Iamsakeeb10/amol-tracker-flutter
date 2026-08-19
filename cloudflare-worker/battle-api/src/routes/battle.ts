@@ -28,7 +28,7 @@ function generateCode(): string {
   return code;
 }
 
-export async function createBattle(request: Request, env: Env): Promise<Response> {
+export async function createBattle(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const { uid } = await verifyAuth(request, env);
 
   let body: any;
@@ -110,7 +110,7 @@ export async function createBattle(request: Request, env: Env): Promise<Response
     createdAt: serverTimestamp(),
   };
 
-  await setDoc(env, `battles/${code}`, battleData);
+  ctx.waitUntil(setDoc(env, `battles/${code}`, battleData));
 
   return new Response(JSON.stringify({ ok: true, code }), {
     status: 200,
@@ -118,7 +118,7 @@ export async function createBattle(request: Request, env: Env): Promise<Response
   });
 }
 
-export async function joinBattle(request: Request, env: Env): Promise<Response> {
+export async function joinBattle(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const { uid } = await verifyAuth(request, env);
 
   let body: any;
@@ -185,7 +185,7 @@ export async function joinBattle(request: Request, env: Env): Promise<Response> 
 // Chunk A3.5 — battle/toggle-ready
 // ---------------------------------------------------------------------------
 
-export async function toggleReady(request: Request, env: Env): Promise<Response> {
+export async function toggleReady(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const { uid } = await verifyAuth(request, env);
 
   let body: any;
@@ -231,7 +231,7 @@ export async function toggleReady(request: Request, env: Env): Promise<Response>
 // Chunk A4 — battle/start
 // ---------------------------------------------------------------------------
 
-export async function startBattle(request: Request, env: Env): Promise<Response> {
+export async function startBattle(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const { uid } = await verifyAuth(request, env);
 
   let body: any;
@@ -306,57 +306,58 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
   }
   const selectedQuestionIds = activeIds.slice(0, finalQuestionCount);
 
-  // 4. Start the battle via transaction
-  let finalQuestionsData: any[] = [];
-  await runTransaction(env, async (tx) => {
-    const latestBattle = await tx.get(`battles/${code}`);
-    if (!latestBattle) {
-      throw notFoundError('Battle not found');
-    }
-    if (latestBattle.status !== 'waiting') {
-      throw alreadyStartedError('Battle has already started or finished');
-    }
-    
-    const playerUids: string[] = latestBattle.playerUids || [];
-    const readyUids: string[] = latestBattle.readyUids || [];
-    if (playerUids.length < 2) {
-      throw notEnoughPlayersError('At least 2 players are required to start the battle');
-    }
-    if (readyUids.length !== playerUids.length) {
-      throw invalidConfigError('Not all players are ready');
-    }
+  // 4. Start the battle via transaction in the background for faster response
+  const backgroundWork = (async () => {
+    try {
+      let finalQuestionsData: any[] = [];
+      await runTransaction(env, async (tx) => {
+        const latestBattle = await tx.get(`battles/${code}`);
+        if (!latestBattle) throw notFoundError('Battle not found');
+        if (latestBattle.status !== 'waiting') throw alreadyStartedError('Battle has already started or finished');
+        
+        const playerUids: string[] = latestBattle.playerUids || [];
+        const readyUids: string[] = latestBattle.readyUids || [];
+        if (playerUids.length < 2) throw notEnoughPlayersError('At least 2 players are required to start the battle');
+        if (readyUids.length !== playerUids.length) throw invalidConfigError('Not all players are ready');
 
-    // Fetch full data for all selected questions
-    const questionsData = [];
-    for (const qId of selectedQuestionIds) {
-      const qDoc = await tx.get(`topics/${latestBattle.topicId}/questions/${qId}`);
-      if (qDoc) {
-        questionsData.push({
-          id: qId,
-          text: qDoc.text || qDoc.textBn || qDoc.textEn,
-          options: qDoc.options || qDoc.optionsBn || qDoc.optionsEn,
-          difficulty: qDoc.difficulty,
-          correctIndex: qDoc.correctIndex, // Included for instant local feedback
-          points: qDoc.points || 10,
-          explanation: qDoc.explanation,
-          sourceType: qDoc.sourceType,
-          sourceReference: qDoc.sourceReference,
+        // Fetch full data for all selected questions
+        const questionsData = [];
+        for (const qId of selectedQuestionIds) {
+          const qDoc = await tx.get(`topics/${latestBattle.topicId}/questions/${qId}`);
+          if (qDoc) {
+            questionsData.push({
+              id: qId,
+              text: qDoc.text || qDoc.textBn || qDoc.textEn,
+              options: qDoc.options || qDoc.optionsBn || qDoc.optionsEn,
+              difficulty: qDoc.difficulty,
+              correctIndex: qDoc.correctIndex,
+              points: qDoc.points || 10,
+              explanation: qDoc.explanation,
+              sourceType: qDoc.sourceType,
+              sourceReference: qDoc.sourceReference,
+            });
+          }
+        }
+
+        tx.update(`battles/${code}`, {
+          status: 'active',
+          questionCount: finalQuestionCount,
+          questionIds: selectedQuestionIds,
+          startedAt: serverTimestamp(),
         });
-      }
+        
+        finalQuestionsData = questionsData;
+      });
+
+      // Save to KV with 2 hour expiration
+      await env.BATTLE_CODES.put(`questions_${code}`, JSON.stringify(finalQuestionsData), { expirationTtl: 7200 });
+      console.log(`[startBattle] Background work completed for ${code}`);
+    } catch (e) {
+      console.error(`[startBattle] Background work failed for ${code}:`, e);
     }
-
-    tx.update(`battles/${code}`, {
-      status: 'active',
-      questionCount: finalQuestionCount,
-      questionIds: selectedQuestionIds,
-      startedAt: serverTimestamp(),
-    });
-    
-    finalQuestionsData = questionsData;
-  });
-
-  // Save to KV with 2 hour expiration (7200 seconds)
-  await env.BATTLE_CODES.put(`questions_${code}`, JSON.stringify(finalQuestionsData), { expirationTtl: 7200 });
+  })();
+  
+  ctx.waitUntil(backgroundWork);
 
   // 5. FCM Notification stub
   console.log(`[FCM Stub]: Notifying lobby that battle ${code} is starting!`);
@@ -371,7 +372,7 @@ export async function startBattle(request: Request, env: Env): Promise<Response>
 // Chunk A5 — battle/answer & battle/next-question
 // ---------------------------------------------------------------------------
 
-export async function submitAllAnswers(request: Request, env: Env): Promise<Response> {
+export async function submitAllAnswers(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const { uid } = await verifyAuth(request, env);
 
   let body: any;
@@ -400,96 +401,105 @@ export async function submitAllAnswers(request: Request, env: Env): Promise<Resp
     }
   }
 
-  await runTransaction(env, async (tx) => {
-    const battle = await tx.get(`battles/${code}`);
-    if (!battle) throw notFoundError('Battle not found');
-    if (battle.status !== 'active') throw invalidConfigError('Battle is not active');
-    
-    const playerUids: string[] = battle.playerUids || [];
-    if (!playerUids.includes(uid)) throw invalidConfigError('You are not in this battle');
+  const backgroundWork = (async () => {
+    try {
+      await runTransaction(env, async (tx) => {
+        const battle = await tx.get(`battles/${code}`);
+        if (!battle) throw notFoundError('Battle not found');
+        if (battle.status !== 'active') throw invalidConfigError('Battle is not active');
+        
+        const playerUids: string[] = battle.playerUids || [];
+        if (!playerUids.includes(uid)) throw invalidConfigError('You are not in this battle');
 
-    // Make sure user hasn't already submitted
-    const scoreboard = await tx.get(`battles/${code}/scoreboard/live`) || {};
-    const playerStats = scoreboard[uid] || { score: 0, totalTimeMs: 0, correctCount: 0, hasFinished: false };
-    
-    if (playerStats.hasFinished) {
-      throw alreadyAnsweredError('You have already submitted your final answers');
-    }
+        // Make sure user hasn't already submitted
+        const scoreboard = await tx.get(`battles/${code}/scoreboard/live`) || {};
+        const playerStats = scoreboard[uid] || { score: 0, totalTimeMs: 0, correctCount: 0, hasFinished: false };
+        
+        if (playerStats.hasFinished) {
+          throw alreadyAnsweredError('You have already submitted your final answers');
+        }
 
-    const startedAt = battle.startedAt ? new Date(battle.startedAt).getTime() : Date.now();
-    const maxTimeSeconds = battle.timeLimitSeconds ?? 300;
-    const timeLimitMs = maxTimeSeconds * 1000;
-    
-    // Validate if the battle time limit expired massively (allow 10 seconds grace period for network)
-    const timeSinceStartMs = Date.now() - startedAt;
-    if (timeSinceStartMs > timeLimitMs + 10000) {
-      console.log(`User ${uid} submitted late, but we will accept whatever answers they made in time.`);
-    }
+        const startedAt = battle.startedAt ? new Date(battle.startedAt).getTime() : Date.now();
+        const maxTimeSeconds = battle.timeLimitSeconds ?? 300;
+        const timeLimitMs = maxTimeSeconds * 1000;
+        
+        // Validate if the battle time limit expired massively (allow 10 seconds grace period for network)
+        const timeSinceStartMs = Date.now() - startedAt;
+        if (timeSinceStartMs > timeLimitMs + 10000) {
+          console.log(`User ${uid} submitted late, but we will accept whatever answers they made in time.`);
+        }
 
-    // questionsData is captured from the outer scope
-    let totalScore = 0;
-    let totalResponseTimeMs = 0;
-    let totalCorrect = 0;
-    const evaluatedAnswers: any[] = [];
+        // questionsData is captured from the outer scope
+        let totalScore = 0;
+        let totalResponseTimeMs = 0;
+        let totalCorrect = 0;
+        const evaluatedAnswers: any[] = [];
 
-    // Process each answer
-    for (const ans of answers) {
-      const qId = ans.questionId;
-      const selectedIndex = ans.selectedIndex;
-      const responseTimeMs = ans.responseTimeMs || 0;
+        // Process each answer
+        for (const ans of answers) {
+          const qId = ans.questionId;
+          const selectedIndex = ans.selectedIndex;
+          const responseTimeMs = ans.responseTimeMs || 0;
 
-      const qData = questionsData.find((q: any) => q.id === qId);
-      if (!qData) continue; // Skip invalid question ids
-      
-      const correctIndex = qData.correctIndex ?? 0;
-      const basePoints = qData.points ?? 10;
-      
-      const computed = computeScore(selectedIndex === correctIndex, basePoints, responseTimeMs, 15000); // base scoring on 15s per question
-      
-      const isCorrect = computed.isCorrect;
-      const pointsAwarded = computed.pointsAwarded;
+          const qData = questionsData.find((q: any) => q.id === qId);
+          if (!qData) continue; // Skip invalid question ids
+          
+          const correctIndex = qData.correctIndex ?? 0;
+          const basePoints = qData.points ?? 10;
+          
+          const computed = computeScore(selectedIndex === correctIndex, basePoints, responseTimeMs, 15000); // base scoring on 15s per question
+          
+          const isCorrect = computed.isCorrect;
+          const pointsAwarded = computed.pointsAwarded;
 
-      totalScore += pointsAwarded;
-      totalResponseTimeMs += responseTimeMs;
-      if (isCorrect) totalCorrect += 1;
+          totalScore += pointsAwarded;
+          totalResponseTimeMs += responseTimeMs;
+          if (isCorrect) totalCorrect += 1;
 
-      evaluatedAnswers.push({
-        questionId: qId,
-        selectedIndex,
-        responseTimeMs,
-        isCorrect,
-        pointsAwarded,
+          evaluatedAnswers.push({
+            questionId: qId,
+            selectedIndex,
+            responseTimeMs,
+            isCorrect,
+            pointsAwarded,
+          });
+
+          // Write answer (optional, for history)
+          tx.set(`battles/${code}/answers/${uid}_${qId}`, {
+            uid,
+            questionId: qId,
+            selectedIndex,
+            responseTimeMs,
+            isCorrect,
+            pointsAwarded,
+            createdAt: serverTimestamp(),
+          });
+        }
+
+        // Update scoreboard
+        playerStats.score = totalScore;
+        playerStats.totalTimeMs = totalResponseTimeMs;
+        playerStats.correctCount = totalCorrect;
+        playerStats.hasFinished = true;
+        playerStats.answers = evaluatedAnswers;
+
+        scoreboard[uid] = playerStats;
+        tx.set(`battles/${code}/scoreboard/live`, scoreboard);
+
+        // Check if ALL players have finished
+        const allFinished = playerUids.every(pId => scoreboard[pId]?.hasFinished === true);
+
+        if (allFinished) {
+          await finalizeBattle(tx, code, battle, scoreboard, questionsData);
+        }
       });
-
-      // Write answer (optional, for history)
-      tx.set(`battles/${code}/answers/${uid}_${qId}`, {
-        uid,
-        questionId: qId,
-        selectedIndex,
-        responseTimeMs,
-        isCorrect,
-        pointsAwarded,
-        createdAt: serverTimestamp(),
-      });
+      console.log(`[submitAllAnswers] Background work completed for ${code}, user: ${uid}`);
+    } catch (e) {
+      console.error(`[submitAllAnswers] Background work failed for ${code}, user: ${uid}:`, e);
     }
+  })();
 
-    // Update scoreboard
-    playerStats.score = totalScore;
-    playerStats.totalTimeMs = totalResponseTimeMs;
-    playerStats.correctCount = totalCorrect;
-    playerStats.hasFinished = true;
-    playerStats.answers = evaluatedAnswers;
-
-    scoreboard[uid] = playerStats;
-    tx.set(`battles/${code}/scoreboard/live`, scoreboard);
-
-    // Check if ALL players have finished
-    const allFinished = playerUids.every(pId => scoreboard[pId]?.hasFinished === true);
-
-    if (allFinished) {
-      await finalizeBattle(tx, code, battle, scoreboard, questionsData);
-    }
-  });
+  ctx.waitUntil(backgroundWork);
 
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
@@ -501,7 +511,7 @@ export async function submitAllAnswers(request: Request, env: Env): Promise<Resp
 // Chunk A6 — battle/leave
 // ---------------------------------------------------------------------------
 
-export async function leaveBattle(request: Request, env: Env): Promise<Response> {
+export async function leaveBattle(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const { uid } = await verifyAuth(request, env);
 
   let body: any;
@@ -590,7 +600,7 @@ export async function leaveBattle(request: Request, env: Env): Promise<Response>
 // ---------------------------------------------------------------------------
 // Chunk A7 — getBattleQuestions
 // ---------------------------------------------------------------------------
-export async function getBattleQuestions(request: Request, env: Env): Promise<Response> {
+export async function getBattleQuestions(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
   const parts = url.pathname.split('/');
   const code = parts.length >= 3 ? parts[parts.length - 2] : null;

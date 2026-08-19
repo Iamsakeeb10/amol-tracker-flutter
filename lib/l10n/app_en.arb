@@ -1534,5 +1534,8 @@
     }
   },
   "battleStay": "Stay",
-  "battleSubmit": "Submit"
+  "battleSubmit": "Submit",
+  "battleTopic": "Topic",
+  "battleQuestions": "Questions",
+  "battleTimeLimit": "Time"
 }

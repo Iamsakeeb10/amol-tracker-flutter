@@ -16,6 +16,9 @@ import '../../../../shared/widgets/avatar_chip.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/locale_provider.dart';
 import '../../providers/battle_providers.dart';
+import '../../providers/topic_providers.dart';
+import '../../../syllabus/presentation/widgets/quiz_helpers.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class WaitingRoomScreen extends ConsumerStatefulWidget {
   final String battleCode;
@@ -74,8 +77,10 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
   Widget build(BuildContext context) {
     final locale = ref.watch(localeProvider).languageCode;
     final isBn = locale == 'bn';
+    final l10n = AppLocalizations.of(context)!;
     final battleAsync = ref.watch(battleStreamProvider(widget.battleCode));
     final currentUser = ref.watch(currentUserProvider).asData?.value;
+    final activeTopics = ref.watch(activeTopicsProvider).asData?.value ?? [];
 
     ref.listen(battleStreamProvider(widget.battleCode), (previous, next) {
       final battle = next.asData?.value;
@@ -141,6 +146,18 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
             onPressed: () => _showExitDialog(isHost, isBn),
           ),
           actions: [
+            IconButton(
+              onPressed: () {
+                final code = widget.battleCode.toUpperCase();
+                final link = 'https://amol-tracker.web.app/battle/join?code=$code';
+                final text = isBn
+                    ? 'আমার সাথে নলেজ ব্যাটেল খেলুন! জয়েন কোড: $code\nলিংক: $link'
+                    : 'Join my Knowledge Battle! Code: $code\nLink: $link';
+                Share.share(text);
+                AnalyticsService.instance.logBattleInviteShared(battleCode: code);
+              },
+              icon: Icon(Icons.share_rounded, color: AppColors.gold, size: 24.r),
+            ),
             Padding(
               padding: EdgeInsets.only(right: 8.w),
               child: IconButton(
@@ -201,21 +218,20 @@ class _WaitingRoomScreenState extends ConsumerState<WaitingRoomScreen> {
                 ),
 
                 SizedBox(height: 14.h),
-
-                _ShareInviteButton(
+                
+                _BattleDetailsCard(
+                  topicName: activeTopics
+                          .where((t) => t.id == battle.topicId)
+                          .firstOrNull
+                          ?.name ??
+                      (isBn ? 'অজানা বিষয়' : 'Unknown Topic'),
+                  questionCount: battle.questionCount,
+                  timeLimitSeconds: battle.timeLimitSeconds,
+                  l10n: l10n,
                   isBn: isBn,
-                  onTap: () {
-                    final code = battle.id.toUpperCase();
-                    final link = 'https://amol-tracker.web.app/battle/join?code=$code';
-                    final text = isBn
-                        ? 'আমার সাথে নলেজ ব্যাটেল খেলুন! জয়েন কোড: $code\nলিংক: $link'
-                        : 'Join my Knowledge Battle! Code: $code\nLink: $link';
-                    Share.share(text);
-                    AnalyticsService.instance.logBattleInviteShared(battleCode: code);
-                  },
                 ),
 
-                SizedBox(height: 28.h),
+                SizedBox(height: 14.h),
 
                 _SectionHeader(
                   icon: Icons.groups_rounded,
@@ -932,5 +948,109 @@ class _WaitingRoomExitDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _BattleDetailsCard extends StatelessWidget {
+  final String topicName;
+  final int questionCount;
+  final int timeLimitSeconds;
+  final AppLocalizations l10n;
+  final bool isBn;
+
+  const _BattleDetailsCard({
+    required this.topicName,
+    required this.questionCount,
+    required this.timeLimitSeconds,
+    required this.l10n,
+    required this.isBn,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      decoration: BoxDecoration(
+        color: AppColors.cardDark,
+        borderRadius: BorderRadius.circular(AppRadius.md.r),
+        border: Border.all(color: AppColors.cardBorder, width: 1.r),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildDetailItem(
+            context, Icons.topic_outlined, l10n.battleTopic, topicName, 
+            flex: 1, crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          Container(height: 32.h, width: 1.w, color: AppColors.cardBorder),
+          _buildDetailItem(
+            context, Icons.help_outline_rounded, l10n.battleQuestions, '$questionCount', 
+            flex: 1, crossAxisAlignment: CrossAxisAlignment.center,
+          ),
+          Container(height: 32.h, width: 1.w, color: AppColors.cardBorder),
+          _buildDetailItem(
+            context, Icons.timer_outlined, l10n.battleTimeLimit, _formatTimeLimit(timeLimitSeconds, isBn), 
+            flex: 1, crossAxisAlignment: CrossAxisAlignment.end,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(
+    BuildContext context, 
+    IconData icon, 
+    String label, 
+    String value, {
+    int flex = 1,
+    CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start,
+  }) {
+    return Expanded(
+      flex: flex,
+      child: Column(
+        crossAxisAlignment: crossAxisAlignment,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 14.r, color: AppColors.textMuted),
+              SizedBox(width: 4.w),
+              Flexible(
+                child: Text(
+                  label,
+                  style: AppTextStyles.bodySmall(context).copyWith(color: AppColors.textMuted),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            value,
+            style: AppTextStyles.bodyMedium(context).copyWith(
+              color: AppColors.goldLight,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: crossAxisAlignment == CrossAxisAlignment.center 
+                ? TextAlign.center 
+                : crossAxisAlignment == CrossAxisAlignment.end 
+                    ? TextAlign.end 
+                    : TextAlign.start,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _formatTimeLimit(int seconds, bool isBn) {
+  final double mins = seconds / 60;
+  final String minStr = mins == mins.truncateToDouble() ? mins.toInt().toString() : mins.toStringAsFixed(1);
+  if (isBn) {
+    return '$minStr মি';
+  } else {
+    return '$minStr min${mins > 1 ? 's' : ''}';
   }
 }

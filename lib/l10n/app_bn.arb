@@ -1473,5 +1473,8 @@
   "battleFinish": "শেষ করুন",
   "battleUnansweredWarning": "আপনার {count} টি প্রশ্নের উত্তর দেওয়া বাকি আছে। আপনি কি শেষ করতে চান?",
   "battleStay": "থাকুন",
-  "battleSubmit": "সাবমিট করুন"
+  "battleSubmit": "সাবমিট করুন",
+  "battleTopic": "বিষয়",
+  "battleQuestions": "প্রশ্ন",
+  "battleTimeLimit": "সময়"
 }

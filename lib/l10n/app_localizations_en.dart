@@ -3097,4 +3097,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get battleSubmit => 'Submit';
+
+  @override
+  String get battleTopic => 'Topic';
+
+  @override
+  String get battleQuestions => 'Questions';
+
+  @override
+  String get battleTimeLimit => 'Time';
 }

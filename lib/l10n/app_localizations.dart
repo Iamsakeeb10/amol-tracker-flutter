@@ -5772,6 +5772,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Submit'**
   String get battleSubmit;
+
+  /// No description provided for @battleTopic.
+  ///
+  /// In en, this message translates to:
+  /// **'Topic'**
+  String get battleTopic;
+
+  /// No description provided for @battleQuestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get battleQuestions;
+
+  /// No description provided for @battleTimeLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get battleTimeLimit;
 }
 
 class _AppLocalizationsDelegate

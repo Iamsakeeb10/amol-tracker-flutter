@@ -3103,4 +3103,13 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get battleSubmit => 'সাবমিট করুন';
+
+  @override
+  String get battleTopic => 'বিষয়';
+
+  @override
+  String get battleQuestions => 'প্রশ্ন';
+
+  @override
+  String get battleTimeLimit => 'সময়';
 }

@@ -30,14 +30,37 @@ export async function finalizeBattle(
     return a.totalTimeMs - b.totalTimeMs;
   });
 
+  // Calculate ranks
+  let currentRank = 1;
+  for (let i = 0; i < players.length; i++) {
+    if (i > 0) {
+      const prev = players[i - 1]!;
+      const curr = players[i]!;
+      if (curr.score < prev.score || curr.totalTimeMs > prev.totalTimeMs) {
+        currentRank = i + 1;
+      }
+    }
+    (players[i] as any).rank = currentRank;
+  }
+
+  // Assign bonus XP
+  for (const p of players) {
+    let bonusXp = 0;
+    const rank = (p as any).rank;
+    if (rank === 1) bonusXp = 50;
+    else if (rank === 2 && players.length >= 3) bonusXp = 20;
+    else if (rank === 3 && players.length >= 4) bonusXp = 10;
+    (p as any).bonusXp = bonusXp;
+  }
+
   let winnerUid: string | null = null;
   if (forcedWinnerUid !== undefined) {
     winnerUid = forcedWinnerUid;
   } else if (players.length > 0) {
     const p1 = players[0]!;
-    const p2 = players[1];
-    if (players.length > 1 && p2 && p1.score === p2.score && p1.totalTimeMs === p2.totalTimeMs) {
-      winnerUid = null; // true tie
+    // If multiple players share rank 1, it's a draw, winner is null
+    if (players.length > 1 && (players[1] as any).rank === 1) {
+      winnerUid = null;
     } else {
       winnerUid = p1.uid;
     }
@@ -74,7 +97,8 @@ export async function finalizeBattle(
     // Read User doc
     const userDoc = await tx.get(`users/${p.uid}`);
     if (userDoc) {
-      const newXp = (userDoc.lmsXp ?? 0) + p.score;
+      const bonus = (p as any).bonusXp || 0;
+      const newXp = (userDoc.lmsXp ?? 0) + p.score + bonus;
       const currentBattlePlays = userDoc.battlePlays ?? 0;
       const currentBattleWins = userDoc.battleWins ?? 0;
       const currentBattleScore = userDoc.battleScore ?? 0;

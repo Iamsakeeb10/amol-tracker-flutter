@@ -415,16 +415,26 @@ export async function submitAllAnswers(request: Request, env: Env, ctx: Executio
         const scoreboard = await tx.get(`battles/${code}/scoreboard/live`) || {};
         const playerStats = scoreboard[uid] || { score: 0, totalTimeMs: 0, correctCount: 0, hasFinished: false };
         
-        if (playerStats.hasFinished) {
-          throw alreadyAnsweredError('You have already submitted your final answers');
-        }
-
         const startedAt = battle.startedAt ? new Date(battle.startedAt).getTime() : Date.now();
         const maxTimeSeconds = battle.timeLimitSeconds ?? 300;
         const timeLimitMs = maxTimeSeconds * 1000;
+        const timeSinceStartMs = Date.now() - startedAt;
+
+        if (playerStats.hasFinished) {
+          const isTimeExpired = timeSinceStartMs > timeLimitMs + 10000;
+          if (isTimeExpired) {
+            const forfeitedUids: string[] = battle.forfeitedUids || [];
+            const activePlayers = playerUids.filter(p => !forfeitedUids.includes(p));
+            const allActiveFinished = activePlayers.every(pId => scoreboard[pId]?.hasFinished === true);
+            if (allActiveFinished || isTimeExpired) {
+              await finalizeBattle(tx, code, battle, scoreboard, questionsData);
+              return;
+            }
+          }
+          throw alreadyAnsweredError('You have already submitted your final answers');
+        }
         
         // Validate if the battle time limit expired massively (allow 10 seconds grace period for network)
-        const timeSinceStartMs = Date.now() - startedAt;
         if (timeSinceStartMs > timeLimitMs + 10000) {
           console.log(`User ${uid} submitted late, but we will accept whatever answers they made in time.`);
         }
@@ -486,10 +496,14 @@ export async function submitAllAnswers(request: Request, env: Env, ctx: Executio
         scoreboard[uid] = playerStats;
         tx.set(`battles/${code}/scoreboard/live`, scoreboard);
 
-        // Check if ALL players have finished
-        const allFinished = playerUids.every(pId => scoreboard[pId]?.hasFinished === true);
+        // Check if ALL active players have finished or if time expired
+        const forfeitedUids: string[] = battle.forfeitedUids || [];
+        const activePlayers = playerUids.filter(p => !forfeitedUids.includes(p));
+        
+        const isTimeExpired = timeSinceStartMs > timeLimitMs + 10000;
+        const allActiveFinished = activePlayers.every(pId => scoreboard[pId]?.hasFinished === true);
 
-        if (allFinished) {
+        if (allActiveFinished || isTimeExpired) {
           await finalizeBattle(tx, code, battle, scoreboard, questionsData);
         }
       });
@@ -581,10 +595,16 @@ export async function leaveBattle(request: Request, env: Env, ctx: ExecutionCont
         const scoreboard = await tx.get(`battles/${code}/scoreboard/live`) || {};
         await finalizeBattle(tx, code, battle, scoreboard, questionsData, winnerUid ?? undefined);
       } else {
-        // Just mark as forfeited
         tx.update(`battles/${code}`, {
           forfeitedUids,
         });
+        
+        // If remaining active players have all finished, finalize early
+        const scoreboard = await tx.get(`battles/${code}/scoreboard/live`) || {};
+        const allFinished = activePlayers.every(pId => scoreboard[pId]?.hasFinished === true);
+        if (allFinished) {
+          await finalizeBattle(tx, code, battle, scoreboard, questionsData);
+        }
       }
     } else {
       throw invalidConfigError('Cannot leave a finished or cancelled battle');

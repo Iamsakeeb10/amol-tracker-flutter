@@ -177,7 +177,7 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> with 
                             subText: subText,
                             headerColor: headerColor,
                             headerIcon: headerIcon,
-                            score: myResult.score,
+                            score: myResult.score + myResult.bonusXp,
                             isWinner: result.winnerUid == currentUid,
                             trophyController: _trophyController,
                           ),
@@ -383,11 +383,15 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> with 
             color: headerColor,
             fontWeight: FontWeight.bold,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         SizedBox(height: AppSpacing.xs.h),
         Text(
           subText,
           style: AppTextStyles.bodyMedium(context).copyWith(color: AppColors.textMuted),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         SizedBox(height: AppSpacing.lg.h),
         Container(
@@ -476,18 +480,26 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> with 
                     ),
                   ),
                   SizedBox(width: AppSpacing.md.w),
-                  Column(  crossAxisAlignment: CrossAxisAlignment.end,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        '${p.score} pts',
-                        style: AppTextStyles.titleSmall(context).copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.stars_rounded, size: 16.sp, color: AppColors.gold),
+                          SizedBox(width: 4.w),
+                          Text(
+                            '${p.score + p.bonusXp} pts',
+                            style: AppTextStyles.titleSmall(context).copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        '${(p.totalTimeMs / 1000).toStringAsFixed(1)}s',
+                        _formatTime(p.totalTimeMs),
                         style: AppTextStyles.labelSmall(context).copyWith(color: AppColors.textMuted),
                       ),
                     ],
@@ -696,5 +708,18 @@ class _BattleResultsScreenState extends ConsumerState<BattleResultsScreen> with 
         ),
       ),
     );
+  }
+
+  String _formatTime(int milliseconds) {
+    if (milliseconds <= 0) return '0 s';
+    final int totalSeconds = (milliseconds / 1000).ceil();
+    final int m = totalSeconds ~/ 60;
+    final int s = totalSeconds % 60;
+    
+    if (m > 0) {
+      return '$m m $s s';
+    } else {
+      return '$s s';
+    }
   }
 }

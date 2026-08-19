@@ -104,6 +104,8 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
             setState(() {
               _isServerDelayed = true;
             });
+            // Ping server again to trigger the new timeout fallback logic
+            _triggerFinish(forcePing: true);
           }
         });
       }
@@ -124,8 +126,8 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
     });
   }
 
-  Future<void> _triggerFinish() async {
-    if (_hasFinishedLocal) return;
+  Future<void> _triggerFinish({bool forcePing = false}) async {
+    if (_hasFinishedLocal && !forcePing) return;
     
     setState(() {
       _hasFinishedLocal = true;

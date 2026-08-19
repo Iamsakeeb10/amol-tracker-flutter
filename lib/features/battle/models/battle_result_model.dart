@@ -12,6 +12,8 @@ class BattleResultPlayer {
   final String name;
   final int score;
   final int totalTimeMs;
+  final int bonusXp;
+  final int rank;
   final List<Map<String, dynamic>> answers;
 
   BattleResultPlayer({
@@ -19,6 +21,8 @@ class BattleResultPlayer {
     required this.name,
     required this.score,
     required this.totalTimeMs,
+    this.bonusXp = 0,
+    this.rank = 0,
     this.answers = const [],
   });
 
@@ -29,6 +33,8 @@ class BattleResultPlayer {
       name: json['name'] as String? ?? 'Unknown Player',
       score: json['score'] as int? ?? 0,
       totalTimeMs: json['totalTimeMs'] as int? ?? 0,
+      bonusXp: json['bonusXp'] as int? ?? 0,
+      rank: json['rank'] as int? ?? 0,
       answers: answersList.map((e) => e as Map<String, dynamic>).toList(),
     );
   }
@@ -39,6 +45,8 @@ class BattleResultPlayer {
       'name': name,
       'score': score,
       'totalTimeMs': totalTimeMs,
+      'bonusXp': bonusXp,
+      'rank': rank,
       'answers': answers,
     };
   }

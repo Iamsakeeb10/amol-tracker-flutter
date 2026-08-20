@@ -106,22 +106,29 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
   }
 
   void _syncHorizontalOffsets(ScrollController source) {
-    if (_isSyncingHorizontal || !source.hasClients) return;
+    if (_isSyncingHorizontal || source.positions.length != 1) return;
     _isSyncingHorizontal = true;
-    _horizontalOffset = source.offset;
-    final allControllers = <ScrollController>[
-      _headerHorizontalController,
-      ..._rowHorizontalControllers.values,
-    ];
-    for (final controller in allControllers) {
-      if (identical(controller, source) || !controller.hasClients) continue;
-      final max = controller.position.maxScrollExtent;
-      final nextOffset = _horizontalOffset.clamp(0.0, max);
-      if ((controller.offset - nextOffset).abs() > 0.5) {
-        controller.jumpTo(nextOffset);
+    try {
+      _horizontalOffset = source.offset;
+      final allControllers = <ScrollController>[
+        _headerHorizontalController,
+        ..._rowHorizontalControllers.values,
+      ];
+      for (final controller in allControllers) {
+        if (identical(controller, source) || controller.positions.length != 1) {
+          continue;
+        }
+        final max = controller.position.maxScrollExtent;
+        final nextOffset = _horizontalOffset.clamp(0.0, max);
+        if ((controller.offset - nextOffset).abs() > 0.5) {
+          controller.jumpTo(nextOffset);
+        }
       }
+    } catch (e) {
+      debugPrint('Sync offset error: $e');
+    } finally {
+      _isSyncingHorizontal = false;
     }
-    _isSyncingHorizontal = false;
   }
 
   void _cleanupStaleRowControllers(Iterable<String> activeKeys) {
@@ -151,10 +158,14 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
         state.selectedDate.compareTo(accountCreatedHijri) < 0;
 
     final ownLogAsync = currentUser != null
-        ? ref.watch(dayDetailLogProvider(DayLogKey(uid: currentUser.uid, hijriDate: state.selectedDate)))
+        ? ref.watch(
+            dayDetailLogProvider(
+              DayLogKey(uid: currentUser.uid, hijriDate: state.selectedDate),
+            ),
+          )
         : null;
     final fetchedOwnRow = ownLogAsync?.value;
-    
+
     var ownRow = state.ownRow(currentUser?.uid);
     if (ownRow == null && fetchedOwnRow != null) {
       ownRow = fetchedOwnRow;
@@ -174,10 +185,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
             fields,
           );
 
-    ref.listen(communitySheetProvider.select((s) => s.searchQuery), (
-      _,
-      query,
-    ) {
+    ref.listen(communitySheetProvider.select((s) => s.searchQuery), (_, query) {
       if (_searchController.text != query) {
         _searchController.value = TextEditingValue(
           text: query,
@@ -193,468 +201,482 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
     ];
     _cleanupStaleRowControllers(activeRowKeys);
 
-    return AppScaffold(handleExitBack: false,
+    return AppScaffold(
+      handleExitBack: false,
       body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // const BottomTabBackButton(),
+              Expanded(
+                child: AnimatedOpacity(
+                  opacity: _isFullScreen ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: IgnorePointer(
+                    ignoring: _isFullScreen,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.communityUpper,
+                          style: AppTextStyles.label(
+                            context,
+                          ).copyWith(color: AppColors.gold),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          l10n.community,
+                          style: AppTextStyles.displayMedium(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              AnimatedOpacity(
+                opacity: _isSheetTabActive ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                child: IgnorePointer(
+                  ignoring: !_isSheetTabActive,
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.fullscreen_rounded,
+                      color: AppColors.textSecondary,
+                      size: 24.r,
+                    ),
+                    onPressed: () {
+                      setState(() => _isFullScreen = true);
+                      Navigator.of(context, rootNavigator: true)
+                          .push(
+                            PageRouteBuilder(
+                              fullscreenDialog: true,
+                              transitionDuration: const Duration(
+                                milliseconds: 320,
+                              ),
+                              reverseTransitionDuration: const Duration(
+                                milliseconds: 280,
+                              ),
+                              pageBuilder:
+                                  (ctx, animation, secondaryAnimation) =>
+                                      const _CommunitySheetFullScreen(),
+                              transitionsBuilder:
+                                  (ctx, animation, secondaryAnimation, child) {
+                                    final tween =
+                                        Tween(
+                                          begin: const Offset(0, 1),
+                                          end: Offset.zero,
+                                        ).chain(
+                                          CurveTween(
+                                            curve: Curves.easeOutCubic,
+                                          ),
+                                        );
+                                    return SlideTransition(
+                                      position: animation.drive(tween),
+                                      child: child,
+                                    );
+                                  },
+                            ),
+                          )
+                          .then((_) {
+                            if (mounted) setState(() => _isFullScreen = false);
+                          });
+                    },
+                    tooltip: 'Full screen',
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.refresh_rounded,
+                  color: AppColors.textSecondary,
+                  size: 22.r,
+                ),
+                onPressed: () {
+                  ref.read(communitySheetProvider.notifier).refresh();
+                  ref.invalidate(activityFeedProvider);
+                },
+                tooltip: l10n.refresh,
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Container(
+            padding: EdgeInsets.all(2.r),
+            decoration: BoxDecoration(
+              color: AppColors.cardDark,
+              border: Border.all(color: AppColors.cardBorder),
+              borderRadius: BorderRadius.circular(AppRadius.md.r),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              dividerColor: Colors.transparent,
+              indicator: BoxDecoration(
+                color: AppColors.goldCard,
+                borderRadius: BorderRadius.circular((AppRadius.md - 2).r),
+                border: Border.all(color: AppColors.goldBorder),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              splashBorderRadius: BorderRadius.circular(AppRadius.md.r),
+              labelColor: AppColors.goldLight,
+              unselectedLabelColor: AppColors.textSecondary,
+              labelStyle: AppTextStyles.bodySmall(
+                context,
+              ).copyWith(fontWeight: FontWeight.w600),
+              unselectedLabelStyle: AppTextStyles.bodySmall(context),
+              tabs: [
+                Tab(text: l10n.sheet, height: 40.h),
+                Tab(text: l10n.feed, height: 40.h),
+              ],
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Expanded(
+            child: IndexedStack(
+              index: _tabController.index,
               children: [
-                // const BottomTabBackButton(),
-                Expanded(
-                  child: AnimatedOpacity(
-                    opacity: _isFullScreen ? 0.0 : 1.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: IgnorePointer(
-                      ignoring: _isFullScreen,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.communityUpper,
-                            style: AppTextStyles.label(
-                              context,
-                            ).copyWith(color: AppColors.gold),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (connectivity.asData?.value.any(
+                          (r) => r == ConnectivityResult.none,
+                        ) ??
+                        false)
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 10.h),
+                        child: CardContainer(
+                          color: AppColors.warningLight.withValues(alpha: 0.35),
+                          borderColor: AppColors.warning.withValues(alpha: 0.5),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.wifi_off,
+                                color: AppColors.warning,
+                                size: 18.r,
+                              ),
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: Text(
+                                  l10n.offlineShowingLatest,
+                                  style: AppTextStyles.bodySmall(context)
+                                      .copyWith(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 11.sp,
+                                      ),
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 2.h),
-                          Text(
-                            l10n.community,
-                            style: AppTextStyles.displayMedium(context),
+                        ),
+                      ),
+                    SectionHeader(
+                      title: l10n.date,
+                      trailingText: HijriHelper.displayFromStorage(
+                        state.selectedDate,
+                        languageCode: locale,
+                      ),
+                    ),
+                    _DateTabsRow(
+                      options: dates,
+                      selectedDate: state.selectedDate,
+                      onTapDate: notifier.selectDate,
+                      locale: locale,
+                    ),
+                    SizedBox(height: 10.h),
+                    TextField(
+                      controller: _searchController,
+                      onChanged: notifier.setSearchQuery,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: l10n.searchByName,
+                        hintStyle: AppTextStyles.bodySmall(context),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 10.h,
+                        ),
+                        filled: true,
+                        fillColor: AppColors.cardDark,
+                        prefixIcon: Icon(Icons.search_rounded, size: 18.r),
+                        prefixIconConstraints: BoxConstraints(
+                          minWidth: 36.w,
+                          minHeight: 0,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: const BorderSide(
+                            color: AppColors.cardBorder,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: const BorderSide(
+                            color: AppColors.cardBorder,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md.r),
+                          borderSide: const BorderSide(
+                            color: AppColors.goldBorder,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
+                    if (state.error != null)
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 8.h),
+                        child: Text(
+                          state.error!,
+                          style: AppTextStyles.bodySmall(
+                            context,
+                          ).copyWith(color: AppColors.danger),
+                        ),
+                      ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(AppRadius.md.r),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                              child: CommunityHeaderRow(
+                                horizontalController:
+                                    _headerHorizontalController,
+                                fields: fields,
+                                locale: locale,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: fieldsAsync.isLoading
+                                ? const _SheetLoadingShimmer()
+                                : state.isLoading
+                                ? const _SheetLoadingShimmer()
+                                : RefreshIndicator(
+                                    color: AppColors.gold,
+                                    backgroundColor: AppColors.emeraldMid,
+                                    onRefresh: () async {
+                                      await ref
+                                          .read(communitySheetProvider.notifier)
+                                          .refresh();
+                                    },
+                                    child: CustomScrollView(
+                                      key: const PageStorageKey<String>(
+                                        'community_sheet_scroll',
+                                      ),
+                                      controller: _verticalController,
+                                      slivers: [
+                                        if (ownRow != null ||
+                                            ownPlaceholder != null)
+                                          SliverToBoxAdapter(
+                                            child: Padding(
+                                              padding: EdgeInsets.only(
+                                                top: 8.h,
+                                              ),
+                                              child: Column(
+                                                children: [
+                                                  CommunityRowCard(
+                                                    log:
+                                                        ownRow ??
+                                                        ownPlaceholder!,
+                                                    fields: fields,
+                                                    locale: locale,
+                                                    horizontalController:
+                                                        _controllerForRow(
+                                                          'own-${currentUser?.uid ?? 'me'}',
+                                                        ),
+                                                    isToday: state.isToday,
+                                                    isPinned: true,
+                                                    isPending:
+                                                        ownRow == null &&
+                                                        state.isToday,
+                                                    isPreAccount:
+                                                        ownRow == null &&
+                                                        isPreAccountDate,
+                                                    onTap: ownRow == null
+                                                        ? null
+                                                        : () {
+                                                            context.push(
+                                                              '${AppRoutes.userProfile}/${ownRow!.uid}?date=${state.selectedDate}',
+                                                              extra: ownRow,
+                                                            );
+                                                          },
+                                                  ),
+                                                  if (ownRow == null &&
+                                                      isPreAccountDate)
+                                                    Padding(
+                                                      padding: EdgeInsets.only(
+                                                        top: 8.h,
+                                                      ),
+                                                      child: CardContainer(
+                                                        color:
+                                                            AppColors.cardDark,
+                                                        borderColor: AppColors
+                                                            .cardBorder,
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons
+                                                                  .info_outline_rounded,
+                                                              color: AppColors
+                                                                  .textMuted,
+                                                              size: 16.r,
+                                                            ),
+                                                            SizedBox(
+                                                              width: 10.w,
+                                                            ),
+                                                            Expanded(
+                                                              child: Text(
+                                                                'You had not created your account on this date.',
+                                                                style:
+                                                                    AppTextStyles.bodySmall(
+                                                                      context,
+                                                                    ).copyWith(
+                                                                      color: AppColors
+                                                                          .textMuted,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  if (ownRow == null &&
+                                                      state.isToday &&
+                                                      !isPreAccountDate)
+                                                    Padding(
+                                                      padding: EdgeInsets.only(
+                                                        top: 8.h,
+                                                      ),
+                                                      child: CardContainer(
+                                                        color:
+                                                            AppColors.goldCard,
+                                                        borderColor: AppColors
+                                                            .goldBorder,
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons
+                                                                  .schedule_outlined,
+                                                              color: AppColors
+                                                                  .gold,
+                                                              size: 16.r,
+                                                            ),
+                                                            SizedBox(
+                                                              width: 10.w,
+                                                            ),
+                                                            Expanded(
+                                                              child: Text(
+                                                                l10n.logTodayToAppear,
+                                                                style:
+                                                                    AppTextStyles.bodySmall(
+                                                                      context,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        if (otherRows.isEmpty)
+                                          SliverFillRemaining(
+                                            hasScrollBody: false,
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 16.h,
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  l10n.noLogsForDay,
+                                                  textAlign: TextAlign.center,
+                                                  style:
+                                                      AppTextStyles.bodyMedium(
+                                                        context,
+                                                      ).copyWith(
+                                                        color:
+                                                            AppColors.textMuted,
+                                                      ),
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        else
+                                          SliverList(
+                                            delegate: SliverChildBuilderDelegate((
+                                              context,
+                                              index,
+                                            ) {
+                                              final row = otherRows[index];
+                                              return Padding(
+                                                padding: EdgeInsets.only(
+                                                  top: 8.h,
+                                                ),
+                                                child: RepaintBoundary(
+                                                  key: ValueKey(row.uid),
+                                                  child: CommunityRowCard(
+                                                    log: row,
+                                                    fields: fields,
+                                                    locale: locale,
+                                                    horizontalController:
+                                                        _controllerForRow(
+                                                          'row-${row.uid}',
+                                                        ),
+                                                    isToday: state.isToday,
+                                                    onTap: () {
+                                                      context.push(
+                                                        '${AppRoutes.userProfile}/${row.uid}?date=${state.selectedDate}',
+                                                        extra: row,
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              );
+                                            }, childCount: otherRows.length),
+                                          ),
+                                        SliverToBoxAdapter(
+                                          child: Padding(
+                                            padding: EdgeInsets.only(
+                                              top: 12.h,
+                                              bottom: 20.h,
+                                            ),
+                                            child: Center(
+                                              child: state.isLoadingMore
+                                                  ? CircularProgressIndicator(
+                                                      color: AppColors.gold,
+                                                    )
+                                                  : (!state.hasMore
+                                                        ? Text(
+                                                            l10n.noMoreRows,
+                                                            style:
+                                                                AppTextStyles.bodySmall(
+                                                                  context,
+                                                                ),
+                                                          )
+                                                        : const SizedBox.shrink()),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                           ),
                         ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                AnimatedOpacity(
-                  opacity: _isSheetTabActive ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: IgnorePointer(
-                    ignoring: !_isSheetTabActive,
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.fullscreen_rounded,
-                        color: AppColors.textSecondary,
-                        size: 24.r,
-                      ),
-                      onPressed: () {
-                        setState(() => _isFullScreen = true);
-                        Navigator.of(context, rootNavigator: true).push(
-                          PageRouteBuilder(
-                            fullscreenDialog: true,
-                            transitionDuration:
-                                const Duration(milliseconds: 320),
-                            reverseTransitionDuration:
-                                const Duration(milliseconds: 280),
-                            pageBuilder: (ctx, animation, secondaryAnimation) =>
-                                const _CommunitySheetFullScreen(),
-                            transitionsBuilder: (
-                              ctx,
-                              animation,
-                              secondaryAnimation,
-                              child,
-                            ) {
-                              final tween = Tween(
-                                begin: const Offset(0, 1),
-                                end: Offset.zero,
-                              ).chain(
-                                CurveTween(curve: Curves.easeOutCubic),
-                              );
-                              return SlideTransition(
-                                position: animation.drive(tween),
-                                child: child,
-                              );
-                            },
-                          ),
-                        ).then((_) {
-                          if (mounted) setState(() => _isFullScreen = false);
-                        });
-                      },
-                      tooltip: 'Full screen',
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.refresh_rounded,
-                    color: AppColors.textSecondary,
-                    size: 22.r,
-                  ),
-                  onPressed: () {
-                    ref.read(communitySheetProvider.notifier).refresh();
-                    ref.invalidate(activityFeedProvider);
-                  },
-                  tooltip: l10n.refresh,
-                ),
+                const _ActivityFeedTab(),
               ],
             ),
-            SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.all(2.r),
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                border: Border.all(color: AppColors.cardBorder),
-                borderRadius: BorderRadius.circular(AppRadius.md.r),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                dividerColor: Colors.transparent,
-                indicator: BoxDecoration(
-                  color: AppColors.goldCard,
-                  borderRadius: BorderRadius.circular((AppRadius.md - 2).r),
-                  border: Border.all(color: AppColors.goldBorder),
-                ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                splashBorderRadius: BorderRadius.circular(AppRadius.md.r),
-                labelColor: AppColors.goldLight,
-                unselectedLabelColor: AppColors.textSecondary,
-                labelStyle: AppTextStyles.bodySmall(
-                  context,
-                ).copyWith(fontWeight: FontWeight.w600),
-                unselectedLabelStyle: AppTextStyles.bodySmall(context),
-                tabs: [
-                  Tab(text: l10n.sheet, height: 40.h),
-                  Tab(text: l10n.feed, height: 40.h),
-                ],
-              ),
-            ),
-            SizedBox(height: 12.h),
-            Expanded(
-              child: IndexedStack(
-                index: _tabController.index,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (connectivity.asData?.value.any(
-                            (r) => r == ConnectivityResult.none,
-                          ) ??
-                          false)
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 10.h),
-                          child: CardContainer(
-                            color: AppColors.warningLight.withValues(
-                              alpha: 0.35,
-                            ),
-                            borderColor: AppColors.warning.withValues(
-                              alpha: 0.5,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.wifi_off,
-                                  color: AppColors.warning,
-                                  size: 18.r,
-                                ),
-                                SizedBox(width: 8.w),
-                                Expanded(
-                                  child: Text(
-                                    l10n.offlineShowingLatest,
-                                    style: AppTextStyles.bodySmall(context)
-                                        .copyWith(
-                                          color: AppColors.textPrimary,
-                                          fontSize: 11.sp,
-                                        ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      SectionHeader(
-                        title: l10n.date,
-                        trailingText: HijriHelper.displayFromStorage(
-                          state.selectedDate,
-                          languageCode: locale,
-                        ),
-                      ),
-                      _DateTabsRow(
-                        options: dates,
-                        selectedDate: state.selectedDate,
-                        onTapDate: notifier.selectDate,
-                        locale: locale,
-                      ),
-                      SizedBox(height: 10.h),
-                      TextField(
-                        controller: _searchController,
-                        onChanged: notifier.setSearchQuery,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          hintText: l10n.searchByName,
-                          hintStyle: AppTextStyles.bodySmall(context),
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 10.h,
-                          ),
-                          filled: true,
-                          fillColor: AppColors.cardDark,
-                          prefixIcon: Icon(Icons.search_rounded, size: 18.r),
-                          prefixIconConstraints: BoxConstraints(
-                            minWidth: 36.w,
-                            minHeight: 0,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.md.r),
-                            borderSide: const BorderSide(
-                              color: AppColors.cardBorder,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.md.r),
-                            borderSide: const BorderSide(
-                              color: AppColors.cardBorder,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.md.r),
-                            borderSide: const BorderSide(
-                              color: AppColors.goldBorder,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10.h),
-                      if (state.error != null)
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 8.h),
-                          child: Text(
-                            state.error!,
-                            style: AppTextStyles.bodySmall(
-                              context,
-                            ).copyWith(color: AppColors.danger),
-                          ),
-                        ),
-                      Expanded(
-                        child: fieldsAsync.isLoading
-                            ? const _SheetLoadingShimmer()
-                            : state.isLoading
-                            ? const _SheetLoadingShimmer()
-                            : RefreshIndicator(
-                                color: AppColors.gold,
-                                backgroundColor: AppColors.emeraldMid,
-                                onRefresh: () async {
-                                  await ref
-                                      .read(communitySheetProvider.notifier)
-                                      .refresh();
-                                },
-                                child: CustomScrollView(
-                                key: const PageStorageKey<String>(
-                                  'community_sheet_scroll',
-                                ),
-                                controller: _verticalController,
-                                slivers: [
-                                  SliverPersistentHeader(
-                                    pinned: true,
-                                    delegate: _StickyHeaderDelegate(
-                                      minHeight: kCommunityHeaderRowHeight.h,
-                                      maxHeight: kCommunityHeaderRowHeight.h,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                          AppRadius.md.r,
-                                        ),
-                                        child: BackdropFilter(
-                                          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                                          child: CommunityHeaderRow(
-                                            horizontalController:
-                                                _headerHorizontalController,
-                                            fields: fields,
-                                            locale: locale,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  if (ownRow != null || ownPlaceholder != null)
-                                    SliverToBoxAdapter(
-                                      child: Padding(
-                                        padding: EdgeInsets.only(top: 8.h),
-                                        child: Column(
-                                          children: [
-                                            CommunityRowCard(
-                                              log: ownRow ?? ownPlaceholder!,
-                                              fields: fields,
-                                              locale: locale,
-                                              horizontalController:
-                                                  _controllerForRow(
-                                                    'own-${currentUser?.uid ?? 'me'}',
-                                                  ),
-                                              isToday: state.isToday,
-                                              isPinned: true,
-                                              isPending:
-                                                  ownRow == null &&
-                                                  state.isToday,
-                                              isPreAccount:
-                                                  ownRow == null &&
-                                                  isPreAccountDate,
-                                              onTap: ownRow == null
-                                                  ? null
-                                                  : () {
-                                                      context.push(
-                                                        '${AppRoutes.userProfile}/${ownRow!.uid}?date=${state.selectedDate}',
-                                                        extra: ownRow,
-                                                      );
-                                                    },
-                                            ),
-                                            if (ownRow == null &&
-                                                isPreAccountDate)
-                                              Padding(
-                                                padding: EdgeInsets.only(
-                                                  top: 8.h,
-                                                ),
-                                                child: CardContainer(
-                                                  color: AppColors.cardDark,
-                                                  borderColor:
-                                                      AppColors.cardBorder,
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(
-                                                        Icons
-                                                            .info_outline_rounded,
-                                                        color:
-                                                            AppColors.textMuted,
-                                                        size: 16.r,
-                                                      ),
-                                                      SizedBox(width: 10.w),
-                                                      Expanded(
-                                                        child: Text(
-                                                          'You had not created your account on this date.',
-                                                          style:
-                                                              AppTextStyles.bodySmall(
-                                                                context,
-                                                              ).copyWith(
-                                                                color: AppColors
-                                                                    .textMuted,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            if (ownRow == null &&
-                                                state.isToday &&
-                                                !isPreAccountDate)
-                                              Padding(
-                                                padding: EdgeInsets.only(
-                                                  top: 8.h,
-                                                ),
-                                                child: CardContainer(
-                                                  color: AppColors.goldCard,
-                                                  borderColor:
-                                                      AppColors.goldBorder,
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(
-                                                        Icons.schedule_outlined,
-                                                        color: AppColors.gold,
-                                                        size: 16.r,
-                                                      ),
-                                                      SizedBox(width: 10.w),
-                                                      Expanded(
-                                                        child: Text(
-                                                          l10n.logTodayToAppear,
-                                                          style:
-                                                              AppTextStyles.bodySmall(
-                                                                context,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  if (otherRows.isEmpty)
-                                    SliverFillRemaining(
-                                      hasScrollBody: false,
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 16.h,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            l10n.noLogsForDay,
-                                            textAlign: TextAlign.center,
-                                            style:
-                                                AppTextStyles.bodyMedium(
-                                                  context,
-                                                ).copyWith(
-                                                  color: AppColors.textMuted,
-                                                ),
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  else
-                                    SliverList(
-                                      delegate: SliverChildBuilderDelegate((
-                                        context,
-                                        index,
-                                      ) {
-                                        final row = otherRows[index];
-                                        return Padding(
-                                          padding: EdgeInsets.only(top: 8.h),
-                                          child: RepaintBoundary(
-                                            key: ValueKey(row.uid),
-                                            child: CommunityRowCard(
-                                              log: row,
-                                              fields: fields,
-                                              locale: locale,
-                                              horizontalController:
-                                                  _controllerForRow(
-                                                    'row-${row.uid}',
-                                                  ),
-                                              isToday: state.isToday,
-                                              onTap: () {
-                                                context.push(
-                                                  '${AppRoutes.userProfile}/${row.uid}?date=${state.selectedDate}',
-                                                  extra: row,
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        );
-                                      }, childCount: otherRows.length),
-                                    ),
-                                  SliverToBoxAdapter(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                        top: 12.h,
-                                        bottom: 20.h,
-                                      ),
-                                      child: Center(
-                                        child: state.isLoadingMore
-                                            ? CircularProgressIndicator(
-                                                color: AppColors.gold,
-                                              )
-                                            : (!state.hasMore
-                                                  ? Text(
-                                                      l10n.noMoreRows,
-                                                      style:
-                                                          AppTextStyles.bodySmall(
-                                                            context,
-                                                          ),
-                                                    )
-                                                  : const SizedBox.shrink()),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  const _ActivityFeedTab(),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -738,22 +760,29 @@ class _CommunitySheetFullScreenState
   }
 
   void _syncHorizontalOffsets(ScrollController source) {
-    if (_isSyncingHorizontal || !source.hasClients) return;
+    if (_isSyncingHorizontal || source.positions.length != 1) return;
     _isSyncingHorizontal = true;
-    _horizontalOffset = source.offset;
-    final allControllers = <ScrollController>[
-      _headerHorizontalController,
-      ..._rowHorizontalControllers.values,
-    ];
-    for (final controller in allControllers) {
-      if (identical(controller, source) || !controller.hasClients) continue;
-      final max = controller.position.maxScrollExtent;
-      final nextOffset = _horizontalOffset.clamp(0.0, max);
-      if ((controller.offset - nextOffset).abs() > 0.5) {
-        controller.jumpTo(nextOffset);
+    try {
+      _horizontalOffset = source.offset;
+      final allControllers = <ScrollController>[
+        _headerHorizontalController,
+        ..._rowHorizontalControllers.values,
+      ];
+      for (final controller in allControllers) {
+        if (identical(controller, source) || controller.positions.length != 1) {
+          continue;
+        }
+        final max = controller.position.maxScrollExtent;
+        final nextOffset = _horizontalOffset.clamp(0.0, max);
+        if ((controller.offset - nextOffset).abs() > 0.5) {
+          controller.jumpTo(nextOffset);
+        }
       }
+    } catch (e) {
+      debugPrint('Sync offset error: $e');
+    } finally {
+      _isSyncingHorizontal = false;
     }
-    _isSyncingHorizontal = false;
   }
 
   void _cleanupStaleRowControllers(Iterable<String> activeKeys) {
@@ -810,17 +839,19 @@ class _CommunitySheetFullScreenState
 
     // Transient offline notice — shown once via SnackBar
     final isOffline =
-        connectivity.asData?.value.any(
-          (r) => r == ConnectivityResult.none,
-        ) ??
+        connectivity.asData?.value.any((r) => r == ConnectivityResult.none) ??
         false;
     _maybeShowOfflineSnackBar(context, isOffline);
 
     final ownLogAsync = currentUser != null
-        ? ref.watch(dayDetailLogProvider(DayLogKey(uid: currentUser.uid, hijriDate: state.selectedDate)))
+        ? ref.watch(
+            dayDetailLogProvider(
+              DayLogKey(uid: currentUser.uid, hijriDate: state.selectedDate),
+            ),
+          )
         : null;
     final fetchedOwnRow = ownLogAsync?.value;
-    
+
     var ownRow = state.ownRow(currentUser?.uid);
     if (ownRow == null && fetchedOwnRow != null) {
       ownRow = fetchedOwnRow;
@@ -841,10 +872,7 @@ class _CommunitySheetFullScreenState
           );
 
     // Keep search field in sync with provider (e.g. if cleared elsewhere)
-    ref.listen(communitySheetProvider.select((s) => s.searchQuery), (
-      _,
-      query,
-    ) {
+    ref.listen(communitySheetProvider.select((s) => s.searchQuery), (_, query) {
       if (_searchController.text != query) {
         _searchController.value = TextEditingValue(
           text: query,
@@ -904,7 +932,8 @@ class _CommunitySheetFullScreenState
                         color: AppColors.textSecondary,
                         size: 22.r,
                       ),
-                      onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+                      onPressed: () =>
+                          Navigator.of(context, rootNavigator: true).pop(),
                       tooltip: 'Close full screen',
                     ),
                   ],
@@ -934,13 +963,15 @@ class _CommunitySheetFullScreenState
                           controller: _searchController,
                           autofocus: true,
                           onChanged: notifier.setSearchQuery,
-                          style: AppTextStyles.bodyMedium(context)
-                              .copyWith(color: AppColors.textPrimary),
+                          style: AppTextStyles.bodyMedium(
+                            context,
+                          ).copyWith(color: AppColors.textPrimary),
                           decoration: InputDecoration(
                             isDense: true,
                             hintText: l10n.searchByName,
-                            hintStyle: AppTextStyles.bodyMedium(context)
-                                .copyWith(color: AppColors.textMuted),
+                            hintStyle: AppTextStyles.bodyMedium(
+                              context,
+                            ).copyWith(color: AppColors.textMuted),
                             filled: true,
                             fillColor: AppColors.cardDark,
                             contentPadding: EdgeInsets.symmetric(
@@ -986,11 +1017,9 @@ class _CommunitySheetFullScreenState
                           ),
                         ),
                       )
-                    : SizedBox.shrink(
-                        key: const ValueKey('fs-search-hidden'),
-                      ),
+                    : SizedBox.shrink(key: const ValueKey('fs-search-hidden')),
               ),
-              
+
               if (!_searchExpanded) SizedBox(height: 8.h),
 
               // ── Date tabs (your only navigation) ───────────────────────
@@ -1009,143 +1038,144 @@ class _CommunitySheetFullScreenState
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: fieldsAsync.isLoading || state.isLoading
-                      ? const _SheetLoadingShimmer()
-                      : RefreshIndicator(
-                          color: AppColors.gold,
-                          backgroundColor: AppColors.emeraldMid,
-                          onRefresh: () async {
-                            await ref
-                                .read(communitySheetProvider.notifier)
-                                .refresh();
-                          },
-                          child: CustomScrollView(
-                            key: const PageStorageKey<String>(
-                              'fs_community_sheet_scroll',
-                            ),
-                            controller: _verticalController,
-                            slivers: [
-                              SliverPersistentHeader(
-                                pinned: true,
-                                delegate: _StickyHeaderDelegate(
-                                  minHeight: kCommunityHeaderRowHeight.h,
-                                  maxHeight: kCommunityHeaderRowHeight.h,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                      AppRadius.md.r,
-                                    ),
-                                    child: BackdropFilter(
-                                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                                      child: CommunityHeaderRow(
-                                        horizontalController:
-                                            _headerHorizontalController,
-                                        fields: fields,
-                                        locale: locale,
-                                      ),
-                                    ),
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(AppRadius.md.r),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                          child: CommunityHeaderRow(
+                            horizontalController: _headerHorizontalController,
+                            fields: fields,
+                            locale: locale,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: fieldsAsync.isLoading || state.isLoading
+                            ? const _SheetLoadingShimmer()
+                            : RefreshIndicator(
+                                color: AppColors.gold,
+                                backgroundColor: AppColors.emeraldMid,
+                                onRefresh: () async {
+                                  await ref
+                                      .read(communitySheetProvider.notifier)
+                                      .refresh();
+                                },
+                                child: CustomScrollView(
+                                  key: const PageStorageKey<String>(
+                                    'fs_community_sheet_scroll',
                                   ),
-                                ),
-                              ),
-                              if (ownRow != null || ownPlaceholder != null)
-                                SliverToBoxAdapter(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(top: 6.h),
-                                    child: CommunityRowCard(
-                                      log: ownRow ?? ownPlaceholder!,
-                                      fields: fields,
-                                      locale: locale,
-                                      horizontalController: _controllerForRow(
-                                        'fs-own-${currentUser?.uid ?? 'me'}',
-                                      ),
-                                      isToday: state.isToday,
-                                      isPinned: true,
-                                      isPending:
-                                          ownRow == null && state.isToday,
-                                      isPreAccount:
-                                          ownRow == null && isPreAccountDate,
-                                      compact: true,
-                                      onTap: ownRow == null
-                                          ? null
-                                          : () {
-                                              context.push(
-                                                '${AppRoutes.userProfile}/${ownRow!.uid}?date=${state.selectedDate}',
-                                                extra: ownRow,
-                                              );
-                                            },
-                                    ),
-                                  ),
-                                ),
-                              if (otherRows.isEmpty)
-                                SliverFillRemaining(
-                                  hasScrollBody: false,
-                                  child: Center(
-                                    child: Text(
-                                      l10n.noLogsForDay,
-                                      textAlign: TextAlign.center,
-                                      style: AppTextStyles.bodyMedium(
-                                        context,
-                                      ).copyWith(color: AppColors.textMuted),
-                                    ),
-                                  ),
-                                )
-                              else
-                                SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) {
-                                      final row = otherRows[index];
-                                      return Padding(
-                                        padding: EdgeInsets.only(top: 6.h),
-                                        child: RepaintBoundary(
-                                          key: ValueKey('fs-${row.uid}'),
+                                  controller: _verticalController,
+                                  slivers: [
+                                    if (ownRow != null ||
+                                        ownPlaceholder != null)
+                                      SliverToBoxAdapter(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(top: 6.h),
                                           child: CommunityRowCard(
-                                            log: row,
+                                            log: ownRow ?? ownPlaceholder!,
                                             fields: fields,
                                             locale: locale,
-                                            horizontalController:
-                                                _controllerForRow(
-                                                  'fs-row-${row.uid}',
-                                                ),
+                                            horizontalController: _controllerForRow(
+                                              'fs-own-${currentUser?.uid ?? 'me'}',
+                                            ),
                                             isToday: state.isToday,
+                                            isPinned: true,
+                                            isPending:
+                                                ownRow == null && state.isToday,
+                                            isPreAccount:
+                                                ownRow == null &&
+                                                isPreAccountDate,
                                             compact: true,
-                                            onTap: () {
-                                              context.push(
-                                                '${AppRoutes.userProfile}/${row.uid}?date=${state.selectedDate}',
-                                                extra: row,
-                                              );
-                                            },
+                                            onTap: ownRow == null
+                                                ? null
+                                                : () {
+                                                    context.push(
+                                                      '${AppRoutes.userProfile}/${ownRow!.uid}?date=${state.selectedDate}',
+                                                      extra: ownRow,
+                                                    );
+                                                  },
                                           ),
                                         ),
-                                      );
-                                    },
-                                    childCount: otherRows.length,
-                                  ),
-                                ),
-                              SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: EdgeInsets.only(
-                                    top: 12.h,
-                                    bottom: 16.h,
-                                  ),
-                                  child: Center(
-                                    child: state.isLoadingMore
-                                        ? CircularProgressIndicator(
-                                            color: AppColors.gold,
-                                          )
-                                        : (!state.hasMore
-                                              ? Text(
-                                                  l10n.noMoreRows,
-                                                  style:
-                                                      AppTextStyles.bodySmall(
-                                                        context,
-                                                      ),
+                                      ),
+                                    if (otherRows.isEmpty)
+                                      SliverFillRemaining(
+                                        hasScrollBody: false,
+                                        child: Center(
+                                          child: Text(
+                                            l10n.noLogsForDay,
+                                            textAlign: TextAlign.center,
+                                            style:
+                                                AppTextStyles.bodyMedium(
+                                                  context,
+                                                ).copyWith(
+                                                  color: AppColors.textMuted,
+                                                ),
+                                          ),
+                                        ),
+                                      )
+                                    else
+                                      SliverList(
+                                        delegate: SliverChildBuilderDelegate((
+                                          context,
+                                          index,
+                                        ) {
+                                          final row = otherRows[index];
+                                          return Padding(
+                                            padding: EdgeInsets.only(top: 6.h),
+                                            child: RepaintBoundary(
+                                              key: ValueKey('fs-${row.uid}'),
+                                              child: CommunityRowCard(
+                                                log: row,
+                                                fields: fields,
+                                                locale: locale,
+                                                horizontalController:
+                                                    _controllerForRow(
+                                                      'fs-row-${row.uid}',
+                                                    ),
+                                                isToday: state.isToday,
+                                                compact: true,
+                                                onTap: () {
+                                                  context.push(
+                                                    '${AppRoutes.userProfile}/${row.uid}?date=${state.selectedDate}',
+                                                    extra: row,
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        }, childCount: otherRows.length),
+                                      ),
+                                    SliverToBoxAdapter(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(
+                                          top: 12.h,
+                                          bottom: 16.h,
+                                        ),
+                                        child: Center(
+                                          child: state.isLoadingMore
+                                              ? CircularProgressIndicator(
+                                                  color: AppColors.gold,
                                                 )
-                                              : const SizedBox.shrink()),
-                                  ),
+                                              : (!state.hasMore
+                                                    ? Text(
+                                                        l10n.noMoreRows,
+                                                        style:
+                                                            AppTextStyles.bodySmall(
+                                                              context,
+                                                            ),
+                                                      )
+                                                    : const SizedBox.shrink()),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
                       ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -1417,7 +1447,10 @@ class _DateTabsRow extends StatelessWidget {
   }
 
   String _shortHijriLabel(String storage, String locale) {
-    final display = HijriHelper.displayFromStorage(storage, languageCode: locale);
+    final display = HijriHelper.displayFromStorage(
+      storage,
+      languageCode: locale,
+    );
     final parts = display.split(' ');
     if (parts.length < 2) return display;
     return '${parts[0]} ${parts[1]}';
@@ -1517,8 +1550,7 @@ AmalLogModel _buildOwnPlaceholder(
     isAnonymousDisplay: false,
     hijriDate: selectedDate,
     toggles: <String, dynamic>{
-      for (final f in fields)
-        f.id: f.type == AmalType.numeric ? 0 : false,
+      for (final f in fields) f.id: f.type == AmalType.numeric ? 0 : false,
     },
     score: 0,
     submittedAt: DateTime.now().toUtc(),

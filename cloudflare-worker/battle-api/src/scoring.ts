@@ -22,19 +22,6 @@ export function computeScore(
   if (!isCorrect) {
     return { isCorrect: false, pointsAwarded: 0 };
   }
-
-  // Ensure response time is clamped between 0 and maxTimeMs
-  const clampTime = Math.max(0, Math.min(responseTimeMs, maxTimeMs));
   
-  // Ratio of time remaining. 
-  // If answered instantly (0ms), ratio = 1.0. 
-  // If answered at maxTime, ratio = 0.0.
-  const speedRatio = (maxTimeMs - clampTime) / maxTimeMs;
-  
-  // Up to 50% bonus
-  const speedBonus = Math.round(basePoints * 0.5 * speedRatio);
-  
-  const pointsAwarded = basePoints + speedBonus;
-
-  return { isCorrect: true, pointsAwarded };
+  return { isCorrect: true, pointsAwarded: basePoints };
 }

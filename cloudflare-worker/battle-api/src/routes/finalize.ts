@@ -31,26 +31,18 @@ export async function finalizeBattle(
   });
 
   // Calculate ranks
-  let currentRank = 1;
-  for (let i = 0; i < players.length; i++) {
-    if (i > 0) {
-      const prev = players[i - 1]!;
-      const curr = players[i]!;
-      if (curr.score < prev.score || curr.totalTimeMs > prev.totalTimeMs) {
-        currentRank = i + 1;
+  for (let index = 0; index < players.length; index++) {
+    const p = players[index] as any;
+    let rank = 1;
+    if (index > 0) {
+      const prev = players[index - 1] as any;
+      if (p.score === prev.score && p.totalTimeMs === prev.totalTimeMs) {
+        rank = prev.rank;
+      } else {
+        rank = index + 1;
       }
     }
-    (players[i] as any).rank = currentRank;
-  }
-
-  // Assign bonus XP
-  for (const p of players) {
-    let bonusXp = 0;
-    const rank = (p as any).rank;
-    if (rank === 1) bonusXp = 50;
-    else if (rank === 2 && players.length >= 3) bonusXp = 20;
-    else if (rank === 3 && players.length >= 4) bonusXp = 10;
-    (p as any).bonusXp = bonusXp;
+    p.rank = rank;
   }
 
   let winnerUid: string | null = null;

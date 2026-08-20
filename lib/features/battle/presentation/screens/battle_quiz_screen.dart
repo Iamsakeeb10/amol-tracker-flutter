@@ -44,6 +44,7 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
   // Overall state for finishing
   Stopwatch? _globalStopwatch;
   Stopwatch? _questionStopwatch;
+  int _lastAnswerTimeMs = 0;
   
   bool _hasFinishedLocal = false;
   bool _isSubmittingAll = false;
@@ -116,13 +117,14 @@ class _BattleQuizScreenState extends ConsumerState<BattleQuizScreen> {
     if (_hasFinishedLocal) return;
 
     final qId = qData['id'] as String;
-    if (_selectedAnswers.containsKey(qId)) return;
-    
-    final responseTimeMs = _questionStopwatch?.elapsedMilliseconds ?? 0;
+    final currentElapsed = _questionStopwatch?.elapsedMilliseconds ?? 0;
     
     setState(() {
       _selectedAnswers[qId] = index;
-      _answerTimes[qId] = responseTimeMs;
+      if (!_answerTimes.containsKey(qId)) {
+        _answerTimes[qId] = currentElapsed - _lastAnswerTimeMs;
+        _lastAnswerTimeMs = currentElapsed;
+      }
     });
   }
 

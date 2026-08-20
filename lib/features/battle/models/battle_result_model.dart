@@ -27,14 +27,15 @@ class BattleResultPlayer {
   });
 
   factory BattleResultPlayer.fromJson(Map<String, dynamic> json) {
+    print('BattleResultPlayer.fromJson raw JSON: $json');
     final answersList = json['answers'] as List<dynamic>? ?? [];
     return BattleResultPlayer(
       uid: json['uid'] as String? ?? '',
       name: json['name'] as String? ?? 'Unknown Player',
-      score: json['score'] as int? ?? 0,
-      totalTimeMs: json['totalTimeMs'] as int? ?? 0,
-      bonusXp: json['bonusXp'] as int? ?? 0,
-      rank: json['rank'] as int? ?? 0,
+      score: (json['score'] as num?)?.toInt() ?? 0,
+      totalTimeMs: (json['totalTimeMs'] as num?)?.toInt() ?? 0,
+      bonusXp: (json['bonusXp'] as num?)?.toInt() ?? 0,
+      rank: (json['rank'] as num?)?.toInt() ?? 0,
       answers: answersList.map((e) => e as Map<String, dynamic>).toList(),
     );
   }

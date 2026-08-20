@@ -444,6 +444,9 @@ export async function submitAllAnswers(request: Request, env: Env, ctx: Executio
         let totalResponseTimeMs = 0;
         let totalCorrect = 0;
         const evaluatedAnswers: any[] = [];
+        
+        const questionCount = questionsData.length;
+        const averageTimePerQuestionMs = questionCount > 0 ? Math.floor(timeLimitMs / questionCount) : 15000;
 
         // Process each answer
         for (const ans of answers) {
@@ -457,7 +460,7 @@ export async function submitAllAnswers(request: Request, env: Env, ctx: Executio
           const correctIndex = qData.correctIndex ?? 0;
           const basePoints = qData.points ?? 10;
           
-          const computed = computeScore(selectedIndex === correctIndex, basePoints, responseTimeMs, 15000); // base scoring on 15s per question
+          const computed = computeScore(selectedIndex === correctIndex, basePoints, responseTimeMs, averageTimePerQuestionMs);
           
           const isCorrect = computed.isCorrect;
           const pointsAwarded = computed.pointsAwarded;

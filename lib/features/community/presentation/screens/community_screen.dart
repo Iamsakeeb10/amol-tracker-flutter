@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:ui';
+
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/amal_fields.dart';
@@ -435,7 +437,11 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                                       .read(communitySheetProvider.notifier)
                                       .refresh();
                                 },
-                                child: CustomScrollView(
+                                child: ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(AppRadius.md.r),
+                            ),
+                            child: CustomScrollView(
                                 key: const PageStorageKey<String>(
                                   'community_sheet_scroll',
                                 ),
@@ -450,11 +456,14 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                                         borderRadius: BorderRadius.circular(
                                           AppRadius.md.r,
                                         ),
-                                        child: CommunityHeaderRow(
-                                          horizontalController:
-                                              _headerHorizontalController,
-                                          fields: fields,
-                                          locale: locale,
+                                        child: BackdropFilter(
+                                          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                                          child: CommunityHeaderRow(
+                                            horizontalController:
+                                                _headerHorizontalController,
+                                            fields: fields,
+                                            locale: locale,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -640,9 +649,10 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                                 ],
                               ),
                             ),
-                      ),
-                    ],
-                  ),
+                          ),
+                        ),
+                      ],
+                    ),
                   const _ActivityFeedTab(),
                 ],
               ),
@@ -1014,7 +1024,11 @@ class _CommunitySheetFullScreenState
                                 .read(communitySheetProvider.notifier)
                                 .refresh();
                           },
-                          child: CustomScrollView(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(AppRadius.md.r),
+                            ),
+                            child: CustomScrollView(
                             key: const PageStorageKey<String>(
                               'fs_community_sheet_scroll',
                             ),
@@ -1029,11 +1043,14 @@ class _CommunitySheetFullScreenState
                                     borderRadius: BorderRadius.circular(
                                       AppRadius.md.r,
                                     ),
-                                    child: CommunityHeaderRow(
-                                      horizontalController:
-                                          _headerHorizontalController,
-                                      fields: fields,
-                                      locale: locale,
+                                    child: BackdropFilter(
+                                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                                      child: CommunityHeaderRow(
+                                        horizontalController:
+                                            _headerHorizontalController,
+                                        fields: fields,
+                                        locale: locale,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1138,6 +1155,7 @@ class _CommunitySheetFullScreenState
                             ],
                           ),
                         ),
+                      ),
                 ),
               ),
             ],

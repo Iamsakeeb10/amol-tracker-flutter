@@ -437,11 +437,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                                       .read(communitySheetProvider.notifier)
                                       .refresh();
                                 },
-                                child: ClipRRect(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(AppRadius.md.r),
-                            ),
-                            child: CustomScrollView(
+                                child: CustomScrollView(
                                 key: const PageStorageKey<String>(
                                   'community_sheet_scroll',
                                 ),
@@ -648,7 +644,6 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                                   ),
                                 ],
                               ),
-                            ),
                           ),
                         ),
                       ],
@@ -1024,11 +1019,7 @@ class _CommunitySheetFullScreenState
                                 .read(communitySheetProvider.notifier)
                                 .refresh();
                           },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(AppRadius.md.r),
-                            ),
-                            child: CustomScrollView(
+                          child: CustomScrollView(
                             key: const PageStorageKey<String>(
                               'fs_community_sheet_scroll',
                             ),
@@ -1154,7 +1145,6 @@ class _CommunitySheetFullScreenState
                               ),
                             ],
                           ),
-                        ),
                       ),
                 ),
               ),

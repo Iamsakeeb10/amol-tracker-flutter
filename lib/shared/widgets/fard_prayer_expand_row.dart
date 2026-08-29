@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
-import '../../core/services/islamic_date_service.dart';
+
 import '../../core/services/local_storage_service.dart';
 import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
@@ -23,6 +23,7 @@ class FardPrayerExpandRow extends StatefulWidget {
     super.key,
     required this.selectedIndices,
     required this.onToggleIndex,
+    required this.isFriday,
     this.slotCount = 5,
     this.readOnly = false,
   });
@@ -41,6 +42,7 @@ class FardPrayerExpandRow extends StatefulWidget {
   /// Number of prayer circles to render (capped at the five daily prayers).
   final int slotCount;
   final bool readOnly;
+  final bool isFriday;
 
   @override
   State<FardPrayerExpandRow> createState() => FardPrayerExpandRowState();
@@ -141,7 +143,7 @@ class FardPrayerExpandRowState extends State<FardPrayerExpandRow> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isFriday = IslamicDateService.isCurrentPrayerDayFriday();
+    final isFriday = widget.isFriday;
     final slots = widget.slotCount.clamp(1, _prayerKeys.length);
 
     return Column(

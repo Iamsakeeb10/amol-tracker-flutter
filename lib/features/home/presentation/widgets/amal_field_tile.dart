@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/amal_fields.dart';
+import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/utils/score_calculator.dart';
 import '../../../../providers/amal_expansion_provider.dart';
 import '../../../../providers/amal_provider.dart';
+import '../../../../providers/date_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/fard_prayer_expand_row.dart';
 import '../../../../shared/widgets/swipe_to_toggle.dart';
@@ -28,6 +30,9 @@ class AmalFieldTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentHijriDate = ref.watch(currentHijriDateProvider);
+    final isFriday = IslamicDateService.weekdayEnglishForStorage(currentHijriDate) == 'Friday';
+
     final toggleValue = ref.watch(
       amalProvider(uid).select((s) => s.toggles[field.id]),
     );
@@ -92,6 +97,7 @@ class AmalFieldTile extends ConsumerWidget {
           ? FardPrayerExpandRow(
               selectedIndices: selection,
               slotCount: field.maxValue,
+              isFriday: isFriday,
               onToggleIndex: (index) => notifier.togglePrayer(field.id, index),
             )
           : null,

@@ -372,6 +372,7 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
         .where((e) => e.value == true || (e.value is int && e.value > 0))
         .length;
     final title = IslamicDateService.displayFromStorageBn(widget.hijriDate);
+    final isFriday = IslamicDateService.weekdayEnglishForStorage(widget.hijriDate) == 'Friday';
     final hasAnyDone = _toggles.entries
         .where((e) => activeIds.contains(e.key))
         .any((e) => e.value == true || (e.value is int && e.value > 0));
@@ -464,6 +465,7 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
               locale: locale,
               lockedFieldIds: lockedFieldIds,
               readOnly: false,
+              isFriday: isFriday,
             ),
           ),
           if (optionalFields.isNotEmpty)
@@ -476,6 +478,7 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
                   locale: locale,
                   lockedFieldIds: lockedFieldIds,
                   readOnly: false,
+                  isFriday: isFriday,
                 ),
               ),
             ),
@@ -519,6 +522,7 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
                 locale: locale,
                 lockedFieldIds: lockedFieldIds,
                 readOnly: true,
+                isFriday: isFriday,
               ),
             ),
           ],
@@ -571,6 +575,7 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
     required String locale,
     required Set<String> lockedFieldIds,
     required bool readOnly,
+    required bool isFriday,
   }) {
     final pickerMax = amalEditNumericMax(field, _toggles, fields);
     final numericVal = field.type == AmalType.numeric
@@ -614,6 +619,7 @@ class _EditAmalScreenState extends ConsumerState<EditAmalScreen> {
             ? FardPrayerExpandRow(
                 selectedIndices: selection,
                 slotCount: field.maxValue,
+                isFriday: isFriday,
                 onToggleIndex: (i) => _togglePrayer(field.id, i, field),
               )
             : null,

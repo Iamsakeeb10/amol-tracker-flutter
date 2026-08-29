@@ -115,6 +115,7 @@ class DayDetailScreen extends ConsumerWidget {
         final weekday = hijriDate.isEmpty
             ? ''
             : IslamicDateService.weekdayEnglishForStorage(hijriDate);
+        final isFriday = weekday == 'Friday';
 
         return AppScaffold(
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -247,6 +248,7 @@ class DayDetailScreen extends ConsumerWidget {
                     field: field,
                     locale: locale,
                     log: log,
+                    isFriday: isFriday,
                   );
                 },
               ),
@@ -256,6 +258,7 @@ class DayDetailScreen extends ConsumerWidget {
                     fields: optionalFields,
                     locale: locale,
                     log: log,
+                    isFriday: isFriday,
                   ),
                 ),
               if (inactiveFields.isNotEmpty) ...[
@@ -297,6 +300,7 @@ class DayDetailScreen extends ConsumerWidget {
                         field: field,
                         locale: locale,
                         log: log,
+                        isFriday: isFriday,
                       ),
                     );
                   },
@@ -391,11 +395,13 @@ class _DayDetailAmalRow extends StatelessWidget {
     required this.field,
     required this.locale,
     required this.log,
+    required this.isFriday,
   });
 
   final amal_const.AmalField field;
   final String locale;
   final AmalLogModel? log;
+  final bool isFriday;
 
   @override
   Widget build(BuildContext context) {
@@ -424,6 +430,7 @@ class _DayDetailAmalRow extends StatelessWidget {
                 selectedIndices: prayerSlots.toSet(),
                 onToggleIndex: (_) {},
                 slotCount: field.maxValue,
+                isFriday: isFriday,
                 readOnly: true,
               )
             : null,
@@ -509,11 +516,13 @@ class _DayDetailOptionalFieldsSection extends StatefulWidget {
     required this.fields,
     required this.locale,
     required this.log,
+    required this.isFriday,
   });
 
   final List<amal_const.AmalField> fields;
   final String locale;
   final AmalLogModel? log;
+  final bool isFriday;
 
   @override
   State<_DayDetailOptionalFieldsSection> createState() =>
@@ -616,6 +625,7 @@ class _DayDetailOptionalFieldsSectionState
                           field: field,
                           locale: widget.locale,
                           log: widget.log,
+                          isFriday: widget.isFriday,
                         ),
                     ],
                   ),

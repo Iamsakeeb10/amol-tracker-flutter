@@ -3,7 +3,7 @@
 > **Project reference / single source of truth**
 > Last verified against the repository: 2 August 2026 · App version: `1.0.0+15`
 
-Amol Tracker is a Flutter application for building consistent daily Islamic worship habits (_amal_) through a private daily log, a Hijri/Maghrib-aware day boundary, gentle reminders, learning tools, and opt-in community accountability.
+Amol Tracker is a Flutter application for building consistent daily Islamic worship habits (_amal_) through a private daily log, a Hijri date keyed to Bangladesh midnight, gentle reminders, learning tools, and opt-in community accountability.
 
 ## Table of contents
 
@@ -197,7 +197,7 @@ flowchart LR
 
 1. **Sign-up / login:** The launch redirect sends an unauthenticated visitor to Sign In. They select Google Sign-In or anonymous mode.
 2. **Onboarding:** A user without a `users/{uid}` profile supplies/accepts a display name, language, and notification choices; the app creates the profile.
-3. **Home:** The current Maghrib-aware Hijri day, score progress, active Amal rows, top performers, announcements, and streak entry points are shown.
+3. **Home:** The current midnight-based Hijri day, score progress, active Amal rows, top performers, announcements, and streak entry points are shown.
 4. **Daily tracking:** The user changes boolean or numeric values, with optional prayer circles. A draft is cached; submit calculates a score, writes the log, updates streak/badges/activity/widget, and opens completion feedback.
 5. **Community / leaderboard:** The user may inspect shared activity and rankings. Privacy settings control anonymous display and leaderboard inclusion.
 6. **Learning and utilities:** More exposes Quran, dua, dhikr, Names of Allah, Qibla, Hijri calendar, courses, quizzes, reports, and notifications.
@@ -338,10 +338,10 @@ sequenceDiagram
 
 | Type                            | Behaviour                                                                                                                                                                                     |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Morning/evening daily reminders | User-toggleable local reminders at configurable times.                                                                                                                                        |
-| Streak and urgency reminders    | Local reminders are cancelled when today is considered logged; smart reminders assess recent absence and are Maghrib-relative.                                                                |
+| Morning/evening daily reminders | User-toggleable local reminders default to 15 minutes after the calculated Fajr/Maghrib times for each Bangladesh day; an explicitly selected clock time overrides that default.              |
+| Streak and urgency reminders    | Local reminders are cancelled when today's Hijri key is logged. Prompts use an 8:00 PM close-the-day slot and one 8:45 PM last chance, avoid nearby evening reminders, and never catch up after 10:00 PM. |
 | Prayer / adhan                  | Five prayer times are calculated for Bangladesh using Karachi parameters; each prayer can be enabled, offset, or given a custom time. The bundled `azan_one.mp3` is used on native platforms. |
-| Quiet hours                     | A configurable from/to time window suppresses applicable notifications, including cross-midnight windows.                                                                                     |
+| Quiet hours                     | A configurable from/to time window suppresses applicable notifications, including cross-midnight windows. The default 12:00–3:00 AM window avoids all standard reminder times.               |
 | Jumu'ah, Ayyam al-Bid, hadith   | Local scheduled reminders based on local/Hijri rules and bundled hadith data.                                                                                                                 |
 | Study review                    | Local schedule is derived from `lessonReviews` and has a 21-day scheduling look-ahead.                                                                                                        |
 | Community/admin push            | FCM receives remote pushes; foreground messages are displayed locally and message routes deep-link into the app.                                                                              |
@@ -420,7 +420,7 @@ The Android home widget is implemented with a native `AmolWidgetProvider`. It di
 ## Business rules
 
 1. **Islamic-day key:** daily logs use Hijri `YYYY-MM-DD`, not Gregorian dates.
-2. **Maghrib reset:** the day rolls after calculated Maghrib plus a two-minute buffer. After that boundary, the app converts the following Gregorian date to its Hijri storage key.
+2. **Midnight reset:** the logging day rolls at 12:00 AM `Asia/Dhaka`. The Hijri storage key is the conversion of that Bangladesh Gregorian calendar date. Maghrib remains a prayer time only.
 3. **Timezone:** all canonical date and prayer calculations use `Asia/Dhaka` and Bangladesh coordinates. This is a product constraint, not device-location-based time-zone selection.
 4. **Hijri adjustment:** a project-wide configured Hijri day adjustment is applied during Gregorian-to-Hijri conversion. Keep this consistent across calendar, logs, streaks, and reminders.
 5. **Prayer calculation:** Karachi calculation parameters and fixed Bangladesh coordinates are used for prayer time computation.
@@ -483,7 +483,7 @@ flutter run
 
 ### Implementation cautions
 
-- Do not replace the Maghrib-aware date service with `DateTime.now()` date keys; it will break streak/history consistency.
+- Do not replace the Bangladesh/Hijri date service with `DateTime.now()` date keys; it will break streak/history consistency.
 - Do not assume the fallback Amal list is the live server schema. Preserve unknown historical keys and use active remote fields for current scoring.
 - Score and streak values written by the client require server-side protection if they inform rankings or rewards.
 - The app uses FCM only after a user profile exists; clear tokens on sign-out/account switches to avoid cross-account pushes.
@@ -495,7 +495,7 @@ flutter run
 
 ### Does a new calendar day start at midnight?
 
-No. The logging day uses a Bangladesh Hijri key and moves to the next day after calculated Maghrib plus a small buffer.
+Yes. The logging day uses a Bangladesh Hijri key for the `Asia/Dhaka` calendar date and rolls at 12:00 AM. Maghrib does not change the log day.
 
 ### Can I complete a missed day later and keep my streak?
 
@@ -540,7 +540,7 @@ They are not committed in this repository. This must be addressed before product
 | **Asma ul Husna**    | The 99 Beautiful Names of Allah.                                                |
 | **Qibla**            | Direction of the Kaaba in Makkah for prayer.                                    |
 | **Hijri date**       | Islamic lunar-calendar date. It is the canonical daily-log key.                 |
-| **Maghrib boundary** | The sunset prayer time; this app uses it to transition to the next Islamic day. |
+| **Midnight boundary** | 12:00 AM `Asia/Dhaka`; this app uses it to transition to the next logging day. |
 | **Ayyam al-Bid**     | The 13th, 14th, and 15th days of a Hijri month.                                 |
 | **Jumu'ah**          | Friday congregational prayer.                                                   |
 | **Streak freeze**    | A limited allowance covering one missed Hijri day so a streak can continue.     |

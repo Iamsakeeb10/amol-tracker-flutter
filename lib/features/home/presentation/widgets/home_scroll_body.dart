@@ -115,7 +115,7 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
     final showReminderCardConfig = bannersConfig?.showReminderCard ?? true;
     final showBattleBannerConfig = bannersConfig?.showBattleBanner ?? false;
 
-    final showReminder = user != null && !user.hasDismissedLoggingReminder && showReminderCardConfig;
+    final showReminder = user != null && user.shouldShowLoggingReminder && showReminderCardConfig;
     final showSpecialTime = user?.amalProfile == UserAmalProfile.female;
 
     // Collapse any expanded amal tile if its field disappears from the list

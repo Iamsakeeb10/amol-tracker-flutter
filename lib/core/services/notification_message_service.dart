@@ -66,7 +66,7 @@ class NotificationMessageService {
       ]);
     }
 
-    // ── SAME DAY — urgent (after 10 PM) ──
+    // ── SAME DAY — final evening prompt ──
     if (ctx.daysMissed == 0 && ctx.isUrgent) {
       if (ctx.currentStreak > 0) {
         return _pick([
@@ -88,12 +88,12 @@ class NotificationMessageService {
       }
       return _pick(const [
         NotificationMessage(
-          title: 'মধ্যরাতের আগে লগ করো ⚡',
-          body: 'আজকের আমল লগ করতে ভুলে যাচ্ছ! এখনো সময় আছে।',
+          title: 'আজকের আমল এখনই লগ করো ⚡',
+          body: 'রাত গভীর হওয়ার আগেই আজকের আমল লগ করে রাখো।',
         ),
         NotificationMessage(
-          title: 'দিন শেষ হতে চলেছে 🌙',
-          body: 'আজকের আমলটা লগ করে দিন সম্পূর্ণ করো।',
+          title: 'আজকের হিসাব সম্পূর্ণ করো 🌙',
+          body: 'এখনই আজকের আমলটা লগ করে ধারাবাহিকতা ধরে রাখো।',
         ),
       ]);
     }
@@ -218,7 +218,7 @@ class NotificationMessageService {
       ]);
     }
 
-    // ── SAME DAY — urgent (after 10 PM) ──
+    // ── SAME DAY — final evening prompt ──
     if (ctx.daysMissed == 0 && ctx.isUrgent) {
       if (ctx.currentStreak > 0) {
         return _pick([
@@ -240,12 +240,12 @@ class NotificationMessageService {
       }
       return _pick(const [
         NotificationMessage(
-          title: 'Last chance tonight ⚡',
-          body: 'Log your amal before midnight. You still have time!',
+          title: 'Log today’s amal now ⚡',
+          body: 'Finish today’s log before the night gets late.',
         ),
         NotificationMessage(
-          title: 'The day is ending! 🌙',
-          body: 'Log your amal to round off the day.',
+          title: 'Complete today’s check-in 🌙',
+          body: 'Log your amal now and keep your consistency going.',
         ),
       ]);
     }

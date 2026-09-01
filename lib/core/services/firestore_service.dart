@@ -7,6 +7,7 @@ import 'dua_push_gateway_service.dart';
 import 'islamic_date_service.dart';
 import '../utils/dua_push_debug.dart';
 import '../constants/amal_fields.dart';
+import '../constants/app_constants.dart';
 import '../../models/activity_feed_item_model.dart';
 import '../../models/amal_log_model.dart';
 import '../../models/announcement_model.dart';
@@ -170,6 +171,7 @@ class FirestoreService {
     if (uid.isEmpty) return;
     await _users.doc(uid).update(<String, dynamic>{
       'hasDismissedLoggingReminder': true,
+      'dismissedLoggingReminderVersion': AppConstants.loggingReminderVersion,
     });
   }
 

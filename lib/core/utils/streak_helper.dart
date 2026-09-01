@@ -62,8 +62,8 @@ int _calendarDaysBetween(DateTime a, DateTime b) {
 /// than the log's own [hijriDate]. Backfilled logs should not count towards
 /// streak computation.
 ///
-/// Uses Maghrib-aware date conversion so a submission after Maghrib
-/// (which counts as the next Islamic day) is not falsely marked backfilled.
+/// Uses standard date conversion so a submission after midnight
+/// (which counts as the next day) is not falsely marked backfilled.
 bool isBackfilledLog(AmalLogModel log) {
   try {
     final submittedBd = IslamicDateService.bangladeshDateTimeFrom(

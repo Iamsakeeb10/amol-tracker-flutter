@@ -20,8 +20,8 @@ class QuietHoursScreen extends ConsumerStatefulWidget {
 }
 
 class _QuietHoursScreenState extends ConsumerState<QuietHoursScreen> {
-  TimeOfDay _from = const TimeOfDay(hour: 21, minute: 0);
-  TimeOfDay _to = const TimeOfDay(hour: 6, minute: 0);
+  TimeOfDay _from = const TimeOfDay(hour: 0, minute: 0);
+  TimeOfDay _to = const TimeOfDay(hour: 3, minute: 0);
 
   @override
   void initState() {

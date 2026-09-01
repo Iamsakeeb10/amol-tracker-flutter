@@ -80,19 +80,25 @@ import '../../shared/widgets/dev_screen.dart';
 import '../services/firestore_service.dart';
 import '../theme/colors.dart';
 import 'app_redirect.dart';
+import 'app_router_setup.dart';
 import 'routes.dart';
+import 'safe_back_button_dispatcher.dart';
 import '../../models/feedback_model.dart';
 import '../../features/admin/presentation/screens/admin_battle_topics_screen.dart';
 import '../../features/admin/presentation/screens/admin_battle_questions_screen.dart';
 import '../../features/admin/presentation/screens/admin_battle_question_form_screen.dart';
 import '../../features/battle/models/question_model.dart';
 
-GoRouter buildAppRouter() {
+AppRouterSetup buildAppRouter() {
   final firestoreService = FirestoreService();
   final analyticsObserver = FirebaseAnalyticsObserver(
     analytics: FirebaseAnalytics.instance,
   );
-  return GoRouter(
+  final shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
+  late final GoRouter router;
+  final backButtonDispatcher = SafeBackButtonDispatcher(() => router);
+
+  router = GoRouter(
     initialLocation: AppRoutes.launch,
     debugLogDiagnostics: false,
     observers: [analyticsObserver],
@@ -177,6 +183,7 @@ GoRouter buildAppRouter() {
         builder: (_, _) => const DevScreen(),
       ),
       ShellRoute(
+        navigatorKey: shellNavigatorKey,
         builder: (context, state, child) {
           return ScaffoldWithBottomNav(child: child);
         },
@@ -595,6 +602,11 @@ GoRouter buildAppRouter() {
         ),
       );
     },
+  );
+
+  return AppRouterSetup(
+    router: router,
+    backButtonDispatcher: backButtonDispatcher,
   );
 }
 

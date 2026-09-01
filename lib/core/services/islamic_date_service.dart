@@ -76,26 +76,13 @@ class IslamicDateService {
     return _utcToBd(prayerTimes.maghrib);
   }
 
-  static DateTime getMaghribTimeSafe() {
-    try {
-      return getMaghribTime();
-    } catch (_) {
-      final now = nowInBD();
-      return DateTime(now.year, now.month, now.day, 18, 0);
-    }
-  }
 
-  static bool _isPastMaghrib(DateTime now, DateTime maghrib) {
-    return now.isAfter(maghrib.add(const Duration(minutes: 2)));
-  }
+
+
 
   static String getCurrentIslamicDateString() {
     final now = nowInBD();
-    final maghrib = getMaghribTimeSafe();
-    return islamicDateStringForBangladeshMoment(
-      now,
-      maghribAtBdMoment: maghrib,
-    );
+    return islamicDateStringForBangladeshMoment(now);
   }
 
   static String islamicDateStringForBangladeshDate(DateTime bdDate) {
@@ -199,16 +186,9 @@ class IslamicDateService {
   }
 
   /// Canonical conversion for Bangladesh local moment.
-  /// Flow: BD now -> Maghrib boundary -> Hijri conversion -> global day adjustment.
-  static String islamicDateStringForBangladeshMoment(
-    DateTime bdNow, {
-    DateTime? maghribAtBdMoment,
-  }) {
-    final maghrib = maghribAtBdMoment ?? getMaghribTimeSafe();
-    final gregorianBase = _isPastMaghrib(bdNow, maghrib)
-        ? bdNow.add(const Duration(days: 1))
-        : bdNow;
-    return islamicDateStringForGregorianDate(gregorianBase);
+  /// Flow: BD now -> Hijri conversion -> global day adjustment.
+  static String islamicDateStringForBangladeshMoment(DateTime bdNow) {
+    return islamicDateStringForGregorianDate(bdNow);
   }
 
   /// Canonical conversion for a Gregorian date with global Hijri adjustment.
@@ -405,7 +385,7 @@ class IslamicDateService {
     );
   }
 
-  /// Calendar date in Asia/Dhaka (no Maghrib rollover).
+  /// Calendar date in Asia/Dhaka.
   static DateTime bangladeshCalendarDateOnly(DateTime source) {
     final bd = bangladeshDateTimeFrom(source);
     return DateTime(bd.year, bd.month, bd.day);

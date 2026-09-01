@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/router/app_redirect.dart';
+import '../../core/router/routes.dart';
+import '../../core/services/analytics_service.dart';
 import '../../core/services/firestore_service.dart';
 import 'app_launch_screen.dart';
 
@@ -37,13 +38,27 @@ class _AppLaunchRouteState extends State<AppLaunchRoute> {
 
   Future<void> _navigateToDestination() async {
     if (_navigated || !mounted) return;
-    final destination =
-        await destinationAfterLaunch(widget.firestoreService);
-    if (!mounted || _navigated) return;
-    _navigated = true;
-    context.go(destination);
+    try {
+      final destination =
+          await destinationAfterLaunch(widget.firestoreService);
+      if (!mounted || _navigated) return;
+      _navigated = true;
+      context.go(destination);
+    } catch (e, st) {
+      AnalyticsService.instance.recordError(
+        e,
+        st,
+        reason: 'AppLaunchRoute navigation failed',
+      );
+      if (!mounted || _navigated) return;
+      _navigated = true;
+      context.go(AppRoutes.signIn);
+    }
   }
 
   @override
-  Widget build(BuildContext context) => const AppLaunchScreen();
+  Widget build(BuildContext context) => PopScope(
+        canPop: true,
+        child: const AppLaunchScreen(),
+      );
 }

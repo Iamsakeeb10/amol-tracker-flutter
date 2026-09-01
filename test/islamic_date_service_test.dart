@@ -10,32 +10,34 @@ void main() {
   });
 
   group('IslamicDateService canonical Hijri pipeline', () {
-    test('applies Maghrib boundary as a day rollover', () {
-      final maghrib = DateTime(2026, 5, 8, 18, 30);
+    test('does not apply Maghrib boundary as a day rollover', () {
       final beforeMaghrib = DateTime(2026, 5, 8, 17, 0);
       final afterMaghrib = DateTime(2026, 5, 8, 19, 0);
 
-      final before = IslamicDateService.islamicDateStringForBangladeshMoment(
-        beforeMaghrib,
-        maghribAtBdMoment: maghrib,
-      );
-      final after = IslamicDateService.islamicDateStringForBangladeshMoment(
-        afterMaghrib,
-        maghribAtBdMoment: maghrib,
-      );
+      final before = IslamicDateService.islamicDateStringForBangladeshMoment(beforeMaghrib);
+      final after = IslamicDateService.islamicDateStringForBangladeshMoment(afterMaghrib);
 
-      expect(
-        IslamicDateService.areConsecutiveIslamicDays(before, after),
-        isTrue,
-      );
+      expect(before, equals(after));
     });
 
-    test('applies global -1 Hijri day correction for Gregorian conversion', () {
+    test('rolls the Hijri key at Bangladesh midnight', () {
+      final beforeMidnight = DateTime(2026, 5, 8, 23, 59);
+      final afterMidnight = DateTime(2026, 5, 9, 0, 1);
+
+      final before =
+          IslamicDateService.islamicDateStringForBangladeshMoment(beforeMidnight);
+      final after =
+          IslamicDateService.islamicDateStringForBangladeshMoment(afterMidnight);
+
+      expect(before, isNot(equals(after)));
+    });
+
+    test('applies global Hijri day correction for Gregorian conversion', () {
       final gregorian = DateTime(2026, 5, 8);
       final rawHijri = HijriCalendar.fromDate(gregorian);
       final rawStorage =
           '${rawHijri.hYear}-${rawHijri.hMonth.toString().padLeft(2, '0')}-${rawHijri.hDay.toString().padLeft(2, '0')}';
-      final expected = IslamicDateService.shiftStorageByDays(rawStorage, -1);
+      final expected = IslamicDateService.shiftStorageByDays(rawStorage, 0);
 
       final actual = IslamicDateService.islamicDateStringForGregorianDate(
         gregorian,

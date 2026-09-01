@@ -39,7 +39,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get morningNotification => 'সকালের নোটিফিকেশন';
 
   @override
-  String get morningNotificationTime => 'প্রতি সকাল ৬:০০ AM';
+  String get morningNotificationTime => 'ফজরের ১৫ মিনিট পর';
 
   @override
   String get morningNotificationTimeLabel => 'সকালের সময়';
@@ -48,7 +48,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get eveningNotification => 'সন্ধ্যার নোটিফিকেশন';
 
   @override
-  String get eveningNotificationTime => 'প্রতি সন্ধ্যা ৬:৩০ PM';
+  String get eveningNotificationTime => 'মাগরিবের ১৫ মিনিট পর';
 
   @override
   String get eveningNotificationTimeLabel => 'সন্ধ্যার সময়';
@@ -83,7 +83,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get reminderTimesDescription =>
-      'সকালের ও সন্ধ্যার নোটিফিকেশনের নির্দিষ্ট সময় সেট করুন।';
+      'ডিফল্টভাবে সকাল ও সন্ধ্যার রিমাইন্ডার ফজর ও মাগরিবের সময় অনুসরণ করে। হিসাব করা সময় বদলাতে নিজের পছন্দের সময় বেছে নিন।';
 
   @override
   String get prayerAdhanReminder => 'নামাযের আযান রিমাইন্ডার';
@@ -487,7 +487,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get quietHoursDescription =>
-      'এই সময়ে নোটিফিকেশন সাইলেন্ট থাকবে। তবে নোটিফিকেশন সিডিউল চলবে।';
+      'এই সময়ে নোটিফিকেশন সাইলেন্ট থাকবে। ডিফল্ট রাত ১২টা–৩টার সময়সীমায় কোনো সাধারণ রিমাইন্ডার নেই।';
 
   @override
   String get from => 'শুরু';
@@ -613,11 +613,11 @@ class AppLocalizationsBn extends AppLocalizations {
   String get next => 'পরেরটা';
 
   @override
-  String get howAmolLoggingWorksTitle => 'মনে রাখবেন';
+  String get howAmolLoggingWorksTitle => 'দিন কীভাবে গণনা হয়';
 
   @override
   String get howAmolLoggingWorksBody =>
-      'এই অ্যাপে একটি দিন শুরু হয় মাগরিবে এবং শেষ হয় পরবর্তী মাগরিবে। তাই আজকের আমল সবসময় পরবর্তী মাগরিবের আগেই লগ করুন। মাগরিবের পর করা সব আমল নতুন দিনের হিসাবেই গণনা হবে।';
+      'এখানে দিন গণনা হয় ক্যালেন্ডার অনুযায়ী - রাত ১২টায় শুরু, রাত ১১টা ৫৯ মিনিটে শেষ। তাই আজকের আমল রাত ১২টার আগেই লগ করুন; এর পরে লগ করলে তা পরের দিনের হিসাবে যাবে।';
 
   @override
   String get buildDailyHabitTitle => 'প্রতিদিনের আমল গড়ে তুলুন';
@@ -631,7 +631,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get streaksKeepYouGoingBody =>
-      'প্রতিদিন অন্তত একটি আমল লগ করুন। মাগরিবের আগে লগ করলে আপনার স্ট্রিক ও অগ্রগতি বজায় থাকবে।';
+      'প্রতিদিন অন্তত একটি আমল লগ করুন। রাত ১২টার আগে লগ করলে আপনার স্ট্রিক ও অগ্রগতি বজায় থাকবে।';
 
   @override
   String get setupProfileTitle => 'প্রোফাইল সেটআপ করুন';
@@ -1737,11 +1737,11 @@ class AppLocalizationsBn extends AppLocalizations {
   String get adminToggleFailed => 'ঘোষণা আপডেট করা যায়নি।';
 
   @override
-  String get homeReminderTitle => 'মনে রাখবেন';
+  String get homeReminderTitle => 'দিনের হিসাব বদলেছে';
 
   @override
   String get homeReminderBody =>
-      'এই অ্যাপে \"দিন\" শুরু হয় **মাগরিব** থেকে—রাত ১২টায় নয়। মাগরিবের পর নতুন আরবি দিন শুরু হয়, তাই আপনার প্রতিদিনের আমল পরবর্তী **মাগরিবের** আগেই লগ করুন। আপনার স্ট্রিক ও সব হিসাব এই নিয়মেই গণনা করা হয়।';
+      'দিনের হিসাব আমরা বদলেছি। আগে এক দিন ধরা হতো **মাগরিব থেকে পরের মাগরিব** পর্যন্ত। এখন থেকে এক দিন **রাত ১২টা থেকে রাত ১১টা ৫৯ মিনিট** পর্যন্ত, ঠিক আপনার ফোনের তারিখের মতো। তাই আজকের আমল রাত ১২টার আগেই লগ করুন - স্ট্রিক, রিপোর্টসহ সব হিসাব এখন এই নিয়মেই চলবে।';
 
   @override
   String get seeMore => 'আরও দেখুন';

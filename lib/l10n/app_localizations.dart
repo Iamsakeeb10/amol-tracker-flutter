@@ -161,7 +161,7 @@ abstract class AppLocalizations {
   /// No description provided for @morningNotificationTime.
   ///
   /// In en, this message translates to:
-  /// **'6:00 AM each morning'**
+  /// **'15 minutes after Fajr'**
   String get morningNotificationTime;
 
   /// No description provided for @morningNotificationTimeLabel.
@@ -179,7 +179,7 @@ abstract class AppLocalizations {
   /// No description provided for @eveningNotificationTime.
   ///
   /// In en, this message translates to:
-  /// **'6:30 PM each evening'**
+  /// **'15 minutes after Maghrib'**
   String get eveningNotificationTime;
 
   /// No description provided for @eveningNotificationTimeLabel.
@@ -245,7 +245,7 @@ abstract class AppLocalizations {
   /// No description provided for @reminderTimesDescription.
   ///
   /// In en, this message translates to:
-  /// **'Set the exact reminder time for morning and evening notifications.'**
+  /// **'By default, morning and evening reminders follow Fajr and Maghrib. Choose a time to override the calculated schedule.'**
   String get reminderTimesDescription;
 
   /// No description provided for @prayerAdhanReminder.
@@ -1007,7 +1007,7 @@ abstract class AppLocalizations {
   /// No description provided for @quietHoursDescription.
   ///
   /// In en, this message translates to:
-  /// **'Notifications stay silent during these hours. Notification schedules still run.'**
+  /// **'Notifications stay silent during these hours. The default 12:00 AM–3:00 AM window does not overlap standard reminders.'**
   String get quietHoursDescription;
 
   /// No description provided for @from.
@@ -1217,13 +1217,13 @@ abstract class AppLocalizations {
   /// No description provided for @howAmolLoggingWorksTitle.
   ///
   /// In en, this message translates to:
-  /// **'Reminder'**
+  /// **'How a day works'**
   String get howAmolLoggingWorksTitle;
 
   /// No description provided for @howAmolLoggingWorksBody.
   ///
   /// In en, this message translates to:
-  /// **'In this app, a day starts at Maghrib and ends at the next Maghrib. So, log today\'s amal before the next Maghrib. Any amal logged after Maghrib will be counted as part of the new day.'**
+  /// **'A day here follows the calendar: it starts at 12:00 AM and ends at 11:59 PM. Log today\'s amal before midnight - anything logged after that counts towards the next day.'**
   String get howAmolLoggingWorksBody;
 
   /// No description provided for @buildDailyHabitTitle.
@@ -1247,7 +1247,7 @@ abstract class AppLocalizations {
   /// No description provided for @streaksKeepYouGoingBody.
   ///
   /// In en, this message translates to:
-  /// **'Log at least one amal every Hijri day before the next Maghrib to keep your streak and stay consistent.'**
+  /// **'Log at least one amal every day before midnight to keep your streak and stay consistent.'**
   String get streaksKeepYouGoingBody;
 
   /// No description provided for @setupProfileTitle.
@@ -3286,13 +3286,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeReminderTitle.
   ///
   /// In en, this message translates to:
-  /// **'Reminder'**
+  /// **'Day timing has changed'**
   String get homeReminderTitle;
 
   /// No description provided for @homeReminderBody.
   ///
   /// In en, this message translates to:
-  /// **'In this app, a \"day\" runs from **Maghrib** to the next **Maghrib**—not from midnight. Since a new day begins at sunset, please log your daily deeds before Maghrib. Your streak and all progress are calculated based on this schedule.'**
+  /// **'We changed how a day is counted. Earlier a day ran from **Maghrib to the next Maghrib**. From now on a day runs from **12:00 AM to 11:59 PM**, the same as the date on your phone. So log today\'s amal before midnight - your streak, reports and everything else now follow this timing.'**
   String get homeReminderBody;
 
   /// No description provided for @seeMore.

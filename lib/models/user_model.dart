@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../core/constants/app_constants.dart';
 import 'user_role.dart';
 
 enum UserAmalProfile {
@@ -39,6 +40,7 @@ class UserModel {
   final UserRole role;
   final int lmsXp;
   final bool hasDismissedLoggingReminder;
+  final int dismissedLoggingReminderVersion;
   final String? gender;
   final bool specialTimeActive;
   final bool genderPromptDismissed;
@@ -64,6 +66,7 @@ class UserModel {
     this.role = UserRole.user,
     this.lmsXp = 0,
     this.hasDismissedLoggingReminder = false,
+    this.dismissedLoggingReminderVersion = 0,
     this.gender,
     this.specialTimeActive = false,
     this.genderPromptDismissed = false,
@@ -71,6 +74,10 @@ class UserModel {
   });
 
   UserAmalProfile get amalProfile => UserAmalProfile.fromString(gender);
+
+  /// Whether the home logging-reminder card should still be shown to this user.
+  bool get shouldShowLoggingReminder =>
+      dismissedLoggingReminderVersion < AppConstants.loggingReminderVersion;
 
   factory UserModel.fromMap(Map<String, dynamic> map, String uid) {
     final createdAt = map['createdAt'];
@@ -102,6 +109,9 @@ class UserModel {
       role: UserRole.fromString(map['role'] as String?),
       lmsXp: (map['lmsXp'] as num?)?.toInt() ?? 0,
       hasDismissedLoggingReminder: (map['hasDismissedLoggingReminder'] as bool?) ?? false,
+      dismissedLoggingReminderVersion:
+          (map['dismissedLoggingReminderVersion'] as num?)?.toInt() ??
+              (((map['hasDismissedLoggingReminder'] as bool?) ?? false) ? 1 : 0),
       gender: map['gender'] as String?,
       specialTimeActive: (map['specialTimeActive'] as bool?) ?? false,
       genderPromptDismissed: (map['genderPromptDismissed'] as bool?) ?? false,
@@ -133,6 +143,8 @@ class UserModel {
       if (role != UserRole.user) 'role': role.firestoreValue,
       if (lmsXp > 0) 'lmsXp': lmsXp,
       'hasDismissedLoggingReminder': hasDismissedLoggingReminder,
+      if (dismissedLoggingReminderVersion > 0)
+        'dismissedLoggingReminderVersion': dismissedLoggingReminderVersion,
       if (gender != null) 'gender': gender,
       if (specialTimeActive) 'specialTimeActive': true,
       if (genderPromptDismissed) 'genderPromptDismissed': true,

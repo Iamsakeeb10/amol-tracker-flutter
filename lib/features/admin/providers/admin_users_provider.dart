@@ -66,6 +66,7 @@ class AdminUserSearchNotifier extends StateNotifier<AsyncValue<UserModel?>> {
           role: newRole,
           lmsXp: currentUser.lmsXp,
           hasDismissedLoggingReminder: currentUser.hasDismissedLoggingReminder,
+          dismissedLoggingReminderVersion: currentUser.dismissedLoggingReminderVersion,
           gender: currentUser.gender,
           specialTimeActive: currentUser.specialTimeActive,
           genderPromptDismissed: currentUser.genderPromptDismissed,

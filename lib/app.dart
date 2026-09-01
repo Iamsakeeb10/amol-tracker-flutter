@@ -8,6 +8,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'dart:io' show Platform;
 
 import 'core/router/router.dart';
+import 'core/router/safe_back_button_dispatcher.dart';
 import 'core/services/analytics_service.dart';
 import 'core/services/background_cleanup_service.dart';
 import 'core/services/islamic_date_service.dart';
@@ -34,13 +35,16 @@ class AmolTrackerApp extends ConsumerStatefulWidget {
 class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     with WidgetsBindingObserver {
   late final GoRouter _router;
-  Timer? _maghribRolloverTimer;
+  late final SafeBackButtonDispatcher _backButtonDispatcher;
+  Timer? _midnightRolloverTimer;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _router = buildAppRouter();
+    final setup = buildAppRouter();
+    _router = setup.router;
+    _backButtonDispatcher = setup.backButtonDispatcher;
     unawaited(_initNotifications());
     unawaited(_setupCustomAnalyticsKeys());
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -48,7 +52,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
       FlutterNativeSplash.remove();
       unawaited(ref.read(appBootstrapProvider.future));
       _scheduleSmartReminders();
-      _scheduleMaghribRollover();
+      _scheduleMidnightRollover();
     });
   }
 
@@ -87,36 +91,28 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     }
     await NotificationService.instance.rescheduleAll();
     _scheduleSmartReminders();
-    _scheduleMaghribRollover();
+    _scheduleMidnightRollover();
     if (!mounted) return;
     ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
     ref.read(amalFieldsProvider.notifier).refreshIfStale();
     unawaited(BackgroundCleanupService.runIfDue());
   }
 
-  void _scheduleMaghribRollover() {
-    _maghribRolloverTimer?.cancel();
+  void _scheduleMidnightRollover() {
+    _midnightRolloverTimer?.cancel();
 
     try {
       final now = IslamicDateService.nowInBD();
-      DateTime maghrib = IslamicDateService.getMaghribTimeSafe();
-      Duration delay = maghrib.add(const Duration(minutes: 2)).difference(now);
+      final nextMidnight = DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+      final delay = nextMidnight.difference(now);
 
-      if (delay.isNegative) {
-        final tomorrow = DateTime(
-          now.year, now.month, now.day,
-        ).add(const Duration(days: 1));
-        maghrib = IslamicDateService.getMaghribTimeForDate(tomorrow);
-        delay = maghrib.add(const Duration(minutes: 2)).difference(now);
-      }
+      if (delay.isNegative || delay.inHours > 25) return;
 
-      if (delay.isNegative || delay.inHours > 26) return;
-
-      _maghribRolloverTimer = Timer(delay, _onMaghribRollover);
+      _midnightRolloverTimer = Timer(delay, _onMidnightRollover);
     } catch (_) {}
   }
 
-  Future<void> _onMaghribRollover() async {
+  Future<void> _onMidnightRollover() async {
     if (!mounted) return;
     final previousDate = ref.read(currentHijriDateProvider);
     ref.invalidate(currentHijriDateProvider);
@@ -130,7 +126,10 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     if (!mounted) return;
     ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
     unawaited(BackgroundCleanupService.runIfDue());
-    _scheduleMaghribRollover();
+    await NotificationService.instance.rescheduleAll();
+    if (!mounted) return;
+    _scheduleSmartReminders();
+    _scheduleMidnightRollover();
   }
 
   void _scheduleSmartReminders() {
@@ -162,7 +161,7 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
 
   @override
   void dispose() {
-    _maghribRolloverTimer?.cancel();
+    _midnightRolloverTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     NotificationService.instance.dispose();
     _router.dispose();
@@ -197,7 +196,10 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
           ),
         );
       },
-      routerConfig: _router,
+      routeInformationProvider: _router.routeInformationProvider,
+      routeInformationParser: _router.routeInformationParser,
+      routerDelegate: _router.routerDelegate,
+      backButtonDispatcher: _backButtonDispatcher,
     );
   }
 }

@@ -387,7 +387,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         onPressed: _sendingDua || me == null
                             ? null
                             : () => _showDuaSheet(
-                                context: context,
+                                l10n: l10n,
                                 fs: fs,
                                 senderUid: me.uid,
                                 recipientUid: widget.userId,
@@ -470,13 +470,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 
   Future<void> _showDuaSheet({
-    required BuildContext context,
+    required AppLocalizations l10n,
     required FirestoreService fs,
     required String senderUid,
     required String recipientUid,
     required String senderName,
     String? senderGender,
   }) async {
+    if (!mounted) return;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -485,11 +486,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       builder: (_) {
-        return _DuaSheet(
+        return DuaPhraseSheet(
           onSend: (selectedPhrase) {
             final message = '$senderName: $selectedPhrase 🤲';
             return _sendDua(
-              context: context,
+              l10n: l10n,
               fs: fs,
               senderUid: senderUid,
               recipientUid: recipientUid,
@@ -504,7 +505,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 
   Future<bool> _sendDua({
-    required BuildContext context,
+    required AppLocalizations l10n,
     required FirestoreService fs,
     required String senderUid,
     required String recipientUid,
@@ -512,7 +513,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     required String message,
     String? senderGender,
   }) async {
-    final l10n = AppLocalizations.of(context)!;
+    if (!mounted) return false;
     setState(() => _sendingDua = true);
     try {
       final today = IslamicDateService.getCurrentIslamicDateStringSafe();
@@ -530,10 +531,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           'send dua aborted: already sent today senderUid=$senderUid '
           'recipientUid=$recipientUid',
         );
-        if (!context.mounted) return false;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.alreadySentDuaToday)));
+        if (!mounted) return false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.alreadySentDuaToday)),
+        );
         return false;
       }
       await fs.sendDua(
@@ -548,10 +549,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         'user profile send dua finished (see Firestore/gateway logs for push): '
         'recipientUid=$recipientUid',
       );
-      if (!context.mounted) return false;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.duaSent)));
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.duaSent)),
+      );
       return true;
     } catch (_) {
       return false;
@@ -561,16 +562,17 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 }
 
-class _DuaSheet extends StatefulWidget {
-  const _DuaSheet({required this.onSend});
+/// Phrase picker shown when sending a community dua from a user profile.
+class DuaPhraseSheet extends StatefulWidget {
+  const DuaPhraseSheet({super.key, required this.onSend});
 
   final Future<bool> Function(String selectedPhrase) onSend;
 
   @override
-  State<_DuaSheet> createState() => _DuaSheetState();
+  State<DuaPhraseSheet> createState() => _DuaPhraseSheetState();
 }
 
-class _DuaSheetState extends State<_DuaSheet> {
+class _DuaPhraseSheetState extends State<DuaPhraseSheet> {
   String? _selectedPhrase;
   bool _isSending = false;
 
@@ -637,8 +639,10 @@ class _DuaSheetState extends State<_DuaSheet> {
                   onPressed: isDisabled
                       ? null
                       : () async {
+                          final phrase = _selectedPhrase;
+                          if (phrase == null) return;
                           setState(() => _isSending = true);
-                          final didSend = await widget.onSend(_selectedPhrase!);
+                          final didSend = await widget.onSend(phrase);
                           if (!context.mounted) return;
                           setState(() => _isSending = false);
                           if (didSend) {

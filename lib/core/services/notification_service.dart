@@ -13,6 +13,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../constants/prayer_adhan_constants.dart';
 import '../router/routes.dart';
 import '../utils/fcm_notification_display.dart';
+import '../utils/notification_day_policy.dart';
 import '../utils/quiet_hours_helper.dart';
 import 'analytics_service.dart';
 import 'hadith_asset_service.dart';
@@ -53,8 +54,9 @@ class NotificationService {
   static const int _lessonReviewLookaheadDays = 21;
   static const int _hadithDaysAhead = 7;
   static const int _notificationDaysAhead = 7;
-  static const int _smartEveningId = 9001;
-  static const int _smartUrgentId = 9002;
+  static const int _dailyPrayerReminderOffsetMinutes = 15;
+  static const int _legacySmartEveningId = 9001;
+  static const int _legacySmartUrgentId = 9002;
   static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 8, minute: 0);
   static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 21, minute: 0);
   static const String _lastSentKeyPrefix = 'notif_last_sent_';
@@ -73,9 +75,9 @@ class NotificationService {
     'তোমার স্ট্রিক আজ রাতেই শেষ হয়ে যেতে পারে। এখনো সময় আছে — লগ করো।',
     'ধারাবাহিকতার এই পথটা থেমে যাক না। আজকের আমল এখনই লগ করো।',
   ];
-  static const List<String> _midnightBodies = [
-    'মাত্র কয়েক মিনিট বাকি। আজকের আমল জমা না দিলে স্ট্রিক যাবে।',
-    'এখনো সুযোগ আছে। দ্রুত লগ করো — এক মিনিটও লাগবে না।',
+  static const List<String> _lastChanceBodies = [
+    'আজকের আমল এখনো বাকি। রাত গভীর হওয়ার আগেই লগ করে রাখো।',
+    'আজকের ধারাবাহিকতা ধরে রাখতে এখনই আমল লগ করো।',
   ];
   static const List<String> _jumuahBodies = [
     'সূরা কাহফ তিলাওয়াত করুন, রাসূল ﷺ-এর প্রতি বেশি বেশি দরূদ পাঠ করুন, দোয়া করুন এবং সময়মতো জুমুআহর সালাতের জন্য প্রস্তুতি নিন। আল্লাহ আপনার আমল কবুল করুন। 🤲',
@@ -167,7 +169,7 @@ class NotificationService {
     } catch (_) {
       // Ignore if topic subscription fails
     }
-    
+
     _onTokenRefreshSub = _messaging.onTokenRefresh.listen(
       (_) => _syncFcmToken(),
     );
@@ -239,10 +241,9 @@ class NotificationService {
     final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
     final userSnap = await userRef.get();
     if (!userSnap.exists) return;
-    await userRef.set(
-      <String, dynamic>{'fcmToken': FieldValue.delete()},
-      SetOptions(merge: true),
-    );
+    await userRef.set(<String, dynamic>{
+      'fcmToken': FieldValue.delete(),
+    }, SetOptions(merge: true));
   }
 
   /*
@@ -291,7 +292,11 @@ class NotificationService {
       await userRef.set({'fcmToken': token}, SetOptions(merge: true));
       await LocalStorageService.setPref(_fcmOwnerUidKey, user.uid);
     } catch (e, st) {
-      AnalyticsService.instance.recordError(e, st, reason: 'FCM token sync failed');
+      AnalyticsService.instance.recordError(
+        e,
+        st,
+        reason: 'FCM token sync failed',
+      );
     }
   }
 
@@ -326,24 +331,27 @@ class NotificationService {
     required String lastLogDate,
     required String locale,
   }) async {
-    // Cancel previous smart reminders
-    await _localNotifications.cancel(_smartEveningId);
-    await _localNotifications.cancel(_smartUrgentId);
+    // Smart reminders reuse today's static streak IDs. Scheduling the same ID
+    // replaces the generic copy instead of producing duplicate notifications.
+    await _localNotifications.cancel(_legacySmartEveningId);
+    await _localNotifications.cancel(_legacySmartUrgentId);
+    await _localNotifications.cancel(_streakId);
+    await _localNotifications.cancel(_midnightFallbackId);
 
     final today = IslamicDateService.getCurrentIslamicDateStringSafe();
     final yesterday = IslamicDateService.shiftStorageByDays(today, -1);
-    // After Maghrib the Islamic day rolls forward. A log made before Maghrib
-    // sits under yesterday's Islamic date, so check both dates.
-    final hasLoggedToday =
-        lastLogDate == today || lastLogDate == yesterday;
-
-    // Already logged today — cancel streak warnings too and bail.
-    if (hasLoggedToday) {
+    final loggedToday =
+        hasLoggedCurrentIslamicDay(
+          todayHijri: today,
+          lastLogDate: lastLogDate,
+        ) ||
+        await _hasLoggedIslamicDate(today);
+    if (loggedToday) {
       await _cancelUrgencyIfLoggedToday();
       return;
     }
 
-    // Calculate days missed from lastLogDate
+    // Logged yesterday is not a miss — copy should nudge for *today*.
     int daysMissed = 0;
     if (lastLogDate.isNotEmpty &&
         lastLogDate != today &&
@@ -360,15 +368,55 @@ class NotificationService {
       if (verified < daysMissed) daysMissed = verified;
     }
 
-    // Both smart reminders are Maghrib-relative so they always fire
-    // BEFORE the Islamic day ends, regardless of season.
     final now = tz.TZDateTime.now(_bdTz);
     final todayGregorian = DateTime(now.year, now.month, now.day);
-    final maghribTime =
-        IslamicDateService.getMaghribTimeForDate(todayGregorian);
+    final nowTime = TimeOfDay(hour: now.hour, minute: now.minute);
+    final dailyEveningTime =
+        _customEveningTime ??
+        _prayerRelativeTimeForDate('maghrib', todayGregorian);
 
-    // Smart evening: 30 min before Maghrib (gentle reminder)
-    if (isEveningEnabled) {
+    // If the app first becomes active after both normal slots, permit one
+    // catch-up before 10 PM. After that, preserve the user's sleep window.
+    if (shouldScheduleEveningCatchUp(nowTime)) {
+      final catchUpIsUrgent = isStreakEnabled;
+      if (isEveningEnabled || catchUpIsUrgent) {
+        final catchUpAt = now.add(const Duration(minutes: 2));
+        final catchUpTime = TimeOfDay(
+          hour: catchUpAt.hour,
+          minute: catchUpAt.minute,
+        );
+        if (!_isSuppressedByQuietHours(catchUpTime) &&
+            catchUpAt.day == now.day &&
+            catchUpAt.hour < 22) {
+          final catchUpMsg = NotificationMessageService.getMessage(
+            NotificationContext(
+              currentStreak: currentStreak,
+              daysMissed: daysMissed,
+              isEveningCheck: !catchUpIsUrgent,
+              isUrgent: catchUpIsUrgent,
+            ),
+            locale,
+          );
+          await _safeZonedSchedule(
+            id: catchUpIsUrgent ? _midnightFallbackId : _streakId,
+            title: catchUpMsg.title,
+            body: catchUpMsg.body,
+            scheduledDate: catchUpAt,
+            payload: AppRoutes.home,
+            matchDateTimeComponents: null,
+          );
+        }
+      }
+      return;
+    }
+
+    // Gentle close-the-day prompt at 8 PM, unless the normal evening reminder
+    // already provides a nearby cue.
+    if ((isEveningEnabled || isStreakEnabled) &&
+        shouldScheduleEveningClose(
+          dailyEveningReminderEnabled: isEveningEnabled,
+          dailyEveningReminderTime: dailyEveningTime,
+        )) {
       final eveningMsg = NotificationMessageService.getMessage(
         NotificationContext(
           currentStreak: currentStreak,
@@ -378,35 +426,23 @@ class NotificationService {
         ),
         locale,
       );
-      final eveningTime = maghribTime.subtract(const Duration(minutes: 30));
-      final eveningTOD = TimeOfDay(
-        hour: eveningTime.hour,
-        minute: eveningTime.minute,
+      await _scheduleEveningPromptOnDate(
+        id: _streakId,
+        title: eveningMsg.title,
+        body: eveningMsg.body,
+        targetDate: todayGregorian,
+        desired: eveningCloseReminderTime,
+        now: now,
       );
-      if (!_isSuppressedByQuietHours(eveningTOD)) {
-        final scheduled = tz.TZDateTime(
-          _bdTz,
-          todayGregorian.year,
-          todayGregorian.month,
-          todayGregorian.day,
-          eveningTime.hour,
-          eveningTime.minute,
-        );
-        if (scheduled.isAfter(now)) {
-          await _safeZonedSchedule(
-            id: _smartEveningId,
-            title: eveningMsg.title,
-            body: eveningMsg.body,
-            scheduledDate: scheduled,
-            payload: AppRoutes.home,
-            matchDateTimeComponents: null,
-          );
-        }
-      }
     }
 
-    // Smart urgent: 10 min before Maghrib (last chance)
-    if (isStreakEnabled) {
+    // One final prompt at 8:45 PM, never clustered beside a custom reminder.
+    if (isStreakEnabled &&
+        shouldScheduleEveningLastChance(
+          dailyEveningReminderEnabled: isEveningEnabled,
+          hasCustomEveningTime: _customEveningTime != null,
+          dailyEveningReminderTime: dailyEveningTime,
+        )) {
       final urgentMsg = NotificationMessageService.getMessage(
         NotificationContext(
           currentStreak: currentStreak,
@@ -416,51 +452,26 @@ class NotificationService {
         ),
         locale,
       );
-      final urgentTime = maghribTime.subtract(const Duration(minutes: 10));
-      final urgentTOD = TimeOfDay(
-        hour: urgentTime.hour,
-        minute: urgentTime.minute,
+      await _scheduleEveningPromptOnDate(
+        id: _midnightFallbackId,
+        title: urgentMsg.title,
+        body: urgentMsg.body,
+        targetDate: todayGregorian,
+        desired: eveningLastChanceReminderTime,
+        now: now,
       );
-      if (!_isSuppressedByQuietHours(urgentTOD)) {
-        final scheduled = tz.TZDateTime(
-          _bdTz,
-          todayGregorian.year,
-          todayGregorian.month,
-          todayGregorian.day,
-          urgentTime.hour,
-          urgentTime.minute,
-        );
-        if (scheduled.isAfter(now)) {
-          await _safeZonedSchedule(
-            id: _smartUrgentId,
-            title: urgentMsg.title,
-            body: urgentMsg.body,
-            scheduledDate: scheduled,
-            payload: AppRoutes.home,
-            matchDateTimeComponents: null,
-          );
-        }
-      }
     }
   }
 
   Future<void> _cancelUrgencyIfLoggedToday() async {
-    // After Maghrib the Hijri date rolls forward to "tomorrow". A log made
-    // earlier today (before Maghrib) is stored under hijriPrev, so we must
-    // check both dates to correctly suppress pending warnings.
     final hijriNow = IslamicDateService.getCurrentIslamicDateStringSafe();
-    final hijriPrev = IslamicDateService.shiftStorageByDays(hijriNow, -1);
+    if (!await _hasLoggedIslamicDate(hijriNow)) return;
 
-    final loggedNow = await _hasLoggedIslamicDate(hijriNow);
-    final loggedPrev = await _hasLoggedIslamicDate(hijriPrev);
-    if (!loggedNow && !loggedPrev) return;
-
+    await _localNotifications.cancel(_eveningId);
     await _localNotifications.cancel(_streakId);
     await _localNotifications.cancel(_midnightFallbackId);
-    for (var i = 1; i < _notificationDaysAhead; i++) {
-      await _localNotifications.cancel(_streakId + i);
-      await _localNotifications.cancel(_midnightFallbackId + i);
-    }
+    await _localNotifications.cancel(_legacySmartEveningId);
+    await _localNotifications.cancel(_legacySmartUrgentId);
   }
 
   Future<void> _safeRescheduleAll() async {
@@ -538,16 +549,13 @@ class NotificationService {
   }
 
   Future<void> cancelLocalSchedules() async {
-    await _localNotifications.cancel(_morningId);
-    await _localNotifications.cancel(_eveningId);
-    await _localNotifications.cancel(_streakId);
-    // Cancel additional streak warning IDs for 7-day window
-    for (var i = 1; i < 7; i++) {
+    // Remove one-shot 11:30/11:50 PM alarms left by older app versions.
+    await _localNotifications.cancel(_legacySmartEveningId);
+    await _localNotifications.cancel(_legacySmartUrgentId);
+    for (var i = 0; i < _notificationDaysAhead; i++) {
+      await _localNotifications.cancel(_morningId + i);
+      await _localNotifications.cancel(_eveningId + i);
       await _localNotifications.cancel(_streakId + i);
-    }
-    await _localNotifications.cancel(_midnightFallbackId);
-    // Cancel urgent pre-Maghrib fallback IDs for 7-day window
-    for (var i = 1; i < 7; i++) {
       await _localNotifications.cancel(_midnightFallbackId + i);
     }
     await _localNotifications.cancel(_jumuahId);
@@ -605,35 +613,48 @@ class NotificationService {
 
   bool get isMorningEnabled =>
       LocalStorageService.getPref<bool>(notifMorningKey, true);
-  TimeOfDay get morningTime => TimeOfDay(
-    hour: LocalStorageService.getPref<int>(notifMorningHourKey, 6),
-    minute: LocalStorageService.getPref<int>(notifMorningMinuteKey, 30),
-  );
-  bool get isEveningEnabled =>
-      LocalStorageService.getPref<bool>(notifEveningKey, true);
-  TimeOfDay get eveningTime {
-    final storedHour = LocalStorageService.getPref<int?>(
-      notifEveningHourKey,
+  TimeOfDay? get _customMorningTime {
+    final hour = LocalStorageService.getPref<int?>(notifMorningHourKey, null);
+    final minute = LocalStorageService.getPref<int?>(
+      notifMorningMinuteKey,
       null,
     );
-    final storedMinute = LocalStorageService.getPref<int?>(
+    if (hour == null || minute == null) return null;
+    return TimeOfDay(hour: hour, minute: minute);
+  }
+
+  /// Today's user-selected time, or 15 minutes after calculated Fajr.
+  TimeOfDay get morningTime =>
+      _customMorningTime ?? _prayerRelativeTimeForDate('fajr', _bdToday());
+  bool get isEveningEnabled =>
+      LocalStorageService.getPref<bool>(notifEveningKey, true);
+  TimeOfDay? get _customEveningTime {
+    final hour = LocalStorageService.getPref<int?>(notifEveningHourKey, null);
+    final minute = LocalStorageService.getPref<int?>(
       notifEveningMinuteKey,
       null,
     );
+    if (hour == null || minute == null) return null;
+    return TimeOfDay(hour: hour, minute: minute);
+  }
 
-    // If user has customized the time, use their preference
-    if (storedHour != null && storedMinute != null) {
-      return TimeOfDay(hour: storedHour, minute: storedMinute);
-    }
+  /// Today's user-selected time, or 15 minutes after calculated Maghrib.
+  TimeOfDay get eveningTime =>
+      _customEveningTime ?? _prayerRelativeTimeForDate('maghrib', _bdToday());
 
-    // Default: Use Maghrib prayer time
-    try {
-      final maghribTime = IslamicDateService.getMaghribTime();
-      return TimeOfDay(hour: maghribTime.hour, minute: maghribTime.minute);
-    } catch (_) {
-      // Fallback to 5 PM if Maghrib calculation fails
-      return const TimeOfDay(hour: 17, minute: 0);
-    }
+  DateTime _bdToday() {
+    final now = IslamicDateService.nowInBD();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  TimeOfDay _prayerRelativeTimeForDate(String prayer, DateTime targetDate) {
+    final prayerTime = IslamicDateService.getPrayerTimesForDate(
+      targetDate,
+    ).forPrayer(prayer);
+    final reminderTime = prayerTime.add(
+      const Duration(minutes: _dailyPrayerReminderOffsetMinutes),
+    );
+    return TimeOfDay(hour: reminderTime.hour, minute: reminderTime.minute);
   }
 
   bool get isStreakEnabled =>
@@ -644,12 +665,12 @@ class NotificationService {
       LocalStorageService.getPref<bool>(notifStudyReviewKey, true);
 
   TimeOfDay get quietFrom => TimeOfDay(
-    hour: LocalStorageService.getPref<int>(quietFromHourKey, 22),
-    minute: LocalStorageService.getPref<int>(quietFromMinuteKey, 30),
+    hour: LocalStorageService.getPref<int>(quietFromHourKey, 0),
+    minute: LocalStorageService.getPref<int>(quietFromMinuteKey, 0),
   );
 
   TimeOfDay get quietTo => TimeOfDay(
-    hour: LocalStorageService.getPref<int>(quietToHourKey, 5),
+    hour: LocalStorageService.getPref<int>(quietToHourKey, 3),
     minute: LocalStorageService.getPref<int>(quietToMinuteKey, 0),
   );
 
@@ -717,6 +738,11 @@ class NotificationService {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return false;
+      // Submission is persisted locally before reminder cancellation. This
+      // prevents stale warnings when Firestore is offline or still syncing.
+      final localKey = 'log_${user.uid}_$hijriDate';
+      if (LocalStorageService.getLog(localKey) != null) return true;
+
       final docId = '${user.uid}_$hijriDate';
       final doc = await FirebaseFirestore.instance
           .collection('amal_logs')
@@ -775,54 +801,70 @@ class NotificationService {
   }
 
   Future<void> _scheduleMorning() async {
-    final at = morningTime;
-    if (_isSuppressedByQuietHours(at)) return;
     final selectedBody = _pickMessage(
       category: 'morning',
       pool: _morningBodies,
     );
-    if (_isCurrentMinute(at)) {
-      await _localNotifications.show(
-        _morningId + 100000,
-        'ফজরের পর — আমলের শুরু',
-        selectedBody,
-        _notificationDetails(payload: AppRoutes.home, body: selectedBody),
+    final now = tz.TZDateTime.now(_bdTz);
+    final custom = _customMorningTime;
+    for (var dayOffset = 0; dayOffset < _notificationDaysAhead; dayOffset++) {
+      final targetDate = _bdToday().add(Duration(days: dayOffset));
+      final at = custom ?? _prayerRelativeTimeForDate('fajr', targetDate);
+      if (_isSuppressedByQuietHours(at)) continue;
+      final scheduled = tz.TZDateTime(
+        _bdTz,
+        targetDate.year,
+        targetDate.month,
+        targetDate.day,
+        at.hour,
+        at.minute,
+      );
+      if (!scheduled.isAfter(now)) continue;
+      await _schedulePolicyAware(
+        id: _morningId + dayOffset,
+        title: 'ফজরের পর — আমলের শুরু',
+        body: selectedBody,
+        scheduledDate: scheduled,
         payload: AppRoutes.home,
+        category: 'morning',
+        matchDateTimeComponents: null,
       );
     }
-    await _schedulePolicyAware(
-      id: _morningId,
-      title: 'ফজরের পর — আমলের শুরু',
-      body: selectedBody,
-      scheduledDate: _nextInstanceForRecurring(at),
-      payload: AppRoutes.home,
-      category: 'morning',
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
   }
 
   Future<void> _scheduleEveningNoLog() async {
     final hijriDate = IslamicDateService.getCurrentIslamicDateStringSafe();
-    final hijriPrev = IslamicDateService.shiftStorageByDays(hijriDate, -1);
-    // After Maghrib the Islamic day rolls forward. A log made before Maghrib
-    // sits under hijriPrev, so check both dates.
-    if (await _hasLoggedIslamicDate(hijriDate)) return;
-    if (await _hasLoggedIslamicDate(hijriPrev)) return;
-    final at = eveningTime;
-    if (_isSuppressedByQuietHours(at)) return;
+    final loggedToday = await _hasLoggedIslamicDate(hijriDate);
     final selectedBody = _pickMessage(
       category: 'evening',
       pool: _eveningBodies,
     );
-    await _schedulePolicyAware(
-      id: _eveningId,
-      title: 'আসরের পর — সন্ধ্যার প্রস্তুতি',
-      body: selectedBody,
-      scheduledDate: _nextInstanceForRecurring(at),
-      payload: AppRoutes.home,
-      category: 'evening',
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
+    final now = tz.TZDateTime.now(_bdTz);
+    final custom = _customEveningTime;
+    for (var dayOffset = 0; dayOffset < _notificationDaysAhead; dayOffset++) {
+      if (dayOffset == 0 && loggedToday) continue;
+      final targetDate = _bdToday().add(Duration(days: dayOffset));
+      final at = custom ?? _prayerRelativeTimeForDate('maghrib', targetDate);
+      if (_isSuppressedByQuietHours(at)) continue;
+      final scheduled = tz.TZDateTime(
+        _bdTz,
+        targetDate.year,
+        targetDate.month,
+        targetDate.day,
+        at.hour,
+        at.minute,
+      );
+      if (!scheduled.isAfter(now)) continue;
+      await _schedulePolicyAware(
+        id: _eveningId + dayOffset,
+        title: 'মাগরিবের পর — আজকের আমল',
+        body: selectedBody,
+        scheduledDate: scheduled,
+        payload: AppRoutes.home,
+        category: 'evening',
+        matchDateTimeComponents: null,
+      );
+    }
   }
 
   Future<void> _scheduleStreakWarning() async {
@@ -830,12 +872,8 @@ class NotificationService {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      // After Maghrib the Hijri date rolls forward. A log made before Maghrib
-      // sits under hijriPrev, so check both dates before scheduling warnings.
       final hijriNow = IslamicDateService.getCurrentIslamicDateStringSafe();
-      final hijriPrev = IslamicDateService.shiftStorageByDays(hijriNow, -1);
-      if (await _hasLoggedIslamicDate(hijriNow)) return;
-      if (await _hasLoggedIslamicDate(hijriPrev)) return;
+      final loggedToday = await _hasLoggedIslamicDate(hijriNow);
 
       final now = tz.TZDateTime.now(_bdTz);
 
@@ -843,84 +881,61 @@ class NotificationService {
         category: 'streak',
         pool: _streakBodies,
       );
-      // Urgent body reuses _midnightBodies — the copy still fits a 5-min warning.
       final urgentBody = _pickMessage(
         category: 'streak_urgent',
-        pool: _midnightBodies,
+        pool: _lastChanceBodies,
       );
 
       for (int dayOffset = 0; dayOffset < _notificationDaysAhead; dayOffset++) {
+        if (dayOffset == 0 && loggedToday) continue;
         final targetDate = DateTime(
           now.year,
           now.month,
           now.day,
         ).add(Duration(days: dayOffset));
+        final dailyEveningTime =
+            _customEveningTime ??
+            _prayerRelativeTimeForDate('maghrib', targetDate);
 
-        final maghribTime =
-            IslamicDateService.getMaghribTimeForDate(targetDate);
-
-        // — Primary warning: 15 min before Maghrib —
-        final primaryTime = maghribTime.subtract(const Duration(minutes: 15));
-        final primaryTOD = TimeOfDay(
-          hour: primaryTime.hour,
-          minute: primaryTime.minute,
-        );
-        if (!_isSuppressedByQuietHours(primaryTOD)) {
-          final primaryScheduled = tz.TZDateTime(
-            _bdTz,
-            targetDate.year,
-            targetDate.month,
-            targetDate.day,
-            primaryTime.hour,
-            primaryTime.minute,
+        if (shouldScheduleEveningClose(
+          dailyEveningReminderEnabled: isEveningEnabled,
+          dailyEveningReminderTime: dailyEveningTime,
+        )) {
+          await _scheduleEveningPromptOnDate(
+            id: _streakId + dayOffset,
+            title: 'আজকের আমল বাকি আছে!',
+            body: selectedBody,
+            targetDate: targetDate,
+            desired: eveningCloseReminderTime,
+            now: now,
+            category: 'streak',
           );
-          if (primaryScheduled.isAfter(now)) {
-            await _schedulePolicyAware(
-              id: _streakId + dayOffset,
-              title: 'আজকের আমল বাকি আছে!',
-              body: selectedBody,
-              scheduledDate: primaryScheduled,
-              payload: AppRoutes.home,
-              category: 'streak',
-              matchDateTimeComponents: null,
-            );
-          }
         }
-
-        // — Urgent warning: 5 min before Maghrib (still within the same Islamic day) —
-        // Replaces the old 11:30 PM midnight fallback which fired AFTER the
-        // Islamic day had already ended at Maghrib.
-        final urgentTime = maghribTime.subtract(const Duration(minutes: 5));
-        final urgentTOD = TimeOfDay(
-          hour: urgentTime.hour,
-          minute: urgentTime.minute,
-        );
-        if (!_isSuppressedByQuietHours(urgentTOD)) {
-          final urgentScheduled = tz.TZDateTime(
-            _bdTz,
-            targetDate.year,
-            targetDate.month,
-            targetDate.day,
-            urgentTime.hour,
-            urgentTime.minute,
+        if (shouldScheduleEveningLastChance(
+          dailyEveningReminderEnabled: isEveningEnabled,
+          hasCustomEveningTime: _customEveningTime != null,
+          dailyEveningReminderTime: dailyEveningTime,
+        )) {
+          // Keep the legacy ID so pending 11:50 PM alarms are replaced.
+          await _scheduleEveningPromptOnDate(
+            id: _midnightFallbackId + dayOffset,
+            title: 'রাত গভীর হওয়ার আগে আমল লগ করুন',
+            body: urgentBody,
+            targetDate: targetDate,
+            desired: eveningLastChanceReminderTime,
+            now: now,
+            category: 'streak_urgent',
           );
-          if (urgentScheduled.isAfter(now)) {
-            await _schedulePolicyAware(
-              id: _midnightFallbackId + dayOffset,
-              title: 'দিন শেষ হওয়ার আগে আমল লগ করুন',
-              body: urgentBody,
-              scheduledDate: urgentScheduled,
-              payload: AppRoutes.home,
-              category: 'streak_urgent',
-              matchDateTimeComponents: null,
-            );
-          }
         }
       }
     } catch (_) {
-      // Fallback to default time (6 PM) if Maghrib calculation fails
-      const at = TimeOfDay(hour: 18, minute: 0);
-      if (_isSuppressedByQuietHours(at)) return;
+      const at = eveningLastChanceReminderTime;
+      final effective = QuietHoursHelper.sameDayTimeBeforeQuietHours(
+        at,
+        from: quietFrom,
+        to: quietTo,
+      );
+      if (effective == null) return;
       final selectedBody = _pickMessage(
         category: 'streak',
         pool: _streakBodies,
@@ -929,10 +944,65 @@ class NotificationService {
         id: _streakId,
         title: 'আজকের আমল বাকি আছে!',
         body: selectedBody,
-        scheduledDate: _nextInstanceForRecurring(at),
+        scheduledDate: _nextInstanceForRecurring(effective),
         payload: AppRoutes.home,
         category: 'streak',
         matchDateTimeComponents: DateTimeComponents.time,
+      );
+    }
+  }
+
+  /// Schedules an evening prompt on [targetDate]. If [desired] is inside quiet
+  /// hours, uses a same-day fallback before quiet hours. The prompt is skipped
+  /// when no same-day slot exists or the computed instant is already past.
+  Future<void> _scheduleEveningPromptOnDate({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime targetDate,
+    required TimeOfDay desired,
+    required tz.TZDateTime now,
+    String? category,
+  }) async {
+    final quietFallbackMinutes = desired == eveningLastChanceReminderTime
+        ? 5
+        : 15;
+    final at = QuietHoursHelper.sameDayTimeBeforeQuietHours(
+      desired,
+      from: quietFrom,
+      to: quietTo,
+      fallbackMinutes: quietFallbackMinutes,
+    );
+    if (at == null) return;
+
+    final scheduled = tz.TZDateTime(
+      _bdTz,
+      targetDate.year,
+      targetDate.month,
+      targetDate.day,
+      at.hour,
+      at.minute,
+    );
+    if (!scheduled.isAfter(now)) return;
+
+    if (category != null) {
+      await _schedulePolicyAware(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduled,
+        payload: AppRoutes.home,
+        category: category,
+        matchDateTimeComponents: null,
+      );
+    } else {
+      await _safeZonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduled,
+        payload: AppRoutes.home,
+        matchDateTimeComponents: null,
       );
     }
   }
@@ -951,8 +1021,6 @@ class NotificationService {
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
     );
   }
-
-
 
   Future<void> _scheduleAyyamBid() async {
     final now = DateTime.now();
@@ -1131,11 +1199,6 @@ class NotificationService {
     );
   }
 
-  bool _isCurrentMinute(TimeOfDay time) {
-    final now = tz.TZDateTime.now(_bdTz);
-    return now.hour == time.hour && now.minute == time.minute;
-  }
-
   tz.TZDateTime _nextInstance(TimeOfDay time) {
     final now = tz.TZDateTime.now(_bdTz);
     var scheduled = tz.TZDateTime(
@@ -1177,7 +1240,9 @@ class NotificationService {
     return date;
   }
 
-  ({String title, String body}) _studyReviewNotificationCopy(String lessonTitle) {
+  ({String title, String body}) _studyReviewNotificationCopy(
+    String lessonTitle,
+  ) {
     final locale = LocalStorageService.getPref<String>('app_locale', 'bn');
     final label = lessonTitle.trim().isEmpty
         ? (locale.startsWith('bn') ? 'আপনার পাঠ' : 'your lesson')
@@ -1213,14 +1278,18 @@ class NotificationService {
         if (!scheduled.isAfter(now)) {
           scheduled = now.add(const Duration(minutes: 5));
         }
-        if (scheduled.isAfter(now.add(const Duration(days: _lessonReviewLookaheadDays)))) {
+        if (scheduled.isAfter(
+          now.add(const Duration(days: _lessonReviewLookaheadDays)),
+        )) {
           continue;
         }
         if (_isSuppressedByQuietHours(
           TimeOfDay(hour: scheduled.hour, minute: scheduled.minute),
         )) {
           scheduled = _nextTimeOutsideQuietHours(scheduled);
-          if (scheduled.isAfter(now.add(const Duration(days: _lessonReviewLookaheadDays)))) {
+          if (scheduled.isAfter(
+            now.add(const Duration(days: _lessonReviewLookaheadDays)),
+          )) {
             continue;
           }
         }
@@ -1270,7 +1339,8 @@ class NotificationService {
 
   String? _prayerNameFromNotificationId(int id) {
     for (final entry in PrayerAdhanConstants.baseNotificationIds.entries) {
-      if (id >= entry.value && id < entry.value + PrayerAdhanConstants.daysAhead) {
+      if (id >= entry.value &&
+          id < entry.value + PrayerAdhanConstants.daysAhead) {
         return entry.key;
       }
     }
@@ -1294,10 +1364,8 @@ class NotificationService {
       case 'streak_warning':
         return AppRoutes.home;
       case 'syllabus_review':
-        final courseId =
-            (message.data['courseId'] ?? '').toString();
-        final lessonId =
-            (message.data['lessonId'] ?? '').toString();
+        final courseId = (message.data['courseId'] ?? '').toString();
+        final lessonId = (message.data['lessonId'] ?? '').toString();
         if (courseId.isNotEmpty && lessonId.isNotEmpty) {
           return AppRoutes.lessonViewerPath(courseId, lessonId);
         }

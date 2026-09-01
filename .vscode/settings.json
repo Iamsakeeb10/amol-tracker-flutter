@@ -1,0 +1,8 @@
+{
+  // Flutter drives the Android build through `flutter run`, which invokes the
+  // Gradle wrapper itself. Letting the Gradle extension also auto-sync
+  // android/ makes both compete for android/.gradle/*/buildLogic.lock, and the
+  // flutter build fails with "Timeout waiting to lock build logic queue".
+  "gradle.autoDetect": "off",
+  "gradle.nestedProjects": false
+}

@@ -193,7 +193,7 @@ class _StreakBottomSheetState extends ConsumerState<StreakBottomSheet> {
   /// Hijri day than the log's own [hijriDate]. Backfilled logs should not
   /// count as "completed" for streak display purposes.
   ///
-  /// Uses Maghrib-aware date conversion so a submission after Maghrib
+  /// Uses date conversion so a submission after midnight
   /// (which counts as the next Islamic day) is not falsely marked backfilled.
   static bool _isBackfilled(AmalLogModel log, String hijriDate) {
     try {

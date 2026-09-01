@@ -39,7 +39,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get morningNotification => 'Morning notification';
 
   @override
-  String get morningNotificationTime => '6:00 AM each morning';
+  String get morningNotificationTime => '15 minutes after Fajr';
 
   @override
   String get morningNotificationTimeLabel => 'Morning time';
@@ -48,7 +48,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eveningNotification => 'Evening notification';
 
   @override
-  String get eveningNotificationTime => '6:30 PM each evening';
+  String get eveningNotificationTime => '15 minutes after Maghrib';
 
   @override
   String get eveningNotificationTimeLabel => 'Evening time';
@@ -83,7 +83,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reminderTimesDescription =>
-      'Set the exact reminder time for morning and evening notifications.';
+      'By default, morning and evening reminders follow Fajr and Maghrib. Choose a time to override the calculated schedule.';
 
   @override
   String get prayerAdhanReminder => 'Prayer adhan reminder';
@@ -486,7 +486,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quietHoursDescription =>
-      'Notifications stay silent during these hours. Notification schedules still run.';
+      'Notifications stay silent during these hours. The default 12:00 AM–3:00 AM window does not overlap standard reminders.';
 
   @override
   String get from => 'FROM';
@@ -611,11 +611,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get next => 'Next';
 
   @override
-  String get howAmolLoggingWorksTitle => 'Reminder';
+  String get howAmolLoggingWorksTitle => 'How a day works';
 
   @override
   String get howAmolLoggingWorksBody =>
-      'In this app, a day starts at Maghrib and ends at the next Maghrib. So, log today\'s amal before the next Maghrib. Any amal logged after Maghrib will be counted as part of the new day.';
+      'A day here follows the calendar: it starts at 12:00 AM and ends at 11:59 PM. Log today\'s amal before midnight - anything logged after that counts towards the next day.';
 
   @override
   String get buildDailyHabitTitle => 'Build Daily Habits';
@@ -629,7 +629,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get streaksKeepYouGoingBody =>
-      'Log at least one amal every Hijri day before the next Maghrib to keep your streak and stay consistent.';
+      'Log at least one amal every day before midnight to keep your streak and stay consistent.';
 
   @override
   String get setupProfileTitle => 'Set Up Your Profile';
@@ -1734,11 +1734,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminToggleFailed => 'Could not update announcement.';
 
   @override
-  String get homeReminderTitle => 'Reminder';
+  String get homeReminderTitle => 'Day timing has changed';
 
   @override
   String get homeReminderBody =>
-      'In this app, a \"day\" runs from **Maghrib** to the next **Maghrib**—not from midnight. Since a new day begins at sunset, please log your daily deeds before Maghrib. Your streak and all progress are calculated based on this schedule.';
+      'We changed how a day is counted. Earlier a day ran from **Maghrib to the next Maghrib**. From now on a day runs from **12:00 AM to 11:59 PM**, the same as the date on your phone. So log today\'s amal before midnight - your streak, reports and everything else now follow this timing.';
 
   @override
   String get seeMore => 'See more';

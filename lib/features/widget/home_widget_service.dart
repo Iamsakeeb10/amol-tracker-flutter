@@ -16,7 +16,7 @@ import 'widget_score_label.dart';
 /// - Every amal toggle/numeric change
 /// - After amal submission
 /// - On app resume
-/// - When Islamic date changes (after Maghrib)
+/// - When Islamic date changes (after midnight)
 class HomeWidgetService {
   HomeWidgetService._();
 

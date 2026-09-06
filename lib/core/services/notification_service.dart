@@ -58,7 +58,9 @@ class NotificationService {
   static const int _legacySmartEveningId = 9001;
   static const int _legacySmartUrgentId = 9002;
   static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 8, minute: 0);
-  static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 21, minute: 0);
+  // Moved from 9 PM to 10 PM: streak warnings now occupy 9:15–9:45 PM;
+  // 10 PM is a natural "before sleep" slot matching the notification suffix.
+  static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 22, minute: 0);
   static const String _lastSentKeyPrefix = 'notif_last_sent_';
   static const String _fcmOwnerUidKey = 'fcm_token_owner_uid';
   static final tz.Location _bdTz = tz.getLocation('Asia/Dhaka');
@@ -387,7 +389,7 @@ class NotificationService {
         );
         if (!_isSuppressedByQuietHours(catchUpTime) &&
             catchUpAt.day == now.day &&
-            catchUpAt.hour < 22) {
+            catchUpAt.hour < 23) {
           final catchUpMsg = NotificationMessageService.getMessage(
             NotificationContext(
               currentStreak: currentStreak,

@@ -31,4 +31,19 @@
 # Keep notification receivers when R8/minify is enabled.
 -keep class com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver { *; }
 -keep class com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver { *; }
+-keep class com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver { *; }
 -keep class com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin { *; }
+
+# Home screen widget (RemoteViews + home_widget).
+-keep class com.shakib.amol.amol_tracker_app.AmolWidgetProvider { *; }
+-keep class com.shakib.amol.amol_tracker_app.WidgetAmalListBuilder { *; }
+-keep class com.shakib.amol.amol_tracker_app.WidgetUiUtils { *; }
+-keep class com.shakib.amol.amol_tracker_app.WidgetPrefsUtils { *; }
+
+# Quran/dua audio foreground service.
+-keep class com.ryanheise.audioservice.AudioService { *; }
+-keep class com.ryanheise.audioservice.MediaButtonReceiver { *; }
+
+# Retrace obfuscated Java/Kotlin stack traces (Crashlytics / Play deobfuscation).
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

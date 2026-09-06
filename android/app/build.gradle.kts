@@ -50,10 +50,10 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            // Minify/shrink disabled: adhan uses native ScheduledNotificationReceiver +
-            // Gson-cached payloads; enable only with proguard-rules.pro receiver keeps.
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // R8 enabled for Play Console app-optimization (obfuscation/shrinking).
+            // Keep rules in proguard-rules.pro protect notifications, widget, and audio.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

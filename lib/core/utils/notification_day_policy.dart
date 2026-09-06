@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 /// Preferred evening windows for action-oriented amal reminders.
-const TimeOfDay eveningCloseReminderTime = TimeOfDay(hour: 20, minute: 0);
-const TimeOfDay eveningLastChanceReminderTime = TimeOfDay(hour: 20, minute: 45);
+/// After Esha (~8–9 PM), 5 prayers are typically complete.
+/// Streak reminders are therefore pushed to 9:15 PM and 9:45 PM so they
+/// fire after the last prayer rather than during it.
+const TimeOfDay eveningCloseReminderTime = TimeOfDay(hour: 21, minute: 15);
+const TimeOfDay eveningLastChanceReminderTime = TimeOfDay(hour: 21, minute: 45);
 
 /// Whether today's Islamic-day reminders should be suppressed.
 ///
@@ -28,7 +31,9 @@ bool shouldScheduleEveningClose({
       45;
 }
 
-/// Avoids placing the 8:45 PM prompt beside a user-selected evening reminder.
+/// Avoids placing the 9:45 PM prompt beside a user-selected evening reminder.
+/// Suppressed when the custom time falls within ±30 min of the last-chance
+/// slot (i.e. between 9:15 PM and 10:15 PM).
 bool shouldScheduleEveningLastChance({
   required bool dailyEveningReminderEnabled,
   required bool hasCustomEveningTime,
@@ -36,7 +41,7 @@ bool shouldScheduleEveningLastChance({
 }) {
   if (!dailyEveningReminderEnabled || !hasCustomEveningTime) return true;
   final minutes = _minutes(dailyEveningReminderTime);
-  return minutes < 20 * 60 + 30 || minutes > 21 * 60;
+  return minutes < 21 * 60 + 15 || minutes > 22 * 60 + 15;
 }
 
 /// A single catch-up may be sent after the regular slots, but never after

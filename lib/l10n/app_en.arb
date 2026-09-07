@@ -383,7 +383,7 @@
   "history": "HISTORY",
   "historyTabCommunityAmol": "Community Amol",
   "historyTabPersonalAmol": "Personal Amol",
-  "historyLoadFailed": "Could not load history.",
+  "historyLoadFailed": "Couldn't load history. Try again.",
   "historyConsistency": "{value}% consistency",
   "@historyConsistency": {
     "placeholders": {
@@ -524,7 +524,7 @@
   "deleteThisGroup": "Delete this group?",
   "deleteGroupWarning": "Members will lose access. This cannot be undone.",
   "delete": "Delete",
-  "dayStreak": "{days} day streak",
+  "dayStreak": "{days}-day streak",
   "@dayStreak": {
     "placeholders": {
       "days": {}
@@ -1540,33 +1540,33 @@
   "battleTopic": "Topic",
   "battleQuestions": "Questions",
   "battleTimeLimit": "Time",
-  "personalAmolSectionTitle": "Personal Amol",
-  "personalAmolEmptyHeadline": "Add your own amol",
-  "personalAmolEmptySubtitle": "Track any daily habit, just for you",
-  "personalAmolNoneDueToday": "No personal amol is scheduled today.",
+  "personalAmolSectionTitle": "My Amol",
+  "personalAmolEmptyHeadline": "Add your first amol",
+  "personalAmolEmptySubtitle": "Any daily habit — just for you",
+  "personalAmolNoneDueToday": "No amol for today",
   "personalAmolEmptyCta": "Add",
-  "personalAmolCapMessage": "You have reached the limit of {max} personal amol.",
+  "personalAmolCapMessage": "You've reached the {max} amol limit.",
   "@personalAmolCapMessage": {
     "placeholders": {
       "max": {}
     }
   },
-  "personalAmolListTitle": "Personal Amol",
-  "personalAmolCreateTitle": "New Personal Amol",
-  "personalAmolEditTitle": "Edit Personal Amol",
+  "personalAmolListTitle": "My Amol",
+  "personalAmolCreateTitle": "New Amol",
+  "personalAmolEditTitle": "Edit Amol",
   "personalAmolNameLabel": "Name",
-  "personalAmolNameHint": "e.g. Read Quran, Daily Dua",
-  "personalAmolNameRequired": "Please enter a name",
+  "personalAmolNameHint": "e.g. Reading Quran, Daily Dua",
+  "personalAmolNameRequired": "Enter a name",
   "personalAmolIconLabel": "Icon",
-  "personalAmolFrequencyLabel": "Frequency",
+  "personalAmolFrequencyLabel": "Repeat",
   "personalAmolFrequencyDaily": "Every day",
-  "personalAmolFrequencyWeekdays": "Specific days",
+  "personalAmolFrequencyWeekdays": "Choose days",
   "personalAmolAddLabel": "Add",
   "personalAmolSaveLabel": "Save",
   "personalAmolEditLabel": "Edit",
   "personalAmolDeleteLabel": "Delete",
   "personalAmolDeleteConfirm": "Delete this amol?",
-  "personalAmolDeleteSubtitle": "Your history will not be deleted.",
+  "personalAmolDeleteSubtitle": "Your history won't be deleted.",
   "personalAmolStreakLabel": "{n}-day streak",
   "@personalAmolStreakLabel": {
     "placeholders": {
@@ -1580,17 +1580,17 @@
       "total": {}
     }
   },
-  "personalAmolHistorySection": "Personal Amol",
+  "personalAmolHistorySection": "My Amol",
   "personalAmolHistoryCompleted": "Completed",
   "personalAmolHistoryNotCompleted": "Not completed",
-  "personalAmolHistoryTotalLabel": "Completions",
+  "personalAmolHistoryTotalLabel": "Times completed",
   "personalAmolTypeLabel": "Tracking type",
-  "personalAmolTypeToggle": "Toggle",
+  "personalAmolTypeToggle": "Done / Not done",
   "personalAmolTypeCount": "Count",
   "personalAmolTargetLabel": "Daily target",
-  "personalAmolTargetHint": "How many times per day",
+  "personalAmolTargetHint": "Times per day",
   "personalAmolSeeAllIcons": "See all",
-  "personalAmolIconPickerTitle": "Choose an icon",
+  "personalAmolIconPickerTitle": "Pick an icon",
   "personalAmolWeekdaySat": "শনি",
   "personalAmolWeekdaySun": "রবি",
   "personalAmolWeekdayMon": "সোম",
@@ -1598,7 +1598,7 @@
   "personalAmolWeekdayWed": "বুধ",
   "personalAmolWeekdayThu": "বৃহস্পতি",
   "personalAmolWeekdayFri": "শুক্র",
-  "personalAmolCountMaxReached": "Daily target already reached.",
-  "personalAmolCountMinReached": "Count is already 0. Nothing left to remove.",
+  "personalAmolCountMaxReached": "Target reached!",
+  "personalAmolCountMinReached": "Already at 0",
   "closeLabel": "Close"
 }

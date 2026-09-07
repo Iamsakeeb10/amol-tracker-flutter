@@ -1511,7 +1511,7 @@ abstract class AppLocalizations {
   /// No description provided for @historyLoadFailed.
   ///
   /// In en, this message translates to:
-  /// **'Could not load history.'**
+  /// **'Couldn\'t load history. Try again.'**
   String get historyLoadFailed;
 
   /// No description provided for @historyConsistency.
@@ -2135,7 +2135,7 @@ abstract class AppLocalizations {
   /// No description provided for @dayStreak.
   ///
   /// In en, this message translates to:
-  /// **'{days} day streak'**
+  /// **'{days}-day streak'**
   String dayStreak(Object days);
 
   /// No description provided for @groupSheet.
@@ -5806,25 +5806,25 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolSectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Personal Amol'**
+  /// **'My Amol'**
   String get personalAmolSectionTitle;
 
   /// No description provided for @personalAmolEmptyHeadline.
   ///
   /// In en, this message translates to:
-  /// **'Add your own amol'**
+  /// **'Add your first amol'**
   String get personalAmolEmptyHeadline;
 
   /// No description provided for @personalAmolEmptySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Track any daily habit, just for you'**
+  /// **'Any daily habit — just for you'**
   String get personalAmolEmptySubtitle;
 
   /// No description provided for @personalAmolNoneDueToday.
   ///
   /// In en, this message translates to:
-  /// **'No personal amol is scheduled today.'**
+  /// **'No amol for today'**
   String get personalAmolNoneDueToday;
 
   /// No description provided for @personalAmolEmptyCta.
@@ -5836,25 +5836,25 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolCapMessage.
   ///
   /// In en, this message translates to:
-  /// **'You have reached the limit of {max} personal amol.'**
+  /// **'You\'ve reached the {max} amol limit.'**
   String personalAmolCapMessage(Object max);
 
   /// No description provided for @personalAmolListTitle.
   ///
   /// In en, this message translates to:
-  /// **'Personal Amol'**
+  /// **'My Amol'**
   String get personalAmolListTitle;
 
   /// No description provided for @personalAmolCreateTitle.
   ///
   /// In en, this message translates to:
-  /// **'New Personal Amol'**
+  /// **'New Amol'**
   String get personalAmolCreateTitle;
 
   /// No description provided for @personalAmolEditTitle.
   ///
   /// In en, this message translates to:
-  /// **'Edit Personal Amol'**
+  /// **'Edit Amol'**
   String get personalAmolEditTitle;
 
   /// No description provided for @personalAmolNameLabel.
@@ -5866,13 +5866,13 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolNameHint.
   ///
   /// In en, this message translates to:
-  /// **'e.g. Read Quran, Daily Dua'**
+  /// **'e.g. Reading Quran, Daily Dua'**
   String get personalAmolNameHint;
 
   /// No description provided for @personalAmolNameRequired.
   ///
   /// In en, this message translates to:
-  /// **'Please enter a name'**
+  /// **'Enter a name'**
   String get personalAmolNameRequired;
 
   /// No description provided for @personalAmolIconLabel.
@@ -5884,7 +5884,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolFrequencyLabel.
   ///
   /// In en, this message translates to:
-  /// **'Frequency'**
+  /// **'Repeat'**
   String get personalAmolFrequencyLabel;
 
   /// No description provided for @personalAmolFrequencyDaily.
@@ -5896,7 +5896,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolFrequencyWeekdays.
   ///
   /// In en, this message translates to:
-  /// **'Specific days'**
+  /// **'Choose days'**
   String get personalAmolFrequencyWeekdays;
 
   /// No description provided for @personalAmolAddLabel.
@@ -5932,7 +5932,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolDeleteSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Your history will not be deleted.'**
+  /// **'Your history won\'t be deleted.'**
   String get personalAmolDeleteSubtitle;
 
   /// No description provided for @personalAmolStreakLabel.
@@ -5950,7 +5950,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolHistorySection.
   ///
   /// In en, this message translates to:
-  /// **'Personal Amol'**
+  /// **'My Amol'**
   String get personalAmolHistorySection;
 
   /// No description provided for @personalAmolHistoryCompleted.
@@ -5968,7 +5968,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolHistoryTotalLabel.
   ///
   /// In en, this message translates to:
-  /// **'Completions'**
+  /// **'Times completed'**
   String get personalAmolHistoryTotalLabel;
 
   /// No description provided for @personalAmolTypeLabel.
@@ -5980,7 +5980,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolTypeToggle.
   ///
   /// In en, this message translates to:
-  /// **'Toggle'**
+  /// **'Done / Not done'**
   String get personalAmolTypeToggle;
 
   /// No description provided for @personalAmolTypeCount.
@@ -5998,7 +5998,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolTargetHint.
   ///
   /// In en, this message translates to:
-  /// **'How many times per day'**
+  /// **'Times per day'**
   String get personalAmolTargetHint;
 
   /// No description provided for @personalAmolSeeAllIcons.
@@ -6010,7 +6010,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolIconPickerTitle.
   ///
   /// In en, this message translates to:
-  /// **'Choose an icon'**
+  /// **'Pick an icon'**
   String get personalAmolIconPickerTitle;
 
   /// No description provided for @personalAmolWeekdaySat.
@@ -6058,13 +6058,13 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolCountMaxReached.
   ///
   /// In en, this message translates to:
-  /// **'Daily target already reached.'**
+  /// **'Target reached!'**
   String get personalAmolCountMaxReached;
 
   /// No description provided for @personalAmolCountMinReached.
   ///
   /// In en, this message translates to:
-  /// **'Count is already 0. Nothing left to remove.'**
+  /// **'Already at 0'**
   String get personalAmolCountMinReached;
 
   /// No description provided for @closeLabel.

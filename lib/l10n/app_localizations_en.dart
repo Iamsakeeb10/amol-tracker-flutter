@@ -788,7 +788,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyTabPersonalAmol => 'Personal Amol';
 
   @override
-  String get historyLoadFailed => 'Could not load history.';
+  String get historyLoadFailed => 'Couldn\'t load history. Try again.';
 
   @override
   String historyConsistency(Object value) {
@@ -1119,7 +1119,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String dayStreak(Object days) {
-    return '$days day streak';
+    return '$days-day streak';
   }
 
   @override
@@ -3114,54 +3114,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String get battleTimeLimit => 'Time';
 
   @override
-  String get personalAmolSectionTitle => 'Personal Amol';
+  String get personalAmolSectionTitle => 'My Amol';
 
   @override
-  String get personalAmolEmptyHeadline => 'Add your own amol';
+  String get personalAmolEmptyHeadline => 'Add your first amol';
 
   @override
-  String get personalAmolEmptySubtitle => 'Track any daily habit, just for you';
+  String get personalAmolEmptySubtitle => 'Any daily habit — just for you';
 
   @override
-  String get personalAmolNoneDueToday => 'No personal amol is scheduled today.';
+  String get personalAmolNoneDueToday => 'No amol for today';
 
   @override
   String get personalAmolEmptyCta => 'Add';
 
   @override
   String personalAmolCapMessage(Object max) {
-    return 'You have reached the limit of $max personal amol.';
+    return 'You\'ve reached the $max amol limit.';
   }
 
   @override
-  String get personalAmolListTitle => 'Personal Amol';
+  String get personalAmolListTitle => 'My Amol';
 
   @override
-  String get personalAmolCreateTitle => 'New Personal Amol';
+  String get personalAmolCreateTitle => 'New Amol';
 
   @override
-  String get personalAmolEditTitle => 'Edit Personal Amol';
+  String get personalAmolEditTitle => 'Edit Amol';
 
   @override
   String get personalAmolNameLabel => 'Name';
 
   @override
-  String get personalAmolNameHint => 'e.g. Read Quran, Daily Dua';
+  String get personalAmolNameHint => 'e.g. Reading Quran, Daily Dua';
 
   @override
-  String get personalAmolNameRequired => 'Please enter a name';
+  String get personalAmolNameRequired => 'Enter a name';
 
   @override
   String get personalAmolIconLabel => 'Icon';
 
   @override
-  String get personalAmolFrequencyLabel => 'Frequency';
+  String get personalAmolFrequencyLabel => 'Repeat';
 
   @override
   String get personalAmolFrequencyDaily => 'Every day';
 
   @override
-  String get personalAmolFrequencyWeekdays => 'Specific days';
+  String get personalAmolFrequencyWeekdays => 'Choose days';
 
   @override
   String get personalAmolAddLabel => 'Add';
@@ -3179,7 +3179,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolDeleteConfirm => 'Delete this amol?';
 
   @override
-  String get personalAmolDeleteSubtitle => 'Your history will not be deleted.';
+  String get personalAmolDeleteSubtitle => 'Your history won\'t be deleted.';
 
   @override
   String personalAmolStreakLabel(Object n) {
@@ -3192,7 +3192,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get personalAmolHistorySection => 'Personal Amol';
+  String get personalAmolHistorySection => 'My Amol';
 
   @override
   String get personalAmolHistoryCompleted => 'Completed';
@@ -3201,13 +3201,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolHistoryNotCompleted => 'Not completed';
 
   @override
-  String get personalAmolHistoryTotalLabel => 'Completions';
+  String get personalAmolHistoryTotalLabel => 'Times completed';
 
   @override
   String get personalAmolTypeLabel => 'Tracking type';
 
   @override
-  String get personalAmolTypeToggle => 'Toggle';
+  String get personalAmolTypeToggle => 'Done / Not done';
 
   @override
   String get personalAmolTypeCount => 'Count';
@@ -3216,13 +3216,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolTargetLabel => 'Daily target';
 
   @override
-  String get personalAmolTargetHint => 'How many times per day';
+  String get personalAmolTargetHint => 'Times per day';
 
   @override
   String get personalAmolSeeAllIcons => 'See all';
 
   @override
-  String get personalAmolIconPickerTitle => 'Choose an icon';
+  String get personalAmolIconPickerTitle => 'Pick an icon';
 
   @override
   String get personalAmolWeekdaySat => 'শনি';
@@ -3246,11 +3246,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolWeekdayFri => 'শুক্র';
 
   @override
-  String get personalAmolCountMaxReached => 'Daily target already reached.';
+  String get personalAmolCountMaxReached => 'Target reached!';
 
   @override
-  String get personalAmolCountMinReached =>
-      'Count is already 0. Nothing left to remove.';
+  String get personalAmolCountMinReached => 'Already at 0';
 
   @override
   String get closeLabel => 'Close';

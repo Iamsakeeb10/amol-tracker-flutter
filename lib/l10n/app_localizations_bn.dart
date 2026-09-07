@@ -293,7 +293,7 @@ class AppLocalizationsBn extends AppLocalizations {
       'অ্যাকাউন্ট মুছতে ব্যর্থ হয়েছে। আপনাকে আবার সাইন ইন করতে হতে পারে।';
 
   @override
-  String get cancel => 'ক্যানসেল';
+  String get cancel => 'বাতিল করুন';
 
   @override
   String get readAction => 'পড়ুন';
@@ -791,7 +791,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get historyTabPersonalAmol => 'ব্যক্তিগত আমল';
 
   @override
-  String get historyLoadFailed => 'হিস্টোরি লোড করা যায়নি।';
+  String get historyLoadFailed => 'হিস্টোরি লোড করা যায়নি। আবার চেষ্টা করুন।';
 
   @override
   String historyConsistency(Object value) {
@@ -1118,7 +1118,7 @@ class AppLocalizationsBn extends AppLocalizations {
       'সব মেম্বার অ্যাক্সেস হারাবে। এটা আর ফেরানো যাবে না।';
 
   @override
-  String get delete => 'ডিলিট';
+  String get delete => 'ডিলিট করুন';
 
   @override
   String dayStreak(Object days) {
@@ -3120,49 +3120,49 @@ class AppLocalizationsBn extends AppLocalizations {
   String get battleTimeLimit => 'সময়';
 
   @override
-  String get personalAmolSectionTitle => 'ব্যক্তিগত আমল';
+  String get personalAmolSectionTitle => 'আমার আমল';
 
   @override
-  String get personalAmolEmptyHeadline => 'নিজের আমল যোগ করুন';
+  String get personalAmolEmptyHeadline => 'আপনার প্রথম আমল যোগ করুন';
 
   @override
   String get personalAmolEmptySubtitle =>
-      'দৈনন্দিন যেকোনো অভ্যাস ট্র্যাক করুন, শুধু আপনার জন্য';
+      'যেকোনো দৈনন্দিন অভ্যাস, শুধু আপনার জন্য';
 
   @override
-  String get personalAmolNoneDueToday => 'আজ কোনো ব্যক্তিগত আমল নির্ধারিত নেই।';
+  String get personalAmolNoneDueToday => 'আজ কোনো আমল নেই';
 
   @override
   String get personalAmolEmptyCta => 'যোগ করুন';
 
   @override
   String personalAmolCapMessage(Object max) {
-    return 'আপনি আপনার $maxটি ব্যক্তিগত আমলের সীমায় পৌঁছেছেন।';
+    return 'আপনি $maxটি আমলের সীমায় পৌঁছে গেছেন';
   }
 
   @override
-  String get personalAmolListTitle => 'ব্যক্তিগত আমল';
+  String get personalAmolListTitle => 'আমার আমল';
 
   @override
-  String get personalAmolCreateTitle => 'নতুন ব্যক্তিগত আমল';
+  String get personalAmolCreateTitle => 'নতুন আমল';
 
   @override
-  String get personalAmolEditTitle => 'ব্যক্তিগত আমল সম্পাদনা';
+  String get personalAmolEditTitle => 'আমল এডিট করুন';
 
   @override
   String get personalAmolNameLabel => 'নাম';
 
   @override
-  String get personalAmolNameHint => 'যেমন: কুরআন পড়া, প্রতিদিনের দোয়া';
+  String get personalAmolNameHint => 'যেমনঃ কুরআন পড়া, দোয়া পড়া';
 
   @override
-  String get personalAmolNameRequired => 'অনুগ্রহ করে একটি নাম দিন';
+  String get personalAmolNameRequired => 'একটি নাম দিন';
 
   @override
   String get personalAmolIconLabel => 'আইকন';
 
   @override
-  String get personalAmolFrequencyLabel => 'ফ্রিকোয়েন্সি';
+  String get personalAmolFrequencyLabel => 'কবে করবেন';
 
   @override
   String get personalAmolFrequencyDaily => 'প্রতিদিন';
@@ -3174,19 +3174,20 @@ class AppLocalizationsBn extends AppLocalizations {
   String get personalAmolAddLabel => 'যোগ করুন';
 
   @override
-  String get personalAmolSaveLabel => 'সংরক্ষণ করুন';
+  String get personalAmolSaveLabel => 'সেভ করুন';
 
   @override
-  String get personalAmolEditLabel => 'সম্পাদনা';
+  String get personalAmolEditLabel => 'এডিট করুন';
 
   @override
-  String get personalAmolDeleteLabel => 'মুছে ফেলুন';
+  String get personalAmolDeleteLabel => 'ডিলিট করুন';
 
   @override
-  String get personalAmolDeleteConfirm => 'এই আমলটি মুছে ফেলবেন?';
+  String get personalAmolDeleteConfirm => 'এই আমলটি ডিলিট করবেন?';
 
   @override
-  String get personalAmolDeleteSubtitle => 'আপনার ইতিহাস মুছে যাবে না।';
+  String get personalAmolDeleteSubtitle =>
+      'শুধু আমলটি ডিলিট হবে, আপনার হিস্টোরি থাকবে';
 
   @override
   String personalAmolStreakLabel(Object n) {
@@ -3199,22 +3200,22 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get personalAmolHistorySection => 'ব্যক্তিগত আমল';
+  String get personalAmolHistorySection => 'আমার আমল';
 
   @override
-  String get personalAmolHistoryCompleted => 'সম্পন্ন';
+  String get personalAmolHistoryCompleted => 'সম্পন্ন হয়েছে';
 
   @override
   String get personalAmolHistoryNotCompleted => 'সম্পন্ন হয়নি';
 
   @override
-  String get personalAmolHistoryTotalLabel => 'সম্পন্ন';
+  String get personalAmolHistoryTotalLabel => 'মোট যতবার সম্পন্ন হয়েছে';
 
   @override
-  String get personalAmolTypeLabel => 'ট্র্যাকিং ধরন';
+  String get personalAmolTypeLabel => 'ট্র্যাকিংয়ের ধরন';
 
   @override
-  String get personalAmolTypeToggle => 'টগল';
+  String get personalAmolTypeToggle => 'হ্যাঁ / না';
 
   @override
   String get personalAmolTypeCount => 'গণনা';
@@ -3223,13 +3224,13 @@ class AppLocalizationsBn extends AppLocalizations {
   String get personalAmolTargetLabel => 'দৈনিক লক্ষ্য';
 
   @override
-  String get personalAmolTargetHint => 'দিনে কতবার করবেন';
+  String get personalAmolTargetHint => 'দিনে কতবার';
 
   @override
   String get personalAmolSeeAllIcons => 'সব দেখুন';
 
   @override
-  String get personalAmolIconPickerTitle => 'আইকন নির্বাচন করুন';
+  String get personalAmolIconPickerTitle => 'আইকন বাছাই করুন';
 
   @override
   String get personalAmolWeekdaySat => 'শনি';
@@ -3253,12 +3254,10 @@ class AppLocalizationsBn extends AppLocalizations {
   String get personalAmolWeekdayFri => 'শুক্র';
 
   @override
-  String get personalAmolCountMaxReached =>
-      'দৈনিক লক্ষ্য ইতিমধ্যেই পূর্ণ হয়ে গেছে।';
+  String get personalAmolCountMaxReached => 'লক্ষ্য পূরণ হয়ে গেছে!';
 
   @override
-  String get personalAmolCountMinReached =>
-      'গণনা ইতিমধ্যে ০। আর কমানোর কিছু নেই।';
+  String get personalAmolCountMinReached => 'গণনা এখন ০, আর কমানো যাবে না';
 
   @override
   String get closeLabel => 'বন্ধ করুন';

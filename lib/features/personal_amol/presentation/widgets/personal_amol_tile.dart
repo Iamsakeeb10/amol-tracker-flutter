@@ -50,7 +50,10 @@ class PersonalAmolTile extends ConsumerWidget {
         : l10n.personalAmolFrequencyWeekdays;
 
     return CardContainer(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md.w + 2.w,
+        vertical: AppSpacing.md.h,
+      ),
       color: completed ? AppColors.goldCard : AppColors.cardDark,
       borderColor: completed ? AppColors.goldBorder : AppColors.cardBorder,
       onTap: onTap,
@@ -62,14 +65,14 @@ class PersonalAmolTile extends ConsumerWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: completed ? AppColors.gold : AppColors.cardBorder,
-              borderRadius: BorderRadius.circular(10.r),
+              borderRadius: BorderRadius.circular(AppRadius.md.r - 2),
             ),
             child: Text(
               amol.icon.isNotEmpty ? amol.icon : amol.name.characters.first,
               style: TextStyle(fontSize: 18.sp),
             ),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: AppSpacing.md.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,7 +133,7 @@ class PersonalAmolTile extends ConsumerWidget {
               ],
             ),
           ),
-          SizedBox(width: 8.w),
+          SizedBox(width: AppSpacing.sm.w),
           if (readOnly)
             if (onEdit != null || onDelete != null)
               Row(

@@ -130,7 +130,7 @@ class _PersonalAmolListScreenState
         padding: EdgeInsets.only(right: 20.w),
         decoration: BoxDecoration(
           color: AppColors.dangerLight,
-          borderRadius: BorderRadius.circular(14.r),
+          borderRadius: BorderRadius.circular(AppRadius.lg.r),
           border: Border.all(color: AppColors.danger.withValues(alpha: 0.4)),
         ),
         child: Row(
@@ -143,7 +143,7 @@ class _PersonalAmolListScreenState
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(width: 6.w),
+            SizedBox(width: AppSpacing.sm.w),
             Icon(Icons.delete_outline, color: AppColors.danger, size: 20.r),
           ],
         ),
@@ -228,7 +228,7 @@ class _PersonalAmolListScreenState
               margin: EdgeInsets.only(bottom: 10.h),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(14.r),
+                borderRadius: BorderRadius.circular(AppRadius.lg.r),
               ),
             ),
           ),
@@ -244,61 +244,101 @@ class _PersonalAmolListScreenState
   }) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 32.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 88.r,
-              height: 88.r,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: Icon(
-                Icons.auto_awesome,
-                color: AppColors.gold,
-                size: 36.r,
-              ),
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [AppColors.goldCard, AppColors.cardDark],
             ),
-            SizedBox(height: 16.h),
-            Text(
-              l10n.personalAmolEmptyHeadline,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.headlineMedium(context),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              l10n.personalAmolEmptySubtitle,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium(context).copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            GestureDetector(
-              onTap: onAdd,
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20.w,
-                  vertical: 10.h,
-                ),
+            borderRadius: BorderRadius.circular(AppRadius.lg.r),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44.r,
+                height: 44.r,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.gold,
-                  borderRadius: BorderRadius.circular(20.r),
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.gold.withValues(alpha: 0.25),
+                      AppColors.gold.withValues(alpha: 0.05),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: AppColors.gold.withValues(alpha: 0.35),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.gold.withValues(alpha: 0.18),
+                      blurRadius: 12,
+                      spreadRadius: 1,
+                    ),
+                  ],
                 ),
-                child: Text(
-                  l10n.personalAmolEmptyCta,
-                  style: AppTextStyles.bodyMedium(context).copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.emeraldDeep,
+                child: Icon(
+                  Icons.auto_awesome,
+                  color: AppColors.gold,
+                  size: 20.r,
+                ),
+              ),
+              SizedBox(height: AppSpacing.md.h),
+              Text(
+                l10n.personalAmolEmptyHeadline,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyLarge(context).copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              SizedBox(height: AppSpacing.xs.h),
+              Text(
+                l10n.personalAmolEmptySubtitle,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.label(context).copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              SizedBox(height: AppSpacing.lg.h),
+              Center(
+                child: SizedBox(
+                  height: 40.h,
+                  child: ElevatedButton.icon(
+                    onPressed: onAdd,
+                    icon: Icon(Icons.add_rounded, size: 16.r),
+                    label: Text(
+                      l10n.personalAmolEmptyCta,
+                      style: AppTextStyles.button(context).copyWith(
+                        color: AppColors.emeraldDeep,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.gold,
+                      foregroundColor: AppColors.emeraldDeep,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg.w,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.md.r),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

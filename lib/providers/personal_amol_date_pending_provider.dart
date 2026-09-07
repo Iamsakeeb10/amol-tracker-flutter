@@ -98,8 +98,10 @@ class PersonalAmolDatePendingNotifier
   /// Persists all staged edits for the viewed date in one batched write per
   /// amol (via the existing delta engine), then recomputes streaks best-effort
   /// and refreshes dependent views.
-  Future<void> save() async {
-    if (state.isSaving || !state.dirty) return;
+  ///
+  /// Returns `true` when at least one amol write succeeded.
+  Future<bool> save() async {
+    if (state.isSaving || !state.dirty) return false;
     state = state.copyWith(isSaving: true);
     final repo = _ref.read(personalAmolRepositoryProvider);
     final amolNotifier = _ref.read(personalAmolNotifierProvider(_uid).notifier);
@@ -114,6 +116,7 @@ class PersonalAmolDatePendingNotifier
     }
 
     final applied = <String>{};
+    var wroteAny = false;
     for (final entry in entries) {
       final amol = amolMap[entry.key];
       if (amol == null || !personalAmolScheduledOn(amol, _hijriDate)) {
@@ -134,6 +137,7 @@ class PersonalAmolDatePendingNotifier
           isToggle: amol.type == PersonalAmolType.toggle,
         );
         applied.add(entry.key);
+        wroteAny = true;
         try {
           await amolNotifier.recomputeStreak(entry.key);
         } catch (_) {
@@ -146,13 +150,27 @@ class PersonalAmolDatePendingNotifier
     if (applied.isNotEmpty) {
       _ref.read(personalAmolRefreshProvider.notifier).bump();
     }
-    final remaining = Map<String, int>.from(state.staged)
-      ..removeWhere((key, _) => applied.contains(key));
+
+    // Keep applied counts in [staged] and sync [baseline] so the UI overlay
+    // stays correct while completions re-fetch. Clearing staged immediately
+    // would flash the pre-save (stale) completions until the refresh lands.
+    final nextStaged = Map<String, int>.from(state.staged);
+    final nextBaseline = Map<String, int>.from(state.baseline);
+    for (final id in applied) {
+      final desired = state.staged[id];
+      if (desired == null) {
+        nextStaged.remove(id);
+        nextBaseline.remove(id);
+      } else {
+        nextStaged[id] = desired;
+        nextBaseline[id] = desired;
+      }
+    }
     state = PersonalAmolPendingState(
-      staged: remaining,
-      baseline: Map<String, int>.from(state.baseline)
-        ..removeWhere((key, _) => !remaining.containsKey(key)),
+      staged: nextStaged,
+      baseline: nextBaseline,
       isSaving: false,
     );
+    return wroteAny;
   }
 }

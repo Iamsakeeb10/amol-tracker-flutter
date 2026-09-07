@@ -186,6 +186,7 @@ class _PersonalAmolListScreenState
         );
       },
       child: PersonalAmolTile(
+        key: ValueKey<String>('tile-${amol.id}'),
         uid: uid,
         amol: amol,
         readOnly: true,

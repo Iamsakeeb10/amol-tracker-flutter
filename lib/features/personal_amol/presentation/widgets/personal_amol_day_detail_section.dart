@@ -10,16 +10,17 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../models/personal_amol_model.dart';
 import '../../../../providers/personal_amol_date_pending_provider.dart';
 import '../../../../providers/personal_amol_provider.dart';
+import '../../../../shared/widgets/card_container.dart';
+import 'personal_amol_create_sheet.dart';
 import 'personal_amol_details_dialog.dart';
+import 'personal_amol_empty_state.dart';
 import 'personal_amol_tile.dart';
 
-/// Editable personal amol section shown on the day-detail screen.
+/// Personal amol section on the day-detail screen.
 ///
-/// Mirrors the home screen's personal-amol UI: active amols get a toggle switch
-/// or +/− stepper and a tap on the card opens the details dialog (same as
-/// home). Taps stage into the per-date pending provider and only persist to
-/// Firestore when the section's Save button is pressed. Only active amols are
-/// listed — soft-deleted amols are omitted entirely.
+/// Active amols due that day are editable (toggle / +/− → staged save).
+/// Soft-deleted amols with completions on the viewed date appear as read-only
+/// history so calendar gold days stay explainable after delete.
 class PersonalAmolDayDetailSection extends ConsumerWidget {
   const PersonalAmolDayDetailSection({
     super.key,
@@ -40,30 +41,69 @@ class PersonalAmolDayDetailSection extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final amolsAsync = ref.watch(allPersonalAmolProvider(uid));
     final amols = amolsAsync.value ?? const <PersonalAmolModel>[];
-    // Wait for the amol definitions before deciding how many rows to render.
     if (amolsAsync.isLoading) return const _PersonalAmolSectionShimmer();
-
-    // Only active amols are editable here; soft-deleted amols ("old" ones)
-    // have no meaning on this screen and must not render with dead controls.
-    final due = amols
-        .where((a) => a.isActive && personalAmolScheduledOn(a, hijriDate))
-        .toList();
-    if (due.isEmpty) return const SizedBox.shrink();
 
     final completionsAsync = ref.watch(
       personalAmolCompletionsForDateProvider(
         PersonalAmolDateKey(uid: uid, hijriDate: hijriDate),
       ),
     );
-    // After a save the completions provider re-fetches from Firestore; keep a
-    // shimmer in place while that reload is in flight so the pre-edit counts
-    // never flash back before the fresh (post-save) data arrives.
     if (completionsAsync.isLoading && !completionsAsync.hasValue) {
       return const _PersonalAmolSectionShimmer();
     }
+    final completions =
+        completionsAsync.value ?? const <PersonalAmolCompletion>[];
     final counts = <String, int>{};
-    for (final c in completionsAsync.value ?? const <PersonalAmolCompletion>[]) {
+    for (final c in completions) {
       counts[c.amolId] = (counts[c.amolId] ?? 0) + 1;
+    }
+
+    final active = amols.where((a) => a.isActive).toList();
+    final due = active
+        .where((a) => personalAmolScheduledOn(a, hijriDate))
+        .toList();
+    final historical = historicalPersonalAmolForDay(
+      amols: amols,
+      hijriDate: hijriDate,
+      completions: completions,
+    );
+
+    if (due.isEmpty && historical.isEmpty) {
+      if (active.isEmpty) {
+        return Padding(
+          padding: EdgeInsets.only(top: 24.h),
+          child: PersonalAmolEmptyState(
+            onAdd: () => PersonalAmolCreateSheet.show(
+              context,
+              uid: uid,
+              entryPoint: 'day_detail_empty',
+            ),
+          ),
+        );
+      }
+      return Padding(
+        padding: EdgeInsets.only(top: 8.h),
+        child: CardContainer(
+          child: Row(
+            children: [
+              Icon(
+                Icons.event_busy,
+                color: AppColors.textMuted,
+                size: 20.r,
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  l10n.personalAmolNoneDueToday,
+                  style: AppTextStyles.bodySmall(context).copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     final pending = ref.watch(
@@ -76,40 +116,59 @@ class PersonalAmolDayDetailSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 4.h),
-        Text(
-          l10n.personalAmolHistorySection,
-          style: AppTextStyles.headlineMedium(context),
-        ),
-        SizedBox(height: 6.h),
-        for (final amol in due) ...[
-          _row(context, ref, amol, shown[amol.id] ?? 0),
-          SizedBox(height: 8.h),
-        ],
-        if (showInlineSaveButton && pending.dirty) ...[
-          SizedBox(height: 12.h),
-          _SaveButton(
-            isSaving: pending.isSaving,
-            enabled: pending.dirty,
-            onPressed: () {
-              ref
-                  .read(
-                    personalAmolDatePendingProvider(
-                      PersonalAmolDateEditKey(
-                        uid: uid,
-                        hijriDate: hijriDate,
-                      ),
-                    ).notifier,
-                  )
-                  .save();
-            },
+        if (due.isNotEmpty) ...[
+          SizedBox(height: 4.h),
+          Text(
+            l10n.personalAmolHistorySection,
+            style: AppTextStyles.headlineMedium(context),
           ),
+          SizedBox(height: 6.h),
+          for (final amol in due) ...[
+            _editableRow(context, ref, amol, shown[amol.id] ?? 0),
+            SizedBox(height: 8.h),
+          ],
+          if (showInlineSaveButton && pending.dirty) ...[
+            SizedBox(height: 12.h),
+            _SaveButton(
+              isSaving: pending.isSaving,
+              enabled: pending.dirty,
+              onPressed: () async {
+                final saved = await ref
+                    .read(
+                      personalAmolDatePendingProvider(
+                        PersonalAmolDateEditKey(
+                          uid: uid,
+                          hijriDate: hijriDate,
+                        ),
+                      ).notifier,
+                    )
+                    .save();
+                if (!context.mounted || !saved) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.personalAmolSaved)),
+                );
+              },
+            ),
+          ],
+        ],
+        if (historical.isNotEmpty) ...[
+          if (due.isNotEmpty) SizedBox(height: 16.h),
+          if (due.isEmpty) SizedBox(height: 4.h),
+          Text(
+            l10n.personalAmolDeletedHistorySection,
+            style: AppTextStyles.headlineMedium(context),
+          ),
+          SizedBox(height: 6.h),
+          for (final amol in historical) ...[
+            _historicalRow(context, amol, counts[amol.id] ?? 0),
+            SizedBox(height: 8.h),
+          ],
         ],
       ],
     );
   }
 
-  Widget _row(
+  Widget _editableRow(
     BuildContext context,
     WidgetRef ref,
     PersonalAmolModel amol,
@@ -142,6 +201,29 @@ class PersonalAmolDayDetailSection extends ConsumerWidget {
           : null,
     );
   }
+
+  Widget _historicalRow(
+    BuildContext context,
+    PersonalAmolModel amol,
+    int doneCount,
+  ) {
+    final target = amol.type == PersonalAmolType.count ? amol.target : 1;
+    final completed = doneCount >= target;
+
+    return PersonalAmolTile(
+      uid: uid,
+      amol: amol,
+      completed: completed,
+      doneCount: doneCount,
+      readOnly: true,
+      onTap: () => showPersonalAmolDetailsDialog(
+        context,
+        uid: uid,
+        amol: amol,
+        doneCount: doneCount,
+      ),
+    );
+  }
 }
 
 class _SaveButton extends StatelessWidget {
@@ -156,7 +238,7 @@ class _SaveButton extends StatelessWidget {
   /// When false the button renders disabled — used by fixed bottom bars that
   /// must always be visible but inert until there is something to save.
   final bool enabled;
-  final VoidCallback onPressed;
+  final Future<void> Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +246,11 @@ class _SaveButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: isSaving || !enabled ? null : onPressed,
+        onPressed: isSaving || !enabled
+            ? null
+            : () {
+                onPressed();
+              },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.gold,
           foregroundColor: AppColors.emeraldDeep,

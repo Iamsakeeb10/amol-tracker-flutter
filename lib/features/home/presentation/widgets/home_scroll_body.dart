@@ -396,9 +396,11 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                           ),
                           SliverToBoxAdapter(child: SizedBox(height: 20.h)),
                           SliverToBoxAdapter(
-                            child: PersonalAmolSection(
-                              uid: widget.uid,
-                              readOnly: widget.isSubmitted,
+                            child: RepaintBoundary(
+                              child: PersonalAmolSection(
+                                uid: widget.uid,
+                                readOnly: widget.isSubmitted,
+                              ),
                             ),
                           ),
                           SliverToBoxAdapter(child: SizedBox(height: 10.h)),

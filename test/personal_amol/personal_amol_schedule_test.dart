@@ -117,4 +117,36 @@ void main() {
       expect(byDay['1447-03-25'], 2);
     });
   });
+
+  group('historicalPersonalAmolForDay', () {
+    test('includes inactive amols with a completion on that day', () {
+      final list = historicalPersonalAmolForDay(
+        amols: [
+          amol(id: 'gone', isActive: false),
+          amol(id: 'active', isActive: true),
+        ],
+        hijriDate: '1447-03-18',
+        completions: [completion('gone', '1447-03-18', 1)],
+      );
+      expect(list.map((a) => a.id), ['gone']);
+    });
+
+    test('excludes inactive amols with no completion that day', () {
+      final list = historicalPersonalAmolForDay(
+        amols: [amol(id: 'gone', isActive: false)],
+        hijriDate: '1447-03-18',
+        completions: [completion('gone', '1447-03-19', 1)],
+      );
+      expect(list, isEmpty);
+    });
+
+    test('never includes active amols', () {
+      final list = historicalPersonalAmolForDay(
+        amols: [amol(id: 'active', isActive: true)],
+        hijriDate: '1447-03-18',
+        completions: [completion('active', '1447-03-18', 1)],
+      );
+      expect(list, isEmpty);
+    });
+  });
 }

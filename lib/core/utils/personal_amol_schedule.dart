@@ -57,3 +57,21 @@ Map<String, int> scheduledPersonalAmolByDay({
   }
   return out;
 }
+
+/// Soft-deleted amols that have at least one completion on [hijriDate].
+///
+/// Used by day-detail to show read-only history that still paints the calendar
+/// gold after delete, without offering editable controls for inactive amols.
+List<PersonalAmolModel> historicalPersonalAmolForDay({
+  required List<PersonalAmolModel> amols,
+  required String hijriDate,
+  required List<PersonalAmolCompletion> completions,
+}) {
+  final completedIds = <String>{};
+  for (final c in completions) {
+    if (c.hijriDate == hijriDate) completedIds.add(c.amolId);
+  }
+  return amols
+      .where((a) => !a.isActive && completedIds.contains(a.id))
+      .toList(growable: false);
+}

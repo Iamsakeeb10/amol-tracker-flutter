@@ -3210,6 +3210,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get personalAmolHistorySection => 'আমার আমল';
 
   @override
+  String get personalAmolDeletedHistorySection => 'সম্পন্ন (ডিলিট করা)';
+
+  @override
   String get personalAmolHistoryCompleted => 'সম্পন্ন হয়েছে';
 
   @override

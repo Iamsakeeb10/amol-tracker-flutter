@@ -1583,6 +1583,7 @@
     }
   },
   "personalAmolHistorySection": "My Amol",
+  "personalAmolDeletedHistorySection": "Completed (deleted)",
   "personalAmolHistoryCompleted": "Completed",
   "personalAmolHistoryNotCompleted": "Not completed",
   "personalAmolHistoryTotalLabel": "Times completed",

@@ -1522,6 +1522,7 @@
     }
   },
   "personalAmolHistorySection": "আমার আমল",
+  "personalAmolDeletedHistorySection": "সম্পন্ন (ডিলিট করা)",
   "personalAmolHistoryCompleted": "সম্পন্ন হয়েছে",
   "personalAmolHistoryNotCompleted": "সম্পন্ন হয়নি",
   "personalAmolHistoryTotalLabel": "মোট যতবার সম্পন্ন হয়েছে",

@@ -40,96 +40,103 @@ class PersonalAmolSection extends ConsumerWidget {
     final completionsAsync = ref.watch(
       personalAmolCompletionsForTodayProvider(uid),
     );
-    final pending = ref.watch(personalAmolPendingProvider(uid));
+    // Only rebuild when staged counts change (not isSaving / baseline churn).
+    final staged = ref.watch(
+      personalAmolPendingProvider(uid).select((s) => s.staged),
+    );
     final pendingNotifier = ref.read(personalAmolPendingProvider(uid).notifier);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _header(context, ref, l10n),
-        SizedBox(height: 12.h),
-        amolAsync.when(
-          loading: () => const PersonalAmolSectionSkeleton(),
-          error: (_, _) => const SizedBox.shrink(),
-          data: (amols) {
-            final completions =
-                completionsAsync.value ?? const <PersonalAmolCompletion>[];
-            // Saved (Firestore) counts for today.
-            final counts = <String, int>{};
-            for (final c in completions) {
-              counts[c.amolId] = (counts[c.amolId] ?? 0) + 1;
-            }
-            // Overlay the staged edits: anything the user changed but hasn't
-            // saved yet shows immediately without any network write.
-            final shown = <String, int>{
-              ...counts,
-              ...pending.staged,
-            };
-            if (amols.isEmpty) {
-              return PersonalAmolEmptyState(
-                onAdd: () {
-                  AnalyticsService.instance.logPersonalAmolCreateSheetOpened(
-                    entryPoint: 'empty_state',
-                  );
-                  PersonalAmolCreateSheet.show(
-                    context,
-                    uid: uid,
-                    entryPoint: 'empty_state',
-                  );
-                },
-              );
-            }
-            final due = amols.where(personalAmolScheduledToday).toList();
-            if (due.isEmpty) {
-              return const _NoneDueToday();
-            }
-            final done = due
-                .where((a) {
-                  final target = a.type == PersonalAmolType.count ? a.target : 1;
-                  return (shown[a.id] ?? 0) >= target;
-                })
-                .length;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PersonalAmolProgressRow(
-                  done: done,
-                  total: due.length,
-                ),
-                SizedBox(height: 16.h),
-                for (final amol in due) ...[
-                  PersonalAmolTile(
-                    uid: uid,
-                    amol: amol,
-                    completed:
-                        (shown[amol.id] ?? 0) >=
-                            (amol.type == PersonalAmolType.count
-                                ? amol.target
-                                : 1),
-                    doneCount: shown[amol.id] ?? 0,
-                    onTap: () => showPersonalAmolDetailsDialog(
+    return RepaintBoundary(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _header(context, ref, l10n),
+          SizedBox(height: 12.h),
+          amolAsync.when(
+            loading: () => const PersonalAmolSectionSkeleton(),
+            error: (_, _) => const SizedBox.shrink(),
+            data: (amols) {
+              final completions =
+                  completionsAsync.value ?? const <PersonalAmolCompletion>[];
+              // Saved (Firestore) counts for today.
+              final counts = <String, int>{};
+              for (final c in completions) {
+                counts[c.amolId] = (counts[c.amolId] ?? 0) + 1;
+              }
+              // Overlay the staged edits: anything the user changed but hasn't
+              // saved yet shows immediately without any network write.
+              final shown = <String, int>{
+                ...counts,
+                ...staged,
+              };
+              if (amols.isEmpty) {
+                return PersonalAmolEmptyState(
+                  onAdd: () {
+                    AnalyticsService.instance.logPersonalAmolCreateSheetOpened(
+                      entryPoint: 'empty_state',
+                    );
+                    PersonalAmolCreateSheet.show(
                       context,
                       uid: uid,
-                      amol: amol,
-                      doneCount: shown[amol.id] ?? 0,
-                    ),
-                    onToggle: (!readOnly && amol.type == PersonalAmolType.toggle)
-                        ? () => pendingNotifier.toggle(amol)
-                        : null,
-                    onPlus: (!readOnly && amol.type == PersonalAmolType.count)
-                        ? () => pendingNotifier.plus(amol)
-                        : null,
-                    onMinus: (!readOnly && amol.type == PersonalAmolType.count)
-                        ? () => pendingNotifier.minus(amol)
-                        : null,
+                      entryPoint: 'empty_state',
+                    );
+                  },
+                );
+              }
+              final due = amols.where(personalAmolScheduledToday).toList();
+              if (due.isEmpty) {
+                return const _NoneDueToday();
+              }
+              final done = due
+                  .where((a) {
+                    final target =
+                        a.type == PersonalAmolType.count ? a.target : 1;
+                    return (shown[a.id] ?? 0) >= target;
+                  })
+                  .length;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PersonalAmolProgressRow(
+                    done: done,
+                    total: due.length,
                   ),
-                  SizedBox(height: 8.h),
+                  SizedBox(height: 16.h),
+                  for (final amol in due) ...[
+                    PersonalAmolTile(
+                      uid: uid,
+                      amol: amol,
+                      completed: (shown[amol.id] ?? 0) >=
+                          (amol.type == PersonalAmolType.count
+                              ? amol.target
+                              : 1),
+                      doneCount: shown[amol.id] ?? 0,
+                      onTap: () => showPersonalAmolDetailsDialog(
+                        context,
+                        uid: uid,
+                        amol: amol,
+                        doneCount: shown[amol.id] ?? 0,
+                      ),
+                      onToggle:
+                          (!readOnly && amol.type == PersonalAmolType.toggle)
+                              ? () => pendingNotifier.toggle(amol)
+                              : null,
+                      onPlus: (!readOnly && amol.type == PersonalAmolType.count)
+                          ? () => pendingNotifier.plus(amol)
+                          : null,
+                      onMinus:
+                          (!readOnly && amol.type == PersonalAmolType.count)
+                              ? () => pendingNotifier.minus(amol)
+                              : null,
+                    ),
+                    SizedBox(height: 8.h),
+                  ],
                 ],
-              ],
-            );
-          },
-        ),
-      ],
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 

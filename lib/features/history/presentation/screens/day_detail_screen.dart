@@ -22,6 +22,8 @@ import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
 import '../../../../providers/personal_amol_date_pending_provider.dart';
+import '../../../../providers/personal_amol_provider.dart';
+import '../../../../core/utils/personal_amol_schedule.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -440,6 +442,12 @@ class _PersonalOnlyBody extends ConsumerWidget {
     final pending = ref.watch(personalAmolDatePendingProvider(key));
     final hasSomethingToSave = pending.dirty && !pending.isSaving;
 
+    final amolsAsync = ref.watch(activePersonalAmolProvider(uid));
+    final due = (amolsAsync.value ?? const [])
+        .where((a) => personalAmolScheduledOn(a, hijriDate))
+        .toList();
+    final showSaveBar = amolsAsync.hasValue && due.isNotEmpty;
+
     return AppScaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -455,13 +463,22 @@ class _PersonalOnlyBody extends ConsumerWidget {
           style: AppTextStyles.headlineMedium(context),
         ),
       ),
-      bottomNavigationBar: _PersonalSaveBar(
-        isSaving: pending.isSaving,
-        enabled: hasSomethingToSave,
-        onPressed: () {
-          ref.read(personalAmolDatePendingProvider(key).notifier).save();
-        },
-      ),
+      bottomNavigationBar: showSaveBar
+          ? _PersonalSaveBar(
+              isSaving: pending.isSaving,
+              enabled: hasSomethingToSave,
+              onPressed: () async {
+                final saved = await ref
+                    .read(personalAmolDatePendingProvider(key).notifier)
+                    .save();
+                if (!context.mounted || !saved) return;
+                final l10n = AppLocalizations.of(context)!;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.personalAmolSaved)),
+                );
+              },
+            )
+          : null,
       body: CustomScrollView(
         slivers: [
           SliverPadding(
@@ -492,7 +509,7 @@ class _PersonalSaveBar extends StatelessWidget {
 
   final bool isSaving;
   final bool enabled;
-  final VoidCallback onPressed;
+  final Future<void> Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -504,7 +521,11 @@ class _PersonalSaveBar extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: isSaving || !enabled ? null : onPressed,
+            onPressed: isSaving || !enabled
+                ? null
+                : () {
+                    onPressed();
+                  },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.gold,
               foregroundColor: AppColors.emeraldDeep,

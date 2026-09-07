@@ -102,7 +102,7 @@ class PersonalAmolCreateSheet extends ConsumerStatefulWidget {
 
 class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateSheet> {
   static const double _minChildSize = 0.5;
-  static const double _initialChildSize = 0.7;
+  static const double _initialChildSize = 0.8;
   static const double _maxChildSize = 1;
 
   final _nameController = TextEditingController();

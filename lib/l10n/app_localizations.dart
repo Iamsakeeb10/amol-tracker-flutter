@@ -5965,6 +5965,12 @@ abstract class AppLocalizations {
   /// **'My Amol'**
   String get personalAmolHistorySection;
 
+  /// No description provided for @personalAmolDeletedHistorySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed (deleted)'**
+  String get personalAmolDeletedHistorySection;
+
   /// No description provided for @personalAmolHistoryCompleted.
   ///
   /// In en, this message translates to:

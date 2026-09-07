@@ -3202,6 +3202,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolHistorySection => 'My Amol';
 
   @override
+  String get personalAmolDeletedHistorySection => 'Completed (deleted)';
+
+  @override
   String get personalAmolHistoryCompleted => 'Completed';
 
   @override

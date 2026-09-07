@@ -18,7 +18,10 @@ import 'personal_amol_stepper.dart';
 /// On the home screen [onToggle] (toggle type) or [onPlus]/[onMinus] (count
 /// type) are provided and [readOnly] is false; in other contexts the tile is
 /// static.
-class PersonalAmolTile extends ConsumerWidget {
+///
+/// Streak is watched in a tiny child consumer so Firestore streak stream
+/// updates do not rebuild the full tile (icon / switch / stepper).
+class PersonalAmolTile extends StatelessWidget {
   const PersonalAmolTile({
     super.key,
     required this.uid,
@@ -47,14 +50,8 @@ class PersonalAmolTile extends ConsumerWidget {
   final VoidCallback? onMinus;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final streakAsync = ref.watch(
-      personalAmolStreakProvider(
-        PersonalAmolStreakKey(uid: uid, amolId: amol.id),
-      ),
-    );
-    final streak = streakAsync.value?.currentStreak ?? 0;
     final frequency = amol.frequency == PersonalAmolFrequency.daily
         ? l10n.personalAmolFrequencyDaily
         : l10n.personalAmolFrequencyWeekdays;
@@ -115,31 +112,12 @@ class PersonalAmolTile extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      if (streak > 0) ...[
-                        Text(
-                          ' • ',
-                          style: AppTextStyles.bodySmall(context).copyWith(
-                            fontSize: 11.sp,
-                          ),
+                      Flexible(
+                        child: _PersonalAmolStreakChip(
+                          uid: uid,
+                          amolId: amol.id,
                         ),
-                        Icon(
-                          Icons.local_fire_department,
-                          color: AppColors.warning,
-                          size: 13.r,
-                        ),
-                        SizedBox(width: 2.w),
-                        Flexible(
-                          child: Text(
-                            l10n.personalAmolStreakLabel(streak),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.bodySmall(context).copyWith(
-                              fontSize: 11.sp,
-                              color: AppColors.gold,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
@@ -251,6 +229,57 @@ class PersonalAmolTile extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Isolates the streak Firestore stream so only this chip rebuilds.
+class _PersonalAmolStreakChip extends ConsumerWidget {
+  const _PersonalAmolStreakChip({
+    required this.uid,
+    required this.amolId,
+  });
+
+  final String uid;
+  final String amolId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final streak = ref.watch(
+      personalAmolStreakProvider(
+        PersonalAmolStreakKey(uid: uid, amolId: amolId),
+      ).select((async) => async.value?.currentStreak ?? 0),
+    );
+    if (streak <= 0) return const SizedBox.shrink();
+
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          ' • ',
+          style: AppTextStyles.bodySmall(context).copyWith(
+            fontSize: 11.sp,
+          ),
+        ),
+        Icon(
+          Icons.local_fire_department,
+          color: AppColors.warning,
+          size: 13.r,
+        ),
+        SizedBox(width: 2.w),
+        Flexible(
+          child: Text(
+            l10n.personalAmolStreakLabel(streak),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.bodySmall(context).copyWith(
+              fontSize: 11.sp,
+              color: AppColors.gold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

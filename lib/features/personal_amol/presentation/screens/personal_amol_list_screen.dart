@@ -13,6 +13,7 @@ import '../../../../models/personal_amol_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/personal_amol_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
+import '../widgets/personal_amol_create_sheet.dart';
 import '../widgets/personal_amol_tile.dart';
 
 class PersonalAmolListScreen extends ConsumerStatefulWidget {
@@ -70,7 +71,7 @@ class _PersonalAmolListScreenState
                   ),
                 );
               }
-            : () => context.push(AppRoutes.personalAmolCreate),
+: () => PersonalAmolCreateSheet.show(context, uid: uid),
         backgroundColor: AppColors.gold,
         foregroundColor: AppColors.emeraldDeep,
         shape: const CircleBorder(),
@@ -89,7 +90,7 @@ class _PersonalAmolListScreenState
             return _buildEmptyState(
               context,
               l10n,
-              onAdd: () => context.push(AppRoutes.personalAmolCreate),
+              onAdd: () => PersonalAmolCreateSheet.show(context, uid: uid),
             );
           }
           final visible = amols

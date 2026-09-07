@@ -535,7 +535,7 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final amols = ref.watch(activePersonalAmolProvider(uid)).value ??
+    final amols = ref.watch(allPersonalAmolProvider(uid)).value ??
         const <PersonalAmolModel>[];
     final key = PersonalAmolMonthKey(
       uid: uid,
@@ -545,7 +545,6 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
     final completionsAsync = ref.watch(
       personalAmolMonthCompletionSummaryProvider(key),
     );
-    final daysInMonth = HijriCalendar().getDaysInMonth(hijriYear, hijriMonth);
     final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
     final accountCreatedHijri =
         IslamicDateService.hijriStorageForAccountCreated(accountCreatedAt);
@@ -561,8 +560,13 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
           ),
         ),
       ),
-      data: (completionsByDay) {
-        if (amols.isEmpty) {
+      data: (summary) {
+        final completionsByDay = summary.doneByDay;
+        final scheduledByDay = summary.scheduledByDay;
+        final daysInMonth = HijriCalendar().getDaysInMonth(hijriYear, hijriMonth);
+        // Empty only when the user has neither amols nor any past completions
+        // (deleted amols' past completions keep the calendar visible).
+        if (amols.isEmpty && completionsByDay.isEmpty) {
           return CustomScrollView(
             slivers: [
               SliverPadding(
@@ -582,7 +586,7 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
 
         final days = PersonalAmolMonthCalculator.buildMonth(
           completionsByDay: completionsByDay,
-          activeCount: amols.length,
+          activeCountByDay: scheduledByDay,
           hijriYear: hijriYear,
           hijriMonth: hijriMonth,
           todayStr: todayStr,

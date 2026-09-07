@@ -5821,6 +5821,12 @@ abstract class AppLocalizations {
   /// **'Track any daily habit, just for you'**
   String get personalAmolEmptySubtitle;
 
+  /// No description provided for @personalAmolNoneDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No personal amol is scheduled today.'**
+  String get personalAmolNoneDueToday;
+
   /// No description provided for @personalAmolEmptyCta.
   ///
   /// In en, this message translates to:
@@ -5970,6 +5976,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Completions'**
   String get personalAmolHistoryTotalLabel;
+
+  /// No description provided for @personalAmolTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking type'**
+  String get personalAmolTypeLabel;
+
+  /// No description provided for @personalAmolTypeToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle'**
+  String get personalAmolTypeToggle;
+
+  /// No description provided for @personalAmolTypeCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get personalAmolTypeCount;
+
+  /// No description provided for @personalAmolTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily target'**
+  String get personalAmolTargetLabel;
+
+  /// No description provided for @personalAmolTargetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How many times per day'**
+  String get personalAmolTargetHint;
+
+  /// No description provided for @personalAmolSeeAllIcons.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get personalAmolSeeAllIcons;
+
+  /// No description provided for @personalAmolIconPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an icon'**
+  String get personalAmolIconPickerTitle;
+
+  /// No description provided for @personalAmolWeekdaySat.
+  ///
+  /// In en, this message translates to:
+  /// **'শনি'**
+  String get personalAmolWeekdaySat;
+
+  /// No description provided for @personalAmolWeekdaySun.
+  ///
+  /// In en, this message translates to:
+  /// **'রবি'**
+  String get personalAmolWeekdaySun;
+
+  /// No description provided for @personalAmolWeekdayMon.
+  ///
+  /// In en, this message translates to:
+  /// **'সোম'**
+  String get personalAmolWeekdayMon;
+
+  /// No description provided for @personalAmolWeekdayTue.
+  ///
+  /// In en, this message translates to:
+  /// **'মঙ্গল'**
+  String get personalAmolWeekdayTue;
+
+  /// No description provided for @personalAmolWeekdayWed.
+  ///
+  /// In en, this message translates to:
+  /// **'বুধ'**
+  String get personalAmolWeekdayWed;
+
+  /// No description provided for @personalAmolWeekdayThu.
+  ///
+  /// In en, this message translates to:
+  /// **'বৃহস্পতি'**
+  String get personalAmolWeekdayThu;
+
+  /// No description provided for @personalAmolWeekdayFri.
+  ///
+  /// In en, this message translates to:
+  /// **'শুক্র'**
+  String get personalAmolWeekdayFri;
 }
 
 class _AppLocalizationsDelegate

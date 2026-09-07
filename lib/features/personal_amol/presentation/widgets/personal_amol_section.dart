@@ -10,6 +10,8 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/personal_amol_model.dart';
 import '../../../../providers/personal_amol_provider.dart';
+import '../../../../core/utils/personal_amol_schedule.dart';
+import 'personal_amol_create_sheet.dart';
 import 'personal_amol_empty_state.dart';
 import 'personal_amol_progress_row.dart';
 import 'personal_amol_tile.dart';
@@ -39,31 +41,56 @@ class PersonalAmolSection extends ConsumerWidget {
           loading: () => const PersonalAmolSectionSkeleton(),
           error: (_, _) => const SizedBox.shrink(),
           data: (amols) {
-            final doneSet = (completionsAsync.value ?? const <PersonalAmolCompletion>[])
-                .map((c) => c.amolId)
-                .toSet();
+            final completions =
+                completionsAsync.value ?? const <PersonalAmolCompletion>[];
+            final counts = <String, int>{};
+            for (final c in completions) {
+              counts[c.amolId] = (counts[c.amolId] ?? 0) + 1;
+            }
             if (amols.isEmpty) {
               return PersonalAmolEmptyState(
-                onAdd: () => context.push(AppRoutes.personalAmolCreate),
+                onAdd: () => PersonalAmolCreateSheet.show(context, uid: uid),
               );
             }
+            final due = amols.where(personalAmolScheduledToday).toList();
+            if (due.isEmpty) {
+              return const _NoneDueToday();
+            }
+            final done = due
+                .where((a) {
+                  final target = a.type == PersonalAmolType.count ? a.target : 1;
+                  return (counts[a.id] ?? 0) >= target;
+                })
+                .length;
+            final notifier =
+                ref.read(personalAmolNotifierProvider(uid).notifier);
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 PersonalAmolProgressRow(
-                  done: doneSet.length,
-                  total: amols.length,
+                  done: done,
+                  total: due.length,
                 ),
                 SizedBox(height: 16.h),
-                for (final amol in amols) ...[
+                for (final amol in due) ...[
                   PersonalAmolTile(
                     uid: uid,
                     amol: amol,
-                    completed: doneSet.contains(amol.id),
-                    onToggle: () =>
-                        ref
-                            .read(personalAmolNotifierProvider(uid).notifier)
-                            .toggleComplete(amol),
+                    completed:
+                        (counts[amol.id] ?? 0) >=
+                            (amol.type == PersonalAmolType.count
+                                ? amol.target
+                                : 1),
+                    doneCount: counts[amol.id] ?? 0,
+                    onToggle: amol.type == PersonalAmolType.toggle
+                        ? () => notifier.toggleComplete(amol)
+                        : null,
+                    onPlus: amol.type == PersonalAmolType.count
+                        ? () => notifier.incrementCount(amol)
+                        : null,
+                    onMinus: amol.type == PersonalAmolType.count
+                        ? () => notifier.decrementCount(amol)
+                        : null,
                   ),
                   SizedBox(height: 8.h),
                 ],
@@ -91,7 +118,7 @@ class PersonalAmolSection extends ConsumerWidget {
         SizedBox(width: 10.w),
         _headerIconButton(
           icon: Icons.add,
-          onTap: () => context.push(AppRoutes.personalAmolCreate),
+          onTap: () => PersonalAmolCreateSheet.show(context, uid: uid),
         ),
       ],
     );
@@ -140,4 +167,42 @@ class PersonalAmolSectionSkeleton extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
       );
+}
+
+/// Shown when the user has personal amols, but none of them are scheduled on
+/// the current Hijri day.
+class _NoneDueToday extends StatelessWidget {
+  const _NoneDueToday();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+      decoration: BoxDecoration(
+        color: AppColors.cardDark,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.event_busy,
+            color: AppColors.textMuted,
+            size: 20.r,
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              l10n.personalAmolNoneDueToday,
+              style: AppTextStyles.bodySmall(context).copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -15,6 +15,18 @@ enum PersonalAmolFrequency {
   }
 }
 
+enum PersonalAmolType {
+  /// A single on/off completion per day (switch).
+  toggle,
+  /// A counted habit with a daily target (greater-than-one increments).
+  count;
+
+  static PersonalAmolType fromMap(dynamic value) {
+    if (value is String && value == 'count') return PersonalAmolType.count;
+    return PersonalAmolType.toggle;
+  }
+}
+
 class PersonalAmolModel {
   const PersonalAmolModel({
     required this.id,
@@ -25,12 +37,15 @@ class PersonalAmolModel {
     required this.reminderTime,
     required this.isActive,
     required this.createdAt,
+    this.type = PersonalAmolType.toggle,
+    this.target = 1,
   });
 
   final String id;
   final String name;
 
-  /// Emoji string (max 2 grapheme clusters or empty).
+  /// Either an emoji string (legacy, max 2 grapheme clusters) or a Material
+  /// icon token persisted via `encodePersonalAmolIcon` (e.g. `m:auto_awesome`).
   final String icon;
   final PersonalAmolFrequency frequency;
 
@@ -43,6 +58,13 @@ class PersonalAmolModel {
   final bool isActive;
   final DateTime createdAt;
 
+  /// Tracking style. [PersonalAmolType.count] amols log progress towards
+  /// [target] with +/− increments.
+  final PersonalAmolType type;
+
+  /// Daily target for [PersonalAmolType.count] amols. Always 1 for toggle.
+  final int target;
+
   PersonalAmolModel copyWith({
     String? name,
     String? icon,
@@ -50,6 +72,8 @@ class PersonalAmolModel {
     List<int>? weekdays,
     ({int hour, int minute})? reminderTime,
     bool? isActive,
+    PersonalAmolType? type,
+    int? target,
   }) {
     return PersonalAmolModel(
       id: id,
@@ -60,6 +84,8 @@ class PersonalAmolModel {
       reminderTime: reminderTime ?? this.reminderTime,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt,
+      type: type ?? this.type,
+      target: target ?? this.target,
     );
   }
 
@@ -74,6 +100,8 @@ class PersonalAmolModel {
       reminderTime: _timeFromMap(data['reminderTime']),
       isActive: (data['isActive'] as bool?) ?? true,
       createdAt: _createdAtFromMap(data['createdAt']),
+      type: PersonalAmolType.fromMap(data['type']),
+      target: _targetFromMap(data['target']),
     );
   }
 
@@ -88,6 +116,8 @@ class PersonalAmolModel {
           : {'hour': reminderTime!.hour, 'minute': reminderTime!.minute},
       'isActive': isActive,
       'createdAt': Timestamp.fromDate(createdAt),
+      'type': type == PersonalAmolType.count ? 'count' : 'toggle',
+      'target': target,
     };
   }
 
@@ -96,6 +126,11 @@ class PersonalAmolModel {
       return value.map((e) => (e as num).toInt()).where((d) => d >= 1 && d <= 7).toList();
     }
     return const <int>[];
+  }
+
+  static int _targetFromMap(dynamic value) {
+    if (value is num && value.toInt() >= 1) return value.toInt();
+    return 1;
   }
 
   static ({int hour, int minute})? _timeFromMap(dynamic value) {

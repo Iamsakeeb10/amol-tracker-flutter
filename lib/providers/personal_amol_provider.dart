@@ -9,6 +9,7 @@ import '../core/constants/app_constants.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/services/notification_service.dart';
 import '../core/services/personal_amol_repository.dart';
+import '../core/utils/personal_amol_schedule.dart';
 import '../core/utils/streak_helper.dart';
 import '../models/personal_amol_model.dart';
 import '../models/personal_amol_streak_model.dart';
@@ -37,6 +38,16 @@ final activePersonalAmolProvider =
   uid,
 ) {
   return ref.watch(personalAmolRepositoryProvider).watchActiveAmol(uid);
+});
+
+/// All personal amol definitions (including soft-deleted) for a user. The
+/// history calendar uses this so past completions of deleted amols still fill.
+final allPersonalAmolProvider =
+    StreamProvider.autoDispose.family<List<PersonalAmolModel>, String>((
+  ref,
+  uid,
+) {
+  return ref.watch(personalAmolRepositoryProvider).watchAllAmol(uid);
 });
 
 /// Completions for today. Auto-reloads when the Hijri date rolls over or after
@@ -104,40 +115,78 @@ class PersonalAmolMonthKey {
   int get hashCode => Object.hash(uid, hijriYear, hijriMonth);
 }
 
-/// Completed personal-amol count per Hijri date for a month (history calendar
-/// merge). This is display-only and must not feed any leaderboard or
-/// comparative computation.
+/// Counts fully-done personal amols per Hijri date, including soft-deleted
+/// amols so their past completions keep counting. A day is skipped for an amol
+/// when it isn't scheduled on that weekday. A toggle amol is done with one
+/// completion; a count amol only when its completions reach [target].
+/// Pure & testable; used by the month summary provider.
+Map<String, int> fullyDonePersonalAmolByDay(
+  List<PersonalAmolCompletion> completions,
+  List<PersonalAmolModel> amols,
+) {
+  final perDateAmol = <String, Map<String, int>>{};
+  for (final c in completions) {
+    final perAmol = perDateAmol.putIfAbsent(c.hijriDate, () => <String, int>{});
+    perAmol[c.amolId] = (perAmol[c.amolId] ?? 0) + 1;
+  }
+  final byDay = <String, int>{};
+  for (final entry in perDateAmol.entries) {
+    var fullyDone = 0;
+    for (final amol in amols) {
+      if (!personalAmolScheduledOn(amol, entry.key)) continue;
+      final count = entry.value[amol.id] ?? 0;
+      final target = amol.type == PersonalAmolType.count ? amol.target : 1;
+      if (count >= target) fullyDone++;
+    }
+    if (fullyDone > 0) byDay[entry.key] = fullyDone;
+  }
+  return byDay;
+}
+
+/// Fully-done personal-amol count per Hijri date for a month (history calendar
+/// merge and home progress). Includes soft-deleted amols (so their past
+/// completions keep counting) and only counts an amol on days it is scheduled.
+/// [scheduledByDay] maps each day to its number of scheduled amols. This is
+/// display-only and must not feed any leaderboard or comparative computation.
 final personalAmolMonthCompletionSummaryProvider =
-    FutureProvider.autoDispose.family<Map<String, int>, PersonalAmolMonthKey>(
-      (ref, key) async {
-        ref.watch(personalAmolRefreshProvider);
-        final repo = ref.read(personalAmolRepositoryProvider);
-        final first = IslamicDateService.storageFromParts(
-          key.hijriYear,
-          key.hijriMonth,
-          1,
-        );
-        final daysInMonth = HijriCalendar().getDaysInMonth(
-          key.hijriYear,
-          key.hijriMonth,
-        );
-        final last = IslamicDateService.storageFromParts(
-          key.hijriYear,
-          key.hijriMonth,
-          daysInMonth,
-        );
-        final completions = await repo.getCompletionsInRange(
-          key.uid,
-          first,
-          last,
-        );
-        final byDay = <String, int>{};
-        for (final c in completions) {
-          byDay[c.hijriDate] = (byDay[c.hijriDate] ?? 0) + 1;
-        }
-        return byDay;
-      },
-    );
+    FutureProvider.autoDispose.family<
+      ({Map<String, int> doneByDay, Map<String, int> scheduledByDay}),
+      PersonalAmolMonthKey
+    >((ref, key) async {
+      ref.watch(personalAmolRefreshProvider);
+      final repo = ref.read(personalAmolRepositoryProvider);
+      // Recompute when definitions change (targets/types/weekdays can mutate).
+      final amols = ref.watch(allPersonalAmolProvider(key.uid)).value ??
+          const <PersonalAmolModel>[];
+      final first = IslamicDateService.storageFromParts(
+        key.hijriYear,
+        key.hijriMonth,
+        1,
+      );
+      final daysInMonth = HijriCalendar().getDaysInMonth(
+        key.hijriYear,
+        key.hijriMonth,
+      );
+      final last = IslamicDateService.storageFromParts(
+        key.hijriYear,
+        key.hijriMonth,
+        daysInMonth,
+      );
+      // Count completions per (date, amol) then reduce to fully-done amols.
+      final completions = await repo.getCompletionsInRange(
+        key.uid,
+        first,
+        last,
+      );
+      return (
+        doneByDay: fullyDonePersonalAmolByDay(completions, amols),
+        scheduledByDay: scheduledPersonalAmolByDay(
+          amols: amols,
+          firstHijri: first,
+          lastHijri: last,
+        ),
+      );
+    });
 
 class PersonalAmolStreakKey {
   const PersonalAmolStreakKey({required this.uid, required this.amolId});
@@ -223,6 +272,7 @@ class PersonalAmolNotifier extends StateNotifier<Map<String, PersonalAmolModel>>
 
   Future<void> toggleComplete(PersonalAmolModel amol) async {
     final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+    if (!personalAmolScheduledOn(amol, today)) return;
     final existing = await _repo.getCompletionsForDate(_uid, today);
     final completed = existing.any((c) => c.amolId == amol.id);
     if (completed) {
@@ -234,16 +284,44 @@ class PersonalAmolNotifier extends StateNotifier<Map<String, PersonalAmolModel>>
     _ref.read(personalAmolRefreshProvider.notifier).bump();
   }
 
+  /// Adds one counted completion for a count-type amol.
+  Future<void> incrementCount(PersonalAmolModel amol) async {
+    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+    if (!personalAmolScheduledOn(amol, today)) return;
+    await _repo.incrementCompletion(_uid, amol.id, today);
+    await _recomputeStreak(amol.id);
+    _ref.read(personalAmolRefreshProvider.notifier).bump();
+  }
+
+  /// Removes one counted completion for a count-type amol (no-op at zero).
+  Future<void> decrementCount(PersonalAmolModel amol) async {
+    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+    final existing = await _repo.getCompletionsForDate(_uid, today);
+    if (!existing.any((c) => c.amolId == amol.id)) return;
+    await _repo.decrementCompletion(_uid, amol.id, today);
+    await _recomputeStreak(amol.id);
+    _ref.read(personalAmolRefreshProvider.notifier).bump();
+  }
+
   Future<void> _recomputeStreak(String amolId) async {
+    final amol = state[amolId];
     final completions = await _repo.getRecentCompletions(_uid);
     final loggedDates = completions
         .where((c) => c.amolId == amolId)
+        // Only scheduled days count towards the streak, so a missed weekday
+        // between two due days doesn't reset it.
+        .where((c) => amol == null || personalAmolScheduledOn(amol, c.hijriDate))
         .map((c) => c.hijriDate)
         .toSet();
     final today = IslamicDateService.getCurrentIslamicDateStringSafe();
     final current = computeStreakFromLogs(
       loggedDates: loggedDates,
       todayHijri: today,
+      // Unscheduled weekdays neither add to nor break a weekday amol's streak.
+      scheduledWeekdays: amol != null &&
+              amol.frequency == PersonalAmolFrequency.weekdays
+          ? amol.weekdays.toSet()
+          : const {},
     );
     final prev =
         (await _repo.watchStreak(_uid, amolId).first)

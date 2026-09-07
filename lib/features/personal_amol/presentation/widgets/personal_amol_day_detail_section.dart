@@ -4,9 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/bengali_numeral_helper.dart';
+import '../../../../core/utils/personal_amol_schedule.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/personal_amol_model.dart';
 import '../../../../providers/personal_amol_provider.dart';
+import 'personal_amol_icons.dart';
 
 /// Read-only personal amol section shown on the day-detail screen. Lists each
 /// active personal amol with its completion status for the given hijri date.
@@ -23,19 +26,22 @@ class PersonalAmolDayDetailSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final amolsAsync = ref.watch(activePersonalAmolProvider(uid));
+    final amolsAsync = ref.watch(allPersonalAmolProvider(uid));
     final amols = amolsAsync.value ?? const <PersonalAmolModel>[];
-    if (amols.isEmpty) return const SizedBox.shrink();
+    final due = amols
+        .where((a) => personalAmolScheduledOn(a, hijriDate))
+        .toList();
+    if (due.isEmpty) return const SizedBox.shrink();
 
     final completionsAsync = ref.watch(
       personalAmolCompletionsForDateProvider(
         PersonalAmolDateKey(uid: uid, hijriDate: hijriDate),
       ),
     );
-    final doneIds =
-        (completionsAsync.value ?? const <PersonalAmolCompletion>[])
-            .map((c) => c.amolId)
-            .toSet();
+    final counts = <String, int>{};
+    for (final c in completionsAsync.value ?? const <PersonalAmolCompletion>[]) {
+      counts[c.amolId] = (counts[c.amolId] ?? 0) + 1;
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,16 +52,19 @@ class PersonalAmolDayDetailSection extends ConsumerWidget {
           style: AppTextStyles.headlineMedium(context),
         ),
         SizedBox(height: 8.h),
-        for (final amol in amols) ...[
-          _row(context, amol, doneIds.contains(amol.id)),
+    for (final amol in due) ...[
+          _row(context, amol, counts[amol.id] ?? 0),
           SizedBox(height: 8.h),
         ],
       ],
     );
   }
 
-  Widget _row(BuildContext context, PersonalAmolModel amol, bool completed) {
+  Widget _row(BuildContext context, PersonalAmolModel amol, int doneCount) {
     final l10n = AppLocalizations.of(context)!;
+    final target = amol.type == PersonalAmolType.count ? amol.target : 1;
+    final completed = doneCount >= target;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
@@ -73,12 +82,17 @@ class PersonalAmolDayDetailSection extends ConsumerWidget {
             height: 36.r,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.emeraldMid.withValues(alpha: 0.15),
+              color: completed
+                  ? AppColors.gold
+                  : AppColors.emeraldMid.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Text(
-              amol.icon.isNotEmpty ? amol.icon : amol.name.characters.first,
-              style: TextStyle(fontSize: 18.sp),
+            child: AmolIconView(
+              icon: amol.icon,
+              onFilled: completed,
+              emojiSize: 18,
+              iconSize: 20,
+              fallbackText: amol.name,
             ),
           ),
           SizedBox(width: 12.w),
@@ -99,21 +113,42 @@ class PersonalAmolDayDetailSection extends ConsumerWidget {
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  completed
-                      ? l10n.personalAmolHistoryCompleted
-                      : l10n.personalAmolHistoryNotCompleted,
-                  style: AppTextStyles.bodySmall(
-                    context,
-                  ).copyWith(fontSize: 11.sp, color: AppColors.textMuted),
+                  amol.type == PersonalAmolType.count && !completed
+                      ? '${toBengaliNumeral(doneCount)}/${toBengaliNumeral(target)}'
+                      : completed
+                            ? l10n.personalAmolHistoryCompleted
+                            : l10n.personalAmolHistoryNotCompleted,
+                  style: AppTextStyles.bodySmall(context).copyWith(
+                    fontSize: 11.sp,
+                    color: completed ? AppColors.gold : AppColors.textMuted,
+                  ),
                 ),
               ],
             ),
           ),
-          Icon(
-            completed ? Icons.check_circle : Icons.circle_outlined,
-            color: completed ? AppColors.gold : AppColors.textMuted,
-            size: 26.r,
-          ),
+          if (amol.frequency == PersonalAmolFrequency.weekdays)
+            Container(
+              width: 30.r,
+              height: 30.r,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: completed
+                    ? AppColors.gold
+                    : AppColors.emeraldMid.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                completed ? Icons.check : Icons.schedule,
+                color: completed ? AppColors.emeraldDeep : AppColors.gold,
+                size: 18.r,
+              ),
+            )
+          else
+            Icon(
+              completed ? Icons.check_circle : Icons.circle_outlined,
+              color: completed ? AppColors.gold : AppColors.textMuted,
+              size: 26.r,
+            ),
         ],
       ),
     );

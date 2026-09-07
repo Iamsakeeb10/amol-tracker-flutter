@@ -1543,6 +1543,7 @@
   "personalAmolSectionTitle": "Personal Amol",
   "personalAmolEmptyHeadline": "Add your own amol",
   "personalAmolEmptySubtitle": "Track any daily habit, just for you",
+  "personalAmolNoneDueToday": "No personal amol is scheduled today.",
   "personalAmolEmptyCta": "Add",
   "personalAmolCapMessage": "You have reached the limit of {max} personal amol.",
   "@personalAmolCapMessage": {
@@ -1583,5 +1584,19 @@
   "personalAmolHistorySection": "Personal Amol",
   "personalAmolHistoryCompleted": "Completed",
   "personalAmolHistoryNotCompleted": "Not completed",
-  "personalAmolHistoryTotalLabel": "Completions"
+  "personalAmolHistoryTotalLabel": "Completions",
+  "personalAmolTypeLabel": "Tracking type",
+  "personalAmolTypeToggle": "Toggle",
+  "personalAmolTypeCount": "Count",
+  "personalAmolTargetLabel": "Daily target",
+  "personalAmolTargetHint": "How many times per day",
+  "personalAmolSeeAllIcons": "See all",
+  "personalAmolIconPickerTitle": "Choose an icon",
+  "personalAmolWeekdaySat": "শনি",
+  "personalAmolWeekdaySun": "রবি",
+  "personalAmolWeekdayMon": "সোম",
+  "personalAmolWeekdayTue": "মঙ্গল",
+  "personalAmolWeekdayWed": "বুধ",
+  "personalAmolWeekdayThu": "বৃহস্পতি",
+  "personalAmolWeekdayFri": "শুক্র"
 }

@@ -90,31 +90,49 @@ String weekKeyFromDate(DateTime date) {
 /// This is the source-of-truth for streak display, computed from actual logs
 /// rather than the potentially stale Firestore `currentStreak` field.
 ///
-/// If today is not in [loggedDates], walks backwards from yesterday so the
-/// streak still reflects the most recent consecutive chain.
+/// When [scheduledWeekdays] is non-empty (1 = Saturday ... 7 = Friday, as used
+/// by weekday-only personal amols), days whose weekday is NOT in the set are
+/// skipped entirely: they neither add to nor break the streak. The single most
+/// recent scheduled day may be pending (logged yet today), mirroring how an
+/// un-logged today doesn't reset a daily streak.
 int computeStreakFromLogs({
   required Set<String> loggedDates,
   required String todayHijri,
   Set<String> frozenDates = const {},
+  Set<int> scheduledWeekdays = const {},
 }) {
   if (loggedDates.isEmpty && frozenDates.isEmpty) return 0;
 
   // Combine actual logs and frozen dates for consecutive-day checking.
   final coveredDates = {...loggedDates, ...frozenDates};
 
+  bool scheduledDay(String date) =>
+      scheduledWeekdays.isEmpty ||
+      scheduledWeekdays.contains(
+        IslamicDateService.personalAmolWeekdayIndexForStorage(date),
+      );
+
   var streak = 0;
   var candidate = todayHijri;
-  while (coveredDates.contains(candidate)) {
-    streak++;
-    candidate = IslamicDateService.shiftStorageByDays(candidate, -1);
-  }
-
-  if (streak == 0) {
-    candidate = IslamicDateService.shiftStorageByDays(todayHijri, -1);
-    while (coveredDates.contains(candidate)) {
-      streak++;
+  var firstScheduledHandled = false;
+  var guard = 0;
+  // Walk backwards. Unscheduled days are transparent. The most recent
+  // scheduled day may be "pending" (scheduled but not logged yet); any other
+  // scheduled-but-missing day breaks the chain.
+  while (guard++ < 36600) {
+    if (!scheduledDay(candidate)) {
       candidate = IslamicDateService.shiftStorageByDays(candidate, -1);
+      continue;
     }
+    if (firstScheduledHandled) {
+      if (!coveredDates.contains(candidate)) break;
+      streak++;
+    } else {
+      firstScheduledHandled = true;
+      if (coveredDates.contains(candidate)) streak++;
+      // else: leading scheduled day is pending; keep walking.
+    }
+    candidate = IslamicDateService.shiftStorageByDays(candidate, -1);
   }
 
   return streak;

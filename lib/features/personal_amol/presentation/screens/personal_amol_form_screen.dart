@@ -14,15 +14,10 @@ import '../../../../providers/personal_amol_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/time_picker_sheet.dart';
-
-const _kPersonalAmolEmojis = <String>[
-  '🕌', '🕋', '📿', '🤲', '📖', '🌙', '⭐', '🌸',
-  '💧', '🍃', '🌿', '🌹', '🫶', '❤️', '🤍', '🕊️',
-  '🧠', '📚', '✍️', '🏃', '💪', '🥗', '🚭', '🌅',
-  '🌇', '☀️', '✨', '🫧', '🧎', '🎵',
-];
-
-const _kWeekdayLabels = ['স', 'রো', 'ম', 'বু', 'বৃ', 'শু', 'শ'];
+import '../widgets/personal_amol_icon_selector.dart';
+import '../widgets/personal_amol_target_stepper.dart';
+import '../widgets/personal_amol_tracking_type_selector.dart';
+import '../widgets/personal_amol_weekday_chips.dart';
 
 class PersonalAmolFormScreen extends ConsumerStatefulWidget {
   const PersonalAmolFormScreen({super.key, this.existingAmolId});
@@ -44,6 +39,8 @@ class _PersonalAmolFormScreenState
   bool _daily = true;
   final Set<int> _selectedWeekdays = <int>{};
   String _icon = '';
+  PersonalAmolType _type = PersonalAmolType.toggle;
+  int _target = 3;
   ({int hour, int minute})? _reminderTime;
   bool _isSaving = false;
 
@@ -76,6 +73,8 @@ class _PersonalAmolFormScreenState
         ..clear()
         ..addAll(amol.weekdays);
       _reminderTime = amol.reminderTime;
+      _type = amol.type;
+      _target = amol.type == PersonalAmolType.count ? amol.target : 3;
     });
   }
 
@@ -110,6 +109,8 @@ class _PersonalAmolFormScreenState
                 : PersonalAmolFrequency.weekdays,
             weekdays: _isWeekdays ? _selectedWeekdays.toList() : const <int>[],
             reminderTime: _reminderTime,
+            type: _type,
+            target: _type == PersonalAmolType.count ? _target : 1,
           ),
         );
       } else {
@@ -137,6 +138,8 @@ class _PersonalAmolFormScreenState
           reminderTime: _reminderTime,
           isActive: true,
           createdAt: DateTime.now(),
+          type: _type,
+          target: _type == PersonalAmolType.count ? _target : 1,
         );
         await notifier.createAmol(amol);
       }
@@ -252,36 +255,25 @@ class _PersonalAmolFormScreenState
                   (v == null || v.trim().isEmpty) ? l10n.personalAmolNameRequired : null,
             ),
             SizedBox(height: 20.h),
-            Text(l10n.personalAmolIconLabel, style: AppTextStyles.bodyMedium(context)),
-            SizedBox(height: 8.h),
-            Wrap(
-              spacing: 8.w,
-              runSpacing: 8.h,
-              children: [
-                for (final e in _kPersonalAmolEmojis)
-                  GestureDetector(
-                    onTap: () => setState(() => _icon = e),
-                    child: Container(
-                      width: 44.r,
-                      height: 44.r,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: _icon == e
-                            ? AppColors.gold.withValues(alpha: 0.25)
-                            : AppColors.cardDark,
-                        borderRadius: BorderRadius.circular(10.r),
-                        border: Border.all(
-                          color: _icon == e
-                              ? AppColors.gold
-                              : AppColors.cardBorder,
-                          width: _icon == e ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Text(e, style: TextStyle(fontSize: 22.sp)),
-                    ),
-                  ),
-              ],
+            PersonalAmolIconSelector(
+              selected: _icon,
+              onSelected: (value) => setState(() => _icon = value),
             ),
+            SizedBox(height: 20.h),
+            Text(l10n.personalAmolTypeLabel,
+                style: AppTextStyles.bodyMedium(context)),
+            SizedBox(height: 8.h),
+            PersonalAmolTrackingTypeSelector(
+              value: _type,
+              onChanged: (v) => setState(() => _type = v),
+            ),
+            if (_type == PersonalAmolType.count) ...[
+              SizedBox(height: 16.h),
+              PersonalAmolTargetStepper(
+                value: _target,
+                onChanged: (v) => setState(() => _target = v),
+              ),
+            ],
             SizedBox(height: 20.h),
             Text(l10n.personalAmolFrequencyLabel,
                 style: AppTextStyles.bodyMedium(context)),
@@ -303,39 +295,13 @@ class _PersonalAmolFormScreenState
             ),
             if (_isWeekdays) ...[
               SizedBox(height: 16.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  for (var i = 0; i < 7; i++)
-                    GestureDetector(
-                      onTap: () => setState(() {
-                        if (!_selectedWeekdays.add(i + 1)) {
-                          _selectedWeekdays.remove(i + 1);
-                        }
-                      }),
-                      child: Container(
-                        width: 40.r,
-                        height: 40.r,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: _selectedWeekdays.contains(i + 1)
-                              ? AppColors.gold
-                              : AppColors.cardDark,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.cardBorder),
-                        ),
-                        child: Text(
-                          _kWeekdayLabels[i],
-                          style: AppTextStyles.label(context).copyWith(
-                            color: _selectedWeekdays.contains(i + 1)
-                                ? AppColors.emeraldDeep
-                                : AppColors.textMuted,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+              PersonalAmolWeekdayChips(
+                selected: _selectedWeekdays,
+                onToggle: (day) => setState(() {
+                  if (!_selectedWeekdays.add(day)) {
+                    _selectedWeekdays.remove(day);
+                  }
+                }),
               ),
             ],
             SizedBox(height: 20.h),

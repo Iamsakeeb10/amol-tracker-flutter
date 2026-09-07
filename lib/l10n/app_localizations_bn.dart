@@ -3130,6 +3130,9 @@ class AppLocalizationsBn extends AppLocalizations {
       'দৈনন্দিন যেকোনো অভ্যাস ট্র্যাক করুন, শুধু আপনার জন্য';
 
   @override
+  String get personalAmolNoneDueToday => 'আজ কোনো ব্যক্তিগত আমল নির্ধারিত নেই।';
+
+  @override
   String get personalAmolEmptyCta => 'যোগ করুন';
 
   @override
@@ -3209,4 +3212,46 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get personalAmolHistoryTotalLabel => 'সম্পন্ন';
+
+  @override
+  String get personalAmolTypeLabel => 'ট্র্যাকিং ধরন';
+
+  @override
+  String get personalAmolTypeToggle => 'টগল';
+
+  @override
+  String get personalAmolTypeCount => 'গণনা';
+
+  @override
+  String get personalAmolTargetLabel => 'দৈনিক লক্ষ্য';
+
+  @override
+  String get personalAmolTargetHint => 'দিনে কতবার করবেন';
+
+  @override
+  String get personalAmolSeeAllIcons => 'সব দেখুন';
+
+  @override
+  String get personalAmolIconPickerTitle => 'আইকন নির্বাচন করুন';
+
+  @override
+  String get personalAmolWeekdaySat => 'শনি';
+
+  @override
+  String get personalAmolWeekdaySun => 'রবি';
+
+  @override
+  String get personalAmolWeekdayMon => 'সোম';
+
+  @override
+  String get personalAmolWeekdayTue => 'মঙ্গল';
+
+  @override
+  String get personalAmolWeekdayWed => 'বুধ';
+
+  @override
+  String get personalAmolWeekdayThu => 'বৃহস্পতি';
+
+  @override
+  String get personalAmolWeekdayFri => 'শুক্র';
 }

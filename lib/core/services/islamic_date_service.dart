@@ -185,6 +185,27 @@ class IslamicDateService {
     return _formatStorage(year, month, day);
   }
 
+  /// Personal-amol weekday index for a Gregorian date (1 = Saturday ...
+  /// 7 = Friday), matching `PersonalAmolModel.weekdays`.
+  static int personalAmolWeekdayIndex(DateTime gregorianDate) {
+    final w = gregorianDate.weekday; // Dart: 1 = Monday ... 7 = Sunday.
+    return ((w - 6) % 7) + 1;
+  }
+
+  /// [personalAmolWeekdayIndex] for a Hijri storage date `YYYY-MM-DD`.
+  static int personalAmolWeekdayIndexForStorage(String hijriYyyyMmDd) {
+    final parts = hijriYyyyMmDd.split('-');
+    if (parts.length != 3) return 1;
+    final h = HijriCalendar();
+    return personalAmolWeekdayIndex(
+      h.hijriToGregorian(
+        int.tryParse(parts[0]) ?? 1,
+        int.tryParse(parts[1]) ?? 1,
+        int.tryParse(parts[2]) ?? 1,
+      ),
+    );
+  }
+
   /// Canonical conversion for Bangladesh local moment.
   /// Flow: BD now -> Hijri conversion -> global day adjustment.
   static String islamicDateStringForBangladeshMoment(DateTime bdNow) {

@@ -12,7 +12,8 @@ class PersonalAmolMonthCalculator {
   /// like the community calendar.
   static List<MockDay> buildMonth({
     required Map<String, int> completionsByDay,
-    required int activeCount,
+    Map<String, int>? activeCountByDay,
+    int activeCount = 0,
     required int hijriYear,
     required int hijriMonth,
     required String todayStr,
@@ -32,24 +33,23 @@ class PersonalAmolMonthCalculator {
         continue;
       }
 
-      if (key == todayStr) {
-        final done = completionsByDay[key] ?? 0;
-        if (done == 0 || activeCount <= 0) {
-          out.add(MockDay(day: d, score: done, state: DayCompletion.today));
-        } else {
-          final ratio = done / activeCount;
-          out.add(MockDay(day: d, score: done, state: _ratioToState(ratio)));
-        }
-        continue;
-      }
-
       final done = completionsByDay[key] ?? 0;
-      if (done == 0 || activeCount <= 0) {
-        out.add(MockDay(day: d, score: done, state: DayCompletion.noData));
+      // Per-day scheduled denominator when provided (weekday-aware), else the
+      // flat active count.
+      final scheduled = activeCountByDay?[key] ?? activeCount;
+      final isToday = key == todayStr;
+      if (done == 0 || scheduled <= 0) {
+        out.add(
+          MockDay(
+            day: d,
+            score: done,
+            state: isToday ? DayCompletion.today : DayCompletion.noData,
+          ),
+        );
         continue;
       }
 
-      final ratio = done / activeCount;
+      final ratio = done / scheduled;
       final state = _ratioToState(ratio);
       out.add(MockDay(day: d, score: done, state: state));
     }

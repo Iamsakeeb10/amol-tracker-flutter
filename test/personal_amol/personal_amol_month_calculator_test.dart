@@ -128,5 +128,30 @@ void main() {
       final partialByDay = {for (final d in partial) d.day: d};
       expect(partialByDay[20]!.state, DayCompletion.partial);
     });
+
+    test('per-day scheduled denominator scales weekday-only amols', () {
+      // Both days are in the past relative to today (1447-03-20).
+      const scheduledByDay = <String, int>{
+        '1447-03-19': 5, // Thursday
+        '1447-03-18': 4, // Wednesday
+      };
+      // 3 fully-done on a day with 5 due -> ratio 0.6 == partial.
+      // 3 fully-done on a day with 4 due -> ratio 0.75 == partial (boundary).
+      final days = PersonalAmolMonthCalculator.buildMonth(
+        completionsByDay: const {
+          '1447-03-19': 3,
+          '1447-03-18': 3,
+        },
+        activeCountByDay: scheduledByDay,
+        hijriYear: hijriYear,
+        hijriMonth: hijriMonth,
+        todayStr: todayStr,
+        accountCreatedHijri: accountCreatedHijri,
+        daysInMonth: daysInMonth,
+      );
+      final byDay = {for (final d in days) d.day: d};
+      expect(byDay[19]!.state, DayCompletion.partial); // 0.6
+      expect(byDay[18]!.state, DayCompletion.partial); // 0.75
+    });
   });
 }

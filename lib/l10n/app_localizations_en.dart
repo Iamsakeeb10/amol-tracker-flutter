@@ -3123,6 +3123,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolEmptySubtitle => 'Track any daily habit, just for you';
 
   @override
+  String get personalAmolNoneDueToday => 'No personal amol is scheduled today.';
+
+  @override
   String get personalAmolEmptyCta => 'Add';
 
   @override
@@ -3202,4 +3205,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalAmolHistoryTotalLabel => 'Completions';
+
+  @override
+  String get personalAmolTypeLabel => 'Tracking type';
+
+  @override
+  String get personalAmolTypeToggle => 'Toggle';
+
+  @override
+  String get personalAmolTypeCount => 'Count';
+
+  @override
+  String get personalAmolTargetLabel => 'Daily target';
+
+  @override
+  String get personalAmolTargetHint => 'How many times per day';
+
+  @override
+  String get personalAmolSeeAllIcons => 'See all';
+
+  @override
+  String get personalAmolIconPickerTitle => 'Choose an icon';
+
+  @override
+  String get personalAmolWeekdaySat => 'শনি';
+
+  @override
+  String get personalAmolWeekdaySun => 'রবি';
+
+  @override
+  String get personalAmolWeekdayMon => 'সোম';
+
+  @override
+  String get personalAmolWeekdayTue => 'মঙ্গল';
+
+  @override
+  String get personalAmolWeekdayWed => 'বুধ';
+
+  @override
+  String get personalAmolWeekdayThu => 'বৃহস্পতি';
+
+  @override
+  String get personalAmolWeekdayFri => 'শুক্র';
 }

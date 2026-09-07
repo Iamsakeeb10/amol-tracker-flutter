@@ -8,33 +8,42 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../models/personal_amol_model.dart';
 import '../../../../providers/personal_amol_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
+import 'personal_amol_icons.dart';
+import 'personal_amol_stepper.dart';
 
 /// Card for a single personal amol, styled to match the community amol rows
 /// (see [AmalRow]): same card colors, rounded-square icon, and adaptive switch.
 ///
-/// On the home screen [onToggle] is provided and [readOnly] is false; in other
-/// contexts the tile is static.
+/// On the home screen [onToggle] (toggle type) or [onPlus]/[onMinus] (count
+/// type) are provided and [readOnly] is false; in other contexts the tile is
+/// static.
 class PersonalAmolTile extends ConsumerWidget {
   const PersonalAmolTile({
     super.key,
     required this.uid,
     required this.amol,
     this.completed = false,
+    this.doneCount = 0,
     this.readOnly = false,
     this.onToggle,
     this.onTap,
     this.onEdit,
     this.onDelete,
+    this.onPlus,
+    this.onMinus,
   });
 
   final String uid;
   final PersonalAmolModel amol;
   final bool completed;
+  final int doneCount;
   final bool readOnly;
   final VoidCallback? onToggle;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onPlus;
+  final VoidCallback? onMinus;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -67,9 +76,12 @@ class PersonalAmolTile extends ConsumerWidget {
               color: completed ? AppColors.gold : AppColors.cardBorder,
               borderRadius: BorderRadius.circular(AppRadius.md.r - 2),
             ),
-            child: Text(
-              amol.icon.isNotEmpty ? amol.icon : amol.name.characters.first,
-              style: TextStyle(fontSize: 18.sp),
+            child: AmolIconView(
+              icon: amol.icon,
+              onFilled: completed,
+              emojiSize: 18,
+              iconSize: 20,
+              fallbackText: amol.name,
             ),
           ),
           SizedBox(width: AppSpacing.md.w),
@@ -169,33 +181,47 @@ class PersonalAmolTile extends ConsumerWidget {
                     ),
                 ],
               )
-            else
-              SizedBox(
-                width: 48.w,
-                height: 48.h,
-                child: Center(
-                  child: Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.textMuted,
-                    size: 24.r,
-                  ),
-                ),
-              )
-          else
+else
+              _staticTrailing(completed)
+          else if (amol.type == PersonalAmolType.count &&
+              (onPlus != null || onMinus != null))
+            PersonalAmolStepper(
+              doneCount: doneCount,
+              target: amol.target,
+              onIncrement: onPlus,
+              onDecrement: onMinus,
+            )
+          else if (onToggle != null)
             SizedBox(
               width: 48.w,
               height: 48.h,
               child: Center(
                 child: Switch.adaptive(
                   value: completed,
-                  onChanged: onToggle != null ? (_) => onToggle!() : null,
+                  onChanged: (_) => onToggle!(),
                   activeThumbColor: AppColors.emeraldDeep,
                   activeTrackColor: AppColors.gold,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ),
-            ),
+            )
+          else
+            _staticTrailing(completed),
         ],
+      ),
+    );
+  }
+
+  Widget _staticTrailing(bool completed) {
+    return SizedBox(
+      width: 48.w,
+      height: 48.h,
+      child: Center(
+        child: Icon(
+          completed ? Icons.check_circle : Icons.chevron_right_rounded,
+          color: completed ? AppColors.gold : AppColors.textMuted,
+          size: 24.r,
+        ),
       ),
     );
   }

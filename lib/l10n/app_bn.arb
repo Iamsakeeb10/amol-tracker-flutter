@@ -1482,6 +1482,7 @@
   "personalAmolSectionTitle": "ব্যক্তিগত আমল",
   "personalAmolEmptyHeadline": "নিজের আমল যোগ করুন",
   "personalAmolEmptySubtitle": "দৈনন্দিন যেকোনো অভ্যাস ট্র্যাক করুন, শুধু আপনার জন্য",
+  "personalAmolNoneDueToday": "আজ কোনো ব্যক্তিগত আমল নির্ধারিত নেই।",
   "personalAmolEmptyCta": "যোগ করুন",
   "personalAmolCapMessage": "আপনি আপনার {max}টি ব্যক্তিগত আমলের সীমায় পৌঁছেছেন।",
   "@personalAmolCapMessage": {
@@ -1522,4 +1523,19 @@
   "personalAmolHistorySection": "ব্যক্তিগত আমল",
   "personalAmolHistoryCompleted": "সম্পন্ন",
   "personalAmolHistoryNotCompleted": "সম্পন্ন হয়নি",
-  "personalAmolHistoryTotalLabel": "সম্পন্ন"}
+  "personalAmolHistoryTotalLabel": "সম্পন্ন",
+  "personalAmolTypeLabel": "ট্র্যাকিং ধরন",
+  "personalAmolTypeToggle": "টগল",
+  "personalAmolTypeCount": "গণনা",
+  "personalAmolTargetLabel": "দৈনিক লক্ষ্য",
+  "personalAmolTargetHint": "দিনে কতবার করবেন",
+  "personalAmolSeeAllIcons": "সব দেখুন",
+  "personalAmolIconPickerTitle": "আইকন নির্বাচন করুন",
+  "personalAmolWeekdaySat": "শনি",
+  "personalAmolWeekdaySun": "রবি",
+  "personalAmolWeekdayMon": "সোম",
+  "personalAmolWeekdayTue": "মঙ্গল",
+  "personalAmolWeekdayWed": "বুধ",
+  "personalAmolWeekdayThu": "বৃহস্পতি",
+  "personalAmolWeekdayFri": "শুক্র"
+}

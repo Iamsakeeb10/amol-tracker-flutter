@@ -130,7 +130,7 @@ class PersonalAmolTile extends ConsumerWidget {
                         SizedBox(width: 2.w),
                         Flexible(
                           child: Text(
-                            l10n.dayStreak(streak),
+                            l10n.personalAmolStreakLabel(streak),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.bodySmall(context).copyWith(
@@ -215,26 +215,41 @@ class PersonalAmolTile extends ConsumerWidget {
   }
 
   Widget _staticTrailing(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (amol.type == PersonalAmolType.count) {
-      return Container(
-        height: 48.h,
-        alignment: Alignment.centerRight,
-        child: Text(
-          '${toBengaliNumeral(doneCount)}/${toBengaliNumeral(amol.target)}',
-          style: AppTextStyles.pill(context).copyWith(
-            color: completed ? AppColors.gold : AppColors.textMuted,
-            fontWeight: FontWeight.w700,
+      return Semantics(
+        label: l10n.personalAmolProgressLabel(doneCount, amol.target),
+        child: Container(
+          height: 48.h,
+          alignment: Alignment.centerRight,
+          child: Text(
+            '${localeAwareNumeral(context, doneCount)}/'
+            '${localeAwareNumeral(context, amol.target)}',
+            style: AppTextStyles.pill(context).copyWith(
+              color: completed ? AppColors.gold : AppColors.textMuted,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       );
     }
-    return Container(
-      height: 48.h,
-      alignment: Alignment.centerRight,
-      child: Icon(
-        completed ? Icons.check_circle : Icons.cancel_outlined,
-        color: completed ? AppColors.success : AppColors.danger,
-        size: 22.r,
+    return Semantics(
+      label: completed
+          ? l10n.personalAmolHistoryCompleted
+          : l10n.personalAmolHistoryNotCompleted,
+      child: Tooltip(
+        message: completed
+            ? l10n.personalAmolHistoryCompleted
+            : l10n.personalAmolHistoryNotCompleted,
+        child: Container(
+          height: 48.h,
+          alignment: Alignment.centerRight,
+          child: Icon(
+            completed ? Icons.check_circle : Icons.cancel_outlined,
+            color: completed ? AppColors.success : AppColors.danger,
+            size: 22.r,
+          ),
+        ),
       ),
     );
   }

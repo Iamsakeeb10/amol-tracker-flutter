@@ -22,6 +22,7 @@ import '../../../../core/utils/report_calculator.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
+import '../../../../providers/personal_amol_report_provider.dart';
 import '../../../../providers/report_provider.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -30,6 +31,7 @@ import '../../../../shared/widgets/streak_badge.dart';
 import '../widgets/report_bar_chart.dart';
 import '../widgets/report_custom_range_picker.dart';
 import '../widgets/report_insights_section.dart';
+import '../widgets/report_personal_amol_breakdown.dart';
 import '../widgets/report_prayer_breakdown.dart';
 import '../widgets/report_share_card.dart';
 
@@ -161,7 +163,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     AnalyticsService.instance.logReportPeriodChanged(type: 'custom');
   }
 
-  Future<void> _shareReport(ReportSummary summary) async {
+  Future<void> _shareReport(
+    ReportSummary summary, {
+    List<PersonalAmolReportStat> personalAmolStats = const [],
+  }) async {
     if (_isSharing) return;
     setState(() => _isSharing = true);
     OverlayEntry? entry;
@@ -188,6 +193,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   dateSubLabel: _dateSubLabel(context, l10n),
                   periodType: _type,
                   fields: ref.read(amalFieldsListProvider),
+                  personalAmolStats: personalAmolStats,
                 ),
               ),
             ),
@@ -204,12 +210,18 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       final boundary =
           boundaryKey.currentContext?.findRenderObject()
               as RenderRepaintBoundary?;
-      if (boundary == null) return;
+      if (boundary == null) {
+        _showShareFailedSnack();
+        return;
+      }
       final dpr = MediaQuery.devicePixelRatioOf(context).toDouble();
       final pixelRatio = dpr < 3.0 ? 3.0 : (dpr > 4.0 ? 4.0 : dpr);
       final image = await boundary.toImage(pixelRatio: pixelRatio);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData == null) return;
+      if (byteData == null) {
+        _showShareFailedSnack();
+        return;
+      }
       final bytes = byteData.buffer.asUint8List();
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/amol_report_${_type.name}.png');
@@ -217,7 +229,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path)],
-          text: _shareCaption(summary),
+          text: _shareCaption(summary, personalAmolStats: personalAmolStats),
         ),
       );
       AnalyticsService.instance.logReportShared(type: _type.name);
@@ -227,24 +239,39 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         st,
         reason: 'Report share failed',
       );
-      if (mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.reportsLoadFailed)),
-        );
-      }
+      _showShareFailedSnack();
     } finally {
       entry?.remove();
       if (mounted) setState(() => _isSharing = false);
     }
   }
 
-  String _shareCaption(ReportSummary summary) {
+  void _showShareFailedSnack() {
+    if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
-    final score = summary.hasScoredLogs
-        ? summary.avgScore.round().toString()
-        : l10n.reportsEmDash;
-    return '${_title(l10n)} · $score · ${_dateMainLabel(context)}';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.reportsShareFailed)),
+    );
+  }
+
+  String _shareCaption(
+    ReportSummary summary, {
+    List<PersonalAmolReportStat> personalAmolStats = const [],
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    if (summary.hasScoredLogs) {
+      final score = summary.avgScore.round().toString();
+      return '${_title(l10n)} · $score · ${_dateMainLabel(context)}';
+    }
+    if (personalAmolStats.isNotEmpty) {
+      final avgRate = personalAmolStats
+              .map((s) => s.rate)
+              .fold<double>(0, (a, b) => a + b) /
+          personalAmolStats.length;
+      final pct = (avgRate * 100).round();
+      return '${_title(l10n)} · $pct% · ${_dateMainLabel(context)}';
+    }
+    return '${_title(l10n)} · ${l10n.reportsEmDash} · ${_dateMainLabel(context)}';
   }
 
   String _title(AppLocalizations l10n) {
@@ -343,7 +370,23 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       endHijri: _endHijri,
     );
     final summaryAsync = ref.watch(reportSummaryProvider(key));
+    final personalAmolKey = PersonalAmolReportKey(
+      uid: authUser.uid,
+      startHijri: _startHijri,
+      endHijri: _endHijri,
+    );
+    final personalAmolAsync = ref.watch(
+      personalAmolReportProvider(personalAmolKey),
+    );
+    final personalAmolStats =
+        personalAmolAsync.asData?.value ?? const <PersonalAmolReportStat>[];
+    final personalAmolLoading = personalAmolAsync.isLoading;
+    final personalAmolHasError = personalAmolAsync.hasError;
     final fields = ref.watch(amalFieldsListProvider);
+    final canShare = summaryAsync.hasValue &&
+        !personalAmolLoading &&
+        !((summaryAsync.value!.logs.isEmpty && personalAmolStats.isEmpty) ||
+            _isSharing);
 
     return AppScaffold(
       handleExitBack: false,
@@ -361,9 +404,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         actions: [
           if (summaryAsync.hasValue)
             IconButton(
-              onPressed: summaryAsync.value!.logs.isEmpty || _isSharing
-                  ? null
-                  : () => _shareReport(summaryAsync.value!),
+              tooltip: l10n.reportsShare,
+              onPressed: canShare
+                  ? () => _shareReport(
+                        summaryAsync.value!,
+                        personalAmolStats: personalAmolStats,
+                      )
+                  : null,
               icon: _isSharing
                   ? SizedBox(
                       width: 18.r,
@@ -418,8 +465,12 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       ),
                       SizedBox(height: 12.h),
                       FilledButton(
-                        onPressed: () =>
-                            ref.invalidate(reportSummaryProvider(key)),
+                        onPressed: () {
+                          ref.invalidate(reportSummaryProvider(key));
+                          ref.invalidate(
+                            personalAmolReportProvider(personalAmolKey),
+                          );
+                        },
                         child: Text(l10n.reportsRetry),
                       ),
                     ],
@@ -431,6 +482,12 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 title: _title(l10n),
                 periodType: _type,
                 fields: fields,
+                personalAmolStats: personalAmolStats,
+                personalAmolLoading: personalAmolLoading,
+                personalAmolHasError: personalAmolHasError,
+                onRetryPersonalAmol: () => ref.invalidate(
+                  personalAmolReportProvider(personalAmolKey),
+                ),
               ),
             ),
           ),
@@ -623,12 +680,20 @@ class _ReportBody extends StatelessWidget {
     required this.title,
     required this.periodType,
     required this.fields,
+    this.personalAmolStats = const [],
+    this.personalAmolLoading = false,
+    this.personalAmolHasError = false,
+    this.onRetryPersonalAmol,
   });
 
   final ReportSummary summary;
   final String title;
   final ReportPeriodType periodType;
   final List<AmalField> fields;
+  final List<PersonalAmolReportStat> personalAmolStats;
+  final bool personalAmolLoading;
+  final bool personalAmolHasError;
+  final VoidCallback? onRetryPersonalAmol;
 
   @override
   Widget build(BuildContext context) {
@@ -652,6 +717,10 @@ class _ReportBody extends StatelessWidget {
         summary.eligibleDays > ReportCalculator.bucketThresholdDays
         ? l10n.reportsChartWeekly
         : l10n.reportsChartDaily;
+    final showEmptyPeriod = summary.logs.isEmpty &&
+        personalAmolStats.isEmpty &&
+        !personalAmolLoading &&
+        !personalAmolHasError;
 
     return Column(
       children: [
@@ -802,7 +871,7 @@ class _ReportBody extends StatelessWidget {
                               ],
                             ),
                           ),
-                          if (summary.logs.isEmpty) ...[
+                          if (showEmptyPeriod) ...[
                             SizedBox(height: 24.h),
                             Text(
                               l10n.reportsEmptyPeriod,
@@ -812,7 +881,8 @@ class _ReportBody extends StatelessWidget {
                               ),
                             ),
                           ] else ...[
-                            if (summary.bars.isNotEmpty) ...[
+                            if (summary.logs.isNotEmpty &&
+                                summary.bars.isNotEmpty) ...[
                               SizedBox(height: 16.h),
                               SectionHeader(title: chartLabel),
                                ReportBarChart(
@@ -832,16 +902,74 @@ class _ReportBody extends StatelessWidget {
                                 fields: fields,
                               ),
                             ],
-                            SizedBox(height: 16.h),
-                            SectionHeader(title: l10n.reportsInsights),
-                            ReportInsightsCard(summary: summary),
-                            if (summary.hadithText != null &&
-                                summary.hadithText!.isNotEmpty) ...[
+                            if (personalAmolLoading) ...[
                               SizedBox(height: 16.h),
                               SectionHeader(
-                                title: l10n.reportsHadithOfPeriod,
+                                title: l10n.reportsPersonalAmolBreakdown,
                               ),
-                              ReportHadithCard(text: summary.hadithText!),
+                              const _PersonalAmolBreakdownSkeleton(),
+                            ] else if (personalAmolHasError) ...[
+                              SizedBox(height: 16.h),
+                              SectionHeader(
+                                title: l10n.reportsPersonalAmolBreakdown,
+                              ),
+                              CardContainer(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      l10n.personalAmolLoadFailed,
+                                      style: AppTextStyles.bodyMedium(context)
+                                          .copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                    if (onRetryPersonalAmol != null) ...[
+                                      SizedBox(height: 10.h),
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: TextButton(
+                                          onPressed: onRetryPersonalAmol,
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: AppColors.gold,
+                                            minimumSize: Size(44.r, 44.r),
+                                          ),
+                                          child: Text(
+                                            l10n.reportsRetry,
+                                            style: AppTextStyles.label(context)
+                                                .copyWith(
+                                              color: AppColors.gold,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ] else if (personalAmolStats.isNotEmpty) ...[
+                              SizedBox(height: 16.h),
+                              SectionHeader(
+                                title: l10n.reportsPersonalAmolBreakdown,
+                              ),
+                              ReportPersonalAmolBreakdown(
+                                stats: personalAmolStats,
+                              ),
+                            ],
+                            if (summary.logs.isNotEmpty) ...[
+                              SizedBox(height: 16.h),
+                              SectionHeader(title: l10n.reportsInsights),
+                              ReportInsightsCard(summary: summary),
+                              if (summary.hadithText != null &&
+                                  summary.hadithText!.isNotEmpty) ...[
+                                SizedBox(height: 16.h),
+                                SectionHeader(
+                                  title: l10n.reportsHadithOfPeriod,
+                                ),
+                                ReportHadithCard(text: summary.hadithText!),
+                              ],
                             ],
                           ],
                         ],
@@ -853,6 +981,76 @@ class _ReportBody extends StatelessWidget {
           ),
         ],
       );
+  }
+}
+
+class _PersonalAmolBreakdownSkeleton extends StatelessWidget {
+  const _PersonalAmolBreakdownSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.cardDark,
+      highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: CardContainer(
+        padding: EdgeInsets.zero,
+        child: Column(
+          children: [
+            for (var i = 0; i < 3; i++) ...[
+              if (i > 0)
+                Divider(
+                  height: 1,
+                  thickness: 0.5,
+                  color: AppColors.cardBorder,
+                ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 28.r,
+                      height: 28.r,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Container(
+                        height: 12.h,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Container(
+                      width: 80.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Container(
+                      width: 32.w,
+                      height: 10.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 

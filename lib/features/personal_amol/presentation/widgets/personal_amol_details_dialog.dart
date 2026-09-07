@@ -388,7 +388,7 @@ class _StreakChip extends StatelessWidget {
           Icon(Icons.local_fire_department, color: AppColors.warning, size: 14.r),
           SizedBox(width: 5.w),
           Text(
-            l10n.dayStreak(currentStreak),
+            l10n.personalAmolStreakLabel(currentStreak),
             style: AppTextStyles.label(context).copyWith(
               color: AppColors.textPrimary,
               fontSize: 11.sp,

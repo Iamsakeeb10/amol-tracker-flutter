@@ -162,8 +162,9 @@ class HomeSaveFab extends ConsumerWidget {
     if (!amal.isSubmitted && amal.hasAnyDone) {
       await submitTodaysAmal(context, ref, uid: uid, user: user);
     } else if (personalSaved && context.mounted) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ব্যক্তিগত আমল সংরক্ষণ করা হয়েছে ✓')),
+        SnackBar(content: Text(l10n.personalAmolSaved)),
       );
     }
   }

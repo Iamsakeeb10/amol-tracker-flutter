@@ -4,10 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../l10n/app_localizations.dart';
 
-/// Renders the weekday picker for "নির্দিষ্ট দিন" personal amols as two-line
-/// chips: the English short name on top and the full Bangla name below.
+/// Renders the weekday picker for weekday personal amols as two-line chips:
+/// English short name on top and Bangla name below (always, for visual parity
+/// with the create-sheet design).
 ///
 /// Day indices are 1-based in the model (1 = Saturday ... 7 = Friday), but the
 /// chips display in Sunday-first order to match the design reference.
@@ -31,9 +31,19 @@ class PersonalAmolWeekdayChips extends ConsumerWidget {
     (1, 'Sat'),
   ];
 
+  /// Bangla abbreviations shown on the chip sub-label regardless of locale.
+  static const Map<int, String> _kBanglaNames = <int, String>{
+    1: 'শনি',
+    2: 'রবি',
+    3: 'সোম',
+    4: 'মঙ্গল',
+    5: 'বুধ',
+    6: 'বৃহস্পতি',
+    7: 'শুক্র',
+  };
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -41,7 +51,7 @@ class PersonalAmolWeekdayChips extends ConsumerWidget {
           _chip(
             context,
             en: en,
-            bn: _banglaName(l10n, dayIndex),
+            bn: _kBanglaNames[dayIndex] ?? '',
             selected: selected.contains(dayIndex),
             onTap: () => onToggle(dayIndex),
           ),
@@ -101,25 +111,5 @@ class PersonalAmolWeekdayChips extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _banglaName(AppLocalizations l10n, int dayIndex) {
-    switch (dayIndex) {
-      case 1:
-        return l10n.personalAmolWeekdaySat;
-      case 2:
-        return l10n.personalAmolWeekdaySun;
-      case 3:
-        return l10n.personalAmolWeekdayMon;
-      case 4:
-        return l10n.personalAmolWeekdayTue;
-      case 5:
-        return l10n.personalAmolWeekdayWed;
-      case 6:
-        return l10n.personalAmolWeekdayThu;
-      case 7:
-        return l10n.personalAmolWeekdayFri;
-    }
-    return '';
   }
 }

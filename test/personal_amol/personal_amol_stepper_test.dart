@@ -67,10 +67,7 @@ void main() {
     await tester.pump();
 
     expect(dialogOpened, isFalse);
-    expect(
-      find.text('Daily target already reached.'),
-      findsOneWidget,
-    );
+    expect(find.text('Target reached!'), findsOneWidget);
   });
 
   testWidgets('tapping − at 0 shows snackbar, no dialog', (tester) async {
@@ -86,10 +83,7 @@ void main() {
     await tester.pump();
 
     expect(dialogOpened, isFalse);
-    expect(
-      find.text('Count is already 0. Nothing left to remove.'),
-      findsOneWidget,
-    );
+    expect(find.text('Already at 0'), findsOneWidget);
   });
 
   testWidgets('snackbar close action dismisses it immediately', (tester) async {
@@ -102,11 +96,11 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.add));
     await tester.pumpAndSettle();
-    expect(find.text('Daily target already reached.'), findsOneWidget);
+    expect(find.text('Target reached!'), findsOneWidget);
 
     await tester.tap(find.byType(SnackBarAction), warnIfMissed: false);
     await tester.pumpAndSettle();
-    expect(find.text('Daily target already reached.'), findsNothing);
+    expect(find.text('Target reached!'), findsNothing);
   });
 
   testWidgets('limit snackbar is localized in bn', (tester) async {
@@ -122,7 +116,7 @@ void main() {
     await tester.pump();
 
     expect(
-      find.text('গণনা ইতিমধ্যে ০। আর কমানোর কিছু নেই।'),
+      find.text('গণনা এখন ০, আর কমানো যাবে না'),
       findsOneWidget,
     );
     expect(find.byIcon(Icons.add), findsOneWidget);
@@ -141,7 +135,7 @@ void main() {
     await tester.pump();
 
     expect(dialogOpened, isFalse, reason: 'parent onTap must not fire');
-    expect(find.text('Daily target already reached.'), findsNothing);
-    expect(find.text('Count is already 0. Nothing left to remove.'), findsNothing);
+    expect(find.text('Target reached!'), findsNothing);
+    expect(find.text('Already at 0'), findsNothing);
   });
 }

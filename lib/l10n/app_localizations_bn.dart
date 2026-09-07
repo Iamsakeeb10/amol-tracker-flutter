@@ -822,6 +822,10 @@ class AppLocalizationsBn extends AppLocalizations {
   String get historyStartLogging => 'হিস্টোরি তৈরি করতে আজ থেকে লগ শুরু করুন';
 
   @override
+  String get historyPreAccountDimDates =>
+      'ম্লান তারিখগুলো আপনার অ্যাকাউন্ট তৈরির আগের।';
+
+  @override
   String get historyWeakestAmal => 'সবচেয়ে দুর্বল আমল';
 
   @override
@@ -2767,6 +2771,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get reportsLoadFailed => 'এখন রিপোর্ট লোড করা যায়নি।';
 
   @override
+  String get reportsShareFailed => 'এখন রিপোর্ট শেয়ার করা যায়নি।';
+
+  @override
   String get reportsRetry => 'আবার চেষ্টা';
 
   @override
@@ -3258,6 +3265,21 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get personalAmolCountMinReached => 'গণনা এখন ০, আর কমানো যাবে না';
+
+  @override
+  String get personalAmolManage => 'ম্যানেজ';
+
+  @override
+  String get personalAmolEmptyProfile => 'এখনো কোনো ব্যক্তিগত আমল নেই';
+
+  @override
+  String get personalAmolLoadFailed => 'এখন ব্যক্তিগত আমল লোড করা যায়নি।';
+
+  @override
+  String get personalAmolSaved => 'ব্যক্তিগত আমল সংরক্ষণ করা হয়েছে ✓';
+
+  @override
+  String get reportsPersonalAmolBreakdown => 'ব্যক্তিগত আমল বিশ্লেষণ';
 
   @override
   String get closeLabel => 'বন্ধ করুন';

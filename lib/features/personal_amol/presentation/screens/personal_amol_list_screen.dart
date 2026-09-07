@@ -152,7 +152,7 @@ class _PersonalAmolListScreenState
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              l10n.delete,
+              l10n.personalAmolDeleteLabel,
               style: AppTextStyles.bodySmall(context).copyWith(
                 color: AppColors.danger,
                 fontWeight: FontWeight.w600,
@@ -222,7 +222,7 @@ class _PersonalAmolListScreenState
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
-              l10n.delete,
+              l10n.personalAmolDeleteLabel,
               style: AppTextStyles.button(ctx).copyWith(color: AppColors.danger),
             ),
           ),

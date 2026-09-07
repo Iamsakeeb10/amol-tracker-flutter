@@ -1562,6 +1562,12 @@ abstract class AppLocalizations {
   /// **'Start logging to build your history'**
   String get historyStartLogging;
 
+  /// No description provided for @historyPreAccountDimDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Dim dates are from before your account was created.'**
+  String get historyPreAccountDimDates;
+
   /// No description provided for @historyWeakestAmal.
   ///
   /// In en, this message translates to:
@@ -5149,6 +5155,12 @@ abstract class AppLocalizations {
   /// **'Could not load report right now.'**
   String get reportsLoadFailed;
 
+  /// No description provided for @reportsShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share report right now.'**
+  String get reportsShareFailed;
+
   /// No description provided for @reportsRetry.
   ///
   /// In en, this message translates to:
@@ -6016,43 +6028,43 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolWeekdaySat.
   ///
   /// In en, this message translates to:
-  /// **'শনি'**
+  /// **'Sat'**
   String get personalAmolWeekdaySat;
 
   /// No description provided for @personalAmolWeekdaySun.
   ///
   /// In en, this message translates to:
-  /// **'রবি'**
+  /// **'Sun'**
   String get personalAmolWeekdaySun;
 
   /// No description provided for @personalAmolWeekdayMon.
   ///
   /// In en, this message translates to:
-  /// **'সোম'**
+  /// **'Mon'**
   String get personalAmolWeekdayMon;
 
   /// No description provided for @personalAmolWeekdayTue.
   ///
   /// In en, this message translates to:
-  /// **'মঙ্গল'**
+  /// **'Tue'**
   String get personalAmolWeekdayTue;
 
   /// No description provided for @personalAmolWeekdayWed.
   ///
   /// In en, this message translates to:
-  /// **'বুধ'**
+  /// **'Wed'**
   String get personalAmolWeekdayWed;
 
   /// No description provided for @personalAmolWeekdayThu.
   ///
   /// In en, this message translates to:
-  /// **'বৃহস্পতি'**
+  /// **'Thu'**
   String get personalAmolWeekdayThu;
 
   /// No description provided for @personalAmolWeekdayFri.
   ///
   /// In en, this message translates to:
-  /// **'শুক্র'**
+  /// **'Fri'**
   String get personalAmolWeekdayFri;
 
   /// No description provided for @personalAmolCountMaxReached.
@@ -6066,6 +6078,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Already at 0'**
   String get personalAmolCountMinReached;
+
+  /// No description provided for @personalAmolManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get personalAmolManage;
+
+  /// No description provided for @personalAmolEmptyProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'No personal amol yet'**
+  String get personalAmolEmptyProfile;
+
+  /// No description provided for @personalAmolLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load personal amol right now.'**
+  String get personalAmolLoadFailed;
+
+  /// No description provided for @personalAmolSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal amol saved ✓'**
+  String get personalAmolSaved;
+
+  /// No description provided for @reportsPersonalAmolBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Amol Breakdown'**
+  String get reportsPersonalAmolBreakdown;
 
   /// No description provided for @closeLabel.
   ///

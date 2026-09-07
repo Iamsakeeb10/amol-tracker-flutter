@@ -377,7 +377,7 @@ class _CommunityHistoryTab extends ConsumerWidget {
                               SizedBox(width: 8.w),
                               Expanded(
                                 child: Text(
-                                  'Dim dates are from before your account was created.',
+                                  l10n.historyPreAccountDimDates,
                                   style: AppTextStyles.bodySmall(
                                     context,
                                   ).copyWith(color: AppColors.textMuted),
@@ -738,7 +738,7 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
                               SizedBox(width: 8.w),
                               Expanded(
                                 child: Text(
-                                  'Dim dates are from before your account was created.',
+                                  l10n.historyPreAccountDimDates,
                                   style: AppTextStyles.bodySmall(
                                     context,
                                   ).copyWith(color: AppColors.textMuted),

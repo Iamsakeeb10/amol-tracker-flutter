@@ -21,6 +21,7 @@ import '../../../../shared/widgets/stat_card.dart';
 import '../../../../features/syllabus/presentation/widgets/lms_xp_widgets.dart';
 import '../../../../shared/widgets/streak_badge.dart';
 import '../../../../features/reports/presentation/widgets/report_prayer_breakdown.dart';
+import '../widgets/profile_personal_amol_section.dart';
 
 final profileRecentLogsProvider =
     FutureProvider.family<List<AmalLogModel>, int>((ref, limit) async {
@@ -229,6 +230,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ],
               ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 18.h),
+            sliver: SliverToBoxAdapter(
+              child: ProfilePersonalAmolSection(uid: authUser.uid),
             ),
           ),
           SliverPadding(

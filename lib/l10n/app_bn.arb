@@ -404,6 +404,7 @@
   "historyThisMonth": "এই মাসে",
   "historyBestStreak": "সেরা স্ট্রিক",
   "historyStartLogging": "হিস্টোরি তৈরি করতে আজ থেকে লগ শুরু করুন",
+  "historyPreAccountDimDates": "ম্লান তারিখগুলো আপনার অ্যাকাউন্ট তৈরির আগের।",
   "historyWeakestAmal": "সবচেয়ে দুর্বল আমল",
   "historyWeakestAmalDetail": "{label} - এই মাসে {days} দিন মিস হয়েছে",
   "@historyWeakestAmalDetail": {
@@ -1347,6 +1348,7 @@
   "reportsShare": "শেয়ার",
   "reportsSharing": "প্রস্তুত হচ্ছে…",
   "reportsLoadFailed": "এখন রিপোর্ট লোড করা যায়নি।",
+  "reportsShareFailed": "এখন রিপোর্ট শেয়ার করা যায়নি।",
   "reportsRetry": "আবার চেষ্টা",
   "reportsEmptyPeriod": "এই সময়কালে এখনো কোনো আমল লগ নেই। রিপোর্ট দেখতে লগ করা শুরু করুন।",
   "reportsThisWeek": "এই সপ্তাহ",
@@ -1539,5 +1541,10 @@
   "personalAmolWeekdayFri": "শুক্র",
   "personalAmolCountMaxReached": "লক্ষ্য পূরণ হয়ে গেছে!",
   "personalAmolCountMinReached": "গণনা এখন ০, আর কমানো যাবে না",
+  "personalAmolManage": "ম্যানেজ",
+  "personalAmolEmptyProfile": "এখনো কোনো ব্যক্তিগত আমল নেই",
+  "personalAmolLoadFailed": "এখন ব্যক্তিগত আমল লোড করা যায়নি।",
+  "personalAmolSaved": "ব্যক্তিগত আমল সংরক্ষণ করা হয়েছে ✓",
+  "reportsPersonalAmolBreakdown": "ব্যক্তিগত আমল বিশ্লেষণ",
   "closeLabel": "বন্ধ করুন"
 }

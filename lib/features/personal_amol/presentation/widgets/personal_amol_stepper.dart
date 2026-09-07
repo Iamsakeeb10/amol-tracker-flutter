@@ -60,8 +60,8 @@ class PersonalAmolStepper extends StatelessWidget {
             width: 44.w,
             child: Center(
               child: Text(
-                '${toBengaliNumeral(doneCount)}/'
-                '${toBengaliNumeral(target)}',
+                '${localeAwareNumeral(context, doneCount)}/'
+                '${localeAwareNumeral(context, target)}',
                 style: AppTextStyles.label(context).copyWith(
                   fontSize: 10.sp,
                   color: isDone

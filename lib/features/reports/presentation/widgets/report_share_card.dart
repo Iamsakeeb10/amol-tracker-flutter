@@ -5,6 +5,7 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/report_calculator.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../providers/personal_amol_report_provider.dart';
 import '../../../../providers/report_provider.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/section_header.dart';
@@ -12,6 +13,7 @@ import '../../../../shared/widgets/streak_badge.dart';
 import '../../../../core/constants/amal_fields.dart';
 import 'report_bar_chart.dart';
 import 'report_insights_section.dart';
+import 'report_personal_amol_breakdown.dart';
 import 'report_prayer_breakdown.dart';
 
 /// Branded, padded layout used when exporting a report as an image.
@@ -24,6 +26,7 @@ class ReportShareCard extends StatelessWidget {
     required this.dateSubLabel,
     required this.periodType,
     required this.fields,
+    this.personalAmolStats = const [],
   });
 
   final ReportSummary summary;
@@ -32,6 +35,7 @@ class ReportShareCard extends StatelessWidget {
   final String dateSubLabel;
   final ReportPeriodType periodType;
   final List<AmalField> fields;
+  final List<PersonalAmolReportStat> personalAmolStats;
 
   static const iconAsset = 'assets/images/icon_fg.png';
 
@@ -203,7 +207,7 @@ class ReportShareCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (summary.logs.isEmpty) ...[
+            if (summary.logs.isEmpty && personalAmolStats.isEmpty) ...[
               SizedBox(height: 16.h),
               Text(
                 l10n.reportsEmptyPeriod,
@@ -213,7 +217,7 @@ class ReportShareCard extends StatelessWidget {
                 ).copyWith(color: AppColors.textMuted),
               ),
             ] else ...[
-              if (summary.bars.isNotEmpty) ...[
+              if (summary.logs.isNotEmpty && summary.bars.isNotEmpty) ...[
                 SizedBox(height: 12.h),
                 SectionHeader(title: chartLabel),
                 ReportBarChart(bars: summary.bars),
@@ -229,9 +233,16 @@ class ReportShareCard extends StatelessWidget {
                   fields: fields,
                 ),
               ],
-              SizedBox(height: 12.h),
-              SectionHeader(title: l10n.reportsInsights),
-              ReportInsightsCard(summary: summary),
+              if (personalAmolStats.isNotEmpty) ...[
+                SizedBox(height: 12.h),
+                SectionHeader(title: l10n.reportsPersonalAmolBreakdown),
+                ReportPersonalAmolBreakdown(stats: personalAmolStats),
+              ],
+              if (summary.logs.isNotEmpty) ...[
+                SizedBox(height: 12.h),
+                SectionHeader(title: l10n.reportsInsights),
+                ReportInsightsCard(summary: summary),
+              ],
             ],
             SizedBox(height: 16.h),
             Text(

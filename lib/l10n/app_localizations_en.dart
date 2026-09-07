@@ -819,6 +819,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get historyStartLogging => 'Start logging to build your history';
 
   @override
+  String get historyPreAccountDimDates =>
+      'Dim dates are from before your account was created.';
+
+  @override
   String get historyWeakestAmal => 'Weakest amal';
 
   @override
@@ -2764,6 +2768,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportsLoadFailed => 'Could not load report right now.';
 
   @override
+  String get reportsShareFailed => 'Could not share report right now.';
+
+  @override
   String get reportsRetry => 'Retry';
 
   @override
@@ -3225,31 +3232,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolIconPickerTitle => 'Pick an icon';
 
   @override
-  String get personalAmolWeekdaySat => 'শনি';
+  String get personalAmolWeekdaySat => 'Sat';
 
   @override
-  String get personalAmolWeekdaySun => 'রবি';
+  String get personalAmolWeekdaySun => 'Sun';
 
   @override
-  String get personalAmolWeekdayMon => 'সোম';
+  String get personalAmolWeekdayMon => 'Mon';
 
   @override
-  String get personalAmolWeekdayTue => 'মঙ্গল';
+  String get personalAmolWeekdayTue => 'Tue';
 
   @override
-  String get personalAmolWeekdayWed => 'বুধ';
+  String get personalAmolWeekdayWed => 'Wed';
 
   @override
-  String get personalAmolWeekdayThu => 'বৃহস্পতি';
+  String get personalAmolWeekdayThu => 'Thu';
 
   @override
-  String get personalAmolWeekdayFri => 'শুক্র';
+  String get personalAmolWeekdayFri => 'Fri';
 
   @override
   String get personalAmolCountMaxReached => 'Target reached!';
 
   @override
   String get personalAmolCountMinReached => 'Already at 0';
+
+  @override
+  String get personalAmolManage => 'Manage';
+
+  @override
+  String get personalAmolEmptyProfile => 'No personal amol yet';
+
+  @override
+  String get personalAmolLoadFailed =>
+      'Could not load personal amol right now.';
+
+  @override
+  String get personalAmolSaved => 'Personal amol saved ✓';
+
+  @override
+  String get reportsPersonalAmolBreakdown => 'Personal Amol Breakdown';
 
   @override
   String get closeLabel => 'Close';

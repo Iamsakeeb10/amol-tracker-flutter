@@ -66,7 +66,7 @@ class PersonalAmolTargetStepper extends ConsumerWidget {
                 width: 48.w,
                 child: Center(
                   child: Text(
-                    toBengaliNumeral(value),
+                    localeAwareNumeral(context, value),
                     style: AppTextStyles.bodyLarge(context).copyWith(
                       color: AppColors.gold,
                       fontWeight: FontWeight.w700,

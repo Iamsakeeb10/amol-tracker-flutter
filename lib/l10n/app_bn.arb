@@ -526,7 +526,7 @@
   "deleteThisGroup": "এই গ্রুপ ডিলিট করবেন?",
   "deleteGroupWarning": "সব মেম্বার অ্যাক্সেস হারাবে। এটা আর ফেরানো যাবে না।",
   "delete": "ডিলিট করুন",
-  "dayStreak": "{days} দিনের স্ট্রিক",
+  "dayStreak": "{days} দিন",
   "@dayStreak": {
     "placeholders": {
       "days": {}

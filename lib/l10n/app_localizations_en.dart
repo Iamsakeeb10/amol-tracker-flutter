@@ -1119,7 +1119,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String dayStreak(Object days) {
-    return '$days-day streak';
+    return '$days-day';
   }
 
   @override

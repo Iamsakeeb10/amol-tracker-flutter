@@ -524,7 +524,7 @@
   "deleteThisGroup": "Delete this group?",
   "deleteGroupWarning": "Members will lose access. This cannot be undone.",
   "delete": "Delete",
-  "dayStreak": "{days}-day streak",
+  "dayStreak": "{days}-day",
   "@dayStreak": {
     "placeholders": {
       "days": {}

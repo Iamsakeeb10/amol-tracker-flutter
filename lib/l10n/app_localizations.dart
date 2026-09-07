@@ -2135,7 +2135,7 @@ abstract class AppLocalizations {
   /// No description provided for @dayStreak.
   ///
   /// In en, this message translates to:
-  /// **'{days}-day streak'**
+  /// **'{days}-day'**
   String dayStreak(Object days);
 
   /// No description provided for @groupSheet.

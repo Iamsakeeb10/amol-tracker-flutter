@@ -1122,7 +1122,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String dayStreak(Object days) {
-    return '$days দিনের স্ট্রিক';
+    return '$days দিন';
   }
 
   @override

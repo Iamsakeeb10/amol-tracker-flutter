@@ -68,6 +68,10 @@ class NotificationService {
   static const TimeOfDay _hadithEveningTime = TimeOfDay(hour: 22, minute: 0);
   static const String _lastSentKeyPrefix = 'notif_last_sent_';
   static const String _fcmOwnerUidKey = 'fcm_token_owner_uid';
+  // Hive key prefix for persisting personal amol reminder times so they can be
+  // re-scheduled after every rescheduleAll() without needing auth state.
+  // Format: 'personal_amol_reminder_<slot>' → [name, hour, minute].
+  static const String _personalAmolReminderPrefix = 'personal_amol_reminder_';
   static final tz.Location _bdTz = tz.getLocation('Asia/Dhaka');
 
   static const List<String> _morningBodies = [
@@ -98,6 +102,10 @@ class NotificationService {
   bool _initialized = false;
   bool _isRescheduling = false;
   bool _pendingReschedule = false;
+  /// Timestamp of the last completed rescheduleAll call. Used to skip
+  /// redundant re-scheduling when the app resumes after a brief interruption
+  /// (e.g. the user swipes away a notification banner and immediately returns).
+  DateTime? _lastRescheduleTime;
   StreamSubscription<String>? _onTokenRefreshSub;
   StreamSubscription<RemoteMessage>? _onMessageSub;
   StreamSubscription<RemoteMessage>? _onMessageOpenedSub;
@@ -127,7 +135,9 @@ class NotificationService {
   Future<void> initialize({void Function(String route)? onDeepLink}) async {
     _onDeepLink = onDeepLink;
     if (_initialized) {
-      await _safeRescheduleAll();
+      // Re-initialization after a hot restart or settings change — always
+      // force to ensure any stored personal amol reminders are re-applied.
+      await _safeRescheduleAll(force: true);
       return;
     }
 
@@ -158,7 +168,8 @@ class NotificationService {
     } catch (_) {
       // FCM is network-dependent; adhan scheduling must still proceed.
     }
-    await _safeRescheduleAll();
+    // First-launch: always force so no cooldown delay on a fresh install.
+    await _safeRescheduleAll(force: true);
     _initialized = true;
   }
 
@@ -318,6 +329,10 @@ class NotificationService {
     if (isStreakEnabled) await _scheduleStreakWarning();
     await _scheduleJumuah();
     await _scheduleHadithNotifications();
+    // Re-schedule personal amol reminders from persisted Hive data. This
+    // ensures they are always registered after every cancelLocalSchedules()
+    // wipe, preventing duplicate alarms from accumulating on app resume.
+    await _reschedulePersistedPersonalAmolReminders();
     try {
       await PrayerAdhanScheduler.instance.scheduleAll(
         localNotifications: _localNotifications,
@@ -481,9 +496,9 @@ class NotificationService {
     await _localNotifications.cancel(_legacySmartUrgentId);
   }
 
-  Future<void> _safeRescheduleAll() async {
+  Future<void> _safeRescheduleAll({bool force = false}) async {
     try {
-      await rescheduleAll();
+      await rescheduleAll(force: force);
     } catch (e, st) {
       AnalyticsService.instance.recordError(
         e,
@@ -539,7 +554,23 @@ class NotificationService {
     );
   }
 
-  Future<void> rescheduleAll() async {
+  /// Reschedules all local notifications. Set [force] to true when triggered
+  /// by an explicit user action (settings change, midnight rollover, first
+  /// launch) so the 5-minute cooldown is bypassed.
+  ///
+  /// On ordinary app resumes the cooldown prevents a cascade of redundant
+  /// reschedules when the user quickly backgrounds and foregrounds the app
+  /// (e.g. after swiping away a notification banner), which was a key cause
+  /// of duplicate notifications accumulating on the same night.
+  Future<void> rescheduleAll({bool force = false}) async {
+    if (!force) {
+      final now = DateTime.now();
+      if (_lastRescheduleTime != null &&
+          now.difference(_lastRescheduleTime!) <
+              const Duration(minutes: 5)) {
+        return; // already rescheduled recently; skip to avoid duplicates
+      }
+    }
     if (_isRescheduling) {
       _pendingReschedule = true;
       return;
@@ -549,6 +580,7 @@ class NotificationService {
       _isRescheduling = true;
       try {
         await scheduleAll();
+        _lastRescheduleTime = DateTime.now();
       } finally {
         _isRescheduling = false;
       }
@@ -574,18 +606,35 @@ class NotificationService {
     for (var i = 0; i < _lessonReviewIdRange; i++) {
       await _localNotifications.cancel(_lessonReviewBaseId + i);
     }
+    // Personal amol reminders (IDs 5000–5004) must also be cancelled here so
+    // that scheduleAll() always starts from a clean state. Without this, every
+    // rescheduleAll() call stacks a new recurring alarm on top of the existing
+    // one, causing the same reminder to fire multiple times on the same night.
+    for (var i = 0; i < _personalAmolSlotRange; i++) {
+      await _localNotifications.cancel(_personalAmolBaseId + i);
+    }
     await PrayerAdhanScheduler.instance.cancelAll(_localNotifications);
   }
 
   /// Schedules a daily personal amol reminder for the given free-tier [slot]
   /// (0-based, up to 4). Deep-links to home on tap, matching community amol
   /// reminder behavior.
+  ///
+  /// The reminder time is persisted to local storage so that [scheduleAll]
+  /// (called on every [rescheduleAll]) can re-register it after the
+  /// [cancelLocalSchedules] wipe — preventing duplicate alarms from
+  /// accumulating each time the app is resumed.
   Future<void> schedulePersonalAmolReminder({
     required int slot,
     required String name,
     required TimeOfDay time,
   }) async {
     if (slot < 0 || slot >= _personalAmolSlotRange) return;
+    // Persist the reminder so scheduleAll() can restore it without auth.
+    await LocalStorageService.setPref(
+      '$_personalAmolReminderPrefix$slot',
+      <dynamic>[name, time.hour, time.minute],
+    );
     final id = _personalAmolBaseId + slot;
     await _localNotifications.cancel(id);
     // Skip if the chosen time falls within quiet hours to respect sleep.
@@ -601,44 +650,76 @@ class NotificationService {
     );
   }
 
-  /// Cancels a single personal amol reminder by 0-based slot.
+  /// Cancels a single personal amol reminder by 0-based slot and removes its
+  /// persisted Hive entry so [scheduleAll] does not re-register it.
   Future<void> cancelPersonalAmolReminder(int slot) async {
     if (slot < 0 || slot >= _personalAmolSlotRange) return;
     await _localNotifications.cancel(_personalAmolBaseId + slot);
+    await LocalStorageService.deletePref('$_personalAmolReminderPrefix$slot');
   }
 
-  /// Cancels all personal amol reminders (IDs 5000–5004).
+  /// Cancels all personal amol reminders (IDs 5000–5004) and clears their
+  /// persisted Hive entries.
   Future<void> cancelAllPersonalAmolReminders() async {
     for (var i = 0; i < _personalAmolSlotRange; i++) {
       await _localNotifications.cancel(_personalAmolBaseId + i);
+      await LocalStorageService.deletePref('$_personalAmolReminderPrefix$i');
+    }
+  }
+
+  /// Reads persisted personal amol reminder entries from local storage and
+  /// re-registers each one. Called by [scheduleAll] after [cancelLocalSchedules]
+  /// so reminders survive every reschedule cycle without duplicating.
+  Future<void> _reschedulePersistedPersonalAmolReminders() async {
+    for (var i = 0; i < _personalAmolSlotRange; i++) {
+      final stored = LocalStorageService.getPref<List<dynamic>?>(
+        '$_personalAmolReminderPrefix$i',
+        null,
+      );
+      if (stored == null || stored.length < 3) continue;
+      final name = stored[0]?.toString() ?? '';
+      final hour = stored[1];
+      final minute = stored[2];
+      if (name.isEmpty || hour is! int || minute is! int) continue;
+      final time = TimeOfDay(hour: hour, minute: minute);
+      if (_isSuppressedByQuietHours(time)) continue;
+      final scheduled = _nextInstance(time);
+      await _safeZonedSchedule(
+        id: _personalAmolBaseId + i,
+        title: 'ব্যক্তিগত আমল: $name',
+        body: 'আজকের ব্যক্তিগত আমলটি সম্পন্ন করুন।',
+        scheduledDate: scheduled,
+        payload: AppRoutes.home,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
     }
   }
 
   Future<void> setMorningEnabled(bool enabled) async {
     await LocalStorageService.setPref(notifMorningKey, enabled);
-    unawaited(_safeRescheduleAll());
+    unawaited(_safeRescheduleAll(force: true));
   }
 
   Future<void> setMorningTime(TimeOfDay value) async {
     await LocalStorageService.setPref(notifMorningHourKey, value.hour);
     await LocalStorageService.setPref(notifMorningMinuteKey, value.minute);
-    unawaited(_safeRescheduleAll());
+    unawaited(_safeRescheduleAll(force: true));
   }
 
   Future<void> setEveningEnabled(bool enabled) async {
     await LocalStorageService.setPref(notifEveningKey, enabled);
-    unawaited(_safeRescheduleAll());
+    unawaited(_safeRescheduleAll(force: true));
   }
 
   Future<void> setEveningTime(TimeOfDay value) async {
     await LocalStorageService.setPref(notifEveningHourKey, value.hour);
     await LocalStorageService.setPref(notifEveningMinuteKey, value.minute);
-    unawaited(_safeRescheduleAll());
+    unawaited(_safeRescheduleAll(force: true));
   }
 
   Future<void> setStreakEnabled(bool enabled) async {
     await LocalStorageService.setPref(notifStreakKey, enabled);
-    unawaited(_safeRescheduleAll());
+    unawaited(_safeRescheduleAll(force: true));
   }
 
   Future<void> setCommunityEnabled(bool enabled) async {
@@ -652,7 +733,7 @@ class NotificationService {
 
   Future<void> setStudyReviewEnabled(bool enabled) async {
     await LocalStorageService.setPref(notifStudyReviewKey, enabled);
-    unawaited(_safeRescheduleAll());
+    unawaited(_safeRescheduleAll(force: true));
   }
 
   bool get isMorningEnabled =>
@@ -726,7 +807,7 @@ class NotificationService {
     await LocalStorageService.setPref(quietFromMinuteKey, from.minute);
     await LocalStorageService.setPref(quietToHourKey, to.hour);
     await LocalStorageService.setPref(quietToMinuteKey, to.minute);
-    unawaited(_safeRescheduleAll());
+    unawaited(_safeRescheduleAll(force: true));
   }
 
   bool _isSuppressedByQuietHours(TimeOfDay scheduled) {
@@ -931,7 +1012,13 @@ class NotificationService {
       );
 
       for (int dayOffset = 0; dayOffset < _notificationDaysAhead; dayOffset++) {
-        if (dayOffset == 0 && loggedToday) continue;
+        // Skip today (dayOffset == 0) entirely: tonight's exact-time slots are
+        // owned by scheduleSmartReminders(), which has full awareness of the
+        // user's streak context and current time. Scheduling dayOffset 0 here
+        // as well produced a duplicate notification on the same night because
+        // both paths write to the same IDs (_streakId, _midnightFallbackId).
+        if (dayOffset == 0) continue;
+        if (loggedToday) continue; // remaining days: skip when already logged
         final targetDate = DateTime(
           now.year,
           now.month,

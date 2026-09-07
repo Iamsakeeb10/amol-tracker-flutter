@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/bengali_numeral_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/personal_amol_model.dart';
 import '../../../../providers/personal_amol_provider.dart';
@@ -181,8 +182,8 @@ class PersonalAmolTile extends ConsumerWidget {
                     ),
                 ],
               )
-else
-              _staticTrailing(completed)
+            else
+              _staticTrailing(context)
           else if (amol.type == PersonalAmolType.count &&
               (onPlus != null || onMinus != null))
             PersonalAmolStepper(
@@ -206,22 +207,33 @@ else
               ),
             )
           else
-            _staticTrailing(completed),
+            _staticTrailing(context),
         ],
       ),
     );
   }
 
-  Widget _staticTrailing(bool completed) {
-    return SizedBox(
-      width: 48.w,
-      height: 48.h,
-      child: Center(
-        child: Icon(
-          completed ? Icons.check_circle : Icons.chevron_right_rounded,
-          color: completed ? AppColors.gold : AppColors.textMuted,
-          size: 24.r,
+  Widget _staticTrailing(BuildContext context) {
+    if (amol.type == PersonalAmolType.count) {
+      return Container(
+        height: 48.h,
+        alignment: Alignment.centerRight,
+        child: Text(
+          '${toBengaliNumeral(doneCount)}/${toBengaliNumeral(amol.target)}',
+          style: AppTextStyles.pill(context).copyWith(
+            color: completed ? AppColors.gold : AppColors.textMuted,
+            fontWeight: FontWeight.w700,
+          ),
         ),
+      );
+    }
+    return Container(
+      height: 48.h,
+      alignment: Alignment.centerRight,
+      child: Icon(
+        completed ? Icons.check_circle : Icons.cancel_outlined,
+        color: completed ? AppColors.success : AppColors.danger,
+        size: 22.r,
       ),
     );
   }

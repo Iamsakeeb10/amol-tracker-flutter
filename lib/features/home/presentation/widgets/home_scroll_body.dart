@@ -357,7 +357,7 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                                     );
                                   },
                                   loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-                                  error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                                  error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
                                 );
                               },
                             ),
@@ -396,7 +396,10 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                           ),
                           SliverToBoxAdapter(child: SizedBox(height: 20.h)),
                           SliverToBoxAdapter(
-                            child: PersonalAmolSection(uid: widget.uid),
+                            child: PersonalAmolSection(
+                              uid: widget.uid,
+                              readOnly: widget.isSubmitted,
+                            ),
                           ),
                           SliverToBoxAdapter(child: SizedBox(height: 10.h)),
                         ],

@@ -7,6 +7,7 @@ void main() {
     String id = 'a',
     PersonalAmolFrequency frequency = PersonalAmolFrequency.daily,
     List<int> weekdays = const <int>[],
+    bool isActive = true,
   }) =>
       PersonalAmolModel(
         id: id,
@@ -15,8 +16,15 @@ void main() {
         frequency: frequency,
         weekdays: weekdays,
         reminderTime: null,
-        isActive: true,
+        isActive: isActive,
         createdAt: DateTime.utc(2026, 1, 1),
+      );
+
+  PersonalAmolCompletion completion(String amolId, String date, int seq) =>
+      PersonalAmolCompletion(
+        amolId: amolId,
+        hijriDate: date,
+        completedAt: DateTime.utc(2026, 1, 1, 0, seq),
       );
 
   group('personalAmolScheduledOn', () {
@@ -48,6 +56,65 @@ void main() {
       expect(byDay['1447-03-08'], 1); // Sun: only daily
       expect(byDay['1447-03-09'], 1); // Mon
       expect(byDay['1447-03-14'], 2); // Sat: daily + sat
+    });
+
+    test('soft-deleted amol counts only on days it was completed', () {
+      final byDay = scheduledPersonalAmolByDay(
+        amols: [
+          amol(id: 'active'),
+          amol(id: 'gone', isActive: false),
+        ],
+        firstHijri: '1447-03-18',
+        lastHijri: '1447-03-20',
+        today: '1447-03-20',
+        completions: [
+          // Deleted amol only has history on the 18th.
+          completion('gone', '1447-03-18', 1),
+        ],
+      );
+      // 18th: deleted amol has a completion -> counts.
+      expect(byDay['1447-03-18'], 2);
+      // 19th: no completion for the deleted amol -> does not dilute.
+      expect(byDay['1447-03-19'], 1);
+      // 20th (today): deleted amols make no demands at all.
+      expect(byDay['1447-03-20'], 1);
+    });
+
+    test('deleted amol with no completions never dilutes past days', () {
+      final byDay = scheduledPersonalAmolByDay(
+        amols: [
+          amol(id: 'active'),
+          amol(id: 'gone', isActive: false),
+        ],
+        firstHijri: '1447-03-18',
+        lastHijri: '1447-03-20',
+        today: '1447-03-20',
+      );
+      expect(byDay['1447-03-18'], 1);
+      expect(byDay['1447-03-19'], 1);
+      expect(byDay['1447-03-20'], 1);
+    });
+
+    test('regression: two active + two deleted keeps 100% day full', () {
+      // Mirrors the reported bug: 2 active daily amols fully done, plus 2
+      // soft-deleted amols with no completions that day. scheduled must be 2
+      // so the done/scheduled ratio reaches full instead of 25%.
+      final byDay = scheduledPersonalAmolByDay(
+        amols: [
+          amol(id: 'count', isActive: true),
+          amol(id: 'toggle', isActive: true),
+          amol(id: 'gone1', isActive: false),
+          amol(id: 'gone2', isActive: false),
+        ],
+        firstHijri: '1447-03-25',
+        lastHijri: '1447-03-25',
+        today: '1447-03-26',
+        completions: [
+          completion('count', '1447-03-25', 1),
+          completion('toggle', '1447-03-25', 2),
+        ],
+      );
+      expect(byDay['1447-03-25'], 2);
     });
   });
 }

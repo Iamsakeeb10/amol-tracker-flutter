@@ -1500,10 +1500,9 @@
   "personalAmolFrequencyLabel": "ফ্রিকোয়েন্সি",
   "personalAmolFrequencyDaily": "প্রতিদিন",
   "personalAmolFrequencyWeekdays": "নির্দিষ্ট দিনে",
-  "personalAmolReminderLabel": "রিমাইন্ডার",
-  "personalAmolReminderNone": "বন্ধ",
   "personalAmolAddLabel": "যোগ করুন",
   "personalAmolSaveLabel": "সংরক্ষণ করুন",
+  "personalAmolEditLabel": "সম্পাদনা",
   "personalAmolDeleteLabel": "মুছে ফেলুন",
   "personalAmolDeleteConfirm": "এই আমলটি মুছে ফেলবেন?",
   "personalAmolDeleteSubtitle": "আপনার ইতিহাস মুছে যাবে না।",
@@ -1537,5 +1536,8 @@
   "personalAmolWeekdayTue": "মঙ্গল",
   "personalAmolWeekdayWed": "বুধ",
   "personalAmolWeekdayThu": "বৃহস্পতি",
-  "personalAmolWeekdayFri": "শুক্র"
+  "personalAmolWeekdayFri": "শুক্র",
+  "personalAmolCountMaxReached": "দৈনিক লক্ষ্য ইতিমধ্যেই পূর্ণ হয়ে গেছে।",
+  "personalAmolCountMinReached": "গণনা ইতিমধ্যে ০। আর কমানোর কিছু নেই।",
+  "closeLabel": "বন্ধ করুন"
 }

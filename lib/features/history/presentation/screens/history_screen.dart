@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -23,6 +24,7 @@ import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/calendar_day_cell.dart';
 import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/stat_card.dart';
+import '../screens/day_detail_screen.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -342,7 +344,12 @@ class _CommunityHistoryTab extends ConsumerWidget {
                         hijriMonth,
                         day.day,
                       );
-                      context.push(AppRoutes.dayDetailPath(keyDate));
+                      // Community tab: open DayDetailScreen in community-only
+                      // mode so the personal amol section is hidden.
+                      context.push(
+                        AppRoutes.dayDetailPath(keyDate),
+                        extra: DayDetailMode.community,
+                      );
                     },
                   );
                 },
@@ -550,6 +557,9 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
         IslamicDateService.hijriStorageForAccountCreated(accountCreatedAt);
 
     return completionsAsync.when(
+      // Do not paint stale month data while a refresh is in flight (e.g. right
+      // after editing a day's personal amol): show the skeleton instead.
+      skipLoadingOnRefresh: false,
       loading: () => const _HistorySkeleton(),
       error: (_, _) => Center(
         child: Padding(
@@ -593,12 +603,32 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
           accountCreatedHijri: accountCreatedHijri,
           daysInMonth: daysInMonth,
         );
+        if (kDebugMode) {
+          debugPrint('[PAmolHist] month=$hijriYear-$hijriMonth');
+          for (final a in amols) {
+            debugPrint(
+              '[PAmolHist] amol id=${a.id} type=${a.type} target=${a.target} '
+              'frequency=${a.frequency.name} '
+              'weekdays=${a.weekdays.join(",")} active=${a.isActive}',
+            );
+          }
+          // Log every day where a user completed at least one personal amol,
+          // showing the raw done/scheduled counts that drive the chip colour.
+          for (final e in completionsByDay.entries) {
+            debugPrint(
+              '[PAmolHist] ${e.key} doneCount=${e.value} '
+              'scheduled=${scheduledByDay[e.key] ?? 0}',
+            );
+          }
+        }
         final loggedDays = completionsByDay.values
             .where((count) => count > 0)
             .length;
         final totalCompletions =
             completionsByDay.values.fold<int>(0, (sum, c) => sum + c);
-        final bestStreak = _maxBestStreak(ref, uid, amols, loggedDays > 0);
+        final streakInfo = _maxBestStreak(ref, uid, amols, loggedDays > 0);
+        final bestStreak = streakInfo.max;
+        final streaksLoading = streakInfo.loading;
         return CustomScrollView(
           slivers: [
             SliverPadding(
@@ -629,12 +659,15 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
                       ],
                     ),
                     SizedBox(height: 12.h),
-                    StatCard(
-                      label: l10n.historyBestStreak,
-                      value: '$bestStreak',
-                      sublabel: l10n.historyDays,
-                      icon: Icons.local_fire_department_outlined,
-                    ),
+                    if (streaksLoading)
+                      const _StreakCardShimmer()
+                    else
+                      StatCard(
+                        label: l10n.historyBestStreak,
+                        value: '$bestStreak',
+                        sublabel: l10n.historyDays,
+                        icon: Icons.local_fire_department_outlined,
+                      ),
                     SizedBox(height: 16.h),
                     if (loggedDays == 0)
                       Padding(
@@ -672,7 +705,12 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
                         hijriMonth,
                         day.day,
                       );
-                      context.push(AppRoutes.dayDetailPath(keyDate));
+                      // Personal tab: open DayDetailScreen in personal-only
+                      // mode so only personal amol tiles are shown.
+                      context.push(
+                        AppRoutes.dayDetailPath(keyDate),
+                        extra: DayDetailMode.personal,
+                      );
                     },
                   );
                 },
@@ -771,7 +809,10 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
     );
   }
 
-  int _maxBestStreak(
+  /// Watches every amol's streak document in one pass and returns both the
+  /// highest `bestStreak` value and whether any streak stream is still loading
+  /// or refreshing (so the streak card can show a shimmer instead of stale 0s).
+  ({int max, bool loading}) _maxBestStreak(
     WidgetRef ref,
     String uid,
     List<PersonalAmolModel> amols,
@@ -779,21 +820,20 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
   ) {
     // With no recorded completion in view there is no streak to report; don't
     // surface a stale stored best-streak from a previously removed completion.
-    if (!hasCompletions) return 0;
+    if (!hasCompletions) return (max: 0, loading: false);
     var maxStreak = 0;
+    var loading = false;
     for (final amol in amols) {
-      final best = ref
-              .watch(
-                personalAmolStreakProvider(
-                  PersonalAmolStreakKey(uid: uid, amolId: amol.id),
-                ),
-              )
-              .value
-              ?.bestStreak ??
-          0;
+      final streakAsync = ref.watch(
+        personalAmolStreakProvider(
+          PersonalAmolStreakKey(uid: uid, amolId: amol.id),
+        ),
+      );
+      if (streakAsync.isLoading || streakAsync.isRefreshing) loading = true;
+      final best = streakAsync.value?.bestStreak ?? 0;
       if (best > maxStreak) maxStreak = best;
     }
-    return maxStreak;
+    return (max: maxStreak, loading: loading);
   }
 }
 
@@ -876,6 +916,65 @@ class _Legend extends StatelessWidget {
 }
 
 // ── Skeleton ────────────────────────────────────────────────────────────────
+
+/// Shimmer placeholder matching [StatCard]. Shown while the personal-amol
+/// streak streams load/refresh so a stale best-streak never flashes before the
+/// real value arrives (same anti-stale treatment as the day-detail section).
+class _StreakCardShimmer extends StatelessWidget {
+  const _StreakCardShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.cardDark,
+      highlightColor: AppColors.emeraldMid.withValues(alpha: 0.35),
+      child: Container(
+        height: 76.h,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppRadius.md.r),
+          border: Border.all(color: AppColors.cardBorder, width: 1),
+        ),
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.local_fire_department_outlined,
+                  color: Colors.white,
+                  size: 14.r,
+                ),
+                SizedBox(width: 6.w),
+                Container(
+                  width: 90.w,
+                  height: 11.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            Container(
+              width: 40.w,
+              height: 16.h,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _HistorySkeleton extends StatelessWidget {
   const _HistorySkeleton();

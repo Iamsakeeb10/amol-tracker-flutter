@@ -4,9 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/bengali_numeral_helper.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Compact `− c/target +` counter for count-type personal amols on the home
 /// tile. Rendered read-only when no callbacks are provided.
+///
+/// When the count is already at the target (max) or at 0 (min), tapping the
+/// +/− button swallows the tap (so it never falls through to the tile's tap
+/// target) and shows a localized snackbar with a close action instead.
 class PersonalAmolStepper extends StatelessWidget {
   const PersonalAmolStepper({
     super.key,
@@ -23,9 +28,10 @@ class PersonalAmolStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDone = doneCount >= target;
     final canDecrement = onDecrement != null && doneCount > 0;
-    final canIncrement = onIncrement != null;
+    final canIncrement = onIncrement != null && !isDone;
 
     return Container(
       height: 38.h,
@@ -45,6 +51,9 @@ class PersonalAmolStepper extends StatelessWidget {
             icon: Icons.remove,
             enabled: canDecrement,
             onTap: onDecrement,
+            onTapAtLimit: canDecrement
+                ? null
+                : () => _showLimitSnack(context, l10n.personalAmolCountMinReached),
             onFilled: isDone,
           ),
           SizedBox(
@@ -68,6 +77,9 @@ class PersonalAmolStepper extends StatelessWidget {
             icon: Icons.add,
             enabled: canIncrement,
             onTap: onIncrement,
+            onTapAtLimit: canIncrement
+                ? null
+                : () => _showLimitSnack(context, l10n.personalAmolCountMaxReached),
             onFilled: isDone,
           ),
         ],
@@ -80,10 +92,14 @@ class PersonalAmolStepper extends StatelessWidget {
     required IconData icon,
     required bool enabled,
     required VoidCallback? onTap,
+    required VoidCallback? onTapAtLimit,
     required bool onFilled,
   }) {
+    final active = enabled ? onTap : onTapAtLimit;
     return GestureDetector(
-      onTap: enabled ? onTap : null,
+      // Claim the tap even when disabled so it never falls through to the
+      // card's onTap (details dialog); show the limit snackbar instead.
+      onTap: active,
       child: Container(
         width: 28.w,
         height: 28.h,
@@ -103,5 +119,23 @@ class PersonalAmolStepper extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _showLimitSnack(BuildContext context, String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: AppColors.warning,
+          duration: const Duration(milliseconds: 3000),
+          action: SnackBarAction(
+            label: AppLocalizations.of(context)!.closeLabel,
+            textColor: AppColors.emeraldDeep,
+            onPressed: messenger.hideCurrentSnackBar,
+          ),
+        ),
+      );
   }
 }

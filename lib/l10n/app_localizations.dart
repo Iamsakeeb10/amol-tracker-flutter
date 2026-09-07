@@ -5899,18 +5899,6 @@ abstract class AppLocalizations {
   /// **'Specific days'**
   String get personalAmolFrequencyWeekdays;
 
-  /// No description provided for @personalAmolReminderLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Reminder'**
-  String get personalAmolReminderLabel;
-
-  /// No description provided for @personalAmolReminderNone.
-  ///
-  /// In en, this message translates to:
-  /// **'Off'**
-  String get personalAmolReminderNone;
-
   /// No description provided for @personalAmolAddLabel.
   ///
   /// In en, this message translates to:
@@ -5922,6 +5910,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save'**
   String get personalAmolSaveLabel;
+
+  /// No description provided for @personalAmolEditLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get personalAmolEditLabel;
 
   /// No description provided for @personalAmolDeleteLabel.
   ///
@@ -6060,6 +6054,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'শুক্র'**
   String get personalAmolWeekdayFri;
+
+  /// No description provided for @personalAmolCountMaxReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily target already reached.'**
+  String get personalAmolCountMaxReached;
+
+  /// No description provided for @personalAmolCountMinReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Count is already 0. Nothing left to remove.'**
+  String get personalAmolCountMinReached;
+
+  /// No description provided for @closeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get closeLabel;
 }
 
 class _AppLocalizationsDelegate

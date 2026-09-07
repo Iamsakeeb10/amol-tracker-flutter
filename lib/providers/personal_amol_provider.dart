@@ -50,18 +50,20 @@ final allPersonalAmolProvider =
   return ref.watch(personalAmolRepositoryProvider).watchAllAmol(uid);
 });
 
-/// Completions for today. Auto-reloads when the Hijri date rolls over or after
-/// a toggle.
+/// Completions for today, streamed via Firestore `snapshots()` so a local
+/// increment/decrement write updates the home tile count immediately (from the
+/// local cache) instead of waiting for a server round-trip. Auto-reloads when
+/// the Hijri date rolls over or after a refresh bump.
 final personalAmolCompletionsForTodayProvider =
     StreamProvider.autoDispose.family<List<PersonalAmolCompletion>, String>((
   ref,
   uid,
-) async* {
+) {
   ref.watch(currentHijriDateProvider);
   ref.watch(personalAmolRefreshProvider);
-  yield await ref
+  return ref
       .read(personalAmolRepositoryProvider)
-      .getCompletionsForDate(
+      .watchCompletionsForDate(
         uid,
         IslamicDateService.getCurrentIslamicDateStringSafe(),
       );
@@ -87,6 +89,7 @@ class PersonalAmolDateKey {
 /// Completions for a specific Hijri date (day-detail screen).
 final personalAmolCompletionsForDateProvider = FutureProvider.autoDispose
     .family<List<PersonalAmolCompletion>, PersonalAmolDateKey>((ref, key) {
+  ref.watch(personalAmolRefreshProvider);
   return ref
       .read(personalAmolRepositoryProvider)
       .getCompletionsForDate(key.uid, key.hijriDate);
@@ -184,6 +187,11 @@ final personalAmolMonthCompletionSummaryProvider =
           amols: amols,
           firstHijri: first,
           lastHijri: last,
+          today: IslamicDateService.getCurrentIslamicDateStringSafe(),
+          // Pass the month's completions so soft-deleted amols only count as
+          // scheduled on days they were actually completed (their real history
+          // keeps filling; a deleted amol no longer dilutes untouched days).
+          completions: completions,
         ),
       );
     });
@@ -270,40 +278,10 @@ class PersonalAmolNotifier extends StateNotifier<Map<String, PersonalAmolModel>>
     _ref.read(personalAmolRefreshProvider.notifier).bump();
   }
 
-  Future<void> toggleComplete(PersonalAmolModel amol) async {
-    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
-    if (!personalAmolScheduledOn(amol, today)) return;
-    final existing = await _repo.getCompletionsForDate(_uid, today);
-    final completed = existing.any((c) => c.amolId == amol.id);
-    if (completed) {
-      await _repo.unmarkComplete(_uid, amol.id, today);
-    } else {
-      await _repo.markComplete(_uid, amol.id, today);
-    }
-    await _recomputeStreak(amol.id);
-    _ref.read(personalAmolRefreshProvider.notifier).bump();
-  }
-
-  /// Adds one counted completion for a count-type amol.
-  Future<void> incrementCount(PersonalAmolModel amol) async {
-    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
-    if (!personalAmolScheduledOn(amol, today)) return;
-    await _repo.incrementCompletion(_uid, amol.id, today);
-    await _recomputeStreak(amol.id);
-    _ref.read(personalAmolRefreshProvider.notifier).bump();
-  }
-
-  /// Removes one counted completion for a count-type amol (no-op at zero).
-  Future<void> decrementCount(PersonalAmolModel amol) async {
-    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
-    final existing = await _repo.getCompletionsForDate(_uid, today);
-    if (!existing.any((c) => c.amolId == amol.id)) return;
-    await _repo.decrementCompletion(_uid, amol.id, today);
-    await _recomputeStreak(amol.id);
-    _ref.read(personalAmolRefreshProvider.notifier).bump();
-  }
-
-  Future<void> _recomputeStreak(String amolId) async {
+  /// Recomputes and persists the streak for [amolId]. Called once per affected
+  /// amol when the staged home edits are saved via the save FAB (not on every
+  /// tap).
+  Future<void> recomputeStreak(String amolId) async {
     final amol = state[amolId];
     final completions = await _repo.getRecentCompletions(_uid);
     final loggedDates = completions

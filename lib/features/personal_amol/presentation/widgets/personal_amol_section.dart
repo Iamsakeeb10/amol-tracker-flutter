@@ -9,20 +9,28 @@ import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/personal_amol_model.dart';
+import '../../../../providers/personal_amol_pending_provider.dart';
 import '../../../../providers/personal_amol_provider.dart';
 import '../../../../core/utils/personal_amol_schedule.dart';
 import 'personal_amol_create_sheet.dart';
+import 'personal_amol_details_dialog.dart';
 import 'personal_amol_empty_state.dart';
 import 'personal_amol_progress_row.dart';
 import 'personal_amol_tile.dart';
 
 /// Home-screen personal amol section appended after the community amol
-/// section. Completions are immediate (single tap) and never touch the
-/// community score, streak, or leaderboard.
+/// section. Edits (toggle/+/−) stage into `personalAmolPendingProvider` and
+/// only persist to Firestore when the shared save FAB is pressed — never in
+/// per-tap writes, and never into the community score, streak, or leaderboard.
 class PersonalAmolSection extends ConsumerWidget {
-  const PersonalAmolSection({super.key, required this.uid});
+  const PersonalAmolSection({
+    super.key,
+    required this.uid,
+    this.readOnly = false,
+  });
 
   final String uid;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,6 +39,8 @@ class PersonalAmolSection extends ConsumerWidget {
     final completionsAsync = ref.watch(
       personalAmolCompletionsForTodayProvider(uid),
     );
+    final pending = ref.watch(personalAmolPendingProvider(uid));
+    final pendingNotifier = ref.read(personalAmolPendingProvider(uid).notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,10 +53,17 @@ class PersonalAmolSection extends ConsumerWidget {
           data: (amols) {
             final completions =
                 completionsAsync.value ?? const <PersonalAmolCompletion>[];
+            // Saved (Firestore) counts for today.
             final counts = <String, int>{};
             for (final c in completions) {
               counts[c.amolId] = (counts[c.amolId] ?? 0) + 1;
             }
+            // Overlay the staged edits: anything the user changed but hasn't
+            // saved yet shows immediately without any network write.
+            final shown = <String, int>{
+              ...counts,
+              ...pending.staged,
+            };
             if (amols.isEmpty) {
               return PersonalAmolEmptyState(
                 onAdd: () => PersonalAmolCreateSheet.show(context, uid: uid),
@@ -59,11 +76,9 @@ class PersonalAmolSection extends ConsumerWidget {
             final done = due
                 .where((a) {
                   final target = a.type == PersonalAmolType.count ? a.target : 1;
-                  return (counts[a.id] ?? 0) >= target;
+                  return (shown[a.id] ?? 0) >= target;
                 })
                 .length;
-            final notifier =
-                ref.read(personalAmolNotifierProvider(uid).notifier);
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -77,19 +92,25 @@ class PersonalAmolSection extends ConsumerWidget {
                     uid: uid,
                     amol: amol,
                     completed:
-                        (counts[amol.id] ?? 0) >=
+                        (shown[amol.id] ?? 0) >=
                             (amol.type == PersonalAmolType.count
                                 ? amol.target
                                 : 1),
-                    doneCount: counts[amol.id] ?? 0,
-                    onToggle: amol.type == PersonalAmolType.toggle
-                        ? () => notifier.toggleComplete(amol)
+                    doneCount: shown[amol.id] ?? 0,
+                    onTap: () => showPersonalAmolDetailsDialog(
+                      context,
+                      uid: uid,
+                      amol: amol,
+                      doneCount: shown[amol.id] ?? 0,
+                    ),
+                    onToggle: (!readOnly && amol.type == PersonalAmolType.toggle)
+                        ? () => pendingNotifier.toggle(amol)
                         : null,
-                    onPlus: amol.type == PersonalAmolType.count
-                        ? () => notifier.incrementCount(amol)
+                    onPlus: (!readOnly && amol.type == PersonalAmolType.count)
+                        ? () => pendingNotifier.plus(amol)
                         : null,
-                    onMinus: amol.type == PersonalAmolType.count
-                        ? () => notifier.decrementCount(amol)
+                    onMinus: (!readOnly && amol.type == PersonalAmolType.count)
+                        ? () => pendingNotifier.minus(amol)
                         : null,
                   ),
                   SizedBox(height: 8.h),

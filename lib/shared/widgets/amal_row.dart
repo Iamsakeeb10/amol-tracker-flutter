@@ -191,15 +191,13 @@ class AmalRow extends StatelessWidget {
             isExpanded: isExpanded,
           )
         else if (readOnly)
-          SizedBox(
-            width: 48.w,
+          Container(
             height: 48.h,
-            child: Center(
-              child: Icon(
-                done ? Icons.check_circle : Icons.cancel_outlined,
-                color: done ? AppColors.success : AppColors.danger,
-                size: 22.r,
-              ),
+            alignment: Alignment.centerRight,
+            child: Icon(
+              done ? Icons.check_circle : Icons.cancel_outlined,
+              color: done ? AppColors.success : AppColors.danger,
+              size: 22.r,
             ),
           )
         else
@@ -274,7 +272,7 @@ class AmalFieldIcon extends StatelessWidget {
           width: size,
           height: size,
           color: color,
-          errorBuilder: (_, __, ___) => _buildIcon(),
+          errorBuilder: (_, _, _) => _buildIcon(),
         );
       }
     }

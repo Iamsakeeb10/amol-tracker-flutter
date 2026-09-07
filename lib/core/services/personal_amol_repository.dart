@@ -89,6 +89,20 @@ class PersonalAmolRepository {
     return snap.docs.map(PersonalAmolCompletion.fromDoc).toList();
   }
 
+  /// Snapshot stream of a day's completions. Because Firestore emits a local
+  /// snapshot immediately when a write lands in the local cache (before the
+  /// server round-trip finishes), the home tile count updates instantly on
+  /// +/- taps instead of waiting on the network.
+  Stream<List<PersonalAmolCompletion>> watchCompletionsForDate(
+    String uid,
+    String hijriDate,
+  ) {
+    return _completions(uid)
+        .where('hijriDate', isEqualTo: hijriDate)
+        .snapshots()
+        .map((snap) => snap.docs.map(PersonalAmolCompletion.fromDoc).toList());
+  }
+
   Future<void> markComplete(String uid, String amolId, String hijriDate) async {
     final docId = '${hijriDate}_$amolId';
     await _completions(uid).doc(docId).set(
@@ -147,6 +161,66 @@ class PersonalAmolRepository {
     if (raw is Timestamp) return raw.toDate();
     final parsed = DateTime.tryParse('$raw');
     return parsed ?? DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
+  /// Applies a net completion delta for [hijriDate] in one Firestore batch.
+  /// This is the save-time counterpart of the staged home edits: positive
+  /// [delta] writes that many count docs (or the single toggle doc), negative
+  /// [delta] deletes the most recent [delta] docs for the amol/date.
+  Future<void> applyCompletionDelta(
+    String uid,
+    String amolId,
+    String hijriDate,
+    int delta, {
+    required bool isToggle,
+  }) async {
+    if (delta == 0) return;
+    if (delta > 0) {
+      if (isToggle) {
+        // A toggle day is a single on/off doc; never more than one.
+        await _completions(uid).doc('${hijriDate}_$amolId').set(
+          PersonalAmolCompletion(
+            amolId: amolId,
+            hijriDate: hijriDate,
+            completedAt: DateTime.now(),
+          ).toFirestoreMap(),
+        );
+        return;
+      }
+      final batch = _firestore.batch();
+      final nowMicros = DateTime.now().microsecondsSinceEpoch;
+      for (var i = 0; i < delta; i++) {
+        final docId =
+            '${hijriDate}_${amolId}_${nowMicros}_$i';
+        batch.set(
+          _completions(uid).doc(docId),
+          PersonalAmolCompletion(
+            amolId: amolId,
+            hijriDate: hijriDate,
+            completedAt: DateTime.now(),
+          ).toFirestoreMap(),
+        );
+      }
+      await batch.commit();
+      return;
+    }
+    // delta < 0: delete the |delta| most-recent completions for the amol/date.
+    final snap = await _completions(uid)
+        .where('hijriDate', isEqualTo: hijriDate)
+        .get();
+    final docs = snap.docs.where((d) => d['amolId'] == amolId).toList()
+      ..sort((a, b) {
+        final ta = _completedAt(a);
+        final tb = _completedAt(b);
+        return tb.compareTo(ta);
+      });
+    if (docs.isEmpty) return;
+    final toRemove = docs.take(delta.abs()).toList();
+    final batch = _firestore.batch();
+    for (final doc in toRemove) {
+      batch.delete(_completions(uid).doc(doc.id));
+    }
+    await batch.commit();
   }
 
   Future<List<PersonalAmolCompletion>> getCompletionsInRange(

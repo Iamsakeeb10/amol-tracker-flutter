@@ -1561,10 +1561,9 @@
   "personalAmolFrequencyLabel": "Frequency",
   "personalAmolFrequencyDaily": "Every day",
   "personalAmolFrequencyWeekdays": "Specific days",
-  "personalAmolReminderLabel": "Reminder",
-  "personalAmolReminderNone": "Off",
   "personalAmolAddLabel": "Add",
   "personalAmolSaveLabel": "Save",
+  "personalAmolEditLabel": "Edit",
   "personalAmolDeleteLabel": "Delete",
   "personalAmolDeleteConfirm": "Delete this amol?",
   "personalAmolDeleteSubtitle": "Your history will not be deleted.",
@@ -1598,5 +1597,8 @@
   "personalAmolWeekdayTue": "মঙ্গল",
   "personalAmolWeekdayWed": "বুধ",
   "personalAmolWeekdayThu": "বৃহস্পতি",
-  "personalAmolWeekdayFri": "শুক্র"
+  "personalAmolWeekdayFri": "শুক্র",
+  "personalAmolCountMaxReached": "Daily target already reached.",
+  "personalAmolCountMinReached": "Count is already 0. Nothing left to remove.",
+  "closeLabel": "Close"
 }

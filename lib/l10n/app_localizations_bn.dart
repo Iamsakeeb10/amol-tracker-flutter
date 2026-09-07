@@ -3171,16 +3171,13 @@ class AppLocalizationsBn extends AppLocalizations {
   String get personalAmolFrequencyWeekdays => 'নির্দিষ্ট দিনে';
 
   @override
-  String get personalAmolReminderLabel => 'রিমাইন্ডার';
-
-  @override
-  String get personalAmolReminderNone => 'বন্ধ';
-
-  @override
   String get personalAmolAddLabel => 'যোগ করুন';
 
   @override
   String get personalAmolSaveLabel => 'সংরক্ষণ করুন';
+
+  @override
+  String get personalAmolEditLabel => 'সম্পাদনা';
 
   @override
   String get personalAmolDeleteLabel => 'মুছে ফেলুন';
@@ -3254,4 +3251,15 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get personalAmolWeekdayFri => 'শুক্র';
+
+  @override
+  String get personalAmolCountMaxReached =>
+      'দৈনিক লক্ষ্য ইতিমধ্যেই পূর্ণ হয়ে গেছে।';
+
+  @override
+  String get personalAmolCountMinReached =>
+      'গণনা ইতিমধ্যে ০। আর কমানোর কিছু নেই।';
+
+  @override
+  String get closeLabel => 'বন্ধ করুন';
 }

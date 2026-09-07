@@ -4,10 +4,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/default_amal_fields.dart';
-import '../../../../core/router/routes.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/jummah_modal_service.dart';
 import '../../../../core/services/review_prompt_service.dart';
@@ -24,12 +22,14 @@ import '../../../../providers/app_config_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/date_provider.dart';
 import '../../../../providers/history_provider.dart';
+import '../../../../providers/personal_amol_pending_provider.dart';
 import '../../../../shared/widgets/announcement_modal.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/gender_selection_modal.dart';
 import '../../../../shared/widgets/jummah_reminder_modal.dart';
 import '../../../../shared/widgets/update_modal.dart';
 import '../widgets/home_scroll_body.dart';
+import 'edit_today_amol_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -443,6 +443,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final submittedLog = ref.watch(
       amalProvider(uid).select((s) => s.submittedLog),
     );
+    final personalPendingDirty =
+        ref.watch(personalAmolPendingProvider(uid)).dirty;
     ref.watch(amalLogRefreshProvider);
 
     return AppScaffold(handleExitBack: false,
@@ -464,7 +466,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         isNewUser: isNewUser,
         streak: streakValue,
         submittedLog: submittedLog,
-        showSaveFab: !isSubmitted && hasAnyDone,
+        showSaveFab: (!isSubmitted && hasAnyDone) || personalPendingDirty,
         onRefreshAll: () => _refreshAll(uid),
         onRetryFields: () => _retryAmalFields(uid),
         onEditTodayAmal: (log) => _onEditTodayAmal(
@@ -483,7 +485,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     required String todayHijri,
     required AmalLogModel log,
   }) async {
-    await context.push(AppRoutes.editAmalPath(todayHijri), extra: log);
+    // Push the combined community + personal amol edit screen.
+    // Using MaterialPageRoute so we can pass the full AmalLogModel object
+    // without JSON serialization (GoRouter extra is typed but fragile for
+    // complex models across hot-reloads). The app root is wrapped in a
+    // ProviderScope (main.dart), so providers propagate down the route's
+    // widget tree automatically — no nested ProviderScope needed.
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (ctx) => EditTodayAmolScreen(
+          uid: uid,
+          todayHijri: todayHijri,
+          existingLog: log,
+        ),
+      ),
+    );
     if (!mounted) return;
     ref.invalidate(amalProvider(uid));
   }

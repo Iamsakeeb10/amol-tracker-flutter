@@ -21,6 +21,7 @@ import '../../../../models/user_model.dart';
 import '../../../../providers/amal_fields_provider.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/history_provider.dart';
+import '../../../../providers/personal_amol_date_pending_provider.dart';
 import '../../../../shared/widgets/amal_row.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/card_container.dart';
@@ -28,12 +29,26 @@ import '../../../../shared/widgets/edited_badge.dart';
 import '../../../../shared/widgets/fard_prayer_expand_row.dart';
 import '../../../../shared/widgets/stat_card.dart';
 import '../../../../features/personal_amol/presentation/widgets/personal_amol_day_detail_section.dart';
+import '../widgets/editable_community_amol_section.dart';
+
+/// Controls which amol sections are visible on [DayDetailScreen].
+/// - [community]: shows community amol content only (no personal section).
+/// - [personal]: shows personal amol section only (no community score/fields).
+/// - [both]: shows everything — the original default behavior.
+enum DayDetailMode { community, personal, both }
 
 class DayDetailScreen extends ConsumerWidget {
-  const DayDetailScreen({super.key, required this.hijriDate});
+  const DayDetailScreen({
+    super.key,
+    required this.hijriDate,
+    this.mode = DayDetailMode.both,
+  });
 
   /// Hijri storage key `YYYY-MM-DD`.
   final String hijriDate;
+
+  /// Controls which amol sections are rendered.
+  final DayDetailMode mode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -63,6 +78,17 @@ class DayDetailScreen extends ConsumerWidget {
         ),
       ),
       data: (log) {
+        // Personal-only mode: skip community data loading entirely.
+        if (mode == DayDetailMode.personal) {
+          return _PersonalOnlyBody(
+            uid: authUser.uid,
+            hijriDate: hijriDate,
+            title: hijriDate.isEmpty
+                ? l10n.dayDetailTitle
+                : IslamicDateService.displayFromStorageBn(hijriDate),
+          );
+        }
+
         final fields = ref.watch(amalFieldsListProvider);
         final computedMax = fields
             .where((f) => f.isActive && f.id.isNotEmpty)
@@ -100,13 +126,12 @@ class DayDetailScreen extends ConsumerWidget {
             : const <amal_const.AmalField>[];
         final editableDay = editableAsync.asData?.value;
         final editableResolved = editableAsync.hasValue;
-        final showEditFab = editableDay?.canEdit ?? false;
+        final canEdit = editableDay?.canEdit ?? false;
         final isTodayNotSubmitted = editableDay?.isTodayNotSubmitted ?? false;
-        final logForEdit = log ?? editableDay?.existingLog;
         if (kDebugMode) {
           logAmalEditDebug(
             'DayDetail hijriDate=$hijriDate hasLog=${log != null} '
-            'showEditFab=$showEditFab backfill=${showEditFab && log == null} '
+            'canEdit=$canEdit backfill=${canEdit && log == null} '
             'editableLoading=${editableAsync.isLoading}',
           );
         }
@@ -119,21 +144,6 @@ class DayDetailScreen extends ConsumerWidget {
         final isFriday = weekday == 'Friday';
 
         return AppScaffold(
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          floatingActionButton: showEditFab
-              ? Tooltip(
-                  message: l10n.editDayAmal,
-                  child: FloatingActionButton(
-                    onPressed: () => context.push(
-                      AppRoutes.editAmalPath(hijriDate),
-                      extra: logForEdit,
-                    ),
-                    backgroundColor: AppColors.gold,
-                    foregroundColor: AppColors.emeraldDeep,
-                    child: Icon(Icons.edit_outlined, size: 22.r),
-                  ),
-                )
-              : null,
           appBar: AppBar(
             leading: IconButton(
               icon: Icon(Icons.arrow_back, size: 22.r),
@@ -148,7 +158,7 @@ class DayDetailScreen extends ConsumerWidget {
               style: AppTextStyles.headlineMedium(context),
             ),
             actions: [
-              if (editableResolved && !showEditFab)
+              if (editableResolved && !canEdit)
                 Padding(
                   padding: EdgeInsets.only(right: 16.w),
                   child: Center(
@@ -224,7 +234,7 @@ class DayDetailScreen extends ConsumerWidget {
                         style: AppTextStyles.headlineMedium(context),
                       ),
                       SizedBox(height: 8.h),
-                      if (log == null)
+                      if (log == null && !canEdit)
                         Padding(
                           padding: EdgeInsets.only(bottom: 12.h),
                           child: CardContainer(
@@ -241,79 +251,91 @@ class DayDetailScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              SliverList.builder(
-                itemCount: mainFields.length,
-                itemBuilder: (context, index) {
-                  final field = mainFields[index];
-                  return _DayDetailAmalRow(
-                    field: field,
-                    locale: locale,
-                    log: log,
-                    isFriday: isFriday,
-                  );
-                },
-              ),
-              if (optionalFields.isNotEmpty)
+              if (canEdit)
                 SliverToBoxAdapter(
-                  child: _DayDetailOptionalFieldsSection(
-                    fields: optionalFields,
-                    locale: locale,
-                    log: log,
-                    isFriday: isFriday,
+                  child: EditableCommunityAmolSection(
+                    uid: authUser.uid,
+                    hijriDate: hijriDate,
+                    existingLog: log,
                   ),
                 ),
-              if (inactiveFields.isNotEmpty) ...[
-                SliverToBoxAdapter(child: SizedBox(height: 8.h)),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.pause_circle_outline_rounded,
-                          size: 20.r,
-                          color: AppColors.textMuted,
-                        ),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                         child: Text(
-                           l10n.inactiveSpecialTimeExcusedSection,
-                           style: AppTextStyles.bodySmall(context).copyWith(
-                             color: AppColors.textSecondary,
-                             fontSize: 12.sp,
-                             fontWeight: FontWeight.w600,
-                             overflow: TextOverflow.ellipsis,
-                           ),
-                         ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              if (!canEdit) ...[
                 SliverList.builder(
-                  itemCount: inactiveFields.length,
+                  itemCount: mainFields.length,
                   itemBuilder: (context, index) {
-                    final field = inactiveFields[index];
-                    return Opacity(
-                      opacity: 0.5,
-                      child: _DayDetailAmalRow(
-                        field: field,
-                        locale: locale,
-                        log: log,
-                        isFriday: isFriday,
-                      ),
+                    final field = mainFields[index];
+                    return _DayDetailAmolRow(
+                      field: field,
+                      locale: locale,
+                      log: log,
+                      isFriday: isFriday,
                     );
                   },
                 ),
+                if (optionalFields.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: _DayDetailOptionalFieldsSection(
+                      fields: optionalFields,
+                      locale: locale,
+                      log: log,
+                      isFriday: isFriday,
+                    ),
+                  ),
+                if (inactiveFields.isNotEmpty) ...[
+                  SliverToBoxAdapter(child: SizedBox(height: 8.h)),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.pause_circle_outline_rounded,
+                            size: 20.r,
+                            color: AppColors.textMuted,
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                           child: Text(
+                             l10n.inactiveSpecialTimeExcusedSection,
+                             style: AppTextStyles.bodySmall(context).copyWith(
+                               color: AppColors.textSecondary,
+                               fontSize: 12.sp,
+                               fontWeight: FontWeight.w600,
+                               overflow: TextOverflow.ellipsis,
+                             ),
+                           ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SliverList.builder(
+                    itemCount: inactiveFields.length,
+                    itemBuilder: (context, index) {
+                      final field = inactiveFields[index];
+                      return Opacity(
+                        opacity: 0.5,
+                        child: _DayDetailAmolRow(
+                          field: field,
+                          locale: locale,
+                          log: log,
+                          isFriday: isFriday,
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ],
-              SliverToBoxAdapter(
-                child: PersonalAmolDayDetailSection(
-                  uid: authUser.uid,
-                  hijriDate: hijriDate,
+              // Personal amol section — hidden in community-only mode.
+              if (mode != DayDetailMode.community)
+                SliverToBoxAdapter(
+                  child: PersonalAmolDayDetailSection(
+                    uid: authUser.uid,
+                    hijriDate: hijriDate,
+                  ),
                 ),
-              ),
-              if (editableResolved && !showEditFab)
+              if (editableResolved && !canEdit)
                 SliverPadding(
                   padding: EdgeInsets.only(top: 14.h),
                   sliver: SliverToBoxAdapter(
@@ -387,7 +409,7 @@ class DayDetailScreen extends ConsumerWidget {
                   ),
                 ),
               SliverToBoxAdapter(
-                child: SizedBox(height: showEditFab ? 88.h : 24.h),
+                child: SizedBox(height: 24.h),
               ),
             ],
           ),
@@ -397,8 +419,175 @@ class DayDetailScreen extends ConsumerWidget {
   }
 }
 
+// ── Personal-only body ───────────────────────────────────────────────────────
+
+/// Shown when [DayDetailMode.personal] is selected — only displays the
+/// personal amol section for the given date. Community score/fields are hidden.
+class _PersonalOnlyBody extends ConsumerWidget {
+  const _PersonalOnlyBody({
+    required this.uid,
+    required this.hijriDate,
+    required this.title,
+  });
+
+  final String uid;
+  final String hijriDate;
+  final String title;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final key = PersonalAmolDateEditKey(uid: uid, hijriDate: hijriDate);
+    final pending = ref.watch(personalAmolDatePendingProvider(key));
+    final hasSomethingToSave = pending.dirty && !pending.isSaving;
+
+    return AppScaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, size: 22.r),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(AppRoutes.history),
+        ),
+        title: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTextStyles.headlineMedium(context),
+        ),
+      ),
+      bottomNavigationBar: _PersonalSaveBar(
+        isSaving: pending.isSaving,
+        enabled: hasSomethingToSave,
+        onPressed: () {
+          ref.read(personalAmolDatePendingProvider(key).notifier).save();
+        },
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(0, 4.h, 0, 0),
+            sliver: SliverToBoxAdapter(
+              child: PersonalAmolDayDetailSection(
+                uid: uid,
+                hijriDate: hijriDate,
+                showInlineSaveButton: false,
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(child: SizedBox(height: 24.h)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Fixed bottom save bar for the personal-only day detail screen.
+/// Always visible; disabled until there is a staged change to persist.
+class _PersonalSaveBar extends StatelessWidget {
+  const _PersonalSaveBar({
+    required this.isSaving,
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  final bool isSaving;
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 10.h),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: isSaving || !enabled ? null : onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.gold,
+              foregroundColor: AppColors.emeraldDeep,
+              elevation: 0,
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+            ),
+            child: isSaving
+                ? SizedBox(
+                    width: 22.r,
+                    height: 22.r,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.emeraldDeep,
+                    ),
+                  )
+                : Text(
+                    l10n.personalAmolSaveLabel,
+                    style: AppTextStyles.button(context).copyWith(
+                      color: AppColors.emeraldDeep,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _DayDetailAmalRow extends StatelessWidget {
   const _DayDetailAmalRow({
+    required this.field,
+    required this.locale,
+    required this.log,
+    required this.isFriday,
+  });
+
+  final amal_const.AmalField field;
+  final String locale;
+  final AmalLogModel? log;
+  final bool isFriday;
+
+  @override
+  Widget build(BuildContext context) {
+    final done = field.type == amal_const.AmalType.numeric
+        ? getNumericValue(log?.toggles[field.id], field.maxValue) > 0
+        : (log?.toggles[field.id] as bool? ?? false);
+    // Show prayer circles when Firestore has individual selection
+    // data (new logs). Fall back to count-only for old logs.
+    final prayerSlots =
+        field.supportsExpansion ? log?.prayers[field.id] : null;
+    final hasPrayerData = prayerSlots != null && prayerSlots.isNotEmpty;
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: AmalRow(
+        field: field,
+        locale: locale,
+        done: done,
+        numericValue: field.type == amal_const.AmalType.numeric
+            ? getNumericValue(log?.toggles[field.id], field.maxValue)
+            : null,
+        readOnly: true,
+        expandable: hasPrayerData,
+        isExpanded: hasPrayerData,
+        expandedContent: hasPrayerData
+            ? FardPrayerExpandRow(
+                selectedIndices: prayerSlots.toSet(),
+                onToggleIndex: (_) {},
+                slotCount: field.maxValue,
+                isFriday: isFriday,
+                readOnly: true,
+              )
+            : null,
+      ),
+    );
+  }
+}
+
+class _DayDetailAmolRow extends StatelessWidget {
+  const _DayDetailAmolRow({
     required this.field,
     required this.locale,
     required this.log,

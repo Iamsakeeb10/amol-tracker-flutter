@@ -23,17 +23,33 @@ bool personalAmolScheduledToday(PersonalAmolModel amol) {
 /// Number of [amols] scheduled on each Hijri date in [firstHijri] ..
 /// [lastHijri] (inclusive). Used as the per-day calendar fill denominator so
 /// weekday-only amols don't dilute days they aren't due.
+///
+/// Soft-deleted (inactive) amols count **only on past days where they actually
+/// have a completion in [completions]** — their real history keeps filling the
+/// calendar, but a deleted amol no longer dilutes days it was never done.
+/// From [today] onward they make no demands at all.
 Map<String, int> scheduledPersonalAmolByDay({
   required List<PersonalAmolModel> amols,
   required String firstHijri,
   required String lastHijri,
+  String? today,
+  List<PersonalAmolCompletion> completions = const [],
 }) {
+  final completedKeys = <String>{};
+  for (final c in completions) {
+    completedKeys.add('${c.hijriDate}_${c.amolId}');
+  }
   final out = <String, int>{};
   var day = firstHijri;
   var guard = 0;
   while (day.compareTo(lastHijri) <= 0 && guard++ < 366) {
     var n = 0;
     for (final a in amols) {
+      if (!a.isActive) {
+        if (today != null && day.compareTo(today) >= 0) continue;
+        // Deleted amol: only counts on a past day it was actually completed.
+        if (!completedKeys.contains('${day}_${a.id}')) continue;
+      }
       if (personalAmolScheduledOn(a, day)) n++;
     }
     out[day] = n;

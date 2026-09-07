@@ -3164,16 +3164,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolFrequencyWeekdays => 'Specific days';
 
   @override
-  String get personalAmolReminderLabel => 'Reminder';
-
-  @override
-  String get personalAmolReminderNone => 'Off';
-
-  @override
   String get personalAmolAddLabel => 'Add';
 
   @override
   String get personalAmolSaveLabel => 'Save';
+
+  @override
+  String get personalAmolEditLabel => 'Edit';
 
   @override
   String get personalAmolDeleteLabel => 'Delete';
@@ -3247,4 +3244,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalAmolWeekdayFri => 'শুক্র';
+
+  @override
+  String get personalAmolCountMaxReached => 'Daily target already reached.';
+
+  @override
+  String get personalAmolCountMinReached =>
+      'Count is already 0. Nothing left to remove.';
+
+  @override
+  String get closeLabel => 'Close';
 }

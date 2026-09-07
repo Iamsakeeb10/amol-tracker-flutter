@@ -126,7 +126,9 @@ class _AmolTrackerAppState extends ConsumerState<AmolTrackerApp>
     if (!mounted) return;
     ref.read(badgeCelebrationProvider.notifier).retryPendingWrites();
     unawaited(BackgroundCleanupService.runIfDue());
-    await NotificationService.instance.rescheduleAll();
+    // Force bypass the 5-minute cooldown: midnight rollover is an explicit
+    // scheduled trigger that must always re-register tomorrow's reminders.
+    await NotificationService.instance.rescheduleAll(force: true);
     if (!mounted) return;
     _scheduleSmartReminders();
     _scheduleMidnightRollover();

@@ -6,10 +6,15 @@ import '../../core/theme/colors.dart';
 import '../../core/theme/text_styles.dart';
 import '../../core/utils/submit_todays_amal.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/user_model.dart';
 import '../../providers/amal_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/personal_amol_pending_provider.dart';
 
 /// Save FAB for home tab; rendered on [ScaffoldWithBottomNav] above bottom nav.
+///
+/// Surfaces whenever there are unsaved changes — community amol toggles and/or
+/// staged personal-amol edits — and persists both on press.
 class HomeSaveFab extends ConsumerWidget {
   const HomeSaveFab({super.key});
 
@@ -34,8 +39,14 @@ class HomeSaveFab extends ConsumerWidget {
     final isAmalLoading = ref.watch(
       amalProvider(uid).select((s) => s.isLoading),
     );
+    final personalPending = ref.watch(personalAmolPendingProvider(uid));
+    final personalDirty = personalPending.dirty;
+    final personalSaving = personalPending.isSaving;
 
-    if (isSubmitted || !hasAnyDone) return const SizedBox.shrink();
+    // Community has unsaved toggles, or personal amol edits are staged.
+    final communityDirty = !isSubmitted && hasAnyDone;
+    final isLoading = isAmalLoading || personalSaving;
+    if (!communityDirty && !personalDirty) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context)!;
     final labelStyle = AppTextStyles.button(context).copyWith(
@@ -73,9 +84,9 @@ class HomeSaveFab extends ConsumerWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: isAmalLoading
+            onTap: isLoading
                 ? null
-                : () => submitTodaysAmal(
+                : () => _onSavePressed(
                     context,
                     ref,
                     uid: uid,
@@ -99,7 +110,7 @@ class HomeSaveFab extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (isAmalLoading)
+                  if (isLoading)
                     SizedBox(
                       width: _iconSize.r,
                       height: _iconSize.r,
@@ -123,5 +134,37 @@ class HomeSaveFab extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _onSavePressed(
+    BuildContext context,
+    WidgetRef ref, {
+    required String uid,
+    required UserModel user,
+  }) async {
+    bool personalSaved = false;
+    // 1. Persist staged personal-amol edits (batched Firestore writes).
+    final pendingNotifier =
+        ref.read(personalAmolPendingProvider(uid).notifier);
+    if (ref.read(personalAmolPendingProvider(uid)).dirty) {
+      try {
+        await pendingNotifier.saveToday();
+        personalSaved = true;
+      } catch (_) {
+        // Keep going so a personal-save failure never blocks the community
+        // submission below.
+      }
+    }
+    // 2. Submit the community amol as today only if it still has unsaved
+    //    toggles (may navigate to the day-complete screen, unchanged).
+    if (!context.mounted) return;
+    final amal = ref.read(amalProvider(uid));
+    if (!amal.isSubmitted && amal.hasAnyDone) {
+      await submitTodaysAmal(context, ref, uid: uid, user: user);
+    } else if (personalSaved && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ব্যক্তিগত আমল সংরক্ষণ করা হয়েছে ✓')),
+      );
+    }
   }
 }

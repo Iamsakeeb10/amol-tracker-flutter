@@ -160,8 +160,10 @@ class _PersonalAmolListScreenState
         uid: uid,
         amol: amol,
         readOnly: true,
-        onTap: () => context.push(AppRoutes.personalAmolEditPath(amol.id)),
-        onEdit: () => context.push(AppRoutes.personalAmolEditPath(amol.id)),
+        onTap: () =>
+            PersonalAmolCreateSheet.showForEdit(context, uid: uid, amol: amol),
+        onEdit: () =>
+            PersonalAmolCreateSheet.showForEdit(context, uid: uid, amol: amol),
         onDelete: () => _deleteFromIcon(context, l10n, uid, amol),
       ),
     );

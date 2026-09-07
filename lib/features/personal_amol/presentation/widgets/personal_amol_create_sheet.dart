@@ -38,9 +38,13 @@ import 'personal_amol_weekday_chips.dart';
 ///    sheet the instant content grows (e.g. weekday chips appearing), so the
 ///    user never has to manually drag the sheet up just to reach the button.
 class PersonalAmolCreateSheet extends ConsumerStatefulWidget {
-  const PersonalAmolCreateSheet({super.key, required this.uid});
+  const PersonalAmolCreateSheet({super.key, required this.uid, this.existing});
 
   final String uid;
+
+  /// When non-null the sheet runs in edit mode, pre-filling from and saving
+  /// back to this personal amol instead of creating a new one.
+  final PersonalAmolModel? existing;
 
   static Future<void> show(BuildContext context, {required String uid}) {
     return showModalBottomSheet<void>(
@@ -52,6 +56,21 @@ class PersonalAmolCreateSheet extends ConsumerStatefulWidget {
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (_) => PersonalAmolCreateSheet(uid: uid),
+    );
+  }
+
+  static Future<void> showForEdit(
+    BuildContext context, {
+    required String uid,
+    required PersonalAmolModel amol,
+  }) {
+    return showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => PersonalAmolCreateSheet(uid: uid, existing: amol),
     );
   }
 
@@ -78,10 +97,20 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
   bool _isSaving = false;
 
   bool get _isWeekdays => !_daily;
+  bool get _isEditing => widget.existing != null;
 
   @override
   void initState() {
     super.initState();
+    final existing = widget.existing;
+    if (existing != null) {
+      _nameController.text = existing.name;
+      _icon = existing.icon;
+      _daily = existing.frequency == PersonalAmolFrequency.daily;
+      _selectedWeekdays.addAll(existing.weekdays);
+      _type = existing.type;
+      _target = existing.type == PersonalAmolType.count ? existing.target : 3;
+    }
     // When the name field gains focus the keyboard appears; expand the sheet
     // so the pinned Add button stays visible (and so the keyboard shrink keeps
     // content readable). Auto-collapse back to the initial height on blur so
@@ -149,7 +178,8 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
     FocusScope.of(context).unfocus();
 
     final notifier = ref.read(personalAmolNotifierProvider(widget.uid).notifier);
-    if (notifier.atCap) {
+    // Capacity only applies when creating a brand-new amol, not editing.
+    if (!_isEditing && notifier.atCap) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.personalAmolCapMessage(AppConstants.kMaxFreePersonalAmol)),
@@ -161,24 +191,43 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     final name = _nameController.text.trim();
-    final amol = PersonalAmolModel(
-      id: FirebaseFirestore.instance.collection('personal_amol_ids').doc().id,
-      name: name,
-      icon: _icon.isEmpty ? encodePersonalAmolIcon(Icons.auto_awesome) : _icon,
-      frequency: _daily
-          ? PersonalAmolFrequency.daily
-          : PersonalAmolFrequency.weekdays,
-      weekdays: _isWeekdays ? _selectedWeekdays.toList() : const <int>[],
-      reminderTime: null,
-      isActive: true,
-      createdAt: DateTime.now(),
-      type: _type,
-      target: _type == PersonalAmolType.count ? _target : 1,
-    );
+    final frequency =
+        _daily ? PersonalAmolFrequency.daily : PersonalAmolFrequency.weekdays;
+    final weekdays = _isWeekdays ? _selectedWeekdays.toList() : const <int>[];
+    final type = _type;
+    final target = _type == PersonalAmolType.count ? _target : 1;
 
     setState(() => _isSaving = true);
     try {
-      await notifier.createAmol(amol);
+      if (_isEditing && widget.existing != null) {
+        await notifier.updateAmol(
+          widget.existing!.copyWith(
+            name: name,
+            icon: _icon,
+            frequency: frequency,
+            weekdays: weekdays,
+            // Reminders are no longer a supported option; clear any leftover
+            // reminder stored on older amols.
+            reminderTime: null,
+            type: type,
+            target: target,
+          ),
+        );
+      } else {
+        final amol = PersonalAmolModel(
+          id: FirebaseFirestore.instance.collection('personal_amol_ids').doc().id,
+          name: name,
+          icon: _icon.isEmpty ? encodePersonalAmolIcon(Icons.auto_awesome) : _icon,
+          frequency: frequency,
+          weekdays: weekdays,
+          reminderTime: null,
+          isActive: true,
+          createdAt: DateTime.now(),
+          type: type,
+          target: target,
+        );
+        await notifier.createAmol(amol);
+      }
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -194,7 +243,8 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
   @override
   Widget build(BuildContext context) {
     final uid = ref.watch(authStateProvider).asData?.value?.uid;
-    final atCap = uid != null &&
+    final atCap = !_isEditing &&
+        uid != null &&
         (ref.watch(personalAmolNotifierProvider(uid)).length >=
             AppConstants.kMaxFreePersonalAmol);
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
@@ -263,7 +313,9 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
                           children: [
                             Expanded(
                               child: Text(
-                                l10n.personalAmolCreateTitle,
+                                _isEditing
+                                    ? l10n.personalAmolEditTitle
+                                    : l10n.personalAmolCreateTitle,
                                 style: AppTextStyles.headlineMedium(context),
                               ),
                             ),
@@ -452,7 +504,9 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
                     label: _isSaving
                         ? const SizedBox.shrink()
                         : Text(
-                            l10n.personalAmolAddLabel,
+                            _isEditing
+                                ? l10n.personalAmolSaveLabel
+                                : l10n.personalAmolAddLabel,
                             style: AppTextStyles.button(context).copyWith(
                               color: AppColors.emeraldDeep,
                               fontWeight: FontWeight.w600,

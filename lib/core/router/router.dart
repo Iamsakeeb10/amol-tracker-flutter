@@ -36,6 +36,7 @@ import '../../features/community/presentation/screens/community_screen.dart';
 import '../../features/community/presentation/screens/user_profile_screen.dart';
 import '../../features/history/presentation/widgets/edit_amal_route_guard.dart';
 import '../../features/history/presentation/widgets/history_date_route_guard.dart';
+import '../../features/history/presentation/screens/day_detail_screen.dart';
 import '../../features/history/presentation/screens/history_screen.dart';
 import '../../features/home/presentation/screens/day_complete_screen.dart';
 import '../../models/amal_log_model.dart';
@@ -62,7 +63,6 @@ import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
 import '../../features/dua/presentation/screens/dua_screen.dart';
 import '../../features/hijri_calendar/presentation/screens/hijri_calendar_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_screen.dart';
-import '../../features/personal_amol/presentation/screens/personal_amol_form_screen.dart';
 import '../../features/personal_amol/presentation/screens/personal_amol_list_screen.dart';
 import '../../features/quran/presentation/screens/quran_screen.dart';
 import '../../features/quran/presentation/screens/quran_surah_scroll_screen.dart';
@@ -240,7 +240,10 @@ AppRouterSetup buildAppRouter() {
         name: 'dayDetail',
         builder: (_, state) {
           final date = state.pathParameters['date'] ?? '';
-          return HistoryDateRouteGuard(hijriDate: date);
+          final mode = state.extra is DayDetailMode
+              ? state.extra as DayDetailMode
+              : DayDetailMode.both;
+          return HistoryDateRouteGuard(hijriDate: date, mode: mode);
         },
       ),
       GoRoute(
@@ -318,18 +321,6 @@ AppRouterSetup buildAppRouter() {
         path: AppRoutes.personalAmolList,
         name: 'personalAmolList',
         builder: (_, _) => const PersonalAmolListScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.personalAmolCreate,
-        name: 'personalAmolCreate',
-        builder: (_, _) => const PersonalAmolFormScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.personalAmolEditPattern,
-        name: 'personalAmolEdit',
-        builder: (_, state) => PersonalAmolFormScreen(
-          existingAmolId: state.pathParameters['amolId'],
-        ),
       ),
       GoRoute(
         path: AppRoutes.quran,

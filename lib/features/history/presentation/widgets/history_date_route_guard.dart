@@ -6,16 +6,21 @@ import '../../../../core/theme/colors.dart';
 import '../screens/day_detail_screen.dart';
 
 class HistoryDateRouteGuard extends StatelessWidget {
-  const HistoryDateRouteGuard({super.key, required this.hijriDate});
+  const HistoryDateRouteGuard({
+    super.key,
+    required this.hijriDate,
+    this.mode = DayDetailMode.both,
+  });
 
   final String hijriDate;
+  final DayDetailMode mode;
 
   @override
   Widget build(BuildContext context) {
     if (hijriDate.isEmpty) {
       return const _HistoryRouteRedirect();
     }
-    return DayDetailScreen(hijriDate: hijriDate);
+    return DayDetailScreen(hijriDate: hijriDate, mode: mode);
   }
 }
 

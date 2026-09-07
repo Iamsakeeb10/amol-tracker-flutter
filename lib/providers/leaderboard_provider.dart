@@ -49,6 +49,7 @@ final leaderboardRefreshProvider =
 // ---------------------------------------------------------------------------
 // Daily leaderboard — uses a real-time Firestore stream so it always live.
 // ---------------------------------------------------------------------------
+// 🔒 Community leaderboard only — personal amol must never be included, see PERSONAL_AMOL_FEATURE.md
 final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
   final authState = ref.watch(currentUserProvider).asData?.value;
   final currentUserGender = authState?.gender;
@@ -95,6 +96,7 @@ final dailyLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
 // ---------------------------------------------------------------------------
 // Weekly leaderboard
 // ---------------------------------------------------------------------------
+// 🔒 Community leaderboard only — personal amol must never be included, see PERSONAL_AMOL_FEATURE.md
 final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
   (ref) async {
   // Re-execute whenever leaderboardRefreshProvider is bumped.
@@ -147,6 +149,7 @@ final weeklyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
 // ---------------------------------------------------------------------------
 // Monthly leaderboard
 // ---------------------------------------------------------------------------
+// 🔒 Community leaderboard only — personal amol must never be included, see PERSONAL_AMOL_FEATURE.md
 final monthlyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
   (ref) async {
   // Re-execute whenever leaderboardRefreshProvider is bumped.
@@ -199,6 +202,7 @@ final monthlyLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
 // ---------------------------------------------------------------------------
 // Streak leaderboard
 // ---------------------------------------------------------------------------
+// 🔒 Community leaderboard only — personal amol must never be included, see PERSONAL_AMOL_FEATURE.md
 final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
   (ref) async {
   // Re-execute whenever leaderboardRefreshProvider is bumped.
@@ -263,6 +267,7 @@ final streakLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
 // ---------------------------------------------------------------------------
 // Quiz leaderboard
 // ---------------------------------------------------------------------------
+// 🔒 Community leaderboard only — personal amol must never be included, see PERSONAL_AMOL_FEATURE.md
 final quizLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
   (ref) async {
   // Re-execute whenever leaderboardRefreshProvider is bumped.
@@ -308,6 +313,7 @@ final quizLeaderboardProvider = FutureProvider<List<LeaderboardEntry>>(
 // ---------------------------------------------------------------------------
 // Battle leaderboard — real-time StreamProvider ranked by battleScore
 // ---------------------------------------------------------------------------
+// 🔒 Community leaderboard only — personal amol must never be included, see PERSONAL_AMOL_FEATURE.md
 final battleLeaderboardProvider = StreamProvider<List<LeaderboardEntry>>((ref) {
   final authState = ref.watch(currentUserProvider).asData?.value;
   final currentUserGender = authState?.gender;

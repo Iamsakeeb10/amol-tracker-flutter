@@ -565,6 +565,7 @@ class FirestoreService {
   }
 
   /// Real-time stream of submitted logs for a Hijri day, sorted by score.
+  // 🔒 Personal amol must never be included here — see PERSONAL_AMOL_FEATURE.md
   Stream<List<AmalLogModel>> communityDayStream(String hijriDate, {String? genderFilter}) {
     var query = _amalLogs.where('hijriDate', isEqualTo: hijriDate);
     if (genderFilter != null) {
@@ -579,6 +580,7 @@ class FirestoreService {
   }
 
   /// One-time paginated fetch of submitted logs for a Hijri day.
+  // 🔒 Personal amol must never be included here — see PERSONAL_AMOL_FEATURE.md
   Future<
     ({List<AmalLogModel> rows, DocumentSnapshot<Map<String, dynamic>>? lastDoc})
   >
@@ -649,6 +651,7 @@ class FirestoreService {
         .map((snap) => snap.docs.map(ActivityFeedItemModel.fromDoc).toList());
   }
 
+  // 🔒 Personal amol must never be included here — see PERSONAL_AMOL_FEATURE.md
   Future<List<AmalLogModel>> getRecentLogs(String uid, {int limit = 7}) async {
     try {
       final query = await _amalLogs
@@ -677,6 +680,7 @@ class FirestoreService {
     }
   }
 
+  // 🔒 Community leaderboard only — personal amol must never be included, see PERSONAL_AMOL_FEATURE.md
   Future<List<Map<String, dynamic>>> _weeklyLeaderboardQuery() async {
     final end = IslamicDateService.getCurrentIslamicDateStringSafe();
     final start = IslamicDateService.shiftStorageByDays(end, -6);
@@ -737,6 +741,7 @@ class FirestoreService {
     }
   }
 
+  // 🔒 Community leaderboard only — personal amol must never be included, see PERSONAL_AMOL_FEATURE.md
   Future<List<Map<String, dynamic>>> _monthlyLeaderboardQuery() async {
     final end = IslamicDateService.getCurrentIslamicDateStringSafe();
     final parts = end.split('-');
@@ -795,6 +800,7 @@ class FirestoreService {
 
   static const int _leaderboardPageSize = 20;
 
+  // 🔒 Community leaderboard only — personal amol must never be included, see PERSONAL_AMOL_FEATURE.md
   Future<
     ({List<Map<String, dynamic>> rows, DocumentSnapshot<Map<String, dynamic>>? lastDoc})
   >

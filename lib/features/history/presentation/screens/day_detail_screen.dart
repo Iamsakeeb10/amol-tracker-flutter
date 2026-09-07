@@ -27,6 +27,7 @@ import '../../../../shared/widgets/card_container.dart';
 import '../../../../shared/widgets/edited_badge.dart';
 import '../../../../shared/widgets/fard_prayer_expand_row.dart';
 import '../../../../shared/widgets/stat_card.dart';
+import '../../../../features/personal_amol/presentation/widgets/personal_amol_day_detail_section.dart';
 
 class DayDetailScreen extends ConsumerWidget {
   const DayDetailScreen({super.key, required this.hijriDate});
@@ -306,6 +307,12 @@ class DayDetailScreen extends ConsumerWidget {
                   },
                 ),
               ],
+              SliverToBoxAdapter(
+                child: PersonalAmolDayDetailSection(
+                  uid: authUser.uid,
+                  hijriDate: hijriDate,
+                ),
+              ),
               if (editableResolved && !showEditFab)
                 SliverPadding(
                   padding: EdgeInsets.only(top: 14.h),

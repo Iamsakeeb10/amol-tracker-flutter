@@ -782,6 +782,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get history => 'HISTORY';
 
   @override
+  String get historyTabCommunityAmol => 'Community Amol';
+
+  @override
+  String get historyTabPersonalAmol => 'Personal Amol';
+
+  @override
   String get historyLoadFailed => 'Could not load history.';
 
   @override
@@ -3106,4 +3112,94 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get battleTimeLimit => 'Time';
+
+  @override
+  String get personalAmolSectionTitle => 'Personal Amol';
+
+  @override
+  String get personalAmolEmptyHeadline => 'Add your own amol';
+
+  @override
+  String get personalAmolEmptySubtitle => 'Track any daily habit, just for you';
+
+  @override
+  String get personalAmolEmptyCta => 'Add';
+
+  @override
+  String personalAmolCapMessage(Object max) {
+    return 'You have reached the limit of $max personal amol.';
+  }
+
+  @override
+  String get personalAmolListTitle => 'Personal Amol';
+
+  @override
+  String get personalAmolCreateTitle => 'New Personal Amol';
+
+  @override
+  String get personalAmolEditTitle => 'Edit Personal Amol';
+
+  @override
+  String get personalAmolNameLabel => 'Name';
+
+  @override
+  String get personalAmolNameHint => 'e.g. Read Quran, Daily Dua';
+
+  @override
+  String get personalAmolNameRequired => 'Please enter a name';
+
+  @override
+  String get personalAmolIconLabel => 'Icon';
+
+  @override
+  String get personalAmolFrequencyLabel => 'Frequency';
+
+  @override
+  String get personalAmolFrequencyDaily => 'Every day';
+
+  @override
+  String get personalAmolFrequencyWeekdays => 'Specific days';
+
+  @override
+  String get personalAmolReminderLabel => 'Reminder';
+
+  @override
+  String get personalAmolReminderNone => 'Off';
+
+  @override
+  String get personalAmolAddLabel => 'Add';
+
+  @override
+  String get personalAmolSaveLabel => 'Save';
+
+  @override
+  String get personalAmolDeleteLabel => 'Delete';
+
+  @override
+  String get personalAmolDeleteConfirm => 'Delete this amol?';
+
+  @override
+  String get personalAmolDeleteSubtitle => 'Your history will not be deleted.';
+
+  @override
+  String personalAmolStreakLabel(Object n) {
+    return '$n-day streak';
+  }
+
+  @override
+  String personalAmolProgressLabel(Object done, Object total) {
+    return '$done/$total completed';
+  }
+
+  @override
+  String get personalAmolHistorySection => 'Personal Amol';
+
+  @override
+  String get personalAmolHistoryCompleted => 'Completed';
+
+  @override
+  String get personalAmolHistoryNotCompleted => 'Not completed';
+
+  @override
+  String get personalAmolHistoryTotalLabel => 'Completions';
 }

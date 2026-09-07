@@ -383,6 +383,8 @@
     }
   },
   "history": "হিস্টোরি",
+  "historyTabCommunityAmol": "সাধারণ আমল",
+  "historyTabPersonalAmol": "ব্যক্তিগত আমল",
   "historyLoadFailed": "হিস্টোরি লোড করা যায়নি।",
   "historyConsistency": "{value}% কনসিস্টেন্সি",
   "@historyConsistency": {
@@ -1476,5 +1478,48 @@
   "battleSubmit": "সাবমিট করুন",
   "battleTopic": "বিষয়",
   "battleQuestions": "প্রশ্ন",
-  "battleTimeLimit": "সময়"
-}
+  "battleTimeLimit": "সময়",
+  "personalAmolSectionTitle": "ব্যক্তিগত আমল",
+  "personalAmolEmptyHeadline": "নিজের আমল যোগ করুন",
+  "personalAmolEmptySubtitle": "দৈনন্দিন যেকোনো অভ্যাস ট্র্যাক করুন, শুধু আপনার জন্য",
+  "personalAmolEmptyCta": "যোগ করুন",
+  "personalAmolCapMessage": "আপনি আপনার {max}টি ব্যক্তিগত আমলের সীমায় পৌঁছেছেন।",
+  "@personalAmolCapMessage": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "personalAmolListTitle": "ব্যক্তিগত আমল",
+  "personalAmolCreateTitle": "নতুন ব্যক্তিগত আমল",
+  "personalAmolEditTitle": "ব্যক্তিগত আমল সম্পাদনা",
+  "personalAmolNameLabel": "নাম",
+  "personalAmolNameHint": "যেমন: কুরআন পড়া, প্রতিদিনের দোয়া",
+  "personalAmolNameRequired": "অনুগ্রহ করে একটি নাম দিন",
+  "personalAmolIconLabel": "আইকন",
+  "personalAmolFrequencyLabel": "ফ্রিকোয়েন্সি",
+  "personalAmolFrequencyDaily": "প্রতিদিন",
+  "personalAmolFrequencyWeekdays": "নির্দিষ্ট দিনে",
+  "personalAmolReminderLabel": "রিমাইন্ডার",
+  "personalAmolReminderNone": "বন্ধ",
+  "personalAmolAddLabel": "যোগ করুন",
+  "personalAmolSaveLabel": "সংরক্ষণ করুন",
+  "personalAmolDeleteLabel": "মুছে ফেলুন",
+  "personalAmolDeleteConfirm": "এই আমলটি মুছে ফেলবেন?",
+  "personalAmolDeleteSubtitle": "আপনার ইতিহাস মুছে যাবে না।",
+  "personalAmolStreakLabel": "{n} দিনের স্ট্রিক",
+  "@personalAmolStreakLabel": {
+    "placeholders": {
+      "n": {}
+    }
+  },
+  "personalAmolProgressLabel": "{done}/{total} সম্পন্ন",
+  "@personalAmolProgressLabel": {
+    "placeholders": {
+      "done": {},
+      "total": {}
+    }
+  },
+  "personalAmolHistorySection": "ব্যক্তিগত আমল",
+  "personalAmolHistoryCompleted": "সম্পন্ন",
+  "personalAmolHistoryNotCompleted": "সম্পন্ন হয়নি",
+  "personalAmolHistoryTotalLabel": "সম্পন্ন"}

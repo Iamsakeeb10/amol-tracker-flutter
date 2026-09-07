@@ -57,6 +57,11 @@ class NotificationService {
   static const int _dailyPrayerReminderOffsetMinutes = 15;
   static const int _legacySmartEveningId = 9001;
   static const int _legacySmartUrgentId = 9002;
+  // Personal amol reminders: IDs 5000–5004 (one per free-tier slot).
+  // These must NEVER collide with community amol, adhan, hadith, streak, or
+  // lesson-review notification IDs.
+  static const int _personalAmolBaseId = 5000;
+  static const int _personalAmolSlotRange = 5;
   static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 8, minute: 0);
   // Moved from 9 PM to 10 PM: streak warnings now occupy 9:15–9:45 PM;
   // 10 PM is a natural "before sleep" slot matching the notification suffix.
@@ -570,6 +575,43 @@ class NotificationService {
       await _localNotifications.cancel(_lessonReviewBaseId + i);
     }
     await PrayerAdhanScheduler.instance.cancelAll(_localNotifications);
+  }
+
+  /// Schedules a daily personal amol reminder for the given free-tier [slot]
+  /// (0-based, up to 4). Deep-links to home on tap, matching community amol
+  /// reminder behavior.
+  Future<void> schedulePersonalAmolReminder({
+    required int slot,
+    required String name,
+    required TimeOfDay time,
+  }) async {
+    if (slot < 0 || slot >= _personalAmolSlotRange) return;
+    final id = _personalAmolBaseId + slot;
+    await _localNotifications.cancel(id);
+    // Skip if the chosen time falls within quiet hours to respect sleep.
+    if (_isSuppressedByQuietHours(time)) return;
+    final scheduled = _nextInstance(time);
+    await _safeZonedSchedule(
+      id: id,
+      title: 'ব্যক্তিগত আমল: $name',
+      body: 'আজকের ব্যক্তিগত আমলটি সম্পন্ন করুন।',
+      scheduledDate: scheduled,
+      payload: AppRoutes.home,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  /// Cancels a single personal amol reminder by 0-based slot.
+  Future<void> cancelPersonalAmolReminder(int slot) async {
+    if (slot < 0 || slot >= _personalAmolSlotRange) return;
+    await _localNotifications.cancel(_personalAmolBaseId + slot);
+  }
+
+  /// Cancels all personal amol reminders (IDs 5000–5004).
+  Future<void> cancelAllPersonalAmolReminders() async {
+    for (var i = 0; i < _personalAmolSlotRange; i++) {
+      await _localNotifications.cancel(_personalAmolBaseId + i);
+    }
   }
 
   Future<void> setMorningEnabled(bool enabled) async {

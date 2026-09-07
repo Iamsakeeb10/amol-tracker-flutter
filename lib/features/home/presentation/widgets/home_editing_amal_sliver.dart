@@ -91,17 +91,5 @@ List<Widget> buildHomeEditingAmalSlivers({
         optionalFields: policy.optionalFields,
         inactiveSpecialTimeFields: policy.inactiveSpecialTimeFields,
       ),
-    SliverToBoxAdapter(child: SizedBox(height: 14.h)),
-    SliverToBoxAdapter(
-      child: Text(
-        hasAnyDone
-            ? l10n.draftSavedTapSaveToFinish(l10n.saveFabLabel)
-            : l10n.progressAutosavedHint,
-        style: AppTextStyles.bodySmall(context).copyWith(
-          color: AppColors.textSecondary,
-          fontSize: 12.sp,
-        ),
-      ),
-    ),
   ];
 }

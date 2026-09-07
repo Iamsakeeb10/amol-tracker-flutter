@@ -23,6 +23,7 @@ import 'home_header.dart';
 import 'home_reminder_card.dart';
 import 'home_special_time_toggle.dart';
 import 'home_widgets.dart';
+import '../../../personal_amol/presentation/widgets/personal_amol_section.dart';
 
 class HomeScrollBody extends ConsumerStatefulWidget {
   const HomeScrollBody({
@@ -386,7 +387,18 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                               hasAnyDone: widget.hasAnyDone,
                               onRetryFields: widget.onRetryFields,
                             ),
+                          SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+                          SliverToBoxAdapter(
+                            child: Container(
+                              height: 1.r,
+                              color: AppColors.cardBorder,
+                            ),
+                          ),
                           SliverToBoxAdapter(child: SizedBox(height: 20.h)),
+                          SliverToBoxAdapter(
+                            child: PersonalAmolSection(uid: widget.uid),
+                          ),
+                          SliverToBoxAdapter(child: SizedBox(height: 10.h)),
                         ],
                       ),
                     ),

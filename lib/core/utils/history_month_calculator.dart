@@ -34,6 +34,9 @@ Business Rules:
 - Pre-account and future days are non-interactive calendar cells.
 - Consistency counts only active past logged days at or above 50% max score.
 - Weakest amal is the field missed most often across month logs.
+- This calculator models the COMMUNITY amol calendar only. Personal amol
+  completions live in a separate per-user subcollection and must never feed
+  leaderboard, achievement, or cross-user comparison.
 
 Flow:
 1. Index logs by Hijri day within the requested month.
@@ -122,11 +125,15 @@ class HistoryMonthCalculator {
       }
 
       final log = byDay[d];
+
       if (key == todayStr) {
-        final score = log?.score ?? 0;
+        final baseScore = log?.score ?? 0;
+        final score = baseScore;
+        var maxScore = log?.maxScore ?? 0;
         var todayState = DayCompletion.today;
         if (log != null) {
-          todayState = _scoreToState(score, hasLog: true, maxScore: log.maxScore);
+          if (maxScore <= 0) maxScore = 1;
+          todayState = _scoreToState(score, hasLog: true, maxScore: maxScore);
         }
         out.add(
           MockDay(
@@ -144,12 +151,13 @@ class HistoryMonthCalculator {
         continue;
       }
 
-      final sc = log.score;
+      final score = log.score;
+      final maxScore = (log.maxScore <= 0) ? 1 : log.maxScore;
       out.add(
         MockDay(
           day: d,
-          score: sc,
-          state: _scoreToState(sc, hasLog: true, maxScore: log.maxScore),
+          score: score,
+          state: _scoreToState(score, hasLog: true, maxScore: maxScore),
           isEdited: log.editedAt != null,
         ),
       );

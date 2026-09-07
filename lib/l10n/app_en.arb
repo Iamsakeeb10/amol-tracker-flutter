@@ -381,6 +381,8 @@
     }
   },
   "history": "HISTORY",
+  "historyTabCommunityAmol": "Community Amol",
+  "historyTabPersonalAmol": "Personal Amol",
   "historyLoadFailed": "Could not load history.",
   "historyConsistency": "{value}% consistency",
   "@historyConsistency": {
@@ -1537,5 +1539,49 @@
   "battleSubmit": "Submit",
   "battleTopic": "Topic",
   "battleQuestions": "Questions",
-  "battleTimeLimit": "Time"
+  "battleTimeLimit": "Time",
+  "personalAmolSectionTitle": "Personal Amol",
+  "personalAmolEmptyHeadline": "Add your own amol",
+  "personalAmolEmptySubtitle": "Track any daily habit, just for you",
+  "personalAmolEmptyCta": "Add",
+  "personalAmolCapMessage": "You have reached the limit of {max} personal amol.",
+  "@personalAmolCapMessage": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "personalAmolListTitle": "Personal Amol",
+  "personalAmolCreateTitle": "New Personal Amol",
+  "personalAmolEditTitle": "Edit Personal Amol",
+  "personalAmolNameLabel": "Name",
+  "personalAmolNameHint": "e.g. Read Quran, Daily Dua",
+  "personalAmolNameRequired": "Please enter a name",
+  "personalAmolIconLabel": "Icon",
+  "personalAmolFrequencyLabel": "Frequency",
+  "personalAmolFrequencyDaily": "Every day",
+  "personalAmolFrequencyWeekdays": "Specific days",
+  "personalAmolReminderLabel": "Reminder",
+  "personalAmolReminderNone": "Off",
+  "personalAmolAddLabel": "Add",
+  "personalAmolSaveLabel": "Save",
+  "personalAmolDeleteLabel": "Delete",
+  "personalAmolDeleteConfirm": "Delete this amol?",
+  "personalAmolDeleteSubtitle": "Your history will not be deleted.",
+  "personalAmolStreakLabel": "{n}-day streak",
+  "@personalAmolStreakLabel": {
+    "placeholders": {
+      "n": {}
+    }
+  },
+  "personalAmolProgressLabel": "{done}/{total} completed",
+  "@personalAmolProgressLabel": {
+    "placeholders": {
+      "done": {},
+      "total": {}
+    }
+  },
+  "personalAmolHistorySection": "Personal Amol",
+  "personalAmolHistoryCompleted": "Completed",
+  "personalAmolHistoryNotCompleted": "Not completed",
+  "personalAmolHistoryTotalLabel": "Completions"
 }

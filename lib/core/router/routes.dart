@@ -43,6 +43,13 @@ class AppRoutes {
   static const hijriCalendar = '/hijri-calendar';
   static const qibla = '/qibla';
 
+  static const personalAmolList = '/personal-amol';
+  static const personalAmolCreate = '/personal-amol/create';
+  static const personalAmolEditPattern = '/personal-amol/edit/:amolId';
+
+  static String personalAmolEditPath(String amolId) =>
+      '/personal-amol/edit/$amolId';
+
   static const quran = '/quran';
   static const quranSurahScrollPattern = '/quran/surah/:surahId';
 

@@ -1496,6 +1496,18 @@ abstract class AppLocalizations {
   /// **'HISTORY'**
   String get history;
 
+  /// No description provided for @historyTabCommunityAmol.
+  ///
+  /// In en, this message translates to:
+  /// **'Community Amol'**
+  String get historyTabCommunityAmol;
+
+  /// No description provided for @historyTabPersonalAmol.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Amol'**
+  String get historyTabPersonalAmol;
+
   /// No description provided for @historyLoadFailed.
   ///
   /// In en, this message translates to:
@@ -5790,6 +5802,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Time'**
   String get battleTimeLimit;
+
+  /// No description provided for @personalAmolSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Amol'**
+  String get personalAmolSectionTitle;
+
+  /// No description provided for @personalAmolEmptyHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your own amol'**
+  String get personalAmolEmptyHeadline;
+
+  /// No description provided for @personalAmolEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track any daily habit, just for you'**
+  String get personalAmolEmptySubtitle;
+
+  /// No description provided for @personalAmolEmptyCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get personalAmolEmptyCta;
+
+  /// No description provided for @personalAmolCapMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached the limit of {max} personal amol.'**
+  String personalAmolCapMessage(Object max);
+
+  /// No description provided for @personalAmolListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Amol'**
+  String get personalAmolListTitle;
+
+  /// No description provided for @personalAmolCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Personal Amol'**
+  String get personalAmolCreateTitle;
+
+  /// No description provided for @personalAmolEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Personal Amol'**
+  String get personalAmolEditTitle;
+
+  /// No description provided for @personalAmolNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get personalAmolNameLabel;
+
+  /// No description provided for @personalAmolNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Read Quran, Daily Dua'**
+  String get personalAmolNameHint;
+
+  /// No description provided for @personalAmolNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a name'**
+  String get personalAmolNameRequired;
+
+  /// No description provided for @personalAmolIconLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get personalAmolIconLabel;
+
+  /// No description provided for @personalAmolFrequencyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get personalAmolFrequencyLabel;
+
+  /// No description provided for @personalAmolFrequencyDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get personalAmolFrequencyDaily;
+
+  /// No description provided for @personalAmolFrequencyWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Specific days'**
+  String get personalAmolFrequencyWeekdays;
+
+  /// No description provided for @personalAmolReminderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get personalAmolReminderLabel;
+
+  /// No description provided for @personalAmolReminderNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get personalAmolReminderNone;
+
+  /// No description provided for @personalAmolAddLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get personalAmolAddLabel;
+
+  /// No description provided for @personalAmolSaveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get personalAmolSaveLabel;
+
+  /// No description provided for @personalAmolDeleteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get personalAmolDeleteLabel;
+
+  /// No description provided for @personalAmolDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this amol?'**
+  String get personalAmolDeleteConfirm;
+
+  /// No description provided for @personalAmolDeleteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your history will not be deleted.'**
+  String get personalAmolDeleteSubtitle;
+
+  /// No description provided for @personalAmolStreakLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}-day streak'**
+  String personalAmolStreakLabel(Object n);
+
+  /// No description provided for @personalAmolProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{total} completed'**
+  String personalAmolProgressLabel(Object done, Object total);
+
+  /// No description provided for @personalAmolHistorySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Amol'**
+  String get personalAmolHistorySection;
+
+  /// No description provided for @personalAmolHistoryCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get personalAmolHistoryCompleted;
+
+  /// No description provided for @personalAmolHistoryNotCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not completed'**
+  String get personalAmolHistoryNotCompleted;
+
+  /// No description provided for @personalAmolHistoryTotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Completions'**
+  String get personalAmolHistoryTotalLabel;
 }
 
 class _AppLocalizationsDelegate

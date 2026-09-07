@@ -62,6 +62,8 @@ import '../../features/dhikr/presentation/screens/dhikr_counter_screen.dart';
 import '../../features/dua/presentation/screens/dua_screen.dart';
 import '../../features/hijri_calendar/presentation/screens/hijri_calendar_screen.dart';
 import '../../features/qibla/presentation/screens/qibla_screen.dart';
+import '../../features/personal_amol/presentation/screens/personal_amol_form_screen.dart';
+import '../../features/personal_amol/presentation/screens/personal_amol_list_screen.dart';
 import '../../features/quran/presentation/screens/quran_screen.dart';
 import '../../features/quran/presentation/screens/quran_surah_scroll_screen.dart';
 import '../../features/settings/presentation/screens/feedback_screen.dart';
@@ -311,6 +313,23 @@ AppRouterSetup buildAppRouter() {
         path: AppRoutes.qibla,
         name: 'qibla',
         builder: (_, _) => const QiblaScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.personalAmolList,
+        name: 'personalAmolList',
+        builder: (_, _) => const PersonalAmolListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.personalAmolCreate,
+        name: 'personalAmolCreate',
+        builder: (_, _) => const PersonalAmolFormScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.personalAmolEditPattern,
+        name: 'personalAmolEdit',
+        builder: (_, state) => PersonalAmolFormScreen(
+          existingAmolId: state.pathParameters['amolId'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.quran,

@@ -15,4 +15,12 @@ class AppConstants {
   /// including those who dismissed an earlier version.
   /// 1 = original Maghrib-to-Maghrib notice, 2 = midnight-to-midnight change notice.
   static const int loggingReminderVersion = 2;
+
+  // Max number of personal amol a free-tier user can define (personal_amol subcollection).
+  static const int kMaxFreePersonalAmol = 5;
+
+  /// Point value awarded per completed personal amol, used only to merge
+  /// personal completion into the history calendar display score. Kept flat
+  /// and uniform to match the weight of an individual community amol item.
+  static const int kPersonalAmolPointValue = 10;
 }

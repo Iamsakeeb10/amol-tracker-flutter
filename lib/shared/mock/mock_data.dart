@@ -318,6 +318,9 @@ enum DayCompletion {
 
 class MockDay {
   final int day;
+
+  /// Community amol score for the day. Personal amol lives in a separate
+  /// subcollection and is never merged into this value.
   final int score;
   final DayCompletion state;
   final bool isEdited;

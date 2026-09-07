@@ -80,6 +80,10 @@ class HistoryMonthSummaryInput {
 }
 
 /// Pre-computed calendar days and month stats for history screen.
+///
+/// Community amol only. Personal amol lives in a separate per-user
+/// subcollection and is shown on its own history tab; it is never part of
+/// leaderboard, achievement, or downstream score computations.
 final historyMonthSummaryProvider =
     Provider.autoDispose.family<AsyncValue<HistoryMonthSummary>, HistoryMonthSummaryInput>((
   ref,
@@ -96,18 +100,20 @@ final historyMonthSummaryProvider =
   );
 
   return logsAsync.when(
-    data: (logs) => AsyncData(
-      HistoryMonthCalculator.compute(
-        logs: logs,
-        fields: fields,
-        hijriYear: input.monthKey.hijriYear,
-        hijriMonth: input.monthKey.hijriMonth,
-        todayStr: todayStr,
-        accountCreatedHijri: accountCreatedHijri,
-        daysInMonth: daysInMonth,
-        locale: input.locale,
-      ),
-    ),
+    data: (logs) {
+      return AsyncData(
+        HistoryMonthCalculator.compute(
+          logs: logs,
+          fields: fields,
+          hijriYear: input.monthKey.hijriYear,
+          hijriMonth: input.monthKey.hijriMonth,
+          todayStr: todayStr,
+          accountCreatedHijri: accountCreatedHijri,
+          daysInMonth: daysInMonth,
+          locale: input.locale,
+        ),
+      );
+    },
     loading: () => const AsyncLoading(),
     error: (error, stack) => AsyncError(error, stack),
   );
@@ -252,6 +258,7 @@ final editableDayProvider =
 ///
 /// Excludes backfilled logs (submitted on a different Hijri day) so the
 /// streak only counts genuine daily completions.
+// 🔒 Community streak only — personal amol must never be included, see PERSONAL_AMOL_FEATURE.md
 final liveStreakProvider = FutureProvider.autoDispose<int>((ref) async {
   final user = ref.watch(currentUserProvider).value;
   if (user == null) return 0;

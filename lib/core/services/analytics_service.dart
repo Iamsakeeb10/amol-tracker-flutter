@@ -655,6 +655,143 @@ class AnalyticsService {
     );
   }
 
+  // -- Personal Amol --
+
+  /// Fired when the Personal Amol list screen is opened.
+  Future<void> logPersonalAmolScreenOpened() async {
+    if (!_enabled) return;
+    await _analytics.logEvent(name: 'personal_amol_screen_opened');
+  }
+
+  /// Fired when the create/add sheet is opened.
+  /// [entryPoint] is one of: `home_add`, `list_fab`, `empty_state`, `detail_edit`.
+  Future<void> logPersonalAmolCreateSheetOpened({required String entryPoint}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'personal_amol_create_sheet_opened',
+      parameters: {'entry_point': entryPoint},
+    );
+  }
+
+  /// Fired after a new personal amol is successfully saved.
+  Future<void> logPersonalAmolCreated({
+    required String type,
+    required String frequency,
+    required int target,
+    required int amolCount,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'personal_amol_created',
+      parameters: {
+        'type': type,
+        'frequency': frequency,
+        'target': target,
+        'amol_count': amolCount,
+      },
+    );
+  }
+
+  /// Fired after an existing personal amol is successfully edited.
+  Future<void> logPersonalAmolEdited({
+    required String type,
+    required String frequency,
+    required int fieldsChanged,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'personal_amol_edited',
+      parameters: {
+        'type': type,
+        'frequency': frequency,
+        'fields_changed': fieldsChanged,
+      },
+    );
+  }
+
+  /// Fired when a personal amol is soft-deleted.
+  Future<void> logPersonalAmolDeleted({
+    required String trackingType,
+    required bool hadStreak,
+    required int streakLength,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'personal_amol_deleted',
+      parameters: {
+        'tracking_type': trackingType,
+        'had_streak': hadStreak,
+        'streak_length': streakLength,
+      },
+    );
+  }
+
+  /// Fired when the user hits the free-tier personal amol cap.
+  Future<void> logPersonalAmolCapHit({required int cap}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'personal_amol_cap_hit',
+      parameters: {'cap': cap},
+    );
+  }
+
+  /// Fired (on save) when a personal amol reaches its target for today.
+  Future<void> logPersonalAmolCompleted({
+    required String type,
+    required String frequency,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'personal_amol_completed',
+      parameters: {'type': type, 'frequency': frequency},
+    );
+  }
+
+  /// Fired (on save) when a previously-completed personal amol is uncompleted.
+  Future<void> logPersonalAmolUncompleted({
+    required String type,
+    required String frequency,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'personal_amol_uncompleted',
+      parameters: {'type': type, 'frequency': frequency},
+    );
+  }
+
+  /// Fired when the Save FAB persists staged personal-amol changes.
+  Future<void> logPersonalAmolSaved({required int amolsChanged}) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'personal_amol_saved',
+      parameters: {'amols_changed': amolsChanged},
+    );
+  }
+
+  /// Fired when the detail dialog is opened from the home tile.
+  Future<void> logPersonalAmolDetailOpened({
+    required String type,
+    required int currentStreak,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'personal_amol_detail_opened',
+      parameters: {'type': type, 'current_streak': currentStreak},
+    );
+  }
+
+  /// Fired when a personal amol's streak increases after a save.
+  Future<void> logPersonalAmolStreakExtended({
+    required int streakLength,
+    required String amolType,
+  }) async {
+    if (!_enabled) return;
+    await _analytics.logEvent(
+      name: 'personal_amol_streak_extended',
+      parameters: {'streak_length': streakLength, 'amol_type': amolType},
+    );
+  }
+
   // -- User properties --
   Future<void> updateUserProperties({
     required int currentStreak,

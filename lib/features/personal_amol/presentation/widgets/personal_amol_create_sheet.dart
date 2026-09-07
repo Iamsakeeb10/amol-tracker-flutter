@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -38,7 +41,12 @@ import 'personal_amol_weekday_chips.dart';
 ///    sheet the instant content grows (e.g. weekday chips appearing), so the
 ///    user never has to manually drag the sheet up just to reach the button.
 class PersonalAmolCreateSheet extends ConsumerStatefulWidget {
-  const PersonalAmolCreateSheet({super.key, required this.uid, this.existing});
+  const PersonalAmolCreateSheet({
+    super.key,
+    required this.uid,
+    this.existing,
+    this.entryPoint = 'home_add',
+  });
 
   final String uid;
 
@@ -46,7 +54,15 @@ class PersonalAmolCreateSheet extends ConsumerStatefulWidget {
   /// back to this personal amol instead of creating a new one.
   final PersonalAmolModel? existing;
 
-  static Future<void> show(BuildContext context, {required String uid}) {
+  /// Analytics entry point label. One of: `home_add`, `list_fab`,
+  /// `empty_state`, `detail_edit`.
+  final String entryPoint;
+
+  static Future<void> show(
+    BuildContext context, {
+    required String uid,
+    String entryPoint = 'home_add',
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       // Insert into the ROOT navigator's overlay so the sheet renders above
@@ -55,7 +71,7 @@ class PersonalAmolCreateSheet extends ConsumerStatefulWidget {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => PersonalAmolCreateSheet(uid: uid),
+      builder: (_) => PersonalAmolCreateSheet(uid: uid, entryPoint: entryPoint),
     );
   }
 
@@ -63,6 +79,7 @@ class PersonalAmolCreateSheet extends ConsumerStatefulWidget {
     BuildContext context, {
     required String uid,
     required PersonalAmolModel amol,
+    String entryPoint = 'detail_edit',
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -70,7 +87,11 @@ class PersonalAmolCreateSheet extends ConsumerStatefulWidget {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => PersonalAmolCreateSheet(uid: uid, existing: amol),
+      builder: (_) => PersonalAmolCreateSheet(
+        uid: uid,
+        existing: amol,
+        entryPoint: entryPoint,
+      ),
     );
   }
 
@@ -111,6 +132,12 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
       _type = existing.type;
       _target = existing.type == PersonalAmolType.count ? existing.target : 3;
     }
+    // Track which entry point opened the sheet.
+    unawaited(
+      AnalyticsService.instance.logPersonalAmolCreateSheetOpened(
+        entryPoint: widget.entryPoint,
+      ),
+    );
     // When the name field gains focus the keyboard appears; expand the sheet
     // so the pinned Add button stays visible (and so the keyboard shrink keeps
     // content readable). Auto-collapse back to the initial height on blur so
@@ -186,6 +213,11 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
           backgroundColor: AppColors.danger,
         ),
       );
+      unawaited(
+        AnalyticsService.instance.logPersonalAmolCapHit(
+          cap: AppConstants.kMaxFreePersonalAmol,
+        ),
+      );
       return;
     }
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -196,12 +228,22 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
     final weekdays = _isWeekdays ? _selectedWeekdays.toList() : const <int>[];
     final type = _type;
     final target = _type == PersonalAmolType.count ? _target : 1;
+    final typeLabel = type == PersonalAmolType.count ? 'count' : 'toggle';
+    final freqLabel = _daily ? 'daily' : 'weekdays';
 
     setState(() => _isSaving = true);
     try {
       if (_isEditing && widget.existing != null) {
+        final existing = widget.existing!;
+        // Count which fields the user actually changed.
+        var fieldsChanged = 0;
+        if (name != existing.name) fieldsChanged++;
+        if (_icon != existing.icon) fieldsChanged++;
+        if (type != existing.type) fieldsChanged++;
+        if (target != existing.target) fieldsChanged++;
+        if (frequency != existing.frequency) fieldsChanged++;
         await notifier.updateAmol(
-          widget.existing!.copyWith(
+          existing.copyWith(
             name: name,
             icon: _icon,
             frequency: frequency,
@@ -211,6 +253,13 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
             reminderTime: null,
             type: type,
             target: target,
+          ),
+        );
+        unawaited(
+          AnalyticsService.instance.logPersonalAmolEdited(
+            type: typeLabel,
+            frequency: freqLabel,
+            fieldsChanged: fieldsChanged,
           ),
         );
       } else {
@@ -227,6 +276,17 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
           target: target,
         );
         await notifier.createAmol(amol);
+        // amolCount = the freshly-updated active list length after creation.
+        final amolCount =
+            ref.read(activePersonalAmolProvider(widget.uid)).value?.length ?? 1;
+        unawaited(
+          AnalyticsService.instance.logPersonalAmolCreated(
+            type: typeLabel,
+            frequency: freqLabel,
+            target: target,
+            amolCount: amolCount,
+          ),
+        );
       }
       if (mounted) Navigator.of(context).pop();
     } catch (e) {

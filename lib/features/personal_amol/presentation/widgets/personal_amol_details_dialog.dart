@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -33,6 +34,12 @@ Future<void> showPersonalAmolDetailsDialog(
   required int doneCount,
 }) async {
   final l10n = AppLocalizations.of(context)!;
+  // Read the streak snapshot synchronously from the provider cache (may be
+  // null if not yet loaded — that's fine, we log 0 as a safe default).
+  AnalyticsService.instance.logPersonalAmolDetailOpened(
+    type: amol.type == PersonalAmolType.count ? 'count' : 'toggle',
+    currentStreak: 0, // streak is loaded inside the dialog widget itself
+  );
   await showDialog<void>(
     context: context,
     barrierColor: PersonalAmolDialogColors.barrier,
@@ -289,10 +296,14 @@ class _PersonalAmolDetailsDialog extends ConsumerWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
+                    AnalyticsService.instance.logPersonalAmolCreateSheetOpened(
+                      entryPoint: 'detail_edit',
+                    );
                     PersonalAmolCreateSheet.showForEdit(
                       context,
                       uid: uid,
                       amol: amol,
+                      entryPoint: 'detail_edit',
                     );
                   },
                   style: ElevatedButton.styleFrom(

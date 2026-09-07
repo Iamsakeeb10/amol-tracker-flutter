@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
 
+import '../core/services/analytics_service.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/services/local_storage_service.dart';
 import '../core/utils/personal_amol_schedule.dart';
@@ -235,6 +236,7 @@ class PersonalAmolPendingNotifier
     }
 
     final applied = <String>{};
+    var amolsChanged = 0;
     for (final entry in entries) {
       final amol = amolMap[entry.key];
       if (amol == null || !personalAmolScheduledOn(amol, today)) {
@@ -242,7 +244,8 @@ class PersonalAmolPendingNotifier
         applied.add(entry.key);
         continue;
       }
-      final delta = entry.value - (state.baseline[entry.key] ?? 0);
+      final baseline = state.baseline[entry.key] ?? 0;
+      final delta = entry.value - baseline;
       if (delta == 0) {
         applied.add(entry.key);
         continue;
@@ -256,6 +259,29 @@ class PersonalAmolPendingNotifier
           isToggle: amol.type == PersonalAmolType.toggle,
         );
         applied.add(entry.key);
+        amolsChanged++;
+
+        // Fire completion/uncompletion events based on whether this amol
+        // crossed its target threshold.
+        final target = amol.type == PersonalAmolType.count ? amol.target : 1;
+        final typeLabel = amol.type == PersonalAmolType.count ? 'count' : 'toggle';
+        final freqLabel = amol.frequency == PersonalAmolFrequency.daily
+            ? 'daily'
+            : 'weekdays';
+        final wasComplete = baseline >= target;
+        final isComplete = entry.value >= target;
+        if (!wasComplete && isComplete) {
+          AnalyticsService.instance.logPersonalAmolCompleted(
+            type: typeLabel,
+            frequency: freqLabel,
+          );
+        } else if (wasComplete && !isComplete) {
+          AnalyticsService.instance.logPersonalAmolUncompleted(
+            type: typeLabel,
+            frequency: freqLabel,
+          );
+        }
+
         // Streak is best-effort; never let a streak read/write failure block
         // or revert the already-persisted completion delta.
         try {
@@ -270,6 +296,12 @@ class PersonalAmolPendingNotifier
     }
     if (applied.isNotEmpty) {
       _ref.read(personalAmolRefreshProvider.notifier).bump();
+    }
+    // Fire a single 'saved' event for the whole batch.
+    if (amolsChanged > 0) {
+      AnalyticsService.instance.logPersonalAmolSaved(
+        amolsChanged: amolsChanged,
+      );
     }
     // Drop applied/stale entries, keep anything that failed for a retry.
     final remaining = Map<String, int>.from(state.staged)

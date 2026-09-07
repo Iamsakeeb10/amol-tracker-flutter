@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -27,6 +28,12 @@ class PersonalAmolListScreen extends ConsumerStatefulWidget {
 class _PersonalAmolListScreenState
     extends ConsumerState<PersonalAmolListScreen> {
   final Set<String> _dismissedIds = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.instance.logPersonalAmolScreenOpened();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,8 +77,15 @@ class _PersonalAmolListScreenState
                     backgroundColor: AppColors.warning,
                   ),
                 );
+                AnalyticsService.instance.logPersonalAmolCapHit(
+                  cap: AppConstants.kMaxFreePersonalAmol,
+                );
               }
-: () => PersonalAmolCreateSheet.show(context, uid: uid),
+            : () => PersonalAmolCreateSheet.show(
+                context,
+                uid: uid,
+                entryPoint: 'list_fab',
+              ),
         backgroundColor: AppColors.gold,
         foregroundColor: AppColors.emeraldDeep,
         shape: const CircleBorder(),
@@ -152,9 +166,24 @@ class _PersonalAmolListScreenState
       confirmDismiss: (_) => _confirmDelete(context, l10n),
       onDismissed: (_) async {
         setState(() => _dismissedIds.add(amol.id));
+        // Read streak before deleting so we can include it in analytics.
+        final streakVal = ref
+            .read(
+              personalAmolStreakProvider(
+                PersonalAmolStreakKey(uid: uid, amolId: amol.id),
+              ),
+            )
+            .value
+            ?.currentStreak ??
+            0;
         await ref
             .read(personalAmolNotifierProvider(uid).notifier)
             .softDeleteAmol(amol.id);
+        AnalyticsService.instance.logPersonalAmolDeleted(
+          trackingType: amol.type == PersonalAmolType.count ? 'count' : 'toggle',
+          hadStreak: streakVal > 0,
+          streakLength: streakVal,
+        );
       },
       child: PersonalAmolTile(
         uid: uid,
@@ -211,10 +240,24 @@ class _PersonalAmolListScreenState
   ) async {
     final confirmed = await _confirmDelete(context, l10n);
     if (!confirmed) return;
+    final streakVal = ref
+        .read(
+          personalAmolStreakProvider(
+            PersonalAmolStreakKey(uid: uid, amolId: amol.id),
+          ),
+        )
+        .value
+        ?.currentStreak ??
+        0;
     setState(() => _dismissedIds.add(amol.id));
     await ref
         .read(personalAmolNotifierProvider(uid).notifier)
         .softDeleteAmol(amol.id);
+    AnalyticsService.instance.logPersonalAmolDeleted(
+      trackingType: amol.type == PersonalAmolType.count ? 'count' : 'toggle',
+      hadStreak: streakVal > 0,
+      streakLength: streakVal,
+    );
   }
 
   Widget _buildShimmer(BuildContext context) {

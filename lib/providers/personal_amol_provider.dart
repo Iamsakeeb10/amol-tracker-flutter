@@ -6,6 +6,7 @@ import 'package:hijri/hijri_calendar.dart';
 import 'package:riverpod/legacy.dart';
 
 import '../core/constants/app_constants.dart';
+import '../core/services/analytics_service.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/services/notification_service.dart';
 import '../core/services/personal_amol_repository.dart';
@@ -314,6 +315,14 @@ class PersonalAmolNotifier extends StateNotifier<Map<String, PersonalAmolModel>>
       currentStreak: current,
       bestStreak: best,
     );
+    // Track streak growth for analytics.
+    if (current > prev) {
+      final amolType = amol?.type == PersonalAmolType.count ? 'count' : 'toggle';
+      AnalyticsService.instance.logPersonalAmolStreakExtended(
+        streakLength: current,
+        amolType: amolType,
+      );
+    }
   }
 
   int _slotFor(String amolId) {

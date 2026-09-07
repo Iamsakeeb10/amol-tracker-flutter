@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/router/routes.dart';
+import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -66,7 +67,16 @@ class PersonalAmolSection extends ConsumerWidget {
             };
             if (amols.isEmpty) {
               return PersonalAmolEmptyState(
-                onAdd: () => PersonalAmolCreateSheet.show(context, uid: uid),
+                onAdd: () {
+                  AnalyticsService.instance.logPersonalAmolCreateSheetOpened(
+                    entryPoint: 'empty_state',
+                  );
+                  PersonalAmolCreateSheet.show(
+                    context,
+                    uid: uid,
+                    entryPoint: 'empty_state',
+                  );
+                },
               );
             }
             final due = amols.where(personalAmolScheduledToday).toList();
@@ -134,12 +144,24 @@ class PersonalAmolSection extends ConsumerWidget {
         ),
         _headerIconButton(
           icon: Icons.format_list_bulleted_rounded,
-          onTap: () => context.push(AppRoutes.personalAmolList),
+          onTap: () {
+            AnalyticsService.instance.logPersonalAmolScreenOpened();
+            context.push(AppRoutes.personalAmolList);
+          },
         ),
         SizedBox(width: 10.w),
         _headerIconButton(
           icon: Icons.add,
-          onTap: () => PersonalAmolCreateSheet.show(context, uid: uid),
+          onTap: () {
+            AnalyticsService.instance.logPersonalAmolCreateSheetOpened(
+              entryPoint: 'home_add',
+            );
+            PersonalAmolCreateSheet.show(
+              context,
+              uid: uid,
+              entryPoint: 'home_add',
+            );
+          },
         ),
       ],
     );

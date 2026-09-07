@@ -149,18 +149,30 @@ class PersonalAmolSection extends ConsumerWidget {
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36.r,
-        height: 36.r,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.cardDark,
+    // Use a 44×44 tap target (WCAG minimum) with centred visual content.
+    // Material + InkWell gives ripple feedback inside the clipped area.
+    return SizedBox(
+      width: 44.r,
+      height: 44.r,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: AppColors.cardBorder),
+          child: Center(
+            child: Container(
+              width: 36.r,
+              height: 36.r,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.cardDark,
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              child: Icon(icon, color: AppColors.gold, size: 22.r),
+            ),
+          ),
         ),
-        child: Icon(icon, color: AppColors.gold, size: 22.r),
       ),
     );
   }

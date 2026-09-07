@@ -319,21 +319,26 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
                                 style: AppTextStyles.headlineMedium(context),
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () => Navigator.of(context).pop(),
-                              child: Container(
-                                width: 36.r,
-                                height: 36.r,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: AppColors.cardDark,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: AppColors.cardBorder),
-                                ),
-                                child: Icon(
-                                  Icons.close,
-                                  color: AppColors.textSecondary,
-                                  size: 20.r,
+                            // 36r visual + 6r padding on each side = ~48r tap target
+                            Padding(
+                              padding: EdgeInsets.all(6.r),
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => Navigator.of(context).pop(),
+                                child: Container(
+                                  width: 36.r,
+                                  height: 36.r,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.cardDark,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: AppColors.cardBorder),
+                                  ),
+                                  child: Icon(
+                                    Icons.close,
+                                    color: AppColors.textSecondary,
+                                    size: 20.r,
+                                  ),
                                 ),
                               ),
                             ),

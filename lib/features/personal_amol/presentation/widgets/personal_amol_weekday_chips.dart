@@ -57,12 +57,15 @@ class PersonalAmolWeekdayChips extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOut,
         width: 44.w,
-        padding: EdgeInsets.symmetric(vertical: 7.h),
+        // Minimum 44h effective tap target; symmetric padding contributes
+        // to the touchable area on top and bottom of the chip text.
+        padding: EdgeInsets.symmetric(vertical: 10.h),
         decoration: BoxDecoration(
           color: selected ? AppColors.gold : AppColors.cardDark,
           borderRadius: BorderRadius.circular(10.r),

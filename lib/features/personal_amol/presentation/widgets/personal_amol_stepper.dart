@@ -96,26 +96,33 @@ class PersonalAmolStepper extends StatelessWidget {
     required bool onFilled,
   }) {
     final active = enabled ? onTap : onTapAtLimit;
-    return GestureDetector(
-      // Claim the tap even when disabled so it never falls through to the
-      // card's onTap (details dialog); show the limit snackbar instead.
-      onTap: active,
-      child: Container(
-        width: 28.w,
-        height: 28.h,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: onFilled
-              ? AppColors.emeraldDeep.withValues(alpha: 0.14)
-              : AppColors.cardBorder,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          icon,
-          size: 15.r,
-          color: enabled
-              ? (onFilled ? AppColors.emeraldDeep : AppColors.gold)
-              : AppColors.textMuted,
+    // Wrap in extra padding so the tap area is always at least 44×44 even
+    // though the visual button is compact. HitTestBehavior.opaque ensures
+    // the transparent padding area registers taps correctly.
+    return Padding(
+      padding: EdgeInsets.all(6.r),
+      child: GestureDetector(
+        // Claim the tap even when disabled so it never falls through to the
+        // card's onTap (details dialog); show the limit snackbar instead.
+        behavior: HitTestBehavior.opaque,
+        onTap: active,
+        child: Container(
+          width: 30.w,
+          height: 30.h,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: onFilled
+                ? AppColors.emeraldDeep.withValues(alpha: 0.14)
+                : AppColors.cardBorder,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            size: 15.r,
+            color: enabled
+                ? (onFilled ? AppColors.emeraldDeep : AppColors.gold)
+                : AppColors.textMuted,
+          ),
         ),
       ),
     );

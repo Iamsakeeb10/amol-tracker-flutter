@@ -94,10 +94,11 @@ class PersonalAmolTargetStepper extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: enabled ? onTap : null,
       child: Container(
-        width: 40.w,
-        height: 40.h,
+        width: 44.w,
+        height: 44.h,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: AppColors.cardBorder,

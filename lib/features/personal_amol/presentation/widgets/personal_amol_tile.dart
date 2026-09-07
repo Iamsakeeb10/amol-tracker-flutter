@@ -153,32 +153,33 @@ class PersonalAmolTile extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (onEdit != null)
-                    SizedBox(
-                      width: 40.w,
-                      height: 40.h,
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: Icon(
-                          Icons.edit_outlined,
-                          color: AppColors.gold,
-                          size: 20.r,
-                        ),
-                        onPressed: onEdit,
+                    IconButton(
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        color: AppColors.gold,
+                        size: 20.r,
                       ),
+                      // Minimum 44×44 tap target — no padding: zero
+                      padding: EdgeInsets.all(10.r),
+                      constraints: BoxConstraints(
+                        minWidth: 44.r,
+                        minHeight: 44.r,
+                      ),
+                      onPressed: onEdit,
                     ),
                   if (onDelete != null)
-                    SizedBox(
-                      width: 40.w,
-                      height: 40.h,
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: Icon(
-                          Icons.delete_outline,
-                          color: AppColors.danger,
-                          size: 20.r,
-                        ),
-                        onPressed: onDelete,
+                    IconButton(
+                      icon: Icon(
+                        Icons.delete_outline,
+                        color: AppColors.danger,
+                        size: 20.r,
                       ),
+                      padding: EdgeInsets.all(10.r),
+                      constraints: BoxConstraints(
+                        minWidth: 44.r,
+                        minHeight: 44.r,
+                      ),
+                      onPressed: onDelete,
                     ),
                 ],
               )

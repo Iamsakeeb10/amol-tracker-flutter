@@ -80,6 +80,23 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
   bool get _isWeekdays => !_daily;
 
   @override
+  void initState() {
+    super.initState();
+    // When the name field gains focus the keyboard appears; expand the sheet
+    // so the pinned Add button stays visible (and so the keyboard shrink keeps
+    // content readable). Auto-collapse back to the initial height on blur so
+    // the sheet returns to its normal state once the keyboard dismisses.
+    _nameFocusNode.addListener(() {
+      if (!mounted) return;
+      if (_nameFocusNode.hasFocus) {
+        _expandSheetIfNeeded();
+      } else {
+        _rebuildToInitialHeight();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _nameFocusNode.dispose();
@@ -100,6 +117,18 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
       duration: const Duration(milliseconds: 260),
       curve: Curves.easeOutCubic,
     );
+  }
+
+  /// Returns the sheet to its default resting height when the keyboard closes.
+  void _rebuildToInitialHeight() {
+    if (!_sheetController.isAttached) return;
+    if (_sheetController.size > _initialChildSize) {
+      _sheetController.animateTo(
+        _initialChildSize,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+      );
+    }
   }
 
   void _onSelectDaily() {
@@ -208,27 +237,25 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
                 ),
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  // Always-bounded ScrollPhysics so the sheet is scrollable
-                  // from the first frame, not just once content overflows.
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: ClampingScrollPhysics(),
-                  ),
-                  padding: EdgeInsets.fromLTRB(
-                    20.w,
-                    16.h,
-                    20.w,
-                    // Keyboard-aware bottom padding lives on the scroll
-                    // content, not on the sheet itself — so the sheet's
-                    // fractional height stays stable and only the content
-                    // scrolls up to clear the keyboard. Also pad for the
-                    // device bottom safe area so the Add button always has
-                    // breathing room above a gesture bar / soft nav.
-                    16.h + bottomInset + (bottomInset == 0 ? bottomSafeArea : 0),
-                  ),
-                  child: Form(
-                    key: _formKey,
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    // Always-bounded ScrollPhysics so the sheet is scrollable
+                    // from the first frame, not just once content overflows.
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: ClampingScrollPhysics(),
+                    ),
+                    padding: EdgeInsets.fromLTRB(
+                      20.w,
+                      16.h,
+                      20.w,
+                      // Keyboard-aware bottom padding lives on the scroll
+                      // content, not on the sheet itself — so the sheet's
+                      // fractional height stays stable and only the content
+                      // scrolls up to clear the keyboard.
+                      16.h + bottomInset + (bottomInset == 0 ? bottomSafeArea : 0),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -376,45 +403,61 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
                           ),
                         ],
                         SizedBox(height: 24.h),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50.h,
-                          child: ElevatedButton.icon(
-                            onPressed: _isSaving || atCap ? null : _save,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.gold,
-                              foregroundColor: AppColors.emeraldDeep,
-                              disabledBackgroundColor: AppColors.cardBorder,
-                              disabledForegroundColor: AppColors.textHint,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14.r),
-                              ),
-                            ),
-                            icon: _isSaving
-                                ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: AppColors.emeraldDeep,
-                                    ),
-                                  )
-                                : Icon(Icons.add_rounded, size: 16.r),
-                            label: _isSaving
-                                ? const SizedBox.shrink()
-                                : Text(
-                                    l10n.personalAmolAddLabel,
-                                    style: AppTextStyles.button(context).copyWith(
-                                      color: AppColors.emeraldDeep,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
                       ],
                     ),
+                  ),
+                ),
+              ),
+              // Fixed footer — stays pinned to the bottom of the sheet no
+              // matter how tall it is or how the content scrolls. It lives
+              // inside the Form so field validation still applies.
+              Container(
+                padding: EdgeInsets.fromLTRB(
+                  20.w,
+                  12.h,
+                  20.w,
+                  // Keep the button floating above the on-screen keyboard
+                  // (bottomInset = keyboard height when open) and clear the
+                  // device bottom safe area otherwise.
+                  12.h + bottomInset + (bottomInset == 0 ? bottomSafeArea : 0),
+                ),
+                decoration: const BoxDecoration(
+                  color: AppColors.emeraldMid,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50.h,
+                  child: ElevatedButton.icon(
+                    onPressed: _isSaving || atCap ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.gold,
+                      foregroundColor: AppColors.emeraldDeep,
+                      disabledBackgroundColor: AppColors.cardBorder,
+                      disabledForegroundColor: AppColors.textHint,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                    ),
+                    icon: _isSaving
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: AppColors.emeraldDeep,
+                            ),
+                          )
+                        : Icon(Icons.add_rounded, size: 16.r),
+                    label: _isSaving
+                        ? const SizedBox.shrink()
+                        : Text(
+                            l10n.personalAmolAddLabel,
+                            style: AppTextStyles.button(context).copyWith(
+                              color: AppColors.emeraldDeep,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ),

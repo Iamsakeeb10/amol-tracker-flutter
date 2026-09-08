@@ -6,6 +6,7 @@ import 'package:riverpod/legacy.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/utils/personal_amol_schedule.dart';
 import '../models/personal_amol_model.dart';
+import 'personal_amol_home_lock_provider.dart';
 import 'personal_amol_pending_provider.dart';
 import 'personal_amol_provider.dart';
 
@@ -181,6 +182,16 @@ class PersonalAmolDatePendingNotifier
       baseline: nextBaseline,
       isSaving: false,
     );
+    // After a clean save for today, lock home personal tiles (independent of
+    // community submit). Past-day saves must not touch today's lock.
+    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+    if (_hijriDate == today && !state.dirty) {
+      await markPersonalAmolHomeLocked(
+        _ref,
+        uid: _uid,
+        hijriDate: today,
+      );
+    }
     return wroteAny;
   }
 }

@@ -397,7 +397,6 @@ class _HomeScrollBodyState extends ConsumerState<HomeScrollBody> {
                           SliverToBoxAdapter(child: SizedBox(height: 20.h)),
                           ...buildPersonalAmolSlivers(
                             uid: widget.uid,
-                            readOnly: widget.isSubmitted,
                             ref: ref,
                             context: context,
                           ),

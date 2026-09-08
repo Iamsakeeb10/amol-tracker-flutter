@@ -961,6 +961,29 @@ class AppLocalizationsBn extends AppLocalizations {
   String get todaysAmal => 'আজকের আমল';
 
   @override
+  String get communityAmolInfoTitle => 'আজকের আমল কীভাবে কাজ করে';
+
+  @override
+  String get communityAmolInfoBody1 =>
+      'এগুলো কমিউনিটি আমল। সম্পন্ন করলে স্কোর, স্ট্রিক ও লিডারবোর্ডে যোগ হয়।';
+
+  @override
+  String get communityAmolInfoBody2 =>
+      'সুইচ বা গণনা দিয়ে চিহ্নিত করে সেভ করুন। সেভের পর তালিকা শুধু পড়া যাবে।';
+
+  @override
+  String get communityAmolInfoBody3 =>
+      'কিছু বদলাতে চাইলে পেন্সিল আইকনে ট্যাপ করে আজকের আমল এডিট করুন।';
+
+  @override
+  String get communityAmolInfoBody4 =>
+      'অগ্রগতি দেখতে হিস্টোরি, মাই রিপোর্ট বা মাই প্রোফাইলে যান।';
+
+  @override
+  String get communityAmolInfoBody5 =>
+      'আগের কোনো দিনে ভুল হলে বা আমল দিতে ভুলে গেলে হিস্টোরি থেকে সেই তারিখে ট্যাপ করে এডিট করতে পারবেন।';
+
+  @override
   String amalOnDate(Object date) {
     return '$date তারিখের আমল';
   }
@@ -3306,6 +3329,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get personalAmolSaved => 'ব্যক্তিগত আমল সংরক্ষণ করা হয়েছে ✓';
+
+  @override
+  String get personalAmolEditToday => 'আজকের ব্যক্তিগত আমল এডিট করুন';
 
   @override
   String get personalAmolReminderLabel => 'দৈনিক রিমাইন্ডার';

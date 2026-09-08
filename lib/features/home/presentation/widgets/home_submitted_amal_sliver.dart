@@ -10,6 +10,7 @@ import '../../../../models/amal_log_model.dart';
 import '../../../../shared/widgets/card_container.dart';
 import 'home_amal_details_dialog.dart';
 import 'home_amal_fields_sliver.dart';
+import 'home_community_amol_info_dialog.dart';
 import 'home_widgets.dart';
 import '../../../../core/utils/amal_entry_policy.dart';
 import '../../../../models/user_model.dart';
@@ -82,6 +83,12 @@ List<Widget> buildHomeSubmittedAmalSlivers({
               style: AppTextStyles.headlineMedium(context),
             ),
           ),
+          HomeSubmittedAmalIconButton(
+            icon: Icons.info_outline_rounded,
+            tooltip: l10n.communityAmolInfoTitle,
+            onPressed: () => showCommunityAmolInfoDialog(context),
+          ),
+          SizedBox(width: 8.w),
           HomeSubmittedAmalIconButton(
             icon: Icons.check_circle,
             tooltip: l10n.markAllDone,

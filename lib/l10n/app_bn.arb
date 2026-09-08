@@ -459,6 +459,12 @@
   "communityMember": "কমিউনিটি মেম্বার",
   "selected": "সিলেক্টেড",
   "todaysAmal": "আজকের আমল",
+  "communityAmolInfoTitle": "আজকের আমল কীভাবে কাজ করে",
+  "communityAmolInfoBody1": "এগুলো কমিউনিটি আমল। সম্পন্ন করলে স্কোর, স্ট্রিক ও লিডারবোর্ডে যোগ হয়।",
+  "communityAmolInfoBody2": "সুইচ বা গণনা দিয়ে চিহ্নিত করে সেভ করুন। সেভের পর তালিকা শুধু পড়া যাবে।",
+  "communityAmolInfoBody3": "কিছু বদলাতে চাইলে পেন্সিল আইকনে ট্যাপ করে আজকের আমল এডিট করুন।",
+  "communityAmolInfoBody4": "অগ্রগতি দেখতে হিস্টোরি, মাই রিপোর্ট বা মাই প্রোফাইলে যান।",
+  "communityAmolInfoBody5": "আগের কোনো দিনে ভুল হলে বা আমল দিতে ভুলে গেলে হিস্টোরি থেকে সেই তারিখে ট্যাপ করে এডিট করতে পারবেন।",
   "amalOnDate": "{date} তারিখের আমল",
   "@amalOnDate": {
     "placeholders": {
@@ -1553,6 +1559,7 @@
   "personalAmolEmptyProfile": "এখনো কোনো ব্যক্তিগত আমল নেই",
   "personalAmolLoadFailed": "এখন ব্যক্তিগত আমল লোড করা যায়নি।",
   "personalAmolSaved": "ব্যক্তিগত আমল সংরক্ষণ করা হয়েছে ✓",
+  "personalAmolEditToday": "আজকের ব্যক্তিগত আমল এডিট করুন",
   "personalAmolReminderLabel": "দৈনিক রিমাইন্ডার",
   "personalAmolReminderOff": "সেট করুন",
   "personalAmolReminderTitle": "{amolName} আমল-এর কথা মনে করিয়ে দিলাম",

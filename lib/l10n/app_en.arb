@@ -457,6 +457,12 @@
   "communityMember": "Community member",
   "selected": "Selected",
   "todaysAmal": "Today's amal",
+  "communityAmolInfoTitle": "How Today's Amol works",
+  "communityAmolInfoBody1": "These are shared community amols. Completing them adds to your score, streak, and leaderboard.",
+  "communityAmolInfoBody2": "Turn switches on or fill counts, then tap Save. After save, the list becomes read-only.",
+  "communityAmolInfoBody3": "Need to change something? Tap the pencil to edit today's amol.",
+  "communityAmolInfoBody4": "Check History, My Report, or My Profile anytime to see your progress.",
+  "communityAmolInfoBody5": "Made a mistake or forgot to submit amol on a previous day? Open History, tap that date, and edit from there.",
   "amalOnDate": "Amal on {date}",
   "@amalOnDate": {
     "placeholders": {
@@ -1614,6 +1620,7 @@
   "personalAmolEmptyProfile": "No personal amol yet",
   "personalAmolLoadFailed": "Could not load personal amol right now.",
   "personalAmolSaved": "Personal amol saved ✓",
+  "personalAmolEditToday": "Edit today's personal amol",
   "personalAmolReminderLabel": "Daily reminder",
   "personalAmolReminderOff": "Set",
   "personalAmolReminderTitle": "Just a reminder about {amolName} amol",

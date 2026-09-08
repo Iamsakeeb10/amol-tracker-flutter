@@ -958,6 +958,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todaysAmal => 'Today\'s amal';
 
   @override
+  String get communityAmolInfoTitle => 'How Today\'s Amol works';
+
+  @override
+  String get communityAmolInfoBody1 =>
+      'These are shared community amols. Completing them adds to your score, streak, and leaderboard.';
+
+  @override
+  String get communityAmolInfoBody2 =>
+      'Turn switches on or fill counts, then tap Save. After save, the list becomes read-only.';
+
+  @override
+  String get communityAmolInfoBody3 =>
+      'Need to change something? Tap the pencil to edit today\'s amol.';
+
+  @override
+  String get communityAmolInfoBody4 =>
+      'Check History, My Report, or My Profile anytime to see your progress.';
+
+  @override
+  String get communityAmolInfoBody5 =>
+      'Made a mistake or forgot to submit amol on a previous day? Open History, tap that date, and edit from there.';
+
+  @override
   String amalOnDate(Object date) {
     return 'Amal on $date';
   }
@@ -3299,6 +3322,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get personalAmolSaved => 'Personal amol saved ✓';
+
+  @override
+  String get personalAmolEditToday => 'Edit today\'s personal amol';
 
   @override
   String get personalAmolReminderLabel => 'Daily reminder';

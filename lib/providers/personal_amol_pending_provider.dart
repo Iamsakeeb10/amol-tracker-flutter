@@ -9,6 +9,7 @@ import '../core/services/local_storage_service.dart';
 import '../core/utils/personal_amol_schedule.dart';
 import '../models/personal_amol_model.dart';
 import 'date_provider.dart';
+import 'personal_amol_home_lock_provider.dart';
 import 'personal_amol_provider.dart';
 
 /// Staged (unsaved) personal-amol edits for today.
@@ -217,6 +218,9 @@ class PersonalAmolPendingNotifier
     LocalStorageService.deleteLog(_draftKeyFor(_date));
     _date = next;
     state = const PersonalAmolPendingState();
+    unawaited(clearPersonalAmolHomeLockIfStale(_uid, next));
+    // Ensure home lock listeners rebuild for the new day.
+    _ref.read(personalAmolHomeLockRevisionProvider(_uid).notifier).bump();
   }
 
   /// Persists all staged edits for today in batched Firestore writes, then
@@ -324,6 +328,12 @@ class PersonalAmolPendingNotifier
       await _persistDraft();
     } else {
       await LocalStorageService.deleteLog(_draftKey);
+      // All staged edits applied — lock home personal tiles for today.
+      await markPersonalAmolHomeLocked(
+        _ref,
+        uid: _uid,
+        hijriDate: today,
+      );
     }
   }
 

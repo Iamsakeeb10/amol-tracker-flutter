@@ -11,6 +11,7 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/personal_amol_schedule.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/personal_amol_model.dart';
+import '../../../../providers/personal_amol_home_lock_provider.dart';
 import '../../../../providers/personal_amol_pending_provider.dart';
 import '../../../../providers/personal_amol_provider.dart';
 import 'personal_amol_create_sheet.dart';
@@ -30,11 +31,11 @@ import 'personal_amol_tile.dart';
 /// per-tap writes, and never into the community score, streak, or leaderboard.
 List<Widget> buildPersonalAmolSlivers({
   required String uid,
-  required bool readOnly,
   required WidgetRef ref,
   required BuildContext context,
 }) {
   final l10n = AppLocalizations.of(context)!;
+  final readOnly = ref.watch(personalAmolHomeLockedProvider(uid));
   final amolAsync = ref.watch(activePersonalAmolProvider(uid));
   final completionsAsync = ref.watch(
     personalAmolCompletionsForTodayProvider(uid),
@@ -47,7 +48,11 @@ List<Widget> buildPersonalAmolSlivers({
 
   final slivers = <Widget>[
     SliverToBoxAdapter(
-      child: _PersonalAmolHeader(uid: uid, l10n: l10n),
+      child: _PersonalAmolHeader(
+        uid: uid,
+        l10n: l10n,
+        showEdit: readOnly,
+      ),
     ),
     // Match the previous Column gap under the header.
     SliverToBoxAdapter(child: SizedBox(height: 12.h)),
@@ -161,17 +166,19 @@ List<Widget> buildPersonalAmolSlivers({
   );
 }
 
-class _PersonalAmolHeader extends StatelessWidget {
+class _PersonalAmolHeader extends ConsumerWidget {
   const _PersonalAmolHeader({
     required this.uid,
     required this.l10n,
+    required this.showEdit,
   });
 
   final String uid;
   final AppLocalizations l10n;
+  final bool showEdit;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
         Expanded(
@@ -180,6 +187,14 @@ class _PersonalAmolHeader extends StatelessWidget {
             style: AppTextStyles.headlineMedium(context),
           ),
         ),
+        if (showEdit) ...[
+          _headerIconButton(
+            icon: Icons.edit_outlined,
+            tooltip: l10n.personalAmolEditToday,
+            onTap: () => unlockPersonalAmolHome(ref, uid),
+          ),
+          SizedBox(width: 10.w),
+        ],
         _headerIconButton(
           icon: Icons.info_outline_rounded,
           onTap: () => showPersonalAmolInfoDialog(context),
@@ -213,10 +228,11 @@ class _PersonalAmolHeader extends StatelessWidget {
   Widget _headerIconButton({
     required IconData icon,
     required VoidCallback onTap,
+    String? tooltip,
   }) {
     // Use a 44×44 tap target (WCAG minimum) with centred visual content.
     // Material + InkWell gives ripple feedback inside the clipped area.
-    return SizedBox(
+    final button = SizedBox(
       width: 44.r,
       height: 44.r,
       child: Material(
@@ -240,6 +256,8 @@ class _PersonalAmolHeader extends StatelessWidget {
         ),
       ),
     );
+    if (tooltip == null) return button;
+    return Tooltip(message: tooltip, child: button);
   }
 }
 

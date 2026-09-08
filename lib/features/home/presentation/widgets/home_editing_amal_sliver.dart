@@ -11,6 +11,7 @@ import '../../../../providers/amal_provider.dart';
 import 'home_amal_details_dialog.dart';
 import 'home_amal_fields_sliver.dart';
 import 'home_amal_loading_shimmer.dart';
+import 'home_community_amol_info_dialog.dart';
 import 'home_widgets.dart';
 
 List<Widget> buildHomeEditingAmalSlivers({
@@ -37,6 +38,12 @@ List<Widget> buildHomeEditingAmalSlivers({
               style: AppTextStyles.headlineMedium(context),
             ),
           ),
+          HomeSubmittedAmalIconButton(
+            icon: Icons.info_outline_rounded,
+            tooltip: l10n.communityAmolInfoTitle,
+            onPressed: () => showCommunityAmolInfoDialog(context),
+          ),
+          SizedBox(width: 8.w),
           OutlinedButton.icon(
             onPressed: isAmalLoading
                 ? null

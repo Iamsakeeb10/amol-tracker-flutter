@@ -1826,6 +1826,42 @@ abstract class AppLocalizations {
   /// **'Today\'s amal'**
   String get todaysAmal;
 
+  /// No description provided for @communityAmolInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How Today\'s Amol works'**
+  String get communityAmolInfoTitle;
+
+  /// No description provided for @communityAmolInfoBody1.
+  ///
+  /// In en, this message translates to:
+  /// **'These are shared community amols. Completing them adds to your score, streak, and leaderboard.'**
+  String get communityAmolInfoBody1;
+
+  /// No description provided for @communityAmolInfoBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn switches on or fill counts, then tap Save. After save, the list becomes read-only.'**
+  String get communityAmolInfoBody2;
+
+  /// No description provided for @communityAmolInfoBody3.
+  ///
+  /// In en, this message translates to:
+  /// **'Need to change something? Tap the pencil to edit today\'s amol.'**
+  String get communityAmolInfoBody3;
+
+  /// No description provided for @communityAmolInfoBody4.
+  ///
+  /// In en, this message translates to:
+  /// **'Check History, My Report, or My Profile anytime to see your progress.'**
+  String get communityAmolInfoBody4;
+
+  /// No description provided for @communityAmolInfoBody5.
+  ///
+  /// In en, this message translates to:
+  /// **'Made a mistake or forgot to submit amol on a previous day? Open History, tap that date, and edit from there.'**
+  String get communityAmolInfoBody5;
+
   /// No description provided for @amalOnDate.
   ///
   /// In en, this message translates to:
@@ -6150,6 +6186,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Personal amol saved ✓'**
   String get personalAmolSaved;
+
+  /// No description provided for @personalAmolEditToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit today\'s personal amol'**
+  String get personalAmolEditToday;
 
   /// No description provided for @personalAmolReminderLabel.
   ///

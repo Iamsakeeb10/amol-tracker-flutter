@@ -30,24 +30,31 @@ import '../../../personal_amol/presentation/widgets/personal_amol_day_detail_sec
 /// Combined edit screen shown when the user presses the pencil icon on the
 /// home screen after submitting today's amol.
 ///
-/// Mirrors [EditAmalScreen] for community amol, then appends the personal amol
-/// section ([PersonalAmolDayDetailSection]) below with its own inline save
-/// button. The two sections save independently so a failure in one does not
-/// affect the other.
+/// Mirrors [EditAmalScreen] for community amol. When [showPersonalSection] is
+/// true, appends the personal amol section ([PersonalAmolDayDetailSection])
+/// below. Home's community pencil passes `false` so only community fields are
+/// editable; personal has its own pencil and edit route.
 ///
-/// Personal amol completions are never written to the community score,
-/// streak, or leaderboard — they persist to the user-private subcollection.
+/// The two sections save independently so a failure in one does not affect
+/// the other. Personal amol completions are never written to the community
+/// score, streak, or leaderboard — they persist to the user-private
+/// subcollection.
 class EditTodayAmolScreen extends ConsumerStatefulWidget {
   const EditTodayAmolScreen({
     super.key,
     required this.uid,
     required this.todayHijri,
     required this.existingLog,
+    this.showPersonalSection = true,
   });
 
   final String uid;
   final String todayHijri;
   final AmalLogModel existingLog;
+
+  /// When false, only the community amol section is shown (home community
+  /// pencil). When true, personal amol is appended below (legacy combined).
+  final bool showPersonalSection;
 
   @override
   ConsumerState<EditTodayAmolScreen> createState() =>
@@ -178,12 +185,17 @@ class _EditTodayAmolScreenState extends ConsumerState<EditTodayAmolScreen> {
     final user = ref.read(currentUserProvider).asData?.value;
     if (user == null) return;
 
-    final personalKey = PersonalAmolDateEditKey(
-      uid: widget.uid,
-      hijriDate: widget.todayHijri,
-    );
-    final pending = ref.read(personalAmolDatePendingProvider(personalKey));
-    final isPersonalDirty = pending.dirty;
+    final showPersonal = widget.showPersonalSection;
+    var isPersonalDirty = false;
+    PersonalAmolDateEditKey? personalKey;
+    if (showPersonal) {
+      personalKey = PersonalAmolDateEditKey(
+        uid: widget.uid,
+        hijriDate: widget.todayHijri,
+      );
+      isPersonalDirty =
+          ref.read(personalAmolDatePendingProvider(personalKey)).dirty;
+    }
     final isCommunityDirty = _computeCommunityDirty(activeFields);
 
     if (!isPersonalDirty && !isCommunityDirty) return;
@@ -206,7 +218,7 @@ class _EditTodayAmolScreenState extends ConsumerState<EditTodayAmolScreen> {
     });
 
     try {
-      if (isPersonalDirty) {
+      if (isPersonalDirty && personalKey != null) {
         await ref
             .read(personalAmolDatePendingProvider(personalKey).notifier)
             .save();
@@ -379,10 +391,12 @@ class _EditTodayAmolScreenState extends ConsumerState<EditTodayAmolScreen> {
       uid: widget.uid,
       hijriDate: widget.todayHijri,
     );
-    final personalPending = ref.watch(
-      personalAmolDatePendingProvider(personalKey),
-    );
-    final isPersonalDirty = personalPending.dirty;
+    final isPersonalDirty = widget.showPersonalSection
+        ? ref.watch(personalAmolDatePendingProvider(personalKey)).dirty
+        : false;
+    final personalIsSaving = widget.showPersonalSection
+        ? ref.watch(personalAmolDatePendingProvider(personalKey)).isSaving
+        : false;
     final isCommunityDirty = _computeCommunityDirty(activeFields);
     final canSave = isCommunityDirty || isPersonalDirty;
 
@@ -414,7 +428,7 @@ class _EditTodayAmolScreenState extends ConsumerState<EditTodayAmolScreen> {
             width: double.infinity,
             height: 50.h,
             child: ElevatedButton(
-              onPressed: (_isSaving || personalPending.isSaving || !canSave)
+              onPressed: (_isSaving || personalIsSaving || !canSave)
                   ? null
                   : () => _saveAll(fields, activeFields),
               style: ElevatedButton.styleFrom(
@@ -425,7 +439,7 @@ class _EditTodayAmolScreenState extends ConsumerState<EditTodayAmolScreen> {
                   borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
-              child: (_isSaving || personalPending.isSaving)
+              child: (_isSaving || personalIsSaving)
                   ? SizedBox(
                       width: 22.r,
                       height: 22.r,
@@ -574,42 +588,42 @@ class _EditTodayAmolScreenState extends ConsumerState<EditTodayAmolScreen> {
               ),
             ),
           ],
-          // ── Divider ─────────────────────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(height: 1, color: AppColors.cardBorder),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w),
-                    child: Text(
-                      l10n.personalAmolSectionTitle,
-                      style: AppTextStyles.label(context).copyWith(
-                        color: AppColors.textMuted,
-                        fontSize: 11.sp,
+          // ── Personal amol section (optional) ───────────────────────────────
+          if (widget.showPersonalSection) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.h),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(height: 1, color: AppColors.cardBorder),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w),
+                      child: Text(
+                        l10n.personalAmolSectionTitle,
+                        style: AppTextStyles.label(context).copyWith(
+                          color: AppColors.textMuted,
+                          fontSize: 11.sp,
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Container(height: 1, color: AppColors.cardBorder),
-                  ),
-                ],
+                    Expanded(
+                      child: Container(height: 1, color: AppColors.cardBorder),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          // ── Personal amol section ──────────────────────────────────────────
-          // PersonalAmolDayDetailSection has its inline save button suppressed
-          // here so the single bottom save bar handles both community and personal.
-          SliverToBoxAdapter(
-            child: PersonalAmolDayDetailSection(
-              uid: widget.uid,
-              hijriDate: widget.todayHijri,
-              showInlineSaveButton: false,
+            // Inline save suppressed — single bottom bar handles both sections.
+            SliverToBoxAdapter(
+              child: PersonalAmolDayDetailSection(
+                uid: widget.uid,
+                hijriDate: widget.todayHijri,
+                showInlineSaveButton: false,
+              ),
             ),
-          ),
+          ],
           SliverToBoxAdapter(child: SizedBox(height: 32.h)),
         ],
       ),

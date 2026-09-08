@@ -476,6 +476,13 @@ class _PersonalOnlyBody extends ConsumerWidget {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(l10n.personalAmolSaved)),
                 );
+                // Return to previous screen (home or history). Today's save
+                // already re-locks home via personalAmolDatePendingProvider.
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(AppRoutes.home);
+                }
               },
             )
           : null,

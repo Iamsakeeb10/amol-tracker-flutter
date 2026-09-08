@@ -11,9 +11,11 @@ import '../../../../core/theme/text_styles.dart';
 import '../../../../core/utils/personal_amol_schedule.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/personal_amol_model.dart';
+import '../../../../providers/date_provider.dart';
 import '../../../../providers/personal_amol_home_lock_provider.dart';
 import '../../../../providers/personal_amol_pending_provider.dart';
 import '../../../../providers/personal_amol_provider.dart';
+import '../../../history/presentation/screens/day_detail_screen.dart';
 import 'personal_amol_create_sheet.dart';
 import 'personal_amol_details_dialog.dart';
 import 'personal_amol_empty_state.dart';
@@ -191,7 +193,13 @@ class _PersonalAmolHeader extends ConsumerWidget {
           _headerIconButton(
             icon: Icons.edit_outlined,
             tooltip: l10n.personalAmolEditToday,
-            onTap: () => unlockPersonalAmolHome(ref, uid),
+            onTap: () {
+              final todayHijri = ref.read(currentHijriDateProvider);
+              context.push(
+                AppRoutes.dayDetailPath(todayHijri),
+                extra: DayDetailMode.personal,
+              );
+            },
           ),
           SizedBox(width: 10.w),
         ],

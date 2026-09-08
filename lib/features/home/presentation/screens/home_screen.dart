@@ -485,7 +485,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     required String todayHijri,
     required AmalLogModel log,
   }) async {
-    // Push the combined community + personal amol edit screen.
+    // Push community-only edit screen (personal has its own home pencil).
     // Using MaterialPageRoute so we can pass the full AmalLogModel object
     // without JSON serialization (GoRouter extra is typed but fragile for
     // complex models across hot-reloads). The app root is wrapped in a
@@ -497,6 +497,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           uid: uid,
           todayHijri: todayHijri,
           existingLog: log,
+          showPersonalSection: false,
         ),
       ),
     );

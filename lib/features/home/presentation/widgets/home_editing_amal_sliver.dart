@@ -44,46 +44,20 @@ List<Widget> buildHomeEditingAmalSlivers({
             onPressed: () => showCommunityAmolInfoDialog(context),
           ),
           SizedBox(width: 8.w),
-          OutlinedButton.icon(
+          HomeSubmittedAmalIconButton(
+            icon: hasAnyDone ? Icons.restart_alt : Icons.done_all,
+            tooltip: hasAnyDone ? l10n.deselectAll : l10n.markAllDone,
+            iconColor: hasAnyDone ? AppColors.warning : AppColors.gold,
             onPressed: isAmalLoading
                 ? null
                 : hasAnyDone
                 ? amalNotifier.clearAll
                 : amalNotifier.markAllDone,
-            icon: Icon(
-              hasAnyDone ? Icons.restart_alt : Icons.done_all,
-              size: 17.r,
-              color: hasAnyDone ? AppColors.warning : AppColors.gold,
-            ),
-            label: Text(
-              hasAnyDone ? l10n.deselectAll : l10n.markAllDone,
-              style: AppTextStyles.button(context).copyWith(
-                color: hasAnyDone ? AppColors.warning : AppColors.gold,
-                fontWeight: FontWeight.w600,
-                fontSize: 12.sp,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
-                color: hasAnyDone
-                    ? HomeUiColors.warningButtonBorder
-                    : AppColors.goldBorder,
-              ),
-              backgroundColor: hasAnyDone
-                  ? AppColors.warningLight
-                  : AppColors.goldCard,
-              foregroundColor: AppColors.gold,
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
-              minimumSize: Size(0, 40.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
           ),
         ],
       ),
     ),
-    SliverToBoxAdapter(child: SizedBox(height: 6.h)),
+    SliverToBoxAdapter(child: SizedBox(height: 12.h)),
     if (isAmalLoading || fieldsAsync.isLoading)
       const SliverToBoxAdapter(child: HomeAmalLoadingShimmer())
     else

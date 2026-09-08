@@ -201,23 +201,11 @@ class _PersonalAmolHeader extends ConsumerWidget {
               );
             },
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: 8.w),
         ],
         _headerIconButton(
-          icon: Icons.info_outline_rounded,
-          onTap: () => showPersonalAmolInfoDialog(context),
-        ),
-        SizedBox(width: 10.w),
-        _headerIconButton(
-          icon: Icons.format_list_bulleted_rounded,
-          onTap: () {
-            AnalyticsService.instance.logPersonalAmolScreenOpened();
-            context.push(AppRoutes.personalAmolList);
-          },
-        ),
-        SizedBox(width: 10.w),
-        _headerIconButton(
           icon: Icons.add,
+          tooltip: l10n.personalAmolAddLabel,
           onTap: () {
             AnalyticsService.instance.logPersonalAmolCreateSheetOpened(
               entryPoint: 'home_add',
@@ -229,43 +217,163 @@ class _PersonalAmolHeader extends ConsumerWidget {
             );
           },
         ),
+        SizedBox(width: 8.w),
+        _MoreMenuButton(
+          l10n: l10n,
+          onInfo: () => showPersonalAmolInfoDialog(context),
+          onManage: () {
+            AnalyticsService.instance.logPersonalAmolScreenOpened();
+            context.push(AppRoutes.personalAmolList);
+          },
+        ),
       ],
     );
   }
 
+  /// Matches community [HomeSubmittedAmalIconButton] size/gap (40×40, 8.w).
   Widget _headerIconButton({
     required IconData icon,
     required VoidCallback onTap,
     String? tooltip,
   }) {
-    // Use a 44×44 tap target (WCAG minimum) with centred visual content.
-    // Material + InkWell gives ripple feedback inside the clipped area.
-    final button = SizedBox(
-      width: 44.r,
-      height: 44.r,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(10.r),
-          child: Center(
-            child: Container(
-              width: 36.r,
-              height: 36.r,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.cardDark,
-                borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: Icon(icon, color: AppColors.gold, size: 22.r),
-            ),
+    final button = Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          width: 40.r,
+          height: 40.r,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.goldCard,
+            border: Border.all(color: AppColors.goldBorder),
+            borderRadius: BorderRadius.circular(12.r),
           ),
+          child: Icon(icon, color: AppColors.gold, size: 20.r),
         ),
       ),
     );
     if (tooltip == null) return button;
     return Tooltip(message: tooltip, child: button);
+  }
+}
+
+enum _PersonalAmolMoreAction { info, manage }
+
+/// Overflow menu for secondary personal-amol actions (info + manage list).
+class _MoreMenuButton extends StatelessWidget {
+  const _MoreMenuButton({
+    required this.l10n,
+    required this.onInfo,
+    required this.onManage,
+  });
+
+  final AppLocalizations l10n;
+  final VoidCallback onInfo;
+  final VoidCallback onManage;
+
+  static const Color _menuBg = AppColors.emeraldMid;
+  static const Color _menuBorder = AppColors.goldBorder;
+
+  @override
+  Widget build(BuildContext context) {
+    // Opens under the icon button, with a small gap past the icon height.
+    final menuOffset = Offset(0, 6.h);
+
+    return SizedBox(
+      width: 40.r,
+      height: 40.r,
+      child: PopupMenuButton<_PersonalAmolMoreAction>(
+        tooltip: l10n.duaReaderMore,
+        padding: EdgeInsets.zero,
+        position: PopupMenuPosition.under,
+        offset: menuOffset,
+        color: _menuBg,
+        elevation: 10,
+        shadowColor: Colors.black.withValues(alpha: 0.45),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          side: const BorderSide(color: _menuBorder, width: 1),
+        ),
+        onSelected: (action) {
+          switch (action) {
+            case _PersonalAmolMoreAction.info:
+              onInfo();
+            case _PersonalAmolMoreAction.manage:
+              onManage();
+          }
+        },
+        itemBuilder: (context) => [
+          _menuItem(
+            context,
+            value: _PersonalAmolMoreAction.info,
+            icon: Icons.info_outline_rounded,
+            label: l10n.personalAmolInfoMenu,
+          ),
+          _menuItem(
+            context,
+            value: _PersonalAmolMoreAction.manage,
+            icon: Icons.format_list_bulleted_rounded,
+            label: l10n.personalAmolManage,
+          ),
+        ],
+        child: Container(
+          width: 40.r,
+          height: 40.r,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.goldCard,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: Icon(
+            Icons.more_horiz_rounded,
+            color: AppColors.gold,
+            size: 20.r,
+          ),
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<_PersonalAmolMoreAction> _menuItem(
+    BuildContext context, {
+    required _PersonalAmolMoreAction value,
+    required IconData icon,
+    required String label,
+  }) {
+    return PopupMenuItem<_PersonalAmolMoreAction>(
+      value: value,
+      height: 44.h,
+      padding: EdgeInsets.symmetric(horizontal: 14.w),
+      child: Row(
+        children: [
+          Container(
+            width: 32.r,
+            height: 32.r,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.goldCard,
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(color: AppColors.goldBorder),
+            ),
+            child: Icon(icon, color: AppColors.gold, size: 18.r),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Text(
+              label,
+              style: AppTextStyles.bodyMedium(context).copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

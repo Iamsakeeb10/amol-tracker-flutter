@@ -3156,6 +3156,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolInfoTitle => 'How My Amol works';
 
   @override
+  String get personalAmolInfoMenu => 'How it works';
+
+  @override
   String get personalAmolInfoBody1 =>
       'Add your own daily amols here — namaz, Quran, sadaqah, anything. Only you can see them.';
 

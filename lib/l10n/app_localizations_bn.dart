@@ -3163,6 +3163,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get personalAmolInfoTitle => 'আমার আমল কীভাবে কাজ করে';
 
   @override
+  String get personalAmolInfoMenu => 'কীভাবে কাজ করে';
+
+  @override
   String get personalAmolInfoBody1 =>
       'নিজের ইচ্ছামতো দৈনন্দিন আমল যোগ করুন — নামাজ, কুরআন তেলাওয়াত, সদকা, যা খুশি। এটা শুধু আপনিই দেখতে পারবেন।';
 

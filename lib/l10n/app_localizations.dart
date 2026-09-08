@@ -5875,6 +5875,12 @@ abstract class AppLocalizations {
   /// **'How My Amol works'**
   String get personalAmolInfoTitle;
 
+  /// No description provided for @personalAmolInfoMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get personalAmolInfoMenu;
+
   /// No description provided for @personalAmolInfoBody1.
   ///
   /// In en, this message translates to:

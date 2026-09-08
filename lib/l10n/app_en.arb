@@ -1614,6 +1614,48 @@
   "personalAmolEmptyProfile": "No personal amol yet",
   "personalAmolLoadFailed": "Could not load personal amol right now.",
   "personalAmolSaved": "Personal amol saved ✓",
+  "personalAmolReminderLabel": "Daily reminder",
+  "personalAmolReminderOff": "Set",
+  "personalAmolReminderTitle": "Just a reminder about {amolName}",
+  "@personalAmolReminderTitle": {
+    "placeholders": {
+      "amolName": {
+        "type": "String"
+      }
+    }
+  },
+  "personalAmolReminderBody": "Do it when you can — no rush.",
+  "personalAmolReminderTitleStreak": "You've kept it going for {days} days — keep today too",
+  "@personalAmolReminderTitleStreak": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "personalAmolReminderBodyStreak": "Finish {amolName} and let today count too.",
+  "@personalAmolReminderBodyStreak": {
+    "placeholders": {
+      "amolName": {
+        "type": "String"
+      }
+    }
+  },
+  "personalAmolReminderTitleCount": "{amolName} — {done}/{target} done",
+  "@personalAmolReminderTitleCount": {
+    "placeholders": {
+      "amolName": {
+        "type": "String"
+      },
+      "done": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "personalAmolReminderBodyCount": "Finish the rest before today ends.",
   "reportsPersonalAmolBreakdown": "Personal Amol Breakdown",
   "closeLabel": "Close"
 }

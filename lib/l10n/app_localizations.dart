@@ -6151,6 +6151,54 @@ abstract class AppLocalizations {
   /// **'Personal amol saved ✓'**
   String get personalAmolSaved;
 
+  /// No description provided for @personalAmolReminderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily reminder'**
+  String get personalAmolReminderLabel;
+
+  /// No description provided for @personalAmolReminderOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Set'**
+  String get personalAmolReminderOff;
+
+  /// No description provided for @personalAmolReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Just a reminder about {amolName}'**
+  String personalAmolReminderTitle(String amolName);
+
+  /// No description provided for @personalAmolReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Do it when you can — no rush.'**
+  String get personalAmolReminderBody;
+
+  /// No description provided for @personalAmolReminderTitleStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve kept it going for {days} days — keep today too'**
+  String personalAmolReminderTitleStreak(int days);
+
+  /// No description provided for @personalAmolReminderBodyStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish {amolName} and let today count too.'**
+  String personalAmolReminderBodyStreak(String amolName);
+
+  /// No description provided for @personalAmolReminderTitleCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{amolName} — {done}/{target} done'**
+  String personalAmolReminderTitleCount(String amolName, int done, int target);
+
+  /// No description provided for @personalAmolReminderBodyCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the rest before today ends.'**
+  String get personalAmolReminderBodyCount;
+
   /// No description provided for @reportsPersonalAmolBreakdown.
   ///
   /// In en, this message translates to:

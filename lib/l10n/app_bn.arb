@@ -1553,6 +1553,48 @@
   "personalAmolEmptyProfile": "এখনো কোনো ব্যক্তিগত আমল নেই",
   "personalAmolLoadFailed": "এখন ব্যক্তিগত আমল লোড করা যায়নি।",
   "personalAmolSaved": "ব্যক্তিগত আমল সংরক্ষণ করা হয়েছে ✓",
+  "personalAmolReminderLabel": "দৈনিক রিমাইন্ডার",
+  "personalAmolReminderOff": "সেট করুন",
+  "personalAmolReminderTitle": "{amolName}-এর কথা মনে করিয়ে দিলাম",
+  "@personalAmolReminderTitle": {
+    "placeholders": {
+      "amolName": {
+        "type": "String"
+      }
+    }
+  },
+  "personalAmolReminderBody": "সময় হলে করে নেবেন, তাড়া নেই।",
+  "personalAmolReminderTitleStreak": "{days} দিন ধরে চালিয়ে যাচ্ছেন — আজও রাখুন",
+  "@personalAmolReminderTitleStreak": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "personalAmolReminderBodyStreak": "{amolName} শেষ করে আজকের দিনটাও সুন্দর করে রাখুন।",
+  "@personalAmolReminderBodyStreak": {
+    "placeholders": {
+      "amolName": {
+        "type": "String"
+      }
+    }
+  },
+  "personalAmolReminderTitleCount": "{amolName} — {done}/{target} হয়েছে",
+  "@personalAmolReminderTitleCount": {
+    "placeholders": {
+      "amolName": {
+        "type": "String"
+      },
+      "done": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "personalAmolReminderBodyCount": "বাকিটাও আজকের মধ্যে শেষ করুন।",
   "reportsPersonalAmolBreakdown": "ব্যক্তিগত আমল বিশ্লেষণ",
   "closeLabel": "বন্ধ করুন"
 }

@@ -65,12 +65,15 @@ class PersonalAmolModel {
   /// Daily target for [PersonalAmolType.count] amols. Always 1 for toggle.
   final int target;
 
+  /// Sentinel so [copyWith] can explicitly clear [reminderTime] to null.
+  static const Object _unsetReminder = Object();
+
   PersonalAmolModel copyWith({
     String? name,
     String? icon,
     PersonalAmolFrequency? frequency,
     List<int>? weekdays,
-    ({int hour, int minute})? reminderTime,
+    Object? reminderTime = _unsetReminder,
     bool? isActive,
     PersonalAmolType? type,
     int? target,
@@ -81,7 +84,9 @@ class PersonalAmolModel {
       icon: icon ?? this.icon,
       frequency: frequency ?? this.frequency,
       weekdays: weekdays ?? this.weekdays,
-      reminderTime: reminderTime ?? this.reminderTime,
+      reminderTime: identical(reminderTime, _unsetReminder)
+          ? this.reminderTime
+          : reminderTime as ({int hour, int minute})?,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt,
       type: type ?? this.type,

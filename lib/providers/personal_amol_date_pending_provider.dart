@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
 
+import '../core/services/islamic_date_service.dart';
 import '../core/utils/personal_amol_schedule.dart';
 import '../models/personal_amol_model.dart';
 import 'personal_amol_pending_provider.dart';
@@ -142,6 +145,13 @@ class PersonalAmolDatePendingNotifier
           await amolNotifier.recomputeStreak(entry.key);
         } catch (_) {
           // non-critical
+        }
+        // Only today's progress belongs in the daily reminder notification.
+        final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+        if (amol.reminderTime != null && _hijriDate == today) {
+          unawaited(
+            amolNotifier.refreshReminder(amol, doneToday: entry.value),
+          );
         }
       } catch (_) {
         // Leave this amol staged so a retry applies only this one.

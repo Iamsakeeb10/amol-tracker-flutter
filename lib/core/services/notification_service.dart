@@ -15,6 +15,7 @@ import '../router/routes.dart';
 import '../utils/fcm_notification_display.dart';
 import '../utils/notification_day_policy.dart';
 import '../utils/quiet_hours_helper.dart';
+import '../../l10n/app_localizations.dart';
 import 'analytics_service.dart';
 import 'hadith_asset_service.dart';
 import 'islamic_date_service.dart';
@@ -57,11 +58,11 @@ class NotificationService {
   static const int _dailyPrayerReminderOffsetMinutes = 15;
   static const int _legacySmartEveningId = 9001;
   static const int _legacySmartUrgentId = 9002;
-  // Personal amol reminders: IDs 5000–5004 (one per free-tier slot).
+  // Personal amol reminders: IDs 5000–5009 (one per personal-amol slot).
   // These must NEVER collide with community amol, adhan, hadith, streak, or
   // lesson-review notification IDs.
   static const int _personalAmolBaseId = 5000;
-  static const int _personalAmolSlotRange = 5;
+  static const int _personalAmolSlotRange = 10;
   static const TimeOfDay _hadithMorningTime = TimeOfDay(hour: 8, minute: 0);
   // Moved from 9 PM to 10 PM: streak warnings now occupy 9:15–9:45 PM;
   // 10 PM is a natural "before sleep" slot matching the notification suffix.
@@ -606,7 +607,7 @@ class NotificationService {
     for (var i = 0; i < _lessonReviewIdRange; i++) {
       await _localNotifications.cancel(_lessonReviewBaseId + i);
     }
-    // Personal amol reminders (IDs 5000–5004) must also be cancelled here so
+    // Personal amol reminders (IDs 5000–5009) must also be cancelled here so
     // that scheduleAll() always starts from a clean state. Without this, every
     // rescheduleAll() call stacks a new recurring alarm on top of the existing
     // one, causing the same reminder to fire multiple times on the same night.
@@ -616,9 +617,13 @@ class NotificationService {
     await PrayerAdhanScheduler.instance.cancelAll(_localNotifications);
   }
 
-  /// Schedules a daily personal amol reminder for the given free-tier [slot]
-  /// (0-based, up to 4). Deep-links to home on tap, matching community amol
+  /// Schedules a daily personal amol reminder for the given [slot]
+  /// (0-based, up to 9). Deep-links to home on tap, matching community amol
   /// reminder behavior.
+  ///
+  /// [isCount] selects toggle vs count copy. For count amols, [done] and
+  /// [target] are baked into the title so the notification shows progress.
+  /// For toggle amols, [streakDays] > 0 selects the streak-care copy.
   ///
   /// The reminder time is persisted to local storage so that [scheduleAll]
   /// (called on every [rescheduleAll]) can re-register it after the
@@ -628,22 +633,44 @@ class NotificationService {
     required int slot,
     required String name,
     required TimeOfDay time,
+    bool isCount = false,
+    int done = 0,
+    int target = 1,
+    int streakDays = 0,
   }) async {
     if (slot < 0 || slot >= _personalAmolSlotRange) return;
-    // Persist the reminder so scheduleAll() can restore it without auth.
+    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+    // Persist so scheduleAll() can restore without auth.
+    // Format: [name, hour, minute, type, target, done, hijriDate, streakDays]
     await LocalStorageService.setPref(
       '$_personalAmolReminderPrefix$slot',
-      <dynamic>[name, time.hour, time.minute],
+      <dynamic>[
+        name,
+        time.hour,
+        time.minute,
+        isCount ? 'count' : 'toggle',
+        target,
+        done,
+        today,
+        streakDays,
+      ],
     );
     final id = _personalAmolBaseId + slot;
     await _localNotifications.cancel(id);
     // Skip if the chosen time falls within quiet hours to respect sleep.
     if (_isSuppressedByQuietHours(time)) return;
+    final copy = _personalAmolReminderCopy(
+      name: name,
+      isCount: isCount,
+      done: done,
+      target: target,
+      streakDays: streakDays,
+    );
     final scheduled = _nextInstance(time);
     await _safeZonedSchedule(
       id: id,
-      title: 'ব্যক্তিগত আমল: $name',
-      body: 'আজকের ব্যক্তিগত আমলটি সম্পন্ন করুন।',
+      title: copy.title,
+      body: copy.body,
       scheduledDate: scheduled,
       payload: AppRoutes.home,
       matchDateTimeComponents: DateTimeComponents.time,
@@ -658,7 +685,7 @@ class NotificationService {
     await LocalStorageService.deletePref('$_personalAmolReminderPrefix$slot');
   }
 
-  /// Cancels all personal amol reminders (IDs 5000–5004) and clears their
+  /// Cancels all personal amol reminders (IDs 5000–5009) and clears their
   /// persisted Hive entries.
   Future<void> cancelAllPersonalAmolReminders() async {
     for (var i = 0; i < _personalAmolSlotRange; i++) {
@@ -671,6 +698,7 @@ class NotificationService {
   /// re-registers each one. Called by [scheduleAll] after [cancelLocalSchedules]
   /// so reminders survive every reschedule cycle without duplicating.
   Future<void> _reschedulePersistedPersonalAmolReminders() async {
+    final today = IslamicDateService.getCurrentIslamicDateStringSafe();
     for (var i = 0; i < _personalAmolSlotRange; i++) {
       final stored = LocalStorageService.getPref<List<dynamic>?>(
         '$_personalAmolReminderPrefix$i',
@@ -683,16 +711,74 @@ class NotificationService {
       if (name.isEmpty || hour is! int || minute is! int) continue;
       final time = TimeOfDay(hour: hour, minute: minute);
       if (_isSuppressedByQuietHours(time)) continue;
+
+      // Extended format (length >= 7): type, target, done, hijriDate [, streak].
+      // Legacy format (length 3): treat as toggle with no progress.
+      final isCount =
+          stored.length >= 4 && stored[3]?.toString() == 'count';
+      final target = stored.length >= 5 && stored[4] is int
+          ? stored[4] as int
+          : 1;
+      final storedDone =
+          stored.length >= 6 && stored[5] is int ? stored[5] as int : 0;
+      final storedHijri =
+          stored.length >= 7 ? stored[6]?.toString() : null;
+      // Progress is day-scoped: if the stored day is stale, show 0/target.
+      final done = storedHijri == today ? storedDone : 0;
+      final streakDays =
+          stored.length >= 8 && stored[7] is int ? stored[7] as int : 0;
+
+      final copy = _personalAmolReminderCopy(
+        name: name,
+        isCount: isCount,
+        done: done,
+        target: target,
+        streakDays: streakDays,
+      );
       final scheduled = _nextInstance(time);
       await _safeZonedSchedule(
         id: _personalAmolBaseId + i,
-        title: 'ব্যক্তিগত আমল: $name',
-        body: 'আজকের ব্যক্তিগত আমলটি সম্পন্ন করুন।',
+        title: copy.title,
+        body: copy.body,
         scheduledDate: scheduled,
         payload: AppRoutes.home,
         matchDateTimeComponents: DateTimeComponents.time,
       );
     }
+  }
+
+  /// Builds localized title/body for a personal amol reminder.
+  /// Toggle: Angle 1 by default; Angle 3 (streak care) when [streakDays] > 0.
+  /// Count: progress Variant A.
+  ({String title, String body}) _personalAmolReminderCopy({
+    required String name,
+    required bool isCount,
+    required int done,
+    required int target,
+    int streakDays = 0,
+  }) {
+    final localeCode =
+        LocalStorageService.getPref<String>('app_locale', 'bn');
+    final l10n = lookupAppLocalizations(
+      Locale(localeCode.startsWith('en') ? 'en' : 'bn'),
+    );
+    final label = name.trim().isEmpty ? 'Amol' : name.trim();
+    if (isCount) {
+      return (
+        title: l10n.personalAmolReminderTitleCount(label, done, target),
+        body: l10n.personalAmolReminderBodyCount,
+      );
+    }
+    if (streakDays > 0) {
+      return (
+        title: l10n.personalAmolReminderTitleStreak(streakDays),
+        body: l10n.personalAmolReminderBodyStreak(label),
+      );
+    }
+    return (
+      title: l10n.personalAmolReminderTitle(label),
+      body: l10n.personalAmolReminderBody,
+    );
   }
 
   Future<void> setMorningEnabled(bool enabled) async {

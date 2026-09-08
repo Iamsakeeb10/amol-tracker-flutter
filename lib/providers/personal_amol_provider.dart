@@ -443,16 +443,52 @@ class PersonalAmolNotifier extends StateNotifier<Map<String, PersonalAmolModel>>
   Future<void> _scheduleReminderFor(
     PersonalAmolModel amol, {
     required int slot,
+    int? doneToday,
   }) async {
     final time = amol.reminderTime;
     if (time == null) {
       NotificationService.instance.cancelPersonalAmolReminder(slot);
       return;
     }
+    final isCount = amol.type == PersonalAmolType.count;
+    var done = doneToday ?? 0;
+    if (isCount && doneToday == null) {
+      try {
+        final today = IslamicDateService.getCurrentIslamicDateStringSafe();
+        final completions = await _repo.getCompletionsForDate(_uid, today);
+        done = completions.where((c) => c.amolId == amol.id).length;
+      } catch (_) {
+        done = 0;
+      }
+    }
+    var streakDays = 0;
+    if (!isCount) {
+      try {
+        final streak = await _repo.watchStreak(_uid, amol.id).first;
+        streakDays = streak?.currentStreak ?? 0;
+      } catch (_) {
+        streakDays = 0;
+      }
+    }
     await NotificationService.instance.schedulePersonalAmolReminder(
       slot: slot,
       name: amol.name,
       time: TimeOfDay(hour: time.hour, minute: time.minute),
+      isCount: isCount,
+      done: done,
+      target: isCount ? amol.target : 1,
+      streakDays: streakDays,
     );
+  }
+
+  /// Re-bakes the local reminder notification with an updated [doneToday]
+  /// progress count (count-type amols). No-op when the amol has no reminder.
+  Future<void> refreshReminder(
+    PersonalAmolModel amol, {
+    required int doneToday,
+  }) async {
+    if (amol.reminderTime == null) return;
+    final slot = _slotFor(amol.id);
+    await _scheduleReminderFor(amol, slot: slot, doneToday: doneToday);
   }
 }

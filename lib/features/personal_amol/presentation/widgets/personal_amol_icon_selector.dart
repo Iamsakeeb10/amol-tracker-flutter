@@ -89,6 +89,12 @@ class _PersonalAmolIconSelectorState
       children: [
         Row(
           children: [
+            Icon(
+              Icons.apps_outlined,
+              size: 20.r,
+              color: AppColors.gold,
+            ),
+            SizedBox(width: 10.w),
             Expanded(
               child: Text(
                 l10n.personalAmolIconLabel,

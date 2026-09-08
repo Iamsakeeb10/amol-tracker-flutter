@@ -9,10 +9,12 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/time_display_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/personal_amol_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../../../providers/personal_amol_provider.dart';
+import '../../../../shared/widgets/time_picker_sheet.dart';
 import 'personal_amol_icon_selector.dart';
 import 'personal_amol_icons.dart';
 import 'personal_amol_tracking_type_selector.dart';
@@ -23,7 +25,7 @@ import 'personal_amol_weekday_chips.dart';
 /// the list screen, and the empty state). Follows `streak_bottom_sheet.dart`
 /// for the modal pattern and `personal_amol_create_sheet_v3.html` for layout:
 /// name, Material-icon row, tracking type (toggle/count), daily target,
-/// frequency pills, weekday chips — and no reminder.
+/// frequency pills, weekday chips, and optional daily reminder.
 ///
 /// Rendered inside a [DraggableScrollableSheet] so it opens at a sensible
 /// height on any device, can be dragged to expand/collapse, and always
@@ -115,6 +117,7 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
   int _target = 3;
   bool _daily = true;
   final Set<int> _selectedWeekdays = <int>{};
+  TimeOfDay? _reminderTime;
   bool _isSaving = false;
 
   bool get _isWeekdays => !_daily;
@@ -131,6 +134,10 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
       _selectedWeekdays.addAll(existing.weekdays);
       _type = existing.type;
       _target = existing.type == PersonalAmolType.count ? existing.target : 3;
+      final rt = existing.reminderTime;
+      if (rt != null) {
+        _reminderTime = TimeOfDay(hour: rt.hour, minute: rt.minute);
+      }
     }
     // Track which entry point opened the sheet.
     unawaited(
@@ -199,6 +206,17 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
     _expandSheetIfNeeded();
   }
 
+  Future<void> _pickReminderTime() async {
+    final initial = _reminderTime ?? const TimeOfDay(hour: 8, minute: 0);
+    final selected = await showBdTimePicker(
+      context: context,
+      initialTime: initial,
+    );
+    if (selected != null && mounted) {
+      setState(() => _reminderTime = selected);
+    }
+  }
+
   Future<void> _save() async {
     // Dismiss the keyboard first so the sheet settles before any snackbar
     // or pop animation runs.
@@ -230,6 +248,9 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
     final target = _type == PersonalAmolType.count ? _target : 1;
     final typeLabel = type == PersonalAmolType.count ? 'count' : 'toggle';
     final freqLabel = _daily ? 'daily' : 'weekdays';
+    final reminder = _reminderTime != null
+        ? (hour: _reminderTime!.hour, minute: _reminderTime!.minute)
+        : null;
 
     setState(() => _isSaving = true);
     try {
@@ -242,15 +263,17 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
         if (type != existing.type) fieldsChanged++;
         if (target != existing.target) fieldsChanged++;
         if (frequency != existing.frequency) fieldsChanged++;
+        if (reminder?.hour != existing.reminderTime?.hour ||
+            reminder?.minute != existing.reminderTime?.minute) {
+          fieldsChanged++;
+        }
         await notifier.updateAmol(
           existing.copyWith(
             name: name,
             icon: _icon,
             frequency: frequency,
             weekdays: weekdays,
-            // Reminders are no longer a supported option; clear any leftover
-            // reminder stored on older amols.
-            reminderTime: null,
+            reminderTime: reminder,
             type: type,
             target: target,
           ),
@@ -269,7 +292,7 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
           icon: _icon.isEmpty ? encodePersonalAmolIcon(Icons.auto_awesome) : _icon,
           frequency: frequency,
           weekdays: weekdays,
-          reminderTime: null,
+          reminderTime: reminder,
           isActive: true,
           createdAt: DateTime.now(),
           type: type,
@@ -430,8 +453,10 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
                           ),
                         ],
                         SizedBox(height: 16.h),
-                        Text(l10n.personalAmolNameLabel,
-                            style: AppTextStyles.bodyMedium(context)),
+                        _sectionLabel(
+                          Icons.edit_outlined,
+                          l10n.personalAmolNameLabel,
+                        ),
                         SizedBox(height: 8.h),
                         TextFormField(
                           controller: _nameController,
@@ -475,8 +500,10 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
                           onSelected: (value) => setState(() => _icon = value),
                         ),
                         SizedBox(height: 20.h),
-                        Text(l10n.personalAmolTypeLabel,
-                            style: AppTextStyles.bodyMedium(context)),
+                        _sectionLabel(
+                          Icons.tune_outlined,
+                          l10n.personalAmolTypeLabel,
+                        ),
                         SizedBox(height: 8.h),
                         PersonalAmolTrackingTypeSelector(
                           value: _type,
@@ -490,8 +517,10 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
                           ),
                         ],
                         SizedBox(height: 20.h),
-                        Text(l10n.personalAmolFrequencyLabel,
-                            style: AppTextStyles.bodyMedium(context)),
+                        _sectionLabel(
+                          Icons.event_repeat_outlined,
+                          l10n.personalAmolFrequencyLabel,
+                        ),
                         SizedBox(height: 8.h),
                         Row(
                           children: [
@@ -519,6 +548,8 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
                             }),
                           ),
                         ],
+                        SizedBox(height: 20.h),
+                        _buildReminderRow(),
                         SizedBox(height: 24.h),
                       ],
                     ),
@@ -584,6 +615,81 @@ class _PersonalAmolCreateSheetState extends ConsumerState<PersonalAmolCreateShee
           ),
         );
       },
+    );
+  }
+
+  Widget _sectionLabel(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, size: 20.r, color: AppColors.gold),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Text(
+            label,
+            style: AppTextStyles.bodyMedium(context),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReminderRow() {
+    final hasReminder = _reminderTime != null;
+    return Row(
+      children: [
+        Icon(
+          Icons.notifications_outlined,
+          size: 20.r,
+          color: AppColors.gold,
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Text(
+            l10n.personalAmolReminderLabel,
+            style: AppTextStyles.bodyMedium(context),
+          ),
+        ),
+        GestureDetector(
+          onTap: _pickReminderTime,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: hasReminder ? AppColors.goldCard : AppColors.cardDark,
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(
+                color: hasReminder ? AppColors.gold : AppColors.cardBorder,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  hasReminder
+                      ? formatBdTime(context, _reminderTime!)
+                      : l10n.personalAmolReminderOff,
+                  style: AppTextStyles.bodySmall(context).copyWith(
+                    color: hasReminder
+                        ? AppColors.goldLight
+                        : AppColors.textMuted,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (hasReminder) ...[
+                  SizedBox(width: 6.w),
+                  GestureDetector(
+                    onTap: () => setState(() => _reminderTime = null),
+                    child: Icon(
+                      Icons.close,
+                      size: 14.r,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 

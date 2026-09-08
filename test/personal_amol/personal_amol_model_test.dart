@@ -44,6 +44,21 @@ void main() {
       expect(toggled.target, 1);
     });
 
+    test('copyWith can set and clear reminderTime', () {
+      final withReminder = amol().copyWith(
+        reminderTime: (hour: 8, minute: 30),
+      );
+      expect(withReminder.reminderTime?.hour, 8);
+      expect(withReminder.reminderTime?.minute, 30);
+
+      final cleared = withReminder.copyWith(reminderTime: null);
+      expect(cleared.reminderTime, isNull);
+
+      final preserved = withReminder.copyWith(name: 'Kept');
+      expect(preserved.reminderTime?.hour, 8);
+      expect(preserved.name, 'Kept');
+    });
+
     test('enum fromMap defaults unknown/missing values to toggle', () {
       expect(PersonalAmolType.fromMap('count'), PersonalAmolType.count);
       expect(PersonalAmolType.fromMap('toggle'), PersonalAmolType.toggle);

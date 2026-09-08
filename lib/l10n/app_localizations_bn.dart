@@ -3308,6 +3308,38 @@ class AppLocalizationsBn extends AppLocalizations {
   String get personalAmolSaved => 'ব্যক্তিগত আমল সংরক্ষণ করা হয়েছে ✓';
 
   @override
+  String get personalAmolReminderLabel => 'দৈনিক রিমাইন্ডার';
+
+  @override
+  String get personalAmolReminderOff => 'সেট করুন';
+
+  @override
+  String personalAmolReminderTitle(String amolName) {
+    return '$amolName-এর কথা মনে করিয়ে দিলাম';
+  }
+
+  @override
+  String get personalAmolReminderBody => 'সময় হলে করে নেবেন, তাড়া নেই।';
+
+  @override
+  String personalAmolReminderTitleStreak(int days) {
+    return '$days দিন ধরে চালিয়ে যাচ্ছেন — আজও রাখুন';
+  }
+
+  @override
+  String personalAmolReminderBodyStreak(String amolName) {
+    return '$amolName শেষ করে আজকের দিনটাও সুন্দর করে রাখুন।';
+  }
+
+  @override
+  String personalAmolReminderTitleCount(String amolName, int done, int target) {
+    return '$amolName — $done/$target হয়েছে';
+  }
+
+  @override
+  String get personalAmolReminderBodyCount => 'বাকিটাও আজকের মধ্যে শেষ করুন।';
+
+  @override
   String get reportsPersonalAmolBreakdown => 'ব্যক্তিগত আমল বিশ্লেষণ';
 
   @override

@@ -29,6 +29,12 @@ class PersonalAmolTargetStepper extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
+        Icon(
+          Icons.flag_outlined,
+          size: 20.r,
+          color: AppColors.gold,
+        ),
+        SizedBox(width: 10.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

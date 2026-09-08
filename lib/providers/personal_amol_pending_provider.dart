@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/legacy.dart';
 
@@ -288,6 +290,13 @@ class PersonalAmolPendingNotifier
           await amolNotifier.recomputeStreak(entry.key);
         } catch (_) {
           // non-critical
+        }
+
+        // Keep count-type reminder progress text in sync after save.
+        if (amol.reminderTime != null) {
+          unawaited(
+            amolNotifier.refreshReminder(amol, doneToday: entry.value),
+          );
         }
       } catch (_) {
         // Leave this amol staged so a retry re-applies only this one,

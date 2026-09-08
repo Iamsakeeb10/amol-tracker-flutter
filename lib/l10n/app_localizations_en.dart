@@ -3301,6 +3301,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolSaved => 'Personal amol saved ✓';
 
   @override
+  String get personalAmolReminderLabel => 'Daily reminder';
+
+  @override
+  String get personalAmolReminderOff => 'Set';
+
+  @override
+  String personalAmolReminderTitle(String amolName) {
+    return 'Just a reminder about $amolName';
+  }
+
+  @override
+  String get personalAmolReminderBody => 'Do it when you can — no rush.';
+
+  @override
+  String personalAmolReminderTitleStreak(int days) {
+    return 'You\'ve kept it going for $days days — keep today too';
+  }
+
+  @override
+  String personalAmolReminderBodyStreak(String amolName) {
+    return 'Finish $amolName and let today count too.';
+  }
+
+  @override
+  String personalAmolReminderTitleCount(String amolName, int done, int target) {
+    return '$amolName — $done/$target done';
+  }
+
+  @override
+  String get personalAmolReminderBodyCount =>
+      'Finish the rest before today ends.';
+
+  @override
   String get reportsPersonalAmolBreakdown => 'Personal Amol Breakdown';
 
   @override

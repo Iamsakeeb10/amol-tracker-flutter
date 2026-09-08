@@ -9,9 +9,14 @@ const String kPersonalAmolMaterialIconPrefix = 'm:';
 /// Curated Material icons offered for personal amol, keyed by a stable name
 /// that is persisted in Firestore (see [encodePersonalAmolIcon]). The full
 /// screen picker ("see all") shows every icon; the compact row shows a preset
-/// slice. Flutter's built-in Material icons are used so no extra package is
-/// required, and every value is a const [IconData] so icon tree-shaking keeps
-/// the glyphs.
+/// slice.
+///
+/// Intentionally Islamic/halal-friendly: [Icons.mosque] is kept; other-religion
+/// buildings (church, temples, synagogue), face/reaction glyphs, and temple-like
+/// façades (e.g. account_balance) are excluded so neither the row nor the full
+/// picker can show them. Flutter's built-in Material icons are used so no extra
+/// package is required, and every value is a const [IconData] so icon
+/// tree-shaking keeps the glyphs.
 const Map<String, IconData> kPersonalAmolIcons = <String, IconData>{
   // Spiritual / habits
   'auto_awesome': Icons.auto_awesome,
@@ -21,10 +26,6 @@ const Map<String, IconData> kPersonalAmolIcons = <String, IconData>{
   'favorite': Icons.favorite,
   'favorite_border': Icons.favorite_border,
   'mosque': Icons.mosque,
-  'church': Icons.church,
-  'temple_buddhist': Icons.temple_buddhist,
-  'temple_hindu': Icons.temple_hindu,
-  'synagogue': Icons.synagogue,
   'volunteer_activism': Icons.volunteer_activism,
   'handshake': Icons.handshake,
   'menu_book': Icons.menu_book,
@@ -117,20 +118,14 @@ const Map<String, IconData> kPersonalAmolIcons = <String, IconData>{
   'savings': Icons.savings,
   'paid': Icons.paid,
   'payments': Icons.payments,
-  'account_balance': Icons.account_balance,
   'storefront': Icons.storefront,
   'receipt_long': Icons.receipt_long,
   'groups': Icons.groups,
   'group': Icons.group,
   'person': Icons.person,
   'people': Icons.people,
-  'emoji_emotions': Icons.emoji_emotions,
-  'sentiment_satisfied': Icons.sentiment_satisfied,
   'thumb_up': Icons.thumb_up,
   'celebration': Icons.celebration,
-  'party_mode': Icons.party_mode,
-  'add_reaction': Icons.add_reaction,
-  'waving_hand': Icons.waving_hand,
   // Daily / home
   'home': Icons.home,
   'home_outlined': Icons.home_outlined,

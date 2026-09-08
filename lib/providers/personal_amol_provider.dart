@@ -330,6 +330,13 @@ final personalAmolStreakProvider =
       .watchStreak(key.uid, key.amolId);
 });
 
+/// All personal-amol current streaks for a user as `amolId → currentStreak`.
+/// Home tiles select a single entry so one collection stream feeds the list.
+final personalAmolStreaksMapProvider =
+    StreamProvider.autoDispose.family<Map<String, int>, String>((ref, uid) {
+  return ref.read(personalAmolRepositoryProvider).watchAllStreaks(uid);
+});
+
 final personalAmolNotifierProvider =
     StateNotifierProvider.family<PersonalAmolNotifier, Map<String, PersonalAmolModel>, String>(
   (ref, uid) => PersonalAmolNotifier(ref, uid),

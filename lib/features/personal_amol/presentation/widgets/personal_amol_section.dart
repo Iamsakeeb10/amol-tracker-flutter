@@ -8,11 +8,11 @@ import '../../../../core/router/routes.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
+import '../../../../core/utils/personal_amol_schedule.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/personal_amol_model.dart';
 import '../../../../providers/personal_amol_pending_provider.dart';
 import '../../../../providers/personal_amol_provider.dart';
-import '../../../../core/utils/personal_amol_schedule.dart';
 import 'personal_amol_create_sheet.dart';
 import 'personal_amol_details_dialog.dart';
 import 'personal_amol_empty_state.dart';
@@ -20,128 +20,158 @@ import 'personal_amol_info_dialog.dart';
 import 'personal_amol_progress_row.dart';
 import 'personal_amol_tile.dart';
 
-/// Home-screen personal amol section appended after the community amol
-/// section. Edits (toggle/+/−) stage into `personalAmolPendingProvider` and
-/// only persist to Firestore when the shared save FAB is pressed — never in
+/// Home-screen personal amol slivers appended after the community amol
+/// section. Mirrors [buildHomeAmalFieldSlivers]: header/progress as
+/// [SliverToBoxAdapter]s and due tiles as a virtualized [SliverList.builder]
+/// so scrolling stays as smooth as the community list.
+///
+/// Edits (toggle/+/−) stage into `personalAmolPendingProvider` and only
+/// persist to Firestore when the shared save FAB is pressed — never in
 /// per-tap writes, and never into the community score, streak, or leaderboard.
-class PersonalAmolSection extends ConsumerWidget {
-  const PersonalAmolSection({
-    super.key,
+List<Widget> buildPersonalAmolSlivers({
+  required String uid,
+  required bool readOnly,
+  required WidgetRef ref,
+  required BuildContext context,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+  final amolAsync = ref.watch(activePersonalAmolProvider(uid));
+  final completionsAsync = ref.watch(
+    personalAmolCompletionsForTodayProvider(uid),
+  );
+  // Only rebuild when staged counts change (not isSaving / baseline churn).
+  final staged = ref.watch(
+    personalAmolPendingProvider(uid).select((s) => s.staged),
+  );
+  final pendingNotifier = ref.read(personalAmolPendingProvider(uid).notifier);
+
+  final slivers = <Widget>[
+    SliverToBoxAdapter(
+      child: _PersonalAmolHeader(uid: uid, l10n: l10n),
+    ),
+    // Match the previous Column gap under the header.
+    SliverToBoxAdapter(child: SizedBox(height: 12.h)),
+  ];
+
+  return amolAsync.when(
+    loading: () => [
+      ...slivers,
+      const SliverToBoxAdapter(child: PersonalAmolSectionSkeleton()),
+    ],
+    error: (_, _) => [
+      ...slivers,
+      const SliverToBoxAdapter(child: SizedBox.shrink()),
+    ],
+    data: (amols) {
+      final completions =
+          completionsAsync.value ?? const <PersonalAmolCompletion>[];
+      // Saved (Firestore) counts for today.
+      final counts = <String, int>{};
+      for (final c in completions) {
+        counts[c.amolId] = (counts[c.amolId] ?? 0) + 1;
+      }
+      // Overlay the staged edits: anything the user changed but hasn't
+      // saved yet shows immediately without any network write.
+      final shown = <String, int>{
+        ...counts,
+        ...staged,
+      };
+
+      if (amols.isEmpty) {
+        return [
+          ...slivers,
+          SliverToBoxAdapter(
+            child: PersonalAmolEmptyState(
+              onAdd: () {
+                AnalyticsService.instance.logPersonalAmolCreateSheetOpened(
+                  entryPoint: 'empty_state',
+                );
+                PersonalAmolCreateSheet.show(
+                  context,
+                  uid: uid,
+                  entryPoint: 'empty_state',
+                );
+              },
+            ),
+          ),
+        ];
+      }
+
+      final due = amols.where(personalAmolScheduledToday).toList();
+      if (due.isEmpty) {
+        return [
+          ...slivers,
+          const SliverToBoxAdapter(child: _NoneDueToday()),
+        ];
+      }
+
+      final done = due
+          .where((a) {
+            final target = a.type == PersonalAmolType.count ? a.target : 1;
+            return (shown[a.id] ?? 0) >= target;
+          })
+          .length;
+
+      return [
+        ...slivers,
+        SliverToBoxAdapter(
+          child: PersonalAmolProgressRow(
+            done: done,
+            total: due.length,
+          ),
+        ),
+        SliverToBoxAdapter(child: SizedBox(height: 16.h)),
+        SliverList.builder(
+          addAutomaticKeepAlives: false,
+          itemCount: due.length,
+          itemBuilder: (context, index) {
+            final amol = due[index];
+            final doneCount = shown[amol.id] ?? 0;
+            final target =
+                amol.type == PersonalAmolType.count ? amol.target : 1;
+            return Padding(
+              key: ValueKey(amol.id),
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: PersonalAmolTile(
+                uid: uid,
+                amol: amol,
+                completed: doneCount >= target,
+                doneCount: doneCount,
+                onTap: () => showPersonalAmolDetailsDialog(
+                  context,
+                  uid: uid,
+                  amol: amol,
+                  doneCount: doneCount,
+                ),
+                onToggle: (!readOnly && amol.type == PersonalAmolType.toggle)
+                    ? () => pendingNotifier.toggle(amol)
+                    : null,
+                onPlus: (!readOnly && amol.type == PersonalAmolType.count)
+                    ? () => pendingNotifier.plus(amol)
+                    : null,
+                onMinus: (!readOnly && amol.type == PersonalAmolType.count)
+                    ? () => pendingNotifier.minus(amol)
+                    : null,
+              ),
+            );
+          },
+        ),
+      ];
+    },
+  );
+}
+
+class _PersonalAmolHeader extends StatelessWidget {
+  const _PersonalAmolHeader({
     required this.uid,
-    this.readOnly = false,
+    required this.l10n,
   });
 
   final String uid;
-  final bool readOnly;
+  final AppLocalizations l10n;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final amolAsync = ref.watch(activePersonalAmolProvider(uid));
-    final completionsAsync = ref.watch(
-      personalAmolCompletionsForTodayProvider(uid),
-    );
-    // Only rebuild when staged counts change (not isSaving / baseline churn).
-    final staged = ref.watch(
-      personalAmolPendingProvider(uid).select((s) => s.staged),
-    );
-    final pendingNotifier = ref.read(personalAmolPendingProvider(uid).notifier);
-
-    return RepaintBoundary(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _header(context, ref, l10n),
-          SizedBox(height: 12.h),
-          amolAsync.when(
-            loading: () => const PersonalAmolSectionSkeleton(),
-            error: (_, _) => const SizedBox.shrink(),
-            data: (amols) {
-              final completions =
-                  completionsAsync.value ?? const <PersonalAmolCompletion>[];
-              // Saved (Firestore) counts for today.
-              final counts = <String, int>{};
-              for (final c in completions) {
-                counts[c.amolId] = (counts[c.amolId] ?? 0) + 1;
-              }
-              // Overlay the staged edits: anything the user changed but hasn't
-              // saved yet shows immediately without any network write.
-              final shown = <String, int>{
-                ...counts,
-                ...staged,
-              };
-              if (amols.isEmpty) {
-                return PersonalAmolEmptyState(
-                  onAdd: () {
-                    AnalyticsService.instance.logPersonalAmolCreateSheetOpened(
-                      entryPoint: 'empty_state',
-                    );
-                    PersonalAmolCreateSheet.show(
-                      context,
-                      uid: uid,
-                      entryPoint: 'empty_state',
-                    );
-                  },
-                );
-              }
-              final due = amols.where(personalAmolScheduledToday).toList();
-              if (due.isEmpty) {
-                return const _NoneDueToday();
-              }
-              final done = due
-                  .where((a) {
-                    final target =
-                        a.type == PersonalAmolType.count ? a.target : 1;
-                    return (shown[a.id] ?? 0) >= target;
-                  })
-                  .length;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  PersonalAmolProgressRow(
-                    done: done,
-                    total: due.length,
-                  ),
-                  SizedBox(height: 16.h),
-                  for (final amol in due) ...[
-                    PersonalAmolTile(
-                      uid: uid,
-                      amol: amol,
-                      completed: (shown[amol.id] ?? 0) >=
-                          (amol.type == PersonalAmolType.count
-                              ? amol.target
-                              : 1),
-                      doneCount: shown[amol.id] ?? 0,
-                      onTap: () => showPersonalAmolDetailsDialog(
-                        context,
-                        uid: uid,
-                        amol: amol,
-                        doneCount: shown[amol.id] ?? 0,
-                      ),
-                      onToggle:
-                          (!readOnly && amol.type == PersonalAmolType.toggle)
-                              ? () => pendingNotifier.toggle(amol)
-                              : null,
-                      onPlus: (!readOnly && amol.type == PersonalAmolType.count)
-                          ? () => pendingNotifier.plus(amol)
-                          : null,
-                      onMinus:
-                          (!readOnly && amol.type == PersonalAmolType.count)
-                              ? () => pendingNotifier.minus(amol)
-                              : null,
-                    ),
-                    SizedBox(height: 8.h),
-                  ],
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _header(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(

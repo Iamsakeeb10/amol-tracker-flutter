@@ -444,7 +444,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       amalProvider(uid).select((s) => s.submittedLog),
     );
     final personalPendingDirty =
-        ref.watch(personalAmolPendingProvider(uid)).dirty;
+        ref.watch(personalAmolPendingProvider(uid).select((s) => s.dirty));
     ref.watch(amalLogRefreshProvider);
 
     return AppScaffold(handleExitBack: false,

@@ -19,8 +19,9 @@ import 'personal_amol_stepper.dart';
 /// type) are provided and [readOnly] is false; in other contexts the tile is
 /// static.
 ///
-/// Streak is watched in a tiny child consumer so Firestore streak stream
-/// updates do not rebuild the full tile (icon / switch / stepper).
+/// Streak is watched in a tiny child consumer against the batched streaks
+/// map so Firestore updates do not rebuild the full tile (icon / switch /
+/// stepper).
 class PersonalAmolTile extends StatelessWidget {
   const PersonalAmolTile({
     super.key,
@@ -56,7 +57,8 @@ class PersonalAmolTile extends StatelessWidget {
         ? l10n.personalAmolFrequencyDaily
         : l10n.personalAmolFrequencyWeekdays;
 
-    return CardContainer(
+    return RepaintBoundary(
+      child: CardContainer(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.md.w + 2.w,
         vertical: AppSpacing.md.h,
@@ -189,6 +191,7 @@ class PersonalAmolTile extends StatelessWidget {
             _staticTrailing(context),
         ],
       ),
+      ),
     );
   }
 
@@ -233,7 +236,8 @@ class PersonalAmolTile extends StatelessWidget {
   }
 }
 
-/// Isolates the streak Firestore stream so only this chip rebuilds.
+/// Isolates streak display so only this chip rebuilds. Reads from the
+/// batched [personalAmolStreaksMapProvider] (one collection stream for home).
 class _PersonalAmolStreakChip extends ConsumerWidget {
   const _PersonalAmolStreakChip({
     required this.uid,
@@ -246,9 +250,9 @@ class _PersonalAmolStreakChip extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final streak = ref.watch(
-      personalAmolStreakProvider(
-        PersonalAmolStreakKey(uid: uid, amolId: amolId),
-      ).select((async) => async.value?.currentStreak ?? 0),
+      personalAmolStreaksMapProvider(uid).select(
+        (async) => async.value?[amolId] ?? 0,
+      ),
     );
     if (streak <= 0) return const SizedBox.shrink();
 

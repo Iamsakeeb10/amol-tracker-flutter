@@ -41,6 +41,12 @@ class PersonalAmolRepository {
           .collection('personal_amol_streaks')
           .doc(amolId);
 
+  CollectionReference<Map<String, dynamic>> _streaks(String uid) =>
+      _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('personal_amol_streaks');
+
   /// Watches active (non-deleted) personal amol definitions, newest first.
   Stream<List<PersonalAmolModel>> watchActiveAmol(String uid) {
     return _definitions(uid)
@@ -299,6 +305,20 @@ class PersonalAmolRepository {
     return _streakDoc(uid, amolId).snapshots().map((snap) {
       if (!snap.exists) return null;
       return PersonalStreakResult.fromDoc(snap);
+    });
+  }
+
+  /// Watches every personal-amol streak doc for [uid] as a single collection
+  /// stream. Used by the home list so N tiles share one listener instead of
+  /// opening N per-amol streams.
+  Stream<Map<String, int>> watchAllStreaks(String uid) {
+    return _streaks(uid).snapshots().map((snap) {
+      final out = <String, int>{};
+      for (final doc in snap.docs) {
+        final streak = PersonalStreakResult.fromDoc(doc);
+        out[streak.amolId] = streak.currentStreak;
+      }
+      return out;
     });
   }
 }

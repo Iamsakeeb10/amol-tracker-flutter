@@ -3130,6 +3130,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolEmptySubtitle => 'Any daily habit — just for you';
 
   @override
+  String get personalAmolInfoTitle => 'How My Amol works';
+
+  @override
+  String get personalAmolInfoBody1 =>
+      'Add your own daily amols here — namaz, Quran, sadaqah, anything. Only you can see them.';
+
+  @override
+  String get personalAmolInfoBody2 =>
+      'It does not affect community score or leaderboard. Your streak stays private.';
+
+  @override
+  String get personalAmolInfoBody3 =>
+      'Mark done with a switch, or set a daily target and use + / −. Tap Save when you finish.';
+
+  @override
+  String get personalAmolInfoBody4 =>
+      'You can add up to 10 amols. If you delete one, past days stay in History.';
+
+  @override
+  String get personalAmolInfoBody5 =>
+      'Open My Report or My Profile anytime to see your stats.';
+
+  @override
+  String get personalAmolInfoGotIt => 'Got it';
+
+  @override
   String get personalAmolNoneDueToday => 'No amol for today';
 
   @override
@@ -3153,7 +3179,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalAmolNameLabel => 'Name';
 
   @override
-  String get personalAmolNameHint => 'e.g. Reading Quran, Daily Dua';
+  String get personalAmolNameHint => 'e.g. Reading Quran, Giving Sadaqah';
 
   @override
   String get personalAmolNameRequired => 'Enter a name';

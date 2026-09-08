@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 import '../../shared/mock/mock_data.dart';
 import '../services/islamic_date_service.dart';
 
@@ -41,12 +39,6 @@ class PersonalAmolMonthCalculator {
       final scheduled = activeCountByDay?[key] ?? activeCount;
       final isToday = key == todayStr;
       if (done == 0 || scheduled <= 0) {
-        if (kDebugMode) {
-          debugPrint(
-            '[PAmolCal] $key done=$done scheduled=$scheduled '
-            'state=${isToday ? "today" : "noData"}',
-          );
-        }
         out.add(
           MockDay(
             day: d,
@@ -59,12 +51,6 @@ class PersonalAmolMonthCalculator {
 
       final ratio = done / scheduled;
       final state = _ratioToState(ratio);
-      if (kDebugMode) {
-        debugPrint(
-          '[PAmolCal] $key done=$done scheduled=$scheduled ratio=$ratio '
-          'state=$state',
-        );
-      }
       out.add(MockDay(day: d, score: done, state: state));
     }
     return out;

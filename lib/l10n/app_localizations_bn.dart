@@ -3137,6 +3137,32 @@ class AppLocalizationsBn extends AppLocalizations {
       'যেকোনো দৈনন্দিন অভ্যাস, শুধু আপনার জন্য';
 
   @override
+  String get personalAmolInfoTitle => 'আমার আমল কীভাবে কাজ করে';
+
+  @override
+  String get personalAmolInfoBody1 =>
+      'নিজের ইচ্ছামতো দৈনন্দিন আমল যোগ করুন — নামাজ, কুরআন তেলাওয়াত, সদকা, যা খুশি। এটা শুধু আপনিই দেখতে পারবেন।';
+
+  @override
+  String get personalAmolInfoBody2 =>
+      'এটা কমিউনিটি স্কোর বা লিডারবোর্ডে যোগ হয় না। আপনার স্ট্রিক পুরোপুরি আপনার নিজের।';
+
+  @override
+  String get personalAmolInfoBody3 =>
+      'সুইচ অন করে সম্পন্ন করুন, অথবা দৈনিক লক্ষ্য ঠিক করে + / − দিয়ে গণনা করুন। শেষে সেভ করুন।';
+
+  @override
+  String get personalAmolInfoBody4 =>
+      'সর্বোচ্চ ১০টি আমল যোগ করা যাবে। কোনো আমল ডিলিট করলেও আগের দিনের হিস্টোরি থেকেই যাবে।';
+
+  @override
+  String get personalAmolInfoBody5 =>
+      'অগ্রগতি দেখতে মাই রিপোর্ট বা মাই প্রোফাইলে যান।';
+
+  @override
+  String get personalAmolInfoGotIt => 'বুঝেছি';
+
+  @override
   String get personalAmolNoneDueToday => 'আজ কোনো আমল নেই';
 
   @override
@@ -3160,7 +3186,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get personalAmolNameLabel => 'নাম';
 
   @override
-  String get personalAmolNameHint => 'যেমনঃ কুরআন পড়া, দোয়া পড়া';
+  String get personalAmolNameHint => 'যেমনঃ কুরআন পড়া, সদকা দেওয়া';
 
   @override
   String get personalAmolNameRequired => 'একটি নাম দিন';

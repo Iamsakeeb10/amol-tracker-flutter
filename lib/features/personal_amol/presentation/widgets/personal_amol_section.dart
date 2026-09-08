@@ -16,6 +16,7 @@ import '../../../../core/utils/personal_amol_schedule.dart';
 import 'personal_amol_create_sheet.dart';
 import 'personal_amol_details_dialog.dart';
 import 'personal_amol_empty_state.dart';
+import 'personal_amol_info_dialog.dart';
 import 'personal_amol_progress_row.dart';
 import 'personal_amol_tile.dart';
 
@@ -149,6 +150,11 @@ class PersonalAmolSection extends ConsumerWidget {
             style: AppTextStyles.headlineMedium(context),
           ),
         ),
+        _headerIconButton(
+          icon: Icons.info_outline_rounded,
+          onTap: () => showPersonalAmolInfoDialog(context),
+        ),
+        SizedBox(width: 10.w),
         _headerIconButton(
           icon: Icons.format_list_bulleted_rounded,
           onTap: () {

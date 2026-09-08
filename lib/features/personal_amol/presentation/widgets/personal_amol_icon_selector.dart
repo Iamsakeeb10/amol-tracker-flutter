@@ -11,6 +11,10 @@ import 'personal_amol_icons.dart';
 /// Horizontal scrollable Material-icon row with a dashed "see all" cell that
 /// opens the full-screen [PersonalAmolIconPicker]. Emits the persisted icon
 /// string via [onSelected] (see [encodePersonalAmolIcon]).
+///
+/// The currently selected icon is always pinned at index 0 so it stays visible
+/// after picking from the full grid (including icons outside the default
+/// preset window).
 class PersonalAmolIconSelector extends ConsumerStatefulWidget {
   const PersonalAmolIconSelector({
     super.key,
@@ -33,9 +37,24 @@ class _PersonalAmolIconSelectorState
   final ScrollController _scrollController = ScrollController();
 
   @override
+  void didUpdateWidget(covariant PersonalAmolIconSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selected != widget.selected) {
+      _scrollToStart();
+    }
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _scrollToStart() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.jumpTo(0);
+    });
   }
 
   Future<void> _openFullPicker() async {
@@ -45,11 +64,24 @@ class _PersonalAmolIconSelectorState
     widget.onSelected(encodePersonalAmolIcon(picked));
   }
 
+  /// Preset row with [selected] forced to the front (injected if needed).
+  List<IconData> _presetsWithSelectedFirst() {
+    final presets =
+        kPersonalAmolMaterialIcons.take(widget.presetCount).toList();
+    final selectedIcon = decodePersonalAmolIcon(widget.selected);
+    if (selectedIcon == null) return presets;
+    presets.removeWhere((i) => i.codePoint == selectedIcon.codePoint);
+    presets.insert(0, selectedIcon);
+    if (presets.length > widget.presetCount) {
+      presets.removeLast();
+    }
+    return presets;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final presets =
-        kPersonalAmolMaterialIcons.take(widget.presetCount).toList();
+    final presets = _presetsWithSelectedFirst();
     final selectedCodePoint = decodePersonalAmolIcon(widget.selected)?.codePoint;
 
     return Column(

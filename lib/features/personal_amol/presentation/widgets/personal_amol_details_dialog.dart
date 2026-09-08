@@ -19,7 +19,7 @@ abstract final class PersonalAmolDialogColors {
   static final dialogBorder = AppColors.goldBorder.withValues(alpha: 0.8);
   static final dialogBg = AppColors.emeraldMid.withValues(alpha: 0.98);
   static final shadow = Colors.black.withValues(alpha: 0.35);
-  static final sublabelBg = AppColors.emeraldDeep.withValues(alpha: 0.88);
+  static final sublabelBg = AppColors.goldCard;
   static final sublabelBorder = AppColors.goldBorder.withValues(alpha: 0.45);
 }
 

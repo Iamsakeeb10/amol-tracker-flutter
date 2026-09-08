@@ -10,10 +10,12 @@ import '../core/services/analytics_service.dart';
 import '../core/services/islamic_date_service.dart';
 import '../core/services/notification_service.dart';
 import '../core/services/personal_amol_repository.dart';
+import '../core/utils/personal_amol_month_calculator.dart';
 import '../core/utils/personal_amol_schedule.dart';
 import '../core/utils/streak_helper.dart';
 import '../models/personal_amol_model.dart';
 import '../models/personal_amol_streak_model.dart';
+import '../shared/mock/mock_data.dart';
 import 'date_provider.dart';
 
 final personalAmolRepositoryProvider = Provider<PersonalAmolRepository>(
@@ -196,6 +198,109 @@ final personalAmolMonthCompletionSummaryProvider =
         ),
       );
     });
+
+/// Input for the personal-amol history calendar (precomputed days + stats).
+class PersonalAmolHistoryMonthInput {
+  const PersonalAmolHistoryMonthInput({
+    required this.uid,
+    required this.hijriYear,
+    required this.hijriMonth,
+    required this.accountCreatedAt,
+  });
+
+  final String uid;
+  final int hijriYear;
+  final int hijriMonth;
+  final DateTime accountCreatedAt;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PersonalAmolHistoryMonthInput &&
+          uid == other.uid &&
+          hijriYear == other.hijriYear &&
+          hijriMonth == other.hijriMonth &&
+          accountCreatedAt == other.accountCreatedAt;
+
+  @override
+  int get hashCode =>
+      Object.hash(uid, hijriYear, hijriMonth, accountCreatedAt);
+}
+
+/// Precomputed personal-amol calendar days and month stats for History.
+class PersonalAmolHistoryMonthView {
+  const PersonalAmolHistoryMonthView({
+    required this.days,
+    required this.loggedDays,
+    required this.totalCompletions,
+    required this.daysInMonth,
+    required this.isEmpty,
+  });
+
+  final List<MockDay> days;
+  final int loggedDays;
+  final int totalCompletions;
+  final int daysInMonth;
+  final bool isEmpty;
+}
+
+/// Mirrors [historyMonthSummaryProvider]: buildMonth runs in the provider so
+/// the personal history tab only paints.
+final personalAmolHistoryMonthProvider = Provider.autoDispose
+    .family<AsyncValue<PersonalAmolHistoryMonthView>, PersonalAmolHistoryMonthInput>((
+  ref,
+  input,
+) {
+  final monthKey = PersonalAmolMonthKey(
+    uid: input.uid,
+    hijriYear: input.hijriYear,
+    hijriMonth: input.hijriMonth,
+  );
+  final summaryAsync = ref.watch(
+    personalAmolMonthCompletionSummaryProvider(monthKey),
+  );
+  final amols =
+      ref.watch(allPersonalAmolProvider(input.uid)).value ??
+      const <PersonalAmolModel>[];
+  final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
+  final accountCreatedHijri =
+      IslamicDateService.hijriStorageForAccountCreated(input.accountCreatedAt);
+  final daysInMonth = HijriCalendar().getDaysInMonth(
+    input.hijriYear,
+    input.hijriMonth,
+  );
+
+  return summaryAsync.when(
+    data: (summary) {
+      final doneByDay = summary.doneByDay;
+      final scheduledByDay = summary.scheduledByDay;
+      final days = PersonalAmolMonthCalculator.buildMonth(
+        completionsByDay: doneByDay,
+        activeCountByDay: scheduledByDay,
+        hijriYear: input.hijriYear,
+        hijriMonth: input.hijriMonth,
+        todayStr: todayStr,
+        accountCreatedHijri: accountCreatedHijri,
+        daysInMonth: daysInMonth,
+      );
+      final loggedDays =
+          doneByDay.values.where((count) => count > 0).length;
+      final totalCompletions =
+          doneByDay.values.fold<int>(0, (sum, c) => sum + c);
+      return AsyncData(
+        PersonalAmolHistoryMonthView(
+          days: days,
+          loggedDays: loggedDays,
+          totalCompletions: totalCompletions,
+          daysInMonth: daysInMonth,
+          isEmpty: amols.isEmpty && doneByDay.isEmpty,
+        ),
+      );
+    },
+    loading: () => const AsyncLoading(),
+    error: (error, stack) => AsyncError(error, stack),
+  );
+});
 
 class PersonalAmolStreakKey {
   const PersonalAmolStreakKey({required this.uid, required this.amolId});

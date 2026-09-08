@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('Personal amol constants', () {
     test('free tier is capped and personal points are flat', () {
-      expect(AppConstants.kMaxFreePersonalAmol, 5);
+      expect(AppConstants.kMaxFreePersonalAmol, 10);
       expect(AppConstants.kPersonalAmolPointValue, 10);
     });
 

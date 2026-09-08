@@ -17,7 +17,7 @@ class AppConstants {
   static const int loggingReminderVersion = 2;
 
   // Max number of personal amol a free-tier user can define (personal_amol subcollection).
-  static const int kMaxFreePersonalAmol = 5;
+  static const int kMaxFreePersonalAmol = 10;
 
   /// Point value awarded per completed personal amol, used only to merge
   /// personal completion into the history calendar display score. Kept flat

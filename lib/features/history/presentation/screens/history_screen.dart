@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -11,7 +10,6 @@ import '../../../../core/services/analytics_service.dart';
 import '../../../../core/services/islamic_date_service.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/theme/text_styles.dart';
-import '../../../../core/utils/personal_amol_month_calculator.dart';
 import '../../../../core/utils/streak_helper.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/amal_log_model.dart';
@@ -83,7 +81,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     }
 
     final locale = Localizations.localeOf(context).languageCode;
-    ref.watch(amalLogRefreshProvider);
 
     return AppScaffold(
       handleExitBack: false,
@@ -200,7 +197,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
 // ── Community Tab ───────────────────────────────────────────────────────────
 
-class _CommunityHistoryTab extends ConsumerWidget {
+class _CommunityHistoryTab extends ConsumerStatefulWidget {
   const _CommunityHistoryTab({
     required this.uid,
     required this.accountCreatedAt,
@@ -216,7 +213,23 @@ class _CommunityHistoryTab extends ConsumerWidget {
   final String locale;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_CommunityHistoryTab> createState() =>
+      _CommunityHistoryTabState();
+}
+
+class _CommunityHistoryTabState extends ConsumerState<_CommunityHistoryTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final uid = widget.uid;
+    final accountCreatedAt = widget.accountCreatedAt;
+    final hijriYear = widget.hijriYear;
+    final hijriMonth = widget.hijriMonth;
+    final locale = widget.locale;
     final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider).asData?.value;
     final liveStreak = ref.watch(liveStreakProvider).value ?? user?.currentStreak ?? 0;
@@ -260,7 +273,8 @@ class _CommunityHistoryTab extends ConsumerWidget {
         final weakest = summary.weakestAmal;
         final logs = summary.logs;
 
-        return CustomScrollView(
+        return RepaintBoundary(
+          child: CustomScrollView(
           slivers: [
             SliverPadding(
               padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
@@ -438,6 +452,7 @@ class _CommunityHistoryTab extends ConsumerWidget {
               ),
             ),
           ],
+        ),
         );
       },
     );
@@ -524,7 +539,7 @@ class _CommunityHistoryTab extends ConsumerWidget {
 
 // ── Personal Amol Tab ───────────────────────────────────────────────────────
 
-class _PersonalAmolHistoryTab extends ConsumerWidget {
+class _PersonalAmolHistoryTab extends ConsumerStatefulWidget {
   const _PersonalAmolHistoryTab({
     required this.uid,
     required this.accountCreatedAt,
@@ -540,26 +555,37 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
   final String locale;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final amols = ref.watch(allPersonalAmolProvider(uid)).value ??
-        const <PersonalAmolModel>[];
-    final key = PersonalAmolMonthKey(
-      uid: uid,
-      hijriYear: hijriYear,
-      hijriMonth: hijriMonth,
-    );
-    final completionsAsync = ref.watch(
-      personalAmolMonthCompletionSummaryProvider(key),
-    );
-    final todayStr = IslamicDateService.getCurrentIslamicDateStringSafe();
-    final accountCreatedHijri =
-        IslamicDateService.hijriStorageForAccountCreated(accountCreatedAt);
+  ConsumerState<_PersonalAmolHistoryTab> createState() =>
+      _PersonalAmolHistoryTabState();
+}
 
-    return completionsAsync.when(
-      // Do not paint stale month data while a refresh is in flight (e.g. right
-      // after editing a day's personal amol): show the skeleton instead.
-      skipLoadingOnRefresh: false,
+class _PersonalAmolHistoryTabState extends ConsumerState<_PersonalAmolHistoryTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final l10n = AppLocalizations.of(context)!;
+    final uid = widget.uid;
+    final hijriYear = widget.hijriYear;
+    final hijriMonth = widget.hijriMonth;
+    final summaryAsync = ref.watch(
+      personalAmolHistoryMonthProvider(
+        PersonalAmolHistoryMonthInput(
+          uid: uid,
+          hijriYear: hijriYear,
+          hijriMonth: hijriMonth,
+          accountCreatedAt: widget.accountCreatedAt,
+        ),
+      ),
+    );
+
+    return summaryAsync.when(
+      // Keep painting the previous month while a refresh is in flight so tab
+      // slides stay smooth after day edits.
+      skipLoadingOnRefresh: true,
       loading: () => const _HistorySkeleton(),
       error: (_, _) => Center(
         child: Padding(
@@ -571,190 +597,152 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
         ),
       ),
       data: (summary) {
-        final completionsByDay = summary.doneByDay;
-        final scheduledByDay = summary.scheduledByDay;
-        final daysInMonth = HijriCalendar().getDaysInMonth(hijriYear, hijriMonth);
-        // Empty only when the user has neither amols nor any past completions
-        // (deleted amols' past completions keep the calendar visible).
-        if (amols.isEmpty && completionsByDay.isEmpty) {
-          return CustomScrollView(
+        if (summary.isEmpty) {
+          return RepaintBoundary(
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: _buildEmptyState(context),
+                  ),
+                ),
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+                  sliver: const SliverToBoxAdapter(child: _Legend()),
+                ),
+                SliverToBoxAdapter(child: SizedBox(height: 100.h)),
+              ],
+            ),
+          );
+        }
+
+        final days = summary.days;
+        final loggedDays = summary.loggedDays;
+        final totalCompletions = summary.totalCompletions;
+        final daysInMonth = summary.daysInMonth;
+
+        return RepaintBoundary(
+          child: CustomScrollView(
             slivers: [
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
                 sliver: SliverToBoxAdapter(
-                  child: _buildEmptyState(context),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: StatCard(
+                              label: l10n.historyLoggedDays,
+                              value: '$loggedDays',
+                              sublabel: l10n.historyOfDays(daysInMonth),
+                              icon: Icons.check_circle_outline,
+                            ),
+                          ),
+                          SizedBox(width: 10.w),
+                          Expanded(
+                            child: StatCard(
+                              label: l10n.personalAmolHistoryTotalLabel,
+                              value: '$totalCompletions',
+                              sublabel: l10n.historyThisMonth,
+                              icon: Icons.checklist_rtl_outlined,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      _PersonalBestStreakCard(
+                        uid: uid,
+                        hasCompletions: loggedDays > 0,
+                      ),
+                      SizedBox(height: 16.h),
+                      if (loggedDays == 0)
+                        Padding(
+                          padding: EdgeInsets.symmetric(vertical: 6.h),
+                          child: Text(
+                            l10n.historyStartLogging,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodyMedium(
+                              context,
+                            ).copyWith(color: AppColors.textMuted),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                sliver: SliverGrid.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 7,
+                    mainAxisSpacing: 8.h,
+                    crossAxisSpacing: 8.w,
+                  ),
+                  itemCount: days.length,
+                  itemBuilder: (_, i) {
+                    final day = days[i];
+                    return CalendarDayCell(
+                      day: day,
+                      onTap: () {
+                        if (day.state == DayCompletion.future) return;
+                        if (day.state == DayCompletion.preAccount) return;
+                        final keyDate = IslamicDateService.storageFromParts(
+                          hijriYear,
+                          hijriMonth,
+                          day.day,
+                        );
+                        context.push(
+                          AppRoutes.dayDetailPath(keyDate),
+                          extra: DayDetailMode.personal,
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
-                sliver: SliverToBoxAdapter(child: const _Legend()),
-              ),
-              SliverToBoxAdapter(child: SizedBox(height: 100.h)),
-            ],
-          );
-        }
-
-        final days = PersonalAmolMonthCalculator.buildMonth(
-          completionsByDay: completionsByDay,
-          activeCountByDay: scheduledByDay,
-          hijriYear: hijriYear,
-          hijriMonth: hijriMonth,
-          todayStr: todayStr,
-          accountCreatedHijri: accountCreatedHijri,
-          daysInMonth: daysInMonth,
-        );
-        if (kDebugMode) {
-          debugPrint('[PAmolHist] month=$hijriYear-$hijriMonth');
-          for (final a in amols) {
-            debugPrint(
-              '[PAmolHist] amol id=${a.id} type=${a.type} target=${a.target} '
-              'frequency=${a.frequency.name} '
-              'weekdays=${a.weekdays.join(",")} active=${a.isActive}',
-            );
-          }
-          // Log every day where a user completed at least one personal amol,
-          // showing the raw done/scheduled counts that drive the chip colour.
-          for (final e in completionsByDay.entries) {
-            debugPrint(
-              '[PAmolHist] ${e.key} doneCount=${e.value} '
-              'scheduled=${scheduledByDay[e.key] ?? 0}',
-            );
-          }
-        }
-        final loggedDays = completionsByDay.values
-            .where((count) => count > 0)
-            .length;
-        final totalCompletions =
-            completionsByDay.values.fold<int>(0, (sum, c) => sum + c);
-        final streakInfo = _maxBestStreak(ref, uid, amols, loggedDays > 0);
-        final bestStreak = streakInfo.max;
-        final streaksLoading = streakInfo.loading;
-        return CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: StatCard(
-                            label: l10n.historyLoggedDays,
-                            value: '$loggedDays',
-                            sublabel: l10n.historyOfDays(daysInMonth),
-                            icon: Icons.check_circle_outline,
-                          ),
-                        ),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: StatCard(
-                            label: l10n.personalAmolHistoryTotalLabel,
-                            value: '$totalCompletions',
-                            sublabel: l10n.historyThisMonth,
-                            icon: Icons.checklist_rtl_outlined,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 12.h),
-                    if (streaksLoading)
-                      const _StreakCardShimmer()
-                    else
-                      StatCard(
-                        label: l10n.historyBestStreak,
-                        value: '$bestStreak',
-                        sublabel: l10n.historyDays,
-                        icon: Icons.local_fire_department_outlined,
-                      ),
-                    SizedBox(height: 16.h),
-                    if (loggedDays == 0)
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 6.h),
-                        child: Text(
-                          l10n.historyStartLogging,
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.bodyMedium(
-                            context,
-                          ).copyWith(color: AppColors.textMuted),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              sliver: SliverGrid.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  mainAxisSpacing: 8.h,
-                  crossAxisSpacing: 8.w,
-                ),
-                itemCount: days.length,
-                itemBuilder: (_, i) {
-                  final day = days[i];
-                  return CalendarDayCell(
-                    day: day,
-                    onTap: () {
-                      if (day.state == DayCompletion.future) return;
-                      if (day.state == DayCompletion.preAccount) return;
-                      final keyDate = IslamicDateService.storageFromParts(
-                        hijriYear,
-                        hijriMonth,
-                        day.day,
-                      );
-                      // Personal tab: open DayDetailScreen in personal-only
-                      // mode so only personal amol tiles are shown.
-                      context.push(
-                        AppRoutes.dayDetailPath(keyDate),
-                        extra: DayDetailMode.personal,
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (days.any((d) => d.state == DayCompletion.preAccount))
-                      Padding(
-                        padding: EdgeInsets.only(bottom: 12.h),
-                        child: CardContainer(
-                          color: AppColors.cardDark,
-                          borderColor: AppColors.cardBorder,
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.info_outline_rounded,
-                                size: 16.r,
-                                color: AppColors.textMuted,
-                              ),
-                              SizedBox(width: 8.w),
-                              Expanded(
-                                child: Text(
-                                  l10n.historyPreAccountDimDates,
-                                  style: AppTextStyles.bodySmall(
-                                    context,
-                                  ).copyWith(color: AppColors.textMuted),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (days.any((d) => d.state == DayCompletion.preAccount))
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 12.h),
+                          child: CardContainer(
+                            color: AppColors.cardDark,
+                            borderColor: AppColors.cardBorder,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline_rounded,
+                                  size: 16.r,
+                                  color: AppColors.textMuted,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 8.w),
+                                Expanded(
+                                  child: Text(
+                                    l10n.historyPreAccountDimDates,
+                                    style: AppTextStyles.bodySmall(
+                                      context,
+                                    ).copyWith(color: AppColors.textMuted),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    const _Legend(),
-                    SizedBox(height: 100.h),
-                  ],
+                      const _Legend(),
+                      SizedBox(height: 100.h),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -808,19 +796,33 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
       ],
     );
   }
+}
 
-  /// Watches every amol's streak document in one pass and returns both the
-  /// highest `bestStreak` value and whether any streak stream is still loading
-  /// or refreshing (so the streak card can show a shimmer instead of stale 0s).
-  ({int max, bool loading}) _maxBestStreak(
-    WidgetRef ref,
-    String uid,
-    List<PersonalAmolModel> amols,
-    bool hasCompletions,
-  ) {
-    // With no recorded completion in view there is no streak to report; don't
-    // surface a stale stored best-streak from a previously removed completion.
-    if (!hasCompletions) return (max: 0, loading: false);
+/// Isolates N streak stream watches so calendar paints are not rebuilt on
+/// every streak snapshot.
+class _PersonalBestStreakCard extends ConsumerWidget {
+  const _PersonalBestStreakCard({
+    required this.uid,
+    required this.hasCompletions,
+  });
+
+  final String uid;
+  final bool hasCompletions;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    if (!hasCompletions) {
+      return StatCard(
+        label: l10n.historyBestStreak,
+        value: '0',
+        sublabel: l10n.historyDays,
+        icon: Icons.local_fire_department_outlined,
+      );
+    }
+
+    final amols = ref.watch(allPersonalAmolProvider(uid)).value ??
+        const <PersonalAmolModel>[];
     var maxStreak = 0;
     var loading = false;
     for (final amol in amols) {
@@ -833,7 +835,14 @@ class _PersonalAmolHistoryTab extends ConsumerWidget {
       final best = streakAsync.value?.bestStreak ?? 0;
       if (best > maxStreak) maxStreak = best;
     }
-    return (max: maxStreak, loading: loading);
+
+    if (loading) return const _StreakCardShimmer();
+    return StatCard(
+      label: l10n.historyBestStreak,
+      value: '$maxStreak',
+      sublabel: l10n.historyDays,
+      icon: Icons.local_fire_department_outlined,
+    );
   }
 }
 

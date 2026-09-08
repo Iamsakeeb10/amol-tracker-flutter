@@ -5833,6 +5833,48 @@ abstract class AppLocalizations {
   /// **'Any daily habit — just for you'**
   String get personalAmolEmptySubtitle;
 
+  /// No description provided for @personalAmolInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How My Amol works'**
+  String get personalAmolInfoTitle;
+
+  /// No description provided for @personalAmolInfoBody1.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your own daily amols here — namaz, Quran, sadaqah, anything. Only you can see them.'**
+  String get personalAmolInfoBody1;
+
+  /// No description provided for @personalAmolInfoBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'It does not affect community score or leaderboard. Your streak stays private.'**
+  String get personalAmolInfoBody2;
+
+  /// No description provided for @personalAmolInfoBody3.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark done with a switch, or set a daily target and use + / −. Tap Save when you finish.'**
+  String get personalAmolInfoBody3;
+
+  /// No description provided for @personalAmolInfoBody4.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add up to 10 amols. If you delete one, past days stay in History.'**
+  String get personalAmolInfoBody4;
+
+  /// No description provided for @personalAmolInfoBody5.
+  ///
+  /// In en, this message translates to:
+  /// **'Open My Report or My Profile anytime to see your stats.'**
+  String get personalAmolInfoBody5;
+
+  /// No description provided for @personalAmolInfoGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get personalAmolInfoGotIt;
+
   /// No description provided for @personalAmolNoneDueToday.
   ///
   /// In en, this message translates to:
@@ -5878,7 +5920,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolNameHint.
   ///
   /// In en, this message translates to:
-  /// **'e.g. Reading Quran, Daily Dua'**
+  /// **'e.g. Reading Quran, Giving Sadaqah'**
   String get personalAmolNameHint;
 
   /// No description provided for @personalAmolNameRequired.

@@ -1616,7 +1616,7 @@
   "personalAmolSaved": "Personal amol saved ✓",
   "personalAmolReminderLabel": "Daily reminder",
   "personalAmolReminderOff": "Set",
-  "personalAmolReminderTitle": "Just a reminder about {amolName}",
+  "personalAmolReminderTitle": "Just a reminder about {amolName} amol",
   "@personalAmolReminderTitle": {
     "placeholders": {
       "amolName": {

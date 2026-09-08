@@ -6166,7 +6166,7 @@ abstract class AppLocalizations {
   /// No description provided for @personalAmolReminderTitle.
   ///
   /// In en, this message translates to:
-  /// **'Just a reminder about {amolName}'**
+  /// **'Just a reminder about {amolName} amol'**
   String personalAmolReminderTitle(String amolName);
 
   /// No description provided for @personalAmolReminderBody.

@@ -3308,7 +3308,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String personalAmolReminderTitle(String amolName) {
-    return 'Just a reminder about $amolName';
+    return 'Just a reminder about $amolName amol';
   }
 
   @override

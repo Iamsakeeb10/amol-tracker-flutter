@@ -1555,7 +1555,7 @@
   "personalAmolSaved": "ব্যক্তিগত আমল সংরক্ষণ করা হয়েছে ✓",
   "personalAmolReminderLabel": "দৈনিক রিমাইন্ডার",
   "personalAmolReminderOff": "সেট করুন",
-  "personalAmolReminderTitle": "{amolName}-এর কথা মনে করিয়ে দিলাম",
+  "personalAmolReminderTitle": "{amolName} আমল-এর কথা মনে করিয়ে দিলাম",
   "@personalAmolReminderTitle": {
     "placeholders": {
       "amolName": {

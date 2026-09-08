@@ -3315,7 +3315,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String personalAmolReminderTitle(String amolName) {
-    return '$amolName-এর কথা মনে করিয়ে দিলাম';
+    return '$amolName আমল-এর কথা মনে করিয়ে দিলাম';
   }
 
   @override

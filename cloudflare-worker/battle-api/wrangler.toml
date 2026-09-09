@@ -11,4 +11,4 @@ id = "1c46fe73dbbb45be89a0e6a1d61c02b8"
 preview_id = "local_dev_only"
 
 [triggers]
-crons = ["* * * * *"]
+crons = ["*/5 * * * *"]
